@@ -45,9 +45,16 @@ class AdminUserSeeder extends Seeder
         ];
 
         foreach ($users as $data) {
-            // Idempotent: skip jika email sudah ada
+            // Idempotent: skip insert jika email sudah ada, tapi tetap sync role
             if (DB::table('users')->where('email', $data['email'])->exists()) {
-                $this->command->warn("User {$data['email']} sudah ada, dilewati.");
+                $this->command->warn("User {$data['email']} sudah ada, sync role...");
+                if ($spatieAvailable) {
+                    $user = User::where('email', $data['email'])->first();
+                    if ($user && method_exists($user, 'syncRoles')) {
+                        $user->syncRoles([$data['role']]);
+                        $this->command->info("  Role synced: {$data['email']} => {$data['role']}");
+                    }
+                }
                 continue;
             }
 

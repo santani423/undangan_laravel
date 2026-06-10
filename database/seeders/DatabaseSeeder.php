@@ -44,6 +44,9 @@ class DatabaseSeeder extends Seeder
 
             // 5. Payment gateway configs
             PaymentGatewayConfigSeeder::class,
+
+            // 6. Application settings (defaults)
+            AppSettingSeeder::class,
         ]);
 
         $this->command->info('');
@@ -60,6 +63,7 @@ class DatabaseSeeder extends Seeder
         $this->command->info('  ✓ roles & permissions (47 permissions, 3 roles)');
         $this->command->info('  ✓ users (super_admin, admin, demo customer)');
         $this->command->info('  ✓ payment_gateway_configs');
+        $this->command->info('  ✓ app_settings (defaults)');
         $this->command->info('');
         $this->command->info('Test accounts:');
         $this->command->info('  superadmin@undesia.id / SuperAdmin@2026!');

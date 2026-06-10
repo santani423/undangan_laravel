@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Settings\AppSettingController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -20,9 +21,10 @@ Route::middleware('auth')->group(function () {
     })->name('appearance');
 
     // ── Pengaturan Sistem ──────────────────────────────────────────────────────
-    Route::get('settings/app', function () {
-        return Inertia::render('settings/app');
-    })->name('settings.app');
+    Route::get('settings/app',    [AppSettingController::class, 'edit'])->name('settings.app');
+    Route::patch('settings/app',  [AppSettingController::class, 'update'])->name('settings.app.update');
+    Route::post('settings/app/assets/{type}',   [AppSettingController::class, 'uploadAsset'])->name('settings.app.asset.upload')->where('type', 'logo|favicon');
+    Route::delete('settings/app/assets/{type}', [AppSettingController::class, 'deleteAsset'])->name('settings.app.asset.delete')->where('type', 'logo|favicon');
 
     Route::get('settings/payment', function () {
         return Inertia::render('settings/payment');
