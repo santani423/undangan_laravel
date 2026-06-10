@@ -18,4 +18,17 @@ Route::middleware('auth')->group(function () {
     Route::get('settings/appearance', function () {
         return Inertia::render('settings/appearance');
     })->name('appearance');
+
+    // ── Pengaturan Sistem ──────────────────────────────────────────────────────
+    Route::get('settings/app', function () {
+        return Inertia::render('settings/app');
+    })->name('settings.app');
+
+    Route::get('settings/payment', function () {
+        return Inertia::render('settings/payment');
+    })->name('settings.payment');
+
+    Route::get('settings/packages', function () {
+        return Inertia::render('settings/packages');
+    })->name('settings.packages');
 });
