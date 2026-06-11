@@ -20,8 +20,8 @@ class AdminUserSeeder extends Seeder
         $users = [
             [
                 'name'              => 'Super Admin UNDESIA',
-                'email'             => 'superadmin@undesia.id',
-                'password'          => Hash::make('SuperAdmin@2026!'),
+                'email'             => 'admin@gmail.com',
+                'password'          => Hash::make('12345678'),
                 'phone_number'      => '+6281234567890',
                 'role'              => 'super_admin',
                 'wa_notification'   => true,

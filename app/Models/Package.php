@@ -14,6 +14,9 @@ class Package extends Model
         'price',
         'currency',
         'billing_period',
+        'duration_days',
+        'trial_days',
+        'max_gallery_uploads',
         'is_active',
         'display_order',
     ];
@@ -24,6 +27,9 @@ class Package extends Model
             'price'         => 'decimal:2',
             'is_active'     => 'boolean',
             'display_order' => 'integer',
+            'duration_days'       => 'integer',
+            'trial_days'          => 'integer',
+            'max_gallery_uploads' => 'integer',
         ];
     }
 

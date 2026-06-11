@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\Settings\PackageController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -58,7 +59,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     // ─── Pengaturan Sistem ────────────────────────────────────────────────────
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/general', fn () => Inertia::render('admin/settings/general'))->name('general');
-        Route::get('/packages', fn () => Inertia::render('admin/settings/packages'))->name('packages');
+        Route::get('/packages',             [PackageController::class, 'index'])->name('packages');
+        Route::post('/packages',            [PackageController::class, 'store'])->name('packages.store');
+        Route::patch('/packages/{package}', [PackageController::class, 'update'])->name('packages.update');
+        Route::delete('/packages/{package}',[PackageController::class, 'destroy'])->name('packages.destroy');
         Route::get('/payment', fn () => Inertia::render('admin/settings/payment'))->name('payment');
         Route::get('/whatsapp', fn () => Inertia::render('admin/settings/whatsapp'))->name('whatsapp');
         Route::get('/notification', fn () => Inertia::render('admin/settings/notification'))->name('notification');
