@@ -38,6 +38,12 @@ import { useEffect, useRef, useState } from 'react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export interface PackageFeatureData {
+    feature_key: string;
+    feature_type: 'boolean' | 'level';
+    feature_value: string;
+}
+
 export interface PackageData {
     id: number;
     name: string;
@@ -51,7 +57,45 @@ export interface PackageData {
     max_gallery_uploads: number;
     is_active: boolean;
     display_order: number;
+    features: PackageFeatureData[];
 }
+
+// ─── Feature Catalogue ────────────────────────────────────────────────────────
+// Master list of all known features — mirrors PackageSeeder.php
+
+const FEATURE_CATALOGUE: {
+    key: string;
+    label: string;
+    cat: string;
+    type: 'boolean' | 'level';
+    levels?: string[];
+}[] = [
+    // Konten Dasar
+    { key: 'themes',             label: 'Template / Tema',              cat: 'Desain & Tema',      type: 'level',   levels: ['basic','extended','full']         },
+    { key: 'page_builder',       label: 'Page Builder',                 cat: 'Desain & Tema',      type: 'level',   levels: ['basic','intermediate','full']      },
+    { key: 'custom_css',         label: 'Custom CSS',                   cat: 'Desain & Tema',      type: 'boolean'  },
+    { key: 'custom_branding',    label: 'Custom Branding (No Watermark)',cat: 'Desain & Tema',     type: 'boolean'  },
+    // Domain & Akses
+    { key: 'custom_domain',      label: 'Custom Domain',                cat: 'Domain & Akses',     type: 'boolean'  },
+    { key: 'page_password',      label: 'Password Halaman',             cat: 'Domain & Akses',     type: 'boolean'  },
+    // Konten Interaktif
+    { key: 'gender_poll',        label: 'Gender Poll / Prediksi',       cat: 'Konten Interaktif',  type: 'boolean'  },
+    { key: 'interactive_games',  label: 'Mini Games Interaktif',        cat: 'Konten Interaktif',  type: 'boolean'  },
+    { key: 'dress_code',         label: 'Dress Code Info',              cat: 'Konten Interaktif',  type: 'boolean'  },
+    { key: 'live_stream',        label: 'Live Streaming',               cat: 'Konten Interaktif',  type: 'boolean'  },
+    { key: 'instagram_filter',   label: 'Instagram Filter AR',          cat: 'Konten Interaktif',  type: 'boolean'  },
+    // Komunikasi
+    { key: 'wa_reminders',       label: 'WhatsApp Reminder Tamu',       cat: 'Komunikasi',         type: 'boolean'  },
+    { key: 'email_marketing',    label: 'Email Marketing',              cat: 'Komunikasi',         type: 'boolean'  },
+    // Gift & Pembayaran
+    { key: 'amplop_digital',     label: 'Amplop Digital (Rekening/QRIS)',cat: 'Gift & Pembayaran', type: 'boolean'  },
+    { key: 'gift_wishlist',      label: 'Gift Wishlist',                cat: 'Gift & Pembayaran',  type: 'boolean'  },
+    // Analytics & Support
+    { key: 'analytics',          label: 'Analytics / Statistik',        cat: 'Lainnya',            type: 'level',   levels: ['basic','intermediate','full']      },
+    { key: 'api_access',         label: 'API Access',                   cat: 'Lainnya',            type: 'boolean'  },
+    { key: 'priority_support',   label: 'Prioritas Support',            cat: 'Lainnya',            type: 'boolean'  },
+    { key: 'account_manager',    label: 'Account Manager Dedicated',    cat: 'Lainnya',            type: 'boolean'  },
+];
 
 interface PageProps {
     packages: PackageData[];
@@ -255,14 +299,35 @@ function Spinner() {
 
 // ─── Edit Package Modal ───────────────────────────────────────────────────────
 
+type EditTab = 'info' | 'features';
+
+function buildFeaturesState(existing: PackageFeatureData[]): Record<string, string> {
+    const map: Record<string, string> = {};
+    // seed defaults from catalogue
+    for (const f of FEATURE_CATALOGUE) {
+        map[f.key] = f.type === 'level' ? (f.levels?.[0] ?? 'basic') : 'false';
+    }
+    // override with actual DB values
+    for (const f of existing) {
+        map[f.feature_key] = f.feature_value;
+    }
+    return map;
+}
+
 function EditPackageModal({ pkg, onClose }: { pkg: PackageData; onClose: () => void }) {
-    const [form, setForm] = useState<EditState>(() => pkgToEditState(pkg));
-    const [errors, setErrors] = useState<FormErrors>({});
+    const [activeTab,  setActiveTab]  = useState<EditTab>('info');
+    const [form,       setForm]       = useState<EditState>(() => pkgToEditState(pkg));
+    const [featValues, setFeatValues] = useState<Record<string, string>>(() => buildFeaturesState(pkg.features));
+    const [errors,     setErrors]     = useState<FormErrors>({});
     const [processing, setProcessing] = useState(false);
 
     function set<K extends keyof EditState>(key: K, value: EditState[K]) {
         setForm((prev) => ({ ...prev, [key]: value }));
         setErrors((prev) => { const e = { ...prev }; delete e[key]; return e; });
+    }
+
+    function setFeat(key: string, value: string) {
+        setFeatValues((prev) => ({ ...prev, [key]: value }));
     }
 
     function handleSubmit(e: React.FormEvent) {
@@ -292,14 +357,39 @@ function EditPackageModal({ pkg, onClose }: { pkg: PackageData; onClose: () => v
         );
     }
 
+    function handleSaveFeatures() {
+        setProcessing(true);
+        const features = FEATURE_CATALOGUE.map((f) => ({
+            feature_key:   f.key,
+            feature_type:  f.type,
+            feature_value: featValues[f.key] ?? (f.type === 'boolean' ? 'false' : f.levels?.[0] ?? 'basic'),
+        }));
+
+        router.patch(
+            route('admin.settings.packages.features', { package: pkg.id }),
+            { features },
+            {
+                preserveScroll: true,
+                onSuccess: () => { setProcessing(false); onClose(); },
+                onError:   () => setProcessing(false),
+                onFinish:  () => setProcessing(false),
+            },
+        );
+    }
+
     const trialDays = parseInt(form.trial_days) || 0;
+    const cats = [...new Set(FEATURE_CATALOGUE.map((f) => f.cat))];
+
+    const LEVEL_LABELS: Record<string, string> = {
+        basic: 'Basic', intermediate: 'Menengah', full: 'Penuh', extended: 'Lanjutan',
+    };
 
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
             onClick={(e) => { if (e.target === e.currentTarget && !processing) onClose(); }}
         >
-            <div className="w-full max-w-lg rounded-2xl bg-card border border-border/60 shadow-2xl overflow-hidden">
+            <div className="w-full max-w-xl rounded-2xl bg-card border border-border/60 shadow-2xl overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-border/40 bg-muted/20">
                     <div>
@@ -312,126 +402,204 @@ function EditPackageModal({ pkg, onClose }: { pkg: PackageData; onClose: () => v
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit}>
-                    <div className="px-6 py-5 space-y-4 max-h-[65vh] overflow-y-auto">
+                {/* Tab switcher */}
+                <div className="flex border-b border-border/40 bg-muted/10">
+                    {([
+                        { id: 'info',     label: 'Informasi & Harga', icon: Sliders   },
+                        { id: 'features', label: 'Fitur Paket',        icon: LayoutList },
+                    ] as { id: EditTab; label: string; icon: React.ElementType }[]).map((t) => {
+                        const Icon = t.icon;
+                        return (
+                            <button key={t.id} type="button"
+                                onClick={() => setActiveTab(t.id)}
+                                className={`flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors border-b-2 ${
+                                    activeTab === t.id
+                                        ? 'border-primary text-primary bg-primary/5'
+                                        : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/20'
+                                }`}
+                            >
+                                <Icon className="size-3.5" />{t.label}
+                            </button>
+                        );
+                    })}
+                </div>
 
-                        <SectionLabel label="Informasi Dasar" />
-
-                        {/* Nama */}
-                        <InputField
-                            label="Nama Tampilan Paket" required
-                            value={form.label} onChange={(v) => set('label', v)}
-                            error={errors.label}
-                        />
-
-                        {/* Deskripsi */}
-                        <div>
-                            <label className="block text-xs font-medium text-muted-foreground mb-1">Deskripsi</label>
-                            <textarea
-                                value={form.description} rows={2}
-                                onChange={(e) => set('description', e.target.value)}
-                                placeholder="Deskripsi singkat paket…"
-                                className="w-full rounded-lg border border-border/60 bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none"
-                            />
-                        </div>
-
-                        {/* Harga + Periode */}
-                        <div className="grid grid-cols-2 gap-3">
+                {/* Tab: Info */}
+                {activeTab === 'info' && (
+                    <form onSubmit={handleSubmit}>
+                        <div className="px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto">
+                            <SectionLabel label="Informasi Dasar" />
                             <InputField
-                                label="Harga" required type="number"
-                                value={form.price} onChange={(v) => set('price', v)}
-                                min={0} suffix="IDR" error={errors.price}
+                                label="Nama Tampilan Paket" required
+                                value={form.label} onChange={(v) => set('label', v)}
+                                error={errors.label}
                             />
-                            <SelectField
-                                label="Periode Tagihan" required
-                                value={form.billing_period} onChange={(v) => set('billing_period', v)}
-                                options={[
-                                    { value: 'month', label: 'Per Bulan' },
-                                    { value: 'year',  label: 'Per Tahun' },
-                                    { value: 'once',  label: 'Sekali Bayar' },
-                                ]}
-                                error={errors.billing_period}
-                            />
-                        </div>
-
-                        <SectionLabel label="Pengaturan Trial & Aktivasi" />
-
-                        {/* Trial info box */}
-                        <div className={`rounded-lg border px-3 py-2.5 text-xs flex items-start gap-2 ${
-                            trialDays > 0
-                                ? 'border-primary/20 bg-primary/5 text-primary'
-                                : 'border-border/50 bg-muted/20 text-muted-foreground'
-                        }`}>
-                            <FlaskConical className="size-3.5 mt-0.5 shrink-0" />
-                            <span>
-                                {trialDays > 0
-                                    ? `Pengguna mendapat akses penuh selama ${trialDays} hari tanpa perlu bayar terlebih dahulu.`
-                                    : 'Paket ini tidak menyediakan masa trial. Pembayaran diperlukan sebelum akses diberikan.'}
-                            </span>
-                        </div>
-
-                        {/* Masa Aktif + Trial */}
-                        <div className="grid grid-cols-2 gap-3">
-                            <InputField
-                                label="Masa Aktif Setelah Bayar" required type="number"
-                                value={form.duration_days} onChange={(v) => set('duration_days', v)}
-                                min={1} max={3650} suffix="hari" error={errors.duration_days}
-                                hint="Dihitung sejak pembayaran dikonfirmasi"
-                            />
-                            <InputField
-                                label={<span className="flex items-center gap-1"><FlaskConical className="size-3 text-primary" />Masa Trial Gratis</span>}
-                                required type="number"
-                                value={form.trial_days} onChange={(v) => set('trial_days', v)}
-                                min={0} max={365} suffix="hari"
-                                hint="0 = langsung bayar, tanpa trial"
-                                error={errors.trial_days}
-                            />
-                        </div>
-
-                        <SectionLabel label="Batas Penggunaan" />
-
-                        {/* Max Gallery */}
-                        <InputField
-                            label={<span className="flex items-center gap-1"><Image className="size-3" />Maks. Upload Galeri</span>}
-                            required type="number"
-                            value={form.max_gallery_uploads} onChange={(v) => set('max_gallery_uploads', v)}
-                            min={0} suffix="foto"
-                            hint="0 = tidak terbatas"
-                            error={errors.max_gallery_uploads}
-                        />
-
-                        <SectionLabel label="Tampilan & Status" />
-
-                        {/* Urutan + Status */}
-                        <div className="grid grid-cols-2 gap-3">
-                            <InputField
-                                label="Urutan Tampil" type="number"
-                                value={form.display_order} onChange={(v) => set('display_order', v)}
-                                min={0} error={errors.display_order}
-                            />
-                            <ToggleField label="Status Paket" value={form.is_active} onChange={(v) => set('is_active', v)} />
-                        </div>
-
-                        {errors.general && (
-                            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
-                                {errors.general}
+                            <div>
+                                <label className="block text-xs font-medium text-muted-foreground mb-1">Deskripsi</label>
+                                <textarea
+                                    value={form.description} rows={2}
+                                    onChange={(e) => set('description', e.target.value)}
+                                    placeholder="Deskripsi singkat paket…"
+                                    className="w-full rounded-lg border border-border/60 bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none"
+                                />
                             </div>
-                        )}
-                    </div>
+                            <SectionLabel label="Harga & Penagihan" />
+                            <div className="grid grid-cols-2 gap-3">
+                                <InputField
+                                    label="Harga" required type="number"
+                                    value={form.price} onChange={(v) => set('price', v)}
+                                    min={0} suffix="IDR" error={errors.price}
+                                />
+                                <SelectField
+                                    label="Periode Tagihan" required
+                                    value={form.billing_period} onChange={(v) => set('billing_period', v)}
+                                    options={[
+                                        { value: 'month', label: 'Per Bulan' },
+                                        { value: 'year',  label: 'Per Tahun' },
+                                        { value: 'once',  label: 'Sekali Bayar' },
+                                    ]}
+                                    error={errors.billing_period}
+                                />
+                            </div>
+                            <SectionLabel label="Trial & Masa Aktif" />
+                            <div className={`rounded-lg border px-3 py-2.5 text-xs flex items-start gap-2 ${
+                                trialDays > 0
+                                    ? 'border-primary/20 bg-primary/5 text-primary'
+                                    : 'border-border/50 bg-muted/20 text-muted-foreground'
+                            }`}>
+                                <FlaskConical className="size-3.5 mt-0.5 shrink-0" />
+                                <span>
+                                    {trialDays > 0
+                                        ? `Pengguna mendapat akses penuh selama ${trialDays} hari tanpa perlu bayar terlebih dahulu.`
+                                        : 'Paket ini tidak menyediakan masa trial. Pembayaran diperlukan sebelum akses diberikan.'}
+                                </span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <InputField
+                                    label={<span className="flex items-center gap-1"><FlaskConical className="size-3 text-primary" />Trial Gratis</span>}
+                                    required type="number"
+                                    value={form.trial_days} onChange={(v) => set('trial_days', v)}
+                                    min={0} max={365} suffix="hari"
+                                    hint="0 = tidak ada trial"
+                                    error={errors.trial_days}
+                                />
+                                <InputField
+                                    label="Masa Aktif Setelah Bayar" required type="number"
+                                    value={form.duration_days} onChange={(v) => set('duration_days', v)}
+                                    min={1} max={3650} suffix="hari" error={errors.duration_days}
+                                    hint="Sejak pembayaran dikonfirmasi"
+                                />
+                            </div>
+                            <SectionLabel label="Batas & Tampilan" />
+                            <div className="grid grid-cols-2 gap-3">
+                                <InputField
+                                    label={<span className="flex items-center gap-1"><Image className="size-3" />Maks. Galeri</span>}
+                                    required type="number"
+                                    value={form.max_gallery_uploads} onChange={(v) => set('max_gallery_uploads', v)}
+                                    min={0} suffix="foto" hint="0 = tidak terbatas"
+                                    error={errors.max_gallery_uploads}
+                                />
+                                <InputField
+                                    label="Urutan Tampil" type="number"
+                                    value={form.display_order} onChange={(v) => set('display_order', v)}
+                                    min={0} error={errors.display_order}
+                                />
+                            </div>
+                            <ToggleField label="Status Paket" value={form.is_active} onChange={(v) => set('is_active', v)} />
+                            {errors.general && (
+                                <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">{errors.general}</div>
+                            )}
+                        </div>
+                        <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border/40 bg-muted/10">
+                            <button type="button" onClick={onClose} disabled={processing}
+                                className="rounded-lg border border-border/60 px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50">
+                                Batal
+                            </button>
+                            <button type="submit" disabled={processing}
+                                className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-60">
+                                {processing ? <Spinner /> : <Save className="size-3.5" />}
+                                {processing ? 'Menyimpan…' : 'Simpan Perubahan'}
+                            </button>
+                        </div>
+                    </form>
+                )}
 
-                    {/* Footer */}
-                    <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border/40 bg-muted/10">
-                        <button type="button" onClick={onClose} disabled={processing}
-                            className="rounded-lg border border-border/60 px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50">
-                            Batal
-                        </button>
-                        <button type="submit" disabled={processing}
-                            className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-60">
-                            {processing ? <Spinner /> : <Save className="size-3.5" />}
-                            {processing ? 'Menyimpan…' : 'Simpan Perubahan'}
-                        </button>
+                {/* Tab: Fitur */}
+                {activeTab === 'features' && (
+                    <div>
+                        <div className="max-h-[60vh] overflow-y-auto">
+                            {cats.map((cat) => {
+                                const catFeatures = FEATURE_CATALOGUE.filter((f) => f.cat === cat);
+                                return (
+                                    <div key={cat}>
+                                        <div className="flex items-center gap-2 bg-muted/10 border-b border-border/30 px-5 py-2">
+                                            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{cat}</span>
+                                        </div>
+                                        {catFeatures.map((f) => {
+                                            const val = featValues[f.key] ?? (f.type === 'boolean' ? 'false' : f.levels?.[0] ?? 'basic');
+                                            const enabled = val !== 'false';
+                                            return (
+                                                <div key={f.key} className="flex items-center justify-between px-5 py-2.5 border-b border-border/20 hover:bg-muted/10 transition-colors">
+                                                    <div>
+                                                        <p className="text-sm text-foreground">{f.label}</p>
+                                                        <p className="text-[11px] font-mono text-muted-foreground">{f.key}</p>
+                                                    </div>
+                                                    <div className="shrink-0 ml-4">
+                                                        {f.type === 'boolean' ? (
+                                                            <button type="button"
+                                                                onClick={() => setFeat(f.key, val === 'true' ? 'false' : 'true')}
+                                                                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all ${
+                                                                    enabled
+                                                                        ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                                                                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                                                                }`}
+                                                            >
+                                                                {enabled
+                                                                    ? <><ToggleRight className="size-3.5" />Aktif</>
+                                                                    : <><ToggleLeft  className="size-3.5" />Nonaktif</>}
+                                                            </button>
+                                                        ) : (
+                                                            <div className="flex items-center gap-1">
+                                                                {f.levels?.map((lv) => (
+                                                                    <button key={lv} type="button"
+                                                                        onClick={() => setFeat(f.key, lv)}
+                                                                        className={`rounded-lg px-2.5 py-1 text-[11px] font-medium transition-all border ${
+                                                                            val === lv
+                                                                                ? 'bg-primary text-primary-foreground border-primary'
+                                                                                : 'border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground'
+                                                                        }`}
+                                                                    >
+                                                                        {LEVEL_LABELS[lv] ?? lv}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div className="flex items-center justify-between gap-2 px-6 py-4 border-t border-border/40 bg-muted/10">
+                            <p className="text-[11px] text-muted-foreground">
+                                {Object.values(featValues).filter((v) => v !== 'false').length} dari {FEATURE_CATALOGUE.length} fitur aktif
+                            </p>
+                            <div className="flex gap-2">
+                                <button type="button" onClick={onClose} disabled={processing}
+                                    className="rounded-lg border border-border/60 px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50">
+                                    Batal
+                                </button>
+                                <button type="button" onClick={handleSaveFeatures} disabled={processing}
+                                    className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-60">
+                                    {processing ? <Spinner /> : <Save className="size-3.5" />}
+                                    {processing ? 'Menyimpan…' : 'Simpan Fitur'}
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                </form>
+                )}
             </div>
         </div>
     );

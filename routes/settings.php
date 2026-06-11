@@ -31,8 +31,9 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('settings/payment');
     })->name('settings.payment');
 
-    Route::get('settings/packages',              [PackageController::class, 'index'])->name('settings.packages');
-    Route::post('settings/packages',             [PackageController::class, 'store'])->name('settings.packages.store');
-    Route::patch('settings/packages/{package}',  [PackageController::class, 'update'])->name('settings.packages.update');
-    Route::delete('settings/packages/{package}', [PackageController::class, 'destroy'])->name('settings.packages.destroy');
+    Route::get('settings/packages',                       [PackageController::class, 'index'])->name('settings.packages');
+    Route::post('settings/packages',                      [PackageController::class, 'store'])->name('settings.packages.store');
+    Route::patch('settings/packages/{package}',           [PackageController::class, 'update'])->name('settings.packages.update');
+    Route::patch('settings/packages/{package}/features',  [PackageController::class, 'updateFeatures'])->name('settings.packages.features');
+    Route::delete('settings/packages/{package}',          [PackageController::class, 'destroy'])->name('settings.packages.destroy');
 });

@@ -14,7 +14,7 @@ class PackageController extends Controller
 {
     public function index(Request $request): Response
     {
-        $packages = Package::orderBy('display_order')
+        $packages = Package::with('features')->orderBy('display_order')
             ->get()
             ->map(fn (Package $pkg) => [
                 'id'                  => $pkg->id,
@@ -29,6 +29,11 @@ class PackageController extends Controller
                 'max_gallery_uploads' => (int) $pkg->max_gallery_uploads,
                 'is_active'           => (bool) $pkg->is_active,
                 'display_order'       => (int) $pkg->display_order,
+                'features'            => $pkg->features->map(fn ($f) => [
+                    'feature_key'   => $f->feature_key,
+                    'feature_type'  => $f->feature_type,
+                    'feature_value' => $f->feature_value,
+                ])->values(),
             ]);
 
         // Route settings/packages renders a different view
@@ -90,6 +95,30 @@ class PackageController extends Controller
 
         return redirect()->route($back)
             ->with('success', "Paket \"{$package->label}\" berhasil ditambahkan.");
+    }
+
+    public function updateFeatures(Request $request, Package $package): RedirectResponse
+    {
+        $request->validate([
+            'features'                  => ['required', 'array'],
+            'features.*.feature_key'    => ['required', 'string', 'max:100'],
+            'features.*.feature_type'   => ['required', Rule::in(['boolean', 'level'])],
+            'features.*.feature_value'  => ['required', 'string', 'max:255'],
+        ]);
+
+        foreach ($request->features as $feat) {
+            $package->features()->updateOrCreate(
+                ['feature_key' => $feat['feature_key']],
+                ['feature_type' => $feat['feature_type'], 'feature_value' => $feat['feature_value']],
+            );
+        }
+
+        $back = str_starts_with($request->route()->getName() ?? '', 'settings.')
+            ? 'settings.packages'
+            : 'admin.settings.packages';
+
+        return redirect()->route($back)
+            ->with('success', "Fitur paket \"{$package->label}\" berhasil diperbarui.");
     }
 
     public function destroy(Request $request, Package $package): RedirectResponse
