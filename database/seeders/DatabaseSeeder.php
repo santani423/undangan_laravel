@@ -42,10 +42,13 @@ class DatabaseSeeder extends Seeder
             // 4. Admin users (depends on roles, packages)
             AdminUserSeeder::class,
 
-            // 5. Payment gateway configs
+            // 5. Customer accounts (depends on roles)
+            CustomerSeeder::class,
+
+            // 6. Payment gateway configs
             PaymentGatewayConfigSeeder::class,
 
-            // 6. Application settings (defaults)
+            // 7. Application settings (defaults)
             AppSettingSeeder::class,
         ]);
 
