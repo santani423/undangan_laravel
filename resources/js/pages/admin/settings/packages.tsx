@@ -38,6 +38,8 @@ import { useEffect, useRef, useState } from 'react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export type InvitationType = 'pernikahan' | 'ulang_tahun' | 'khitanan' | 'aqiqah' | 'gender_reveal' | 'syukuran';
+
 export interface PackageFeatureData {
     feature_key: string;
     feature_type: 'boolean' | 'level';
@@ -47,6 +49,7 @@ export interface PackageFeatureData {
 export interface PackageData {
     id: number;
     name: string;
+    invitation_type: InvitationType | null;
     label: string;
     description: string;
     price: number;
@@ -59,6 +62,36 @@ export interface PackageData {
     display_order: number;
     features: PackageFeatureData[];
 }
+
+// ─── Invitation Type Config ────────────────────────────────────────────────────
+
+interface InvTypeConfig {
+    key: InvitationType;
+    label: string;
+    icon: string;
+    color: string;
+    bgColor: string;
+    borderColor: string;
+    textColor: string;
+}
+
+const INVITATION_TYPES: InvTypeConfig[] = [
+    { key: 'pernikahan',    label: 'Pernikahan',         icon: '💍', color: 'pink',   bgColor: 'bg-pink-50',   borderColor: 'border-pink-200',   textColor: 'text-pink-600'   },
+    { key: 'ulang_tahun',   label: 'Ulang Tahun',        icon: '🎂', color: 'yellow', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-200', textColor: 'text-yellow-600' },
+    { key: 'khitanan',      label: 'Khitanan',           icon: '✂️', color: 'blue',   bgColor: 'bg-blue-50',   borderColor: 'border-blue-200',   textColor: 'text-blue-600'   },
+    { key: 'aqiqah',        label: 'Aqiqah',             icon: '🌿', color: 'green',  bgColor: 'bg-green-50',  borderColor: 'border-green-200',  textColor: 'text-green-600'  },
+    { key: 'gender_reveal', label: 'Gender Reveal',      icon: '⭐', color: 'purple', bgColor: 'bg-purple-50', borderColor: 'border-purple-200', textColor: 'text-purple-600' },
+    { key: 'syukuran',      label: 'Syukuran/Selamatan', icon: '🎉', color: 'orange', bgColor: 'bg-orange-50', borderColor: 'border-orange-200', textColor: 'text-orange-600' },
+];
+
+const PACKAGE_TIERS = ['basic', 'premium', 'exclusive'] as const;
+type PackageTier = typeof PACKAGE_TIERS[number];
+
+const TIER_META: Record<PackageTier, { label: string; icon: React.ElementType; badgeClass: string; borderClass: string; popular: boolean }> = {
+    basic:     { label: 'Basic',     icon: Zap,   badgeClass: 'bg-sky-100 text-sky-700',      borderClass: 'border-sky-200',   popular: false },
+    premium:   { label: 'Premium',   icon: Star,  badgeClass: 'bg-primary/10 text-primary',   borderClass: 'border-primary/40', popular: true  },
+    exclusive: { label: 'Exclusive', icon: Crown, badgeClass: 'bg-amber-100 text-amber-700',  borderClass: 'border-amber-300', popular: false },
+};
 
 // ─── Feature Catalogue ────────────────────────────────────────────────────────
 // Master list of all known features — mirrors PackageSeeder.php
@@ -108,6 +141,7 @@ type FormErrors = Partial<Record<string, string>>;
 // ─── Form state shape ─────────────────────────────────────────────────────────
 
 interface EditState {
+    invitation_type: InvitationType | '';
     label: string;
     description: string;
     price: string;
@@ -125,6 +159,7 @@ interface AddState extends EditState {
 
 function pkgToEditState(pkg: PackageData): EditState {
     return {
+        invitation_type:     pkg.invitation_type ?? '',
         label:               pkg.label,
         description:         pkg.description,
         price:               String(pkg.price),
@@ -155,14 +190,17 @@ const tabs: SettingsTab[] = [
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function pkgMeta(name: string) {
-    switch (name) {
-        case 'premium':
-            return { icon: Star,  borderClass: 'border-primary/40', badgeClass: 'bg-primary/10 text-primary',  headerBg: 'bg-primary/5',   popular: true  };
-        case 'exclusive':
-            return { icon: Crown, borderClass: 'border-amber-300',  badgeClass: 'bg-amber-100 text-amber-700', headerBg: 'bg-amber-50/50', popular: false };
-        default:
-            return { icon: Zap,   borderClass: 'border-sky-200',    badgeClass: 'bg-sky-100 text-sky-700',     headerBg: 'bg-muted/20',    popular: false };
-    }
+    if (name.includes('premium') || name === 'premium')
+        return { icon: Star,  borderClass: 'border-primary/40', badgeClass: 'bg-primary/10 text-primary',  headerBg: 'bg-primary/5',   popular: true  };
+    if (name.includes('exclusive') || name === 'exclusive')
+        return { icon: Crown, borderClass: 'border-amber-300',  badgeClass: 'bg-amber-100 text-amber-700', headerBg: 'bg-amber-50/50', popular: false };
+    return { icon: Zap,   borderClass: 'border-sky-200',    badgeClass: 'bg-sky-100 text-sky-700',     headerBg: 'bg-muted/20',    popular: false };
+}
+
+function getTier(name: string): PackageTier {
+    if (name.includes('exclusive')) return 'exclusive';
+    if (name.includes('premium'))   return 'premium';
+    return 'basic';
 }
 
 function formatRp(n: number) {
@@ -338,6 +376,7 @@ function EditPackageModal({ pkg, onClose }: { pkg: PackageData; onClose: () => v
         router.patch(
             route('admin.settings.packages.update', { package: pkg.id }),
             {
+                invitation_type:     form.invitation_type || null,
                 label:               form.label,
                 description:         form.description,
                 price:               form.price,
@@ -429,6 +468,15 @@ function EditPackageModal({ pkg, onClose }: { pkg: PackageData; onClose: () => v
                     <form onSubmit={handleSubmit}>
                         <div className="px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto">
                             <SectionLabel label="Informasi Dasar" />
+                            <SelectField
+                                label="Jenis Undangan"
+                                value={form.invitation_type}
+                                onChange={(v) => set('invitation_type', v as InvitationType | '')}
+                                options={[
+                                    { value: '', label: '— Umum (tidak terikat jenis) —' },
+                                    ...INVITATION_TYPES.map((t) => ({ value: t.key, label: `${t.icon} ${t.label}` })),
+                                ]}
+                            />
                             <InputField
                                 label="Nama Tampilan Paket" required
                                 value={form.label} onChange={(v) => set('label', v)}
@@ -608,7 +656,7 @@ function EditPackageModal({ pkg, onClose }: { pkg: PackageData; onClose: () => v
 // ─── Add Package Modal ────────────────────────────────────────────────────────
 
 const defaultAdd: AddState = {
-    name: '', label: '', description: '',
+    name: '', invitation_type: '', label: '', description: '',
     price: '0', billing_period: 'month',
     duration_days: '90', trial_days: '0',
     max_gallery_uploads: '0',
@@ -634,6 +682,7 @@ function AddPackageModal({ onClose }: { onClose: () => void }) {
             route('admin.settings.packages.store'),
             {
                 name:                form.name,
+                invitation_type:     form.invitation_type || null,
                 label:               form.label,
                 description:         form.description,
                 price:               form.price,
@@ -676,6 +725,16 @@ function AddPackageModal({ onClose }: { onClose: () => void }) {
                     <div className="px-6 py-5 space-y-4 max-h-[65vh] overflow-y-auto">
 
                         <SectionLabel label="Informasi Dasar" />
+
+                        <SelectField
+                            label="Jenis Undangan"
+                            value={form.invitation_type}
+                            onChange={(v) => set('invitation_type', v as InvitationType | '')}
+                            options={[
+                                { value: '', label: '— Umum (tidak terikat jenis) —' },
+                                ...INVITATION_TYPES.map((t) => ({ value: t.key, label: `${t.icon} ${t.label}` })),
+                            ]}
+                        />
 
                         <div className="grid grid-cols-2 gap-3">
                             <InputField
@@ -921,14 +980,23 @@ function OrderControls({ pkg, packages }: { pkg: PackageData; packages: PackageD
     const isFirst = idx === 0;
     const isLast  = idx === sorted.length - 1;
 
+    function pkgPayload(p: PackageData, overrides: Partial<Omit<PackageData, 'features'>>) {
+        return {
+            invitation_type: p.invitation_type, label: p.label, description: p.description,
+            price: p.price, billing_period: p.billing_period, duration_days: p.duration_days,
+            trial_days: p.trial_days, max_gallery_uploads: p.max_gallery_uploads,
+            is_active: p.is_active, display_order: p.display_order, ...overrides,
+        };
+    }
+
     function move(dir: 'up' | 'down') {
         const swap = dir === 'up' ? sorted[idx - 1] : sorted[idx + 1];
         if (!swap) return;
         router.patch(route('admin.settings.packages.update', { package: pkg.id }),
-            { ...pkg, display_order: swap.display_order },
+            pkgPayload(pkg, { display_order: swap.display_order }),
             { preserveScroll: true });
         router.patch(route('admin.settings.packages.update', { package: swap.id }),
-            { ...swap, display_order: pkg.display_order },
+            pkgPayload(swap, { display_order: pkg.display_order }),
             { preserveScroll: true });
     }
 
@@ -946,36 +1014,160 @@ function OrderControls({ pkg, packages }: { pkg: PackageData; packages: PackageD
     );
 }
 
+// ─── Package Tier Card ────────────────────────────────────────────────────────
+
+function PackageTierCard({
+    pkg,
+    tier,
+    invType,
+    onEdit,
+    onDelete,
+    onToggle,
+}: {
+    pkg: PackageData | undefined;
+    tier: PackageTier;
+    invType: InvTypeConfig;
+    onEdit: (p: PackageData) => void;
+    onDelete: (p: PackageData) => void;
+    onToggle: (p: PackageData) => void;
+}) {
+    const tierMeta = TIER_META[tier];
+    const TierIcon = tierMeta.icon;
+
+    if (!pkg) {
+        return (
+            <div className={`rounded-2xl border-2 border-dashed ${invType.borderColor} ${invType.bgColor} p-5 flex flex-col items-center justify-center gap-2 min-h-[200px] opacity-60`}>
+                <TierIcon className={`size-6 ${invType.textColor}`} />
+                <p className="text-xs font-semibold text-muted-foreground">{tierMeta.label}</p>
+                <p className="text-[11px] text-muted-foreground text-center">Belum ada paket</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className={`rounded-2xl border-2 bg-card shadow-sm overflow-hidden transition-all hover:shadow-md ${pkg.is_active ? tierMeta.borderClass : 'border-border/40 opacity-60'}`}>
+            {/* Header */}
+            <div className={`px-4 py-3 flex items-center justify-between ${tierMeta.badgeClass.replace('text-', 'bg-').split(' ')[0]}/10`}>
+                <div className="flex items-center gap-2">
+                    <div className={`flex size-7 items-center justify-center rounded-lg ${tierMeta.badgeClass}`}>
+                        <TierIcon className="size-3.5" />
+                    </div>
+                    <div>
+                        <p className="text-sm font-bold text-foreground">{pkg.label}</p>
+                        <p className="text-[10px] font-mono text-muted-foreground">{pkg.name}</p>
+                    </div>
+                </div>
+                {tierMeta.popular && (
+                    <span className="inline-flex items-center gap-0.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                        <Sparkles className="size-2.5" />Populer
+                    </span>
+                )}
+            </div>
+
+            {/* Price */}
+            <div className="px-4 pt-3 pb-2 border-b border-border/30">
+                <p className="text-xl font-bold text-foreground">{formatRp(pkg.price)}</p>
+                <p className="text-[11px] text-muted-foreground">
+                    {pkg.billing_period === 'month' ? 'per bulan' : pkg.billing_period === 'year' ? 'per tahun' : 'sekali bayar'}
+                </p>
+            </div>
+
+            {/* Details */}
+            <div className="px-4 py-3 space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                    <span className="flex items-center gap-1 text-muted-foreground"><Timer className="size-3" />Masa aktif</span>
+                    <span className="font-medium text-foreground">{pkg.duration_days} hari</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                    <span className="flex items-center gap-1 text-muted-foreground"><FlaskConical className="size-3" />Trial gratis</span>
+                    <span className={`font-medium ${pkg.trial_days > 0 ? 'text-primary' : 'text-muted-foreground'}`}>
+                        {pkg.trial_days > 0 ? `${pkg.trial_days} hari` : '—'}
+                    </span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                    <span className="flex items-center gap-1 text-muted-foreground"><Image className="size-3" />Galeri</span>
+                    <span className={`font-medium ${pkg.max_gallery_uploads === 0 ? 'text-emerald-600' : 'text-foreground'}`}>
+                        {pkg.max_gallery_uploads === 0 ? '∞' : pkg.max_gallery_uploads} foto
+                    </span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Fitur aktif</span>
+                    <span className="font-medium text-foreground">{pkg.features.filter((f) => f.feature_value !== 'false').length} fitur</span>
+                </div>
+            </div>
+
+            {/* Actions */}
+            <div className="px-4 pb-4 flex items-center gap-2">
+                <button
+                    onClick={() => onToggle(pkg)}
+                    className={`flex-1 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition-all inline-flex items-center justify-center gap-1 ${
+                        pkg.is_active ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    }`}
+                >
+                    {pkg.is_active ? <><ToggleRight className="size-3.5" />Aktif</> : <><ToggleLeft className="size-3.5" />Nonaktif</>}
+                </button>
+                <button
+                    onClick={() => onEdit(pkg)}
+                    className="rounded-lg border border-border/60 px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors inline-flex items-center gap-1"
+                >
+                    <Edit className="size-3" />Edit
+                </button>
+                <button
+                    onClick={() => onDelete(pkg)}
+                    className="rounded-lg border border-red-200 px-2 py-1.5 text-xs text-red-500 hover:bg-red-50 transition-colors"
+                    title="Hapus paket"
+                >
+                    <Trash2 className="size-3" />
+                </button>
+            </div>
+        </div>
+    );
+}
+
 // ─── Tab: Daftar Paket ────────────────────────────────────────────────────────
 
 function TabPackages({ packages }: { packages: PackageData[] }) {
     const [editTarget,   setEditTarget]   = useState<PackageData | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<PackageData | null>(null);
     const [showAdd,      setShowAdd]      = useState(false);
+    const [activeType,   setActiveType]   = useState<InvitationType | 'all'>('pernikahan');
 
     const activeCount = packages.filter((p) => p.is_active).length;
-    const trialCount  = packages.filter((p) => p.trial_days > 0).length;
-    const cheapest    = packages.length ? packages.reduce((a, b) => (a.price < b.price ? a : b)) : null;
 
     function toggleStatus(pkg: PackageData) {
         router.patch(
             route('admin.settings.packages.update', { package: pkg.id }),
-            { ...pkg, is_active: !pkg.is_active },
+            {
+                invitation_type: pkg.invitation_type, label: pkg.label, description: pkg.description,
+                price: pkg.price, billing_period: pkg.billing_period, duration_days: pkg.duration_days,
+                trial_days: pkg.trial_days, max_gallery_uploads: pkg.max_gallery_uploads,
+                is_active: !pkg.is_active, display_order: pkg.display_order,
+            },
             { preserveScroll: true },
         );
     }
 
-    const sorted = [...packages].sort((a, b) => a.display_order - b.display_order);
+    // Packages that have no invitation_type go in "all" / "umum"
+    const typePackages = (type: InvitationType) =>
+        packages.filter((p) => p.invitation_type === type);
+
+    const generalPackages = packages.filter((p) => !p.invitation_type);
+
+    function findTierPkg(type: InvitationType, tier: PackageTier) {
+        return typePackages(type).find((p) => getTier(p.name) === tier);
+    }
+
+    const selectedTypeConfig = INVITATION_TYPES.find((t) => t.key === activeType);
 
     return (
         <div className="space-y-6">
             {/* Stats */}
             <div className="grid grid-cols-4 gap-4">
                 {[
-                    { label: 'Total Paket',    value: String(packages.length),                      sub: 'terdaftar',      icon: Package      },
-                    { label: 'Paket Aktif',    value: String(activeCount),                          sub: 'tersedia',       icon: Check        },
-                    { label: 'Dengan Trial',   value: String(trialCount),                           sub: 'paket bertrial', icon: FlaskConical },
-                    { label: 'Harga Terendah', value: cheapest ? formatRp(cheapest.price) : '–',   sub: cheapest?.label ?? '', icon: Tag      },
+                    { label: 'Total Paket',     value: String(packages.length),  sub: 'terdaftar',      icon: Package      },
+                    { label: 'Paket Aktif',     value: String(activeCount),       sub: 'tersedia',       icon: Check        },
+                    { label: 'Jenis Undangan',  value: String(INVITATION_TYPES.length), sub: 'jenis didukung', icon: LayoutList  },
+                    { label: 'Paket per Jenis', value: '3',                       sub: 'Basic · Premium · Exclusive', icon: Star },
                 ].map((s) => {
                     const Icon = s.icon;
                     return (
@@ -991,143 +1183,173 @@ function TabPackages({ packages }: { packages: PackageData[] }) {
                 })}
             </div>
 
-            {/* Trial Flow Info */}
-            <TrialFlowInfo packages={packages} />
+            {/* Invitation Type Tabs */}
+            <div className="rounded-2xl border border-border/60 bg-card shadow-sm overflow-hidden">
+                <div className="border-b border-border/40 bg-muted/10 px-4 py-3 flex items-center justify-between">
+                    <h2 className="text-sm font-semibold text-foreground">Paket per Jenis Undangan</h2>
+                    <button
+                        onClick={() => setShowAdd(true)}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
+                    >
+                        <Plus className="size-3.5" />Tambah Paket
+                    </button>
+                </div>
 
-            {/* Toolbar */}
-            <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-foreground">Daftar Paket Layanan</h2>
-                <button
-                    onClick={() => setShowAdd(true)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
-                >
-                    <Plus className="size-3.5" />Tambah Paket
-                </button>
+                {/* Type selector */}
+                <div className="flex flex-wrap gap-2 p-4 border-b border-border/30">
+                    {INVITATION_TYPES.map((t) => {
+                        const count = typePackages(t.key).length;
+                        const isActive = activeType === t.key;
+                        return (
+                            <button
+                                key={t.key}
+                                onClick={() => setActiveType(t.key)}
+                                className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-all border-2 ${
+                                    isActive
+                                        ? `${t.borderColor} ${t.bgColor} ${t.textColor}`
+                                        : 'border-border/40 bg-background text-muted-foreground hover:border-border hover:text-foreground'
+                                }`}
+                            >
+                                <span className="text-base leading-none">{t.icon}</span>
+                                <span>{t.label}</span>
+                                <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                                    isActive ? `${t.bgColor} ${t.textColor}` : 'bg-muted text-muted-foreground'
+                                }`}>{count}/3</span>
+                            </button>
+                        );
+                    })}
+                    <button
+                        onClick={() => setActiveType('all')}
+                        className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-all border-2 ${
+                            activeType === 'all'
+                                ? 'border-border bg-muted text-foreground'
+                                : 'border-border/40 bg-background text-muted-foreground hover:border-border hover:text-foreground'
+                        }`}
+                    >
+                        <span className="text-base leading-none">📦</span>
+                        <span>Umum</span>
+                        <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground">{generalPackages.length}</span>
+                    </button>
+                </div>
+
+                {/* Package cards for selected type */}
+                <div className="p-5">
+                    {activeType !== 'all' && selectedTypeConfig ? (
+                        <>
+                            <div className={`flex items-center gap-2 mb-4 rounded-xl px-4 py-2.5 ${selectedTypeConfig.bgColor} border ${selectedTypeConfig.borderColor}`}>
+                                <span className="text-xl">{selectedTypeConfig.icon}</span>
+                                <div>
+                                    <p className={`text-sm font-bold ${selectedTypeConfig.textColor}`}>{selectedTypeConfig.label}</p>
+                                    <p className="text-[11px] text-muted-foreground">3 tingkatan paket: Basic · Premium · Exclusive</p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-4">
+                                {PACKAGE_TIERS.map((tier) => (
+                                    <PackageTierCard
+                                        key={tier}
+                                        tier={tier}
+                                        pkg={findTierPkg(activeType, tier)}
+                                        invType={selectedTypeConfig}
+                                        onEdit={setEditTarget}
+                                        onDelete={setDeleteTarget}
+                                        onToggle={toggleStatus}
+                                    />
+                                ))}
+                            </div>
+                            {typePackages(activeType).length === 0 && (
+                                <p className="mt-3 text-xs text-muted-foreground text-center">
+                                    Belum ada paket untuk jenis ini. Klik <strong>Tambah Paket</strong> dan pilih jenis <strong>{selectedTypeConfig.label}</strong>.
+                                </p>
+                            )}
+                        </>
+                    ) : (
+                        /* General / all packages */
+                        generalPackages.length === 0 ? (
+                            <div className="rounded-2xl border border-dashed border-border/60 py-12 text-center text-sm text-muted-foreground">
+                                Belum ada paket umum. Klik <strong>Tambah Paket</strong> tanpa memilih jenis undangan.
+                            </div>
+                        ) : (
+                            <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                        <thead>
+                                            <tr className="border-b border-border/40 bg-muted/20">
+                                                {['Paket','Harga','Masa Aktif','Trial','Galeri','Status','Aksi'].map((h) => (
+                                                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground whitespace-nowrap">{h}</th>
+                                                ))}
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-border/30">
+                                            {[...generalPackages].sort((a, b) => a.display_order - b.display_order).map((pkg) => {
+                                                const meta = pkgMeta(pkg.name);
+                                                const Icon = meta.icon;
+                                                return (
+                                                    <tr key={pkg.id} className="group hover:bg-muted/20 transition-colors">
+                                                        <td className="px-4 py-3">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={`flex size-8 items-center justify-center rounded-xl shrink-0 ${meta.badgeClass}`}>
+                                                                    <Icon className="size-4" />
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-sm font-semibold text-foreground">{pkg.label}</p>
+                                                                    <p className="text-[11px] font-mono text-muted-foreground">{pkg.name}</p>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-4 py-3 whitespace-nowrap">
+                                                            <p className="text-sm font-bold text-foreground">{formatRp(pkg.price)}</p>
+                                                            <p className="text-[11px] text-muted-foreground">
+                                                                {pkg.billing_period === 'month' ? 'per bulan' : pkg.billing_period === 'year' ? 'per tahun' : 'sekali bayar'}
+                                                            </p>
+                                                        </td>
+                                                        <td className="px-4 py-3">
+                                                            <span className="inline-flex items-center gap-1 rounded-lg bg-muted/50 px-2 py-1 text-xs font-medium text-foreground">
+                                                                <Timer className="size-3 text-muted-foreground" />{pkg.duration_days} hari
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-4 py-3">
+                                                            {pkg.trial_days > 0 ? (
+                                                                <span className="inline-flex items-center gap-1 rounded-lg bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                                                                    <FlaskConical className="size-3" />{pkg.trial_days} hari
+                                                                </span>
+                                                            ) : <span className="text-xs text-muted-foreground">—</span>}
+                                                        </td>
+                                                        <td className="px-4 py-3">
+                                                            <span className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium ${pkg.max_gallery_uploads === 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-muted/50 text-foreground'}`}>
+                                                                <Image className="size-3" />{pkg.max_gallery_uploads === 0 ? '∞' : pkg.max_gallery_uploads}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-4 py-3">
+                                                            <button onClick={() => toggleStatus(pkg)}
+                                                                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all hover:opacity-80 ${pkg.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-muted text-muted-foreground'}`}>
+                                                                {pkg.is_active ? <><ToggleRight className="size-3.5" />Aktif</> : <><ToggleLeft className="size-3.5" />Nonaktif</>}
+                                                            </button>
+                                                        </td>
+                                                        <td className="px-4 py-3">
+                                                            <div className="flex items-center gap-1">
+                                                                <button onClick={() => setEditTarget(pkg)}
+                                                                    className="rounded-lg border border-border/60 px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors inline-flex items-center gap-1">
+                                                                    <Edit className="size-3" />Edit
+                                                                </button>
+                                                                <button onClick={() => setDeleteTarget(pkg)}
+                                                                    className="rounded-lg border border-red-200 px-2 py-1.5 text-xs text-red-500 hover:bg-red-50 transition-colors" title="Hapus">
+                                                                    <Trash2 className="size-3" />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )
+                    )}
+                </div>
             </div>
 
-            {/* Table */}
-            {packages.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-border/60 py-16 text-center text-sm text-muted-foreground">
-                    Belum ada paket. Klik <strong>Tambah Paket</strong> untuk membuat paket pertama.
-                </div>
-            ) : (
-                <div className="rounded-2xl border border-border/60 bg-card shadow-sm overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="border-b border-border/40 bg-muted/20">
-                                    {['Paket','Harga','Masa Aktif','Trial','Galeri','Status','Urutan','Aksi'].map((h) => (
-                                        <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground whitespace-nowrap">{h}</th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border/30">
-                                {sorted.map((pkg) => {
-                                    const meta = pkgMeta(pkg.name);
-                                    const Icon = meta.icon;
-                                    return (
-                                        <tr key={pkg.id} className="group hover:bg-muted/20 transition-colors">
-                                            {/* Paket */}
-                                            <td className="px-4 py-3">
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`flex size-8 items-center justify-center rounded-xl shrink-0 ${meta.badgeClass}`}>
-                                                        <Icon className="size-4" />
-                                                    </div>
-                                                    <div>
-                                                        <div className="flex items-center gap-1.5">
-                                                            <p className="text-sm font-semibold text-foreground">{pkg.label}</p>
-                                                            {meta.popular && (
-                                                                <span className="inline-flex items-center gap-0.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                                                                    <Sparkles className="size-2.5" />Populer
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        <p className="text-[11px] font-mono text-muted-foreground">{pkg.name}</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            {/* Harga */}
-                                            <td className="px-4 py-3 whitespace-nowrap">
-                                                <p className="text-sm font-bold text-foreground">{formatRp(pkg.price)}</p>
-                                                <p className="text-[11px] text-muted-foreground">
-                                                    {pkg.billing_period === 'month' ? 'per bulan' : pkg.billing_period === 'year' ? 'per tahun' : 'sekali bayar'}
-                                                </p>
-                                            </td>
-                                            {/* Masa Aktif */}
-                                            <td className="px-4 py-3">
-                                                <span className="inline-flex items-center gap-1 rounded-lg bg-muted/50 px-2 py-1 text-xs font-medium text-foreground">
-                                                    <Timer className="size-3 text-muted-foreground" />{pkg.duration_days} hari
-                                                </span>
-                                            </td>
-                                            {/* Trial */}
-                                            <td className="px-4 py-3">
-                                                {pkg.trial_days > 0 ? (
-                                                    <span className="inline-flex items-center gap-1 rounded-lg bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-                                                        <FlaskConical className="size-3" />{pkg.trial_days} hari
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-xs text-muted-foreground">—</span>
-                                                )}
-                                            </td>
-                                            {/* Galeri */}
-                                            <td className="px-4 py-3">
-                                                <span className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium ${
-                                                    pkg.max_gallery_uploads === 0
-                                                        ? 'bg-emerald-50 text-emerald-600'
-                                                        : 'bg-muted/50 text-foreground'
-                                                }`}>
-                                                    <Image className="size-3" />
-                                                    {pkg.max_gallery_uploads === 0 ? '∞' : pkg.max_gallery_uploads}
-                                                </span>
-                                            </td>
-                                            {/* Status */}
-                                            <td className="px-4 py-3">
-                                                <button
-                                                    onClick={() => toggleStatus(pkg)}
-                                                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all hover:opacity-80 ${
-                                                        pkg.is_active
-                                                            ? 'bg-emerald-100 text-emerald-700'
-                                                            : 'bg-muted text-muted-foreground'
-                                                    }`}
-                                                >
-                                                    {pkg.is_active
-                                                        ? <><ToggleRight className="size-3.5" />Aktif</>
-                                                        : <><ToggleLeft  className="size-3.5" />Nonaktif</>}
-                                                </button>
-                                            </td>
-                                            {/* Urutan */}
-                                            <td className="px-4 py-3">
-                                                <div className="flex items-center gap-1.5">
-                                                    <span className="w-6 text-center text-xs font-mono font-semibold text-muted-foreground">{pkg.display_order}</span>
-                                                    <OrderControls pkg={pkg} packages={packages} />
-                                                </div>
-                                            </td>
-                                            {/* Aksi */}
-                                            <td className="px-4 py-3">
-                                                <div className="flex items-center gap-1">
-                                                    <button
-                                                        onClick={() => setEditTarget(pkg)}
-                                                        className="rounded-lg border border-border/60 px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors inline-flex items-center gap-1"
-                                                    >
-                                                        <Edit className="size-3" />Edit
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setDeleteTarget(pkg)}
-                                                        className="rounded-lg border border-red-200 px-2 py-1.5 text-xs text-red-500 hover:bg-red-50 transition-colors"
-                                                        title="Hapus paket"
-                                                    >
-                                                        <Trash2 className="size-3" />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            )}
+            <TrialFlowInfo packages={packages} />
 
             <p className="rounded-lg border border-amber-200 bg-amber-50/50 px-4 py-3 text-xs text-amber-700">
                 Perubahan harga berlaku untuk pembelian baru. Paket aktif pelanggan tidak terpengaruh.

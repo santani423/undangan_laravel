@@ -9,6 +9,7 @@ class Package extends Model
 {
     protected $fillable = [
         'name',
+        'invitation_type',
         'label',
         'description',
         'price',

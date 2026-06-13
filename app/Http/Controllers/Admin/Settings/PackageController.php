@@ -19,6 +19,7 @@ class PackageController extends Controller
             ->map(fn (Package $pkg) => [
                 'id'                  => $pkg->id,
                 'name'                => $pkg->name,
+                'invitation_type'     => $pkg->invitation_type,
                 'label'               => $pkg->label,
                 'description'         => $pkg->description ?? '',
                 'price'               => (float) $pkg->price,
@@ -49,6 +50,7 @@ class PackageController extends Controller
     public function update(Request $request, Package $package): RedirectResponse
     {
         $validated = $request->validate([
+            'invitation_type'     => ['nullable', 'string', Rule::in(['pernikahan','ulang_tahun','khitanan','aqiqah','gender_reveal','syukuran'])],
             'label'               => ['required', 'string', 'max:100'],
             'description'         => ['nullable', 'string', 'max:1000'],
             'price'               => ['required', 'numeric', 'min:0'],
@@ -74,6 +76,7 @@ class PackageController extends Controller
     {
         $validated = $request->validate([
             'name'                => ['required', 'string', 'max:100', 'unique:packages,name', 'regex:/^[a-z0-9_]+$/'],
+            'invitation_type'     => ['nullable', 'string', Rule::in(['pernikahan','ulang_tahun','khitanan','aqiqah','gender_reveal','syukuran'])],
             'label'               => ['required', 'string', 'max:100'],
             'description'         => ['nullable', 'string', 'max:1000'],
             'price'               => ['required', 'numeric', 'min:0'],

@@ -60,8 +60,8 @@ class DatabaseSeeder extends Seeder
         $this->command->info('Tables seeded:');
         $this->command->info('  ✓ event_types (6 types)');
         $this->command->info('  ✓ event_type_fields (EAV field definitions)');
-        $this->command->info('  ✓ packages (Basic, Premium, Exclusive)');
-        $this->command->info('  ✓ package_features (feature matrix per package)');
+        $this->command->info('  ✓ packages (18 paket: 3 tier × 6 jenis undangan)');
+        $this->command->info('  ✓ package_features (19 fitur × 18 paket = 342 baris)');
         $this->command->info('  ✓ themes (12 themes)');
         $this->command->info('  ✓ roles & permissions (47 permissions, 3 roles)');
         $this->command->info('  ✓ users (super_admin, admin, demo customer)');
