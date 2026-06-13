@@ -1,6 +1,7 @@
+import ImageCropUpload from '@/components/image-crop-upload';
 import CustomerLayout from '@/layouts/customer-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import {
     BookOpen,
     CalendarDays,
@@ -201,15 +202,14 @@ function FieldInput({ field, value, onChange }: {
 
     if (field.field_type === 'file') {
         return (
-            <div className="flex flex-col gap-2">
-                <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => onChange(e.target.files?.[0]?.name ?? '')}
-                    className="block w-full text-sm text-muted-foreground file:mr-4 file:rounded-lg file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary hover:file:bg-primary/20 transition"
-                />
-                {value && <p className="text-xs text-muted-foreground">Dipilih: {value}</p>}
-            </div>
+            <ImageCropUpload
+                label={field.field_label}
+                required={field.is_required}
+                helpText={field.help_text ?? undefined}
+                aspectRatio={field.field_key === 'couple_photo' ? 4 / 3 : 1}
+                value={value || null}
+                onChange={(dataUrl) => onChange(dataUrl ?? '')}
+            />
         );
     }
 
@@ -240,16 +240,19 @@ function FieldGroup({ fields, values, onChange }: {
         <div className="flex flex-col gap-5">
             {fields.map((f) => (
                 <div key={f.id} className="flex flex-col gap-1.5">
-                    <label className="text-sm font-medium text-foreground">
-                        {f.field_label}
-                        {f.is_required && <span className="ml-1 text-destructive">*</span>}
-                    </label>
+                    {/* ImageCropUpload renders its own label & helpText */}
+                    {f.field_type !== 'file' && (
+                        <label className="text-sm font-medium text-foreground">
+                            {f.field_label}
+                            {f.is_required && <span className="ml-1 text-destructive">*</span>}
+                        </label>
+                    )}
                     <FieldInput
                         field={f}
                         value={values[f.field_key] ?? ''}
                         onChange={(val) => onChange(f.field_key, val)}
                     />
-                    {f.help_text && (
+                    {f.field_type !== 'file' && f.help_text && (
                         <p className="text-xs text-muted-foreground">{f.help_text}</p>
                     )}
                 </div>
@@ -588,6 +591,18 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
     const tabKeys: TabKey[] = EVENT_TYPE_TABS[eventType.name] ?? DEFAULT_TABS;
     const [activeTab, setActiveTab] = useState<TabKey>(tabKeys[0]);
 
+    const currentTabIndex = tabKeys.indexOf(activeTab);
+    const isFirstTab = currentTabIndex === 0;
+    const isLastTab = currentTabIndex === tabKeys.length - 1;
+
+    function goToPrevTab() {
+        if (!isFirstTab) setActiveTab(tabKeys[currentTabIndex - 1]);
+    }
+
+    function goToNextTab() {
+        if (!isLastTab) setActiveTab(tabKeys[currentTabIndex + 1]);
+    }
+
     // field values for dynamic fields
     const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
 
@@ -723,22 +738,45 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
 
                 {/* Actions */}
                 <div className="flex items-center justify-between border-t border-border/60 pt-4">
-                    <button
-                        type="button"
-                        onClick={() => router.back()}
-                        className="inline-flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
-                    >
-                        <ChevronLeft className="size-4" />
-                        Kembali
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleSubmit}
-                        className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-                    >
-                        Simpan & Buat Undangan
-                        <ChevronRight className="size-4" />
-                    </button>
+                    {isFirstTab ? (
+                        <button
+                            type="button"
+                            onClick={() => window.history.back()}
+                            className="inline-flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                        >
+                            <ChevronLeft className="size-4" />
+                            Kembali
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={goToPrevTab}
+                            className="inline-flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                        >
+                            <ChevronLeft className="size-4" />
+                            {TAB_DEFINITIONS[tabKeys[currentTabIndex - 1]].label}
+                        </button>
+                    )}
+
+                    {isLastTab ? (
+                        <button
+                            type="button"
+                            onClick={handleSubmit}
+                            className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                        >
+                            Simpan & Buat Undangan
+                            <ChevronRight className="size-4" />
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={goToNextTab}
+                            className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                        >
+                            {TAB_DEFINITIONS[tabKeys[currentTabIndex + 1]].label}
+                            <ChevronRight className="size-4" />
+                        </button>
+                    )}
                 </div>
             </div>
         </CustomerLayout>
