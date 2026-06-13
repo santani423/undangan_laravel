@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\Settings\PackageController;
+use App\Http\Controllers\Admin\Themes\ThemeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -29,8 +30,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     });
 
     Route::prefix('themes')->name('themes.')->group(function () {
-        Route::get('/', fn () => Inertia::render('admin/themes/index'))->name('index');
+        // ── static sub-pages dulu (sebelum parameter {theme}) ──────────────
         Route::get('/categories', fn () => Inertia::render('admin/themes/categories'))->name('categories');
+
+        // ── CRUD ────────────────────────────────────────────────────────────
+        Route::get('/',                 [ThemeController::class, 'index'])->name('index');
+        Route::post('/',                [ThemeController::class, 'store'])->name('store');
+        Route::patch('/{theme}/toggle', [ThemeController::class, 'toggle'])->name('toggle');
+        Route::patch('/{theme}',        [ThemeController::class, 'update'])->name('update');
+        Route::delete('/{theme}',       [ThemeController::class, 'destroy'])->name('destroy');
     });
 
     Route::prefix('packages')->name('packages.')->group(function () {
