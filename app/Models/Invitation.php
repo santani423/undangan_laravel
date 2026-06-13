@@ -18,6 +18,7 @@ class Invitation extends Model
         'package_id',
         'theme_id',
         'slug',
+        'invitation_code',
         'title',
         'description',
         'custom_domain',

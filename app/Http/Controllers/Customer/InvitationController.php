@@ -116,12 +116,21 @@ class InvitationController extends Controller
         ]);
     }
 
+    public function checkCode(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $code   = trim((string) $request->query('code', ''));
+        $exists = $code !== '' && Invitation::where('invitation_code', $code)->exists();
+
+        return response()->json(['available' => !$exists]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'event_type_id'                   => 'required|exists:event_types,id',
             'theme_id'                        => 'required|exists:themes,id',
             'package_id'                      => 'required|exists:packages,id',
+            'invitation_code'                 => 'nullable|string|max:100|unique:invitations,invitation_code',
             'field_values'                    => 'nullable|array',
             'acara_events'                    => 'nullable|array',
             'acara_events.*.name'             => 'required_with:acara_events|string|max:255',
@@ -152,14 +161,23 @@ class InvitationController extends Controller
             }
 
             // ── 1. Create Invitation ──────────────────────────────────────
+            $rawCode        = $request->input('invitation_code', '');
+            $invitationCode = $rawCode !== '' ? $rawCode : null;
+
+            // Ensure uniqueness (fallback if client skipped check)
+            if ($invitationCode && Invitation::where('invitation_code', $invitationCode)->exists()) {
+                $invitationCode = null;
+            }
+
             $invitation = Invitation::create([
-                'user_id'       => auth()->id(),
-                'event_type_id' => $request->input('event_type_id'),
-                'package_id'    => $request->input('package_id'),
-                'theme_id'      => $request->input('theme_id'),
-                'slug'          => $slug,
-                'title'         => $title,
-                'status'        => 'draft',
+                'user_id'          => auth()->id(),
+                'event_type_id'    => $request->input('event_type_id'),
+                'package_id'       => $request->input('package_id'),
+                'theme_id'         => $request->input('theme_id'),
+                'slug'             => $slug,
+                'title'            => $title,
+                'invitation_code'  => $invitationCode,
+                'status'           => 'draft',
             ]);
 
             // ── 2. Default settings ───────────────────────────────────────

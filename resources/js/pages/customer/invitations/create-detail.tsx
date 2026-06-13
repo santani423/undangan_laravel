@@ -21,7 +21,7 @@ import {
     Users,
     X,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/customer' },
@@ -760,15 +760,104 @@ function FieldGroup({ fields, values, onChange }: {
 
 // ─── Tab content renderers ────────────────────────────────────────────────────
 
-function CoupleTab({ fields, values, onChange }: {
+type CodeStatus = 'idle' | 'checking' | 'available' | 'taken' | 'empty';
+
+function InvitationCodeInput({ value, onChange }: {
+    value: string;
+    onChange: (val: string) => void;
+}) {
+    const [status, setStatus]         = useState<CodeStatus>('idle');
+    const debounceRef                 = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const checkCode = useCallback((code: string) => {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        if (!code.trim()) { setStatus('empty'); return; }
+
+        setStatus('checking');
+        debounceRef.current = setTimeout(async () => {
+            try {
+                const res  = await fetch(`/customer/invitations/check-code?code=${encodeURIComponent(code)}`);
+                const data = await res.json();
+                setStatus(data.available ? 'available' : 'taken');
+            } catch {
+                setStatus('idle');
+            }
+        }, 500);
+    }, []);
+
+    function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const raw = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+        onChange(raw);
+        checkCode(raw);
+    }
+
+    const base =
+        'w-full rounded-xl border bg-background px-4 py-2.5 text-sm outline-none ' +
+        'focus:ring-2 transition pr-10 ';
+
+    const borderCls =
+        status === 'available' ? 'border-emerald-500 focus:border-emerald-500 focus:ring-emerald-200' :
+        status === 'taken'     ? 'border-destructive  focus:border-destructive  focus:ring-destructive/20' :
+        'border-border focus:border-primary focus:ring-primary/20';
+
+    return (
+        <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-foreground">
+                Kode Undangan <span className="ml-1 text-destructive">*</span>
+            </label>
+            <div className="relative">
+                <input
+                    type="text"
+                    value={value}
+                    onChange={handleChange}
+                    placeholder="contoh: periska-dei"
+                    className={`${base}${borderCls}`}
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sm">
+                    {status === 'checking'  && <Loader2 className="size-4 animate-spin text-muted-foreground" />}
+                    {status === 'available' && <Check   className="size-4 text-emerald-500" />}
+                    {status === 'taken'     && <X       className="size-4 text-destructive" />}
+                </div>
+            </div>
+            <p className={`text-xs ${
+                status === 'available' ? 'text-emerald-600 dark:text-emerald-400' :
+                status === 'taken'     ? 'text-destructive' :
+                'text-muted-foreground'
+            }`}>
+                {status === 'available' && 'Kode tersedia'}
+                {status === 'taken'     && 'Kode sudah digunakan, coba yang lain'}
+                {(status === 'idle' || status === 'empty' || status === 'checking') &&
+                    'Kode ini akan menjadi URL undangan Anda. Hanya huruf kecil, angka, dan tanda -'}
+            </p>
+        </div>
+    );
+}
+
+function CoupleTab({ fields, values, invitationCode, onFieldChange, onCodeChange }: {
     fields: EventTypeField[];
     values: Record<string, string>;
-    onChange: (key: string, val: string) => void;
+    invitationCode: string;
+    onFieldChange: (key: string, val: string) => void;
+    onCodeChange: (val: string) => void;
 }) {
     const coupleFields = fields.filter((f) => WEDDING_TAB_FIELDS.couple.includes(f.field_key));
     const groomFields  = coupleFields.filter((f) => f.field_key.startsWith('groom'));
     const brideFields  = coupleFields.filter((f) => f.field_key.startsWith('bride'));
     const sharedFields = coupleFields.filter((f) => !f.field_key.startsWith('groom') && !f.field_key.startsWith('bride'));
+
+    // Auto-generate code from nicknames
+    const prevAutoRef = useRef('');
+    useEffect(() => {
+        const gNick = (values['groom_nickname'] ?? '').trim().toLowerCase().replace(/\s+/g, '');
+        const bNick = (values['bride_nickname']  ?? '').trim().toLowerCase().replace(/\s+/g, '');
+        const auto  = gNick && bNick ? `${gNick}-${bNick}` : gNick || bNick || '';
+
+        // Only auto-fill if code hasn't been manually changed from previous auto-value
+        if (auto && (invitationCode === prevAutoRef.current || invitationCode === '')) {
+            onCodeChange(auto);
+        }
+        prevAutoRef.current = auto;
+    }, [values['groom_nickname'], values['bride_nickname']]);
 
     return (
         <div className="flex flex-col gap-8">
@@ -777,7 +866,7 @@ function CoupleTab({ fields, values, onChange }: {
                     <span className="size-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">♂</span>
                     Pengantin Pria
                 </h3>
-                <FieldGroup fields={groomFields} values={values} onChange={onChange} />
+                <FieldGroup fields={groomFields} values={values} onChange={onFieldChange} />
             </section>
 
             <div className="border-t border-border" />
@@ -787,7 +876,7 @@ function CoupleTab({ fields, values, onChange }: {
                     <span className="size-6 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center text-xs font-bold">♀</span>
                     Pengantin Wanita
                 </h3>
-                <FieldGroup fields={brideFields} values={values} onChange={onChange} />
+                <FieldGroup fields={brideFields} values={values} onChange={onFieldChange} />
             </section>
 
             {sharedFields.length > 0 && (
@@ -795,10 +884,20 @@ function CoupleTab({ fields, values, onChange }: {
                     <div className="border-t border-border" />
                     <section>
                         <h3 className="font-semibold text-foreground mb-4">Lainnya</h3>
-                        <FieldGroup fields={sharedFields} values={values} onChange={onChange} />
+                        <FieldGroup fields={sharedFields} values={values} onChange={onFieldChange} />
                     </section>
                 </>
             )}
+
+            <div className="border-t border-border" />
+
+            <section>
+                <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <Heart className="size-4 text-primary" />
+                    Kode Undangan
+                </h3>
+                <InvitationCodeInput value={invitationCode} onChange={onCodeChange} />
+            </section>
         </div>
     );
 }
@@ -1319,6 +1418,7 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
     const [acaraEvents,       setAcaraEvents]       = useState<AcaraEvent[]>(defaultAcaraEvents);
     const [galleryItems,      setGalleryItems]      = useState<GalleryItem[]>([]);
     const [loveStoryEntries,  setLoveStoryEntries]  = useState<LoveStoryEntry[]>([]);
+    const [invitationCode,    setInvitationCode]    = useState('');
     const [submitting,        setSubmitting]        = useState(false);
 
     function handleFieldChange(key: string, val: string) {
@@ -1328,10 +1428,11 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
     function handleSubmit() {
         setSubmitting(true);
         router.post('/customer/invitations', {
-            event_type_id: eventType.id,
-            theme_id:      theme.id,
-            package_id:    pkg.id,
-            field_values:  fieldValues,
+            event_type_id:    eventType.id,
+            theme_id:         theme.id,
+            package_id:       pkg.id,
+            invitation_code:  invitationCode || null,
+            field_values:     fieldValues,
             acara_events:  acaraEvents.map((ev) => ({
                 name:             ev.name,
                 date:             ev.date,
@@ -1362,7 +1463,15 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
     function renderTabContent() {
         switch (activeTab) {
             case 'couple':
-                return <CoupleTab fields={eventType.fields} values={fieldValues} onChange={handleFieldChange} />;
+                return (
+                    <CoupleTab
+                        fields={eventType.fields}
+                        values={fieldValues}
+                        invitationCode={invitationCode}
+                        onFieldChange={handleFieldChange}
+                        onCodeChange={setInvitationCode}
+                    />
+                );
             case 'acara':
                 return <AcaraTab events={acaraEvents} setEvents={setAcaraEvents} />;
             case 'gallery':
