@@ -12,8 +12,13 @@ class InvitationEvent extends Model
         'event_name',
         'event_date',
         'event_time',
+        'time_end',
         'location',
+        'location_name',
         'location_url',
+        'maps_embed',
+        'maps_lat',
+        'maps_lng',
         'description',
         'display_order',
     ];

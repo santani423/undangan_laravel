@@ -184,11 +184,6 @@ function ThemeCard({
                         ))}
                     </div>
                 )}
-                <div className="mt-1 text-xs text-muted-foreground">
-                    {theme.is_premium || theme.is_exclusive
-                        ? `Rp ${theme.price.toLocaleString('id-ID')}`
-                        : 'Gratis'}
-                </div>
             </div>
         </div>
     );
@@ -205,7 +200,6 @@ function PackageCard({
 }) {
     const price = parseFloat(pkg.price);
     const isFree = price === 0;
-    const isPopular = pkg.name === 'basic' || pkg.name === 'starter';
 
     const enabledFeatures = pkg.features.filter(
         (f) => f.feature_type === 'boolean' && f.feature_value === 'true',
@@ -552,12 +546,7 @@ export default function SelectTheme({ eventType, themes, packages }: Props) {
                                         <p className="text-sm text-muted-foreground mt-1">{previewTheme.description}</p>
                                     )}
                                 </div>
-                                <span className="shrink-0 text-sm font-semibold text-primary">
-                                    {previewTheme.is_premium || previewTheme.is_exclusive
-                                        ? `Rp ${previewTheme.price.toLocaleString('id-ID')}`
-                                        : 'Gratis'}
-                                </span>
-                            </div>
+                                            </div>
                             <div className="mt-4 flex gap-3">
                                 <button
                                     type="button"

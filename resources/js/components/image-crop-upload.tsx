@@ -25,7 +25,33 @@ interface Props {
     onChange: (dataUrl: string | null) => void;
 }
 
-// ─── Canvas helper ────────────────────────────────────────────────────────────
+// ─── Canvas helpers ───────────────────────────────────────────────────────────
+
+export async function compressImage(
+    src: string,
+    maxWidth = 1200,
+    maxHeight = 1200,
+    quality = 0.82,
+): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            let { width, height } = img;
+            if (width > maxWidth || height > maxHeight) {
+                const ratio = Math.min(maxWidth / width, maxHeight / height);
+                width  = Math.round(width  * ratio);
+                height = Math.round(height * ratio);
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width  = width;
+            canvas.height = height;
+            canvas.getContext('2d')!.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = reject;
+        img.src = src;
+    });
+}
 
 async function getCroppedImg(
     imageSrc: string,
@@ -38,9 +64,18 @@ async function getCroppedImg(
         img.src = imageSrc;
     });
 
+    const maxOut = 1200;
+    let outW = pixelCrop.width;
+    let outH = pixelCrop.height;
+    if (outW > maxOut || outH > maxOut) {
+        const ratio = Math.min(maxOut / outW, maxOut / outH);
+        outW = Math.round(outW * ratio);
+        outH = Math.round(outH * ratio);
+    }
+
     const canvas = document.createElement('canvas');
-    canvas.width = pixelCrop.width;
-    canvas.height = pixelCrop.height;
+    canvas.width  = outW;
+    canvas.height = outH;
     const ctx = canvas.getContext('2d')!;
 
     ctx.drawImage(
@@ -51,11 +86,11 @@ async function getCroppedImg(
         pixelCrop.height,
         0,
         0,
-        pixelCrop.width,
-        pixelCrop.height,
+        outW,
+        outH,
     );
 
-    return canvas.toDataURL('image/jpeg', 0.92);
+    return canvas.toDataURL('image/jpeg', 0.82);
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────

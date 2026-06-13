@@ -15,7 +15,7 @@ Route::prefix('customer')->name('customer.')->middleware(['auth'])->group(functi
         Route::get('/create',                 [InvitationController::class, 'create'])->name('create');
         Route::get('/create/theme',           [InvitationController::class, 'selectTheme'])->name('create.theme');
         Route::get('/create/detail',          [InvitationController::class, 'createDetail'])->name('create.detail');
-        Route::post('/',                      fn () => abort(501))->name('store');
+        Route::post('/',                      [InvitationController::class, 'store'])->name('store');
         Route::get('/{invitation}',           fn () => Inertia::render('customer/invitations/show'))->name('show');
         Route::get('/{invitation}/edit',      fn () => Inertia::render('customer/invitations/edit'))->name('edit');
         Route::patch('/{invitation}',         fn () => abort(501))->name('update');

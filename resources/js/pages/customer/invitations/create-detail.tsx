@@ -1,7 +1,7 @@
-import ImageCropUpload from '@/components/image-crop-upload';
+import ImageCropUpload, { compressImage } from '@/components/image-crop-upload';
 import CustomerLayout from '@/layouts/customer-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import {
     BookOpen,
     CalendarDays,
@@ -17,6 +17,7 @@ import {
     MapPin,
     Navigation,
     Search,
+    Upload,
     Users,
     X,
 } from 'lucide-react';
@@ -1078,10 +1079,11 @@ function GalleryTab({ items, setItems, maxUploads }: {
         const remaining = maxUploads ? maxUploads - items.length : Infinity;
         files.slice(0, remaining).forEach((file) => {
             const reader = new FileReader();
-            reader.onload = (ev) => {
+            reader.onload = async (ev) => {
+                const compressed = await compressImage(ev.target?.result as string);
                 setItems((prev) => [
                     ...prev,
-                    { id: Date.now() + Math.random(), file, preview: ev.target?.result as string, caption: '' },
+                    { id: Date.now() + Math.random(), file, preview: compressed, caption: '' },
                 ]);
             };
             reader.readAsDataURL(file);
@@ -1207,12 +1209,65 @@ function LoveStoryTab({ entries, setEntries }: {
                                     </div>
                                     <div className="flex flex-col gap-1.5 col-span-2">
                                         <label className="text-xs font-medium text-foreground">Foto (opsional)</label>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={(e) => updateEntry(entry.id, 'photo', e.target.files?.[0]?.name ?? '')}
-                                            className="block w-full text-sm text-muted-foreground file:mr-4 file:rounded-lg file:border-0 file:bg-primary/10 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-primary hover:file:bg-primary/20 transition"
-                                        />
+                                        {entry.photo ? (
+                                            <div className="relative w-28 group">
+                                                <img
+                                                    src={entry.photo}
+                                                    alt="foto momen"
+                                                    className="w-28 h-28 rounded-xl object-cover border border-border"
+                                                />
+                                                <div className="absolute inset-0 rounded-xl bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                    <label className="size-7 rounded-full bg-white/90 text-foreground flex items-center justify-center hover:bg-white transition-colors shadow cursor-pointer" title="Ganti foto">
+                                                        <Upload className="size-3.5" />
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            className="sr-only"
+                                                            onChange={async (e) => {
+                                                                const file = e.target.files?.[0];
+                                                                if (!file) return;
+                                                                const reader = new FileReader();
+                                                                reader.onload = async (ev) => {
+                                                                    const compressed = await compressImage(ev.target?.result as string);
+                                                                    updateEntry(entry.id, 'photo', compressed);
+                                                                };
+                                                                reader.readAsDataURL(file);
+                                                                e.target.value = '';
+                                                            }}
+                                                        />
+                                                    </label>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => updateEntry(entry.id, 'photo', '')}
+                                                        title="Hapus foto"
+                                                        className="size-7 rounded-full bg-white/90 text-destructive flex items-center justify-center hover:bg-white transition-colors shadow"
+                                                    >
+                                                        <X className="size-3.5" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <label className="flex flex-col items-center justify-center gap-1.5 w-28 h-28 rounded-xl border-2 border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors cursor-pointer">
+                                                <Image className="size-5" />
+                                                <span className="text-xs font-medium">Upload Foto</span>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="sr-only"
+                                                    onChange={async (e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (!file) return;
+                                                        const reader = new FileReader();
+                                                        reader.onload = async (ev) => {
+                                                            const compressed = await compressImage(ev.target?.result as string);
+                                                            updateEntry(entry.id, 'photo', compressed);
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                        e.target.value = '';
+                                                    }}
+                                                />
+                                            </label>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -1264,13 +1319,44 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
     const [acaraEvents,       setAcaraEvents]       = useState<AcaraEvent[]>(defaultAcaraEvents);
     const [galleryItems,      setGalleryItems]      = useState<GalleryItem[]>([]);
     const [loveStoryEntries,  setLoveStoryEntries]  = useState<LoveStoryEntry[]>([]);
+    const [submitting,        setSubmitting]        = useState(false);
 
     function handleFieldChange(key: string, val: string) {
         setFieldValues((prev) => ({ ...prev, [key]: val }));
     }
 
     function handleSubmit() {
-        console.log({ fieldValues, acaraEvents, galleryItems, loveStoryEntries });
+        setSubmitting(true);
+        router.post('/customer/invitations', {
+            event_type_id: eventType.id,
+            theme_id:      theme.id,
+            package_id:    pkg.id,
+            field_values:  fieldValues,
+            acara_events:  acaraEvents.map((ev) => ({
+                name:             ev.name,
+                date:             ev.date,
+                time_start:       ev.time_start,
+                time_end:         ev.time_end,
+                location_name:    ev.location_name,
+                location_address: ev.location_address,
+                maps_embed:       ev.maps_embed,
+                maps_url:         ev.maps_url,
+                maps_lat:         ev.maps_lat,
+                maps_lng:         ev.maps_lng,
+            })),
+            gallery_items: galleryItems.map((item) => ({
+                preview: item.preview,
+                caption: item.caption,
+            })),
+            love_story: loveStoryEntries.map((entry) => ({
+                year:  entry.year,
+                title: entry.title,
+                story: entry.story,
+                photo: entry.photo,
+            })),
+        }, {
+            onFinish: () => setSubmitting(false),
+        });
     }
 
     function renderTabContent() {
@@ -1393,10 +1479,14 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                         <button
                             type="button"
                             onClick={handleSubmit}
-                            className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                            disabled={submitting}
+                            className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
                         >
-                            Simpan & Buat Undangan
-                            <ChevronRight className="size-4" />
+                            {submitting ? (
+                                <><Loader2 className="size-4 animate-spin" /> Menyimpan...</>
+                            ) : (
+                                <>Simpan & Buat Undangan <ChevronRight className="size-4" /></>
+                            )}
                         </button>
                     ) : (
                         <button
