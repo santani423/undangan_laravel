@@ -1154,6 +1154,7 @@ function TabPackages({ packages }: { packages: PackageData[] }) {
     const generalPackages = packages.filter((p) => !p.invitation_type);
 
     function findTierPkg(type: InvitationType, tier: PackageTier) {
+        
         return typePackages(type).find((p) => getTier(p.name) === tier);
     }
 
