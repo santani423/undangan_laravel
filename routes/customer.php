@@ -13,6 +13,7 @@ Route::prefix('customer')->name('customer.')->middleware(['auth'])->group(functi
     Route::prefix('invitations')->name('invitations.')->group(function () {
         Route::get('/',                       fn () => Inertia::render('customer/invitations/index'))->name('index');
         Route::get('/create',                 [InvitationController::class, 'create'])->name('create');
+        Route::get('/create/theme',           [InvitationController::class, 'selectTheme'])->name('create.theme');
         Route::post('/',                      fn () => abort(501))->name('store');
         Route::get('/{invitation}',           fn () => Inertia::render('customer/invitations/show'))->name('show');
         Route::get('/{invitation}/edit',      fn () => Inertia::render('customer/invitations/edit'))->name('edit');
