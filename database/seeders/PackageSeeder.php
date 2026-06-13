@@ -270,10 +270,10 @@ class PackageSeeder extends Seeder
     {
         $invitationTypes = [
             'pernikahan',
-            'Ulang Tahun',
+            'ulang_tahun',
             'khitanan',
             'aqiqah',
-            'Gender Reveal',
+            'gender_reveal',
             'syukuran',
         ];
 

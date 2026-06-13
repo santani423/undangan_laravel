@@ -34,12 +34,8 @@ class InvitationController extends Controller
             ->get(['id', 'name', 'slug', 'description', 'thumbnail_url', 'preview_image_url', 'color_primary', 'color_secondary', 'is_premium', 'is_exclusive', 'price', 'tags', 'usage_count']);
 
         $packages = Package::active()
+            ->where('invitation_type', $eventType->label)
             ->with('features')
-            ->where(function ($q) use ($eventType) {
-                $q->where('invitation_type', $eventType->name)
-                  ->orWhereNull('invitation_type');
-            })
-            ->orderBy('display_order')
             ->get(['id', 'name', 'label', 'description', 'price', 'currency', 'billing_period', 'duration_days', 'max_gallery_uploads']);
 
         return Inertia::render('customer/invitations/select-theme', [
