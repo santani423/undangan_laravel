@@ -23,6 +23,7 @@ Platform undangan digital berbasis web yang dibangun dengan **Laravel 12** + **R
 - [Pengujian](#pengujian)
 - [Build Produksi](#build-produksi)
 - [Perintah Artisan Berguna](#perintah-artisan-berguna)
+- [Deployment ke Niagahoster (hPanel)](#deployment-ke-niagahoster-hpanel)
 
 ---
 
@@ -873,6 +874,337 @@ npm run lint
 ### Database
 - Setiap perubahan skema harus melalui migration baru
 - Jangan mengedit migration yang sudah di-commit
+
+---
+
+## Deployment ke Niagahoster (hPanel)
+
+Panduan ini menjelaskan cara men-deploy aplikasi UNDESIA (Laravel + React/Inertia) ke hosting **Niagahoster** menggunakan **hPanel**. Pastikan paket hosting mendukung **PHP >= 8.2**, **MySQL**, dan akses **SSH** (diperlukan untuk menjalankan Composer dan Artisan).
+
+### Prasyarat
+
+| Kebutuhan | Keterangan |
+|-----------|-----------|
+| PHP >= 8.2 | Aktifkan di hPanel → PHP Configuration |
+| MySQL | Tersedia default di Niagahoster |
+| SSH Access | Aktifkan di hPanel → SSH Access |
+| Composer | Tersedia via SSH di Niagahoster |
+| Node.js | Hanya diperlukan di komputer **lokal** untuk build |
+
+---
+
+### Langkah 1 — Build Frontend di Lokal
+
+Frontend (React + Vite) harus di-build di komputer lokal sebelum diupload. Hasil build disimpan di `public/build/`.
+
+```bash
+# Pastikan dependensi terpasang
+npm install
+
+# Build untuk production
+npm run build
+```
+
+Setelah berhasil, folder `public/build/` berisi aset CSS, JS, dan `manifest.json`. Folder ini yang wajib ikut diupload ke server.
+
+---
+
+### Langkah 2 — Siapkan File untuk Upload
+
+Upload seluruh isi project **kecuali** folder-folder berikut:
+
+```
+node_modules/    # dependensi Node.js, tidak dibutuhkan di server
+.git/            # riwayat git
+.env             # jangan upload, buat ulang di server
+```
+
+Pastikan folder `public/build/` (hasil build Langkah 1) ikut dimasukkan ke dalam archive.
+
+---
+
+### Langkah 3 — Buat Subdomain / Domain di hPanel
+
+1. Login ke **hPanel** → **Domains** → **Subdomains** (atau gunakan domain utama).
+2. Buat subdomain, contoh: `app.undesia.id`.
+3. Catat **Document Root** yang ditetapkan hPanel (biasanya `public_html/app.undesia.id`).
+
+> Document Root akan diubah di Langkah 7. Untuk sementara biarkan default.
+
+---
+
+### Langkah 4 — Upload File ke Server
+
+**Opsi A — via File Manager hPanel**
+
+1. Buka **hPanel** → **Files** → **File Manager**.
+2. Masuk ke folder Document Root subdomain (contoh: `public_html/app.undesia.id`).
+3. Upload archive ZIP project, lalu ekstrak di tempat.
+
+**Opsi B — via FTP (FileZilla)**
+
+1. Buka **hPanel** → **Files** → **FTP Accounts**, buat akun FTP.
+2. Hubungkan FileZilla ke server Niagahoster menggunakan kredensial FTP.
+3. Upload seluruh isi project ke folder Document Root.
+
+**Opsi C — via SSH + Git (Direkomendasikan)**
+
+```bash
+# Login via SSH (kredensial ada di hPanel → SSH Access)
+ssh username@server.niagahoster.com
+
+# Masuk ke direktori public_html
+cd public_html
+
+# Clone repository
+git clone https://github.com/username/undesia.git undesia
+```
+
+---
+
+### Langkah 5 — Buat Database MySQL di hPanel
+
+1. Buka **hPanel** → **Databases** → **MySQL Databases**.
+2. Buat database baru, contoh: `username_undesia`.
+3. Buat database user baru dengan password yang kuat.
+4. Klik **Add User to Database**, pilih user dan database, centang **All Privileges**.
+5. Catat nama database, nama user, dan password — akan dipakai di `.env`.
+
+---
+
+### Langkah 6 — Konfigurasi File `.env` di Server
+
+Buat file `.env` di root project via SSH atau File Manager:
+
+```bash
+# Via SSH
+cd ~/public_html/undesia
+cp .env.example .env
+nano .env
+```
+
+Isi konfigurasi untuk environment production:
+
+```env
+APP_NAME="Undesia"
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://app.undesia.id
+
+APP_LOCALE=id
+APP_TIMEZONE=Asia/Jakarta
+
+# Database MySQL (sesuaikan dengan data Langkah 5)
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=username_undesia
+DB_USERNAME=username_dbuser
+DB_PASSWORD=password_database
+
+# Cache & Session — gunakan file agar tidak butuh Redis
+CACHE_STORE=file
+SESSION_DRIVER=file
+QUEUE_CONNECTION=database
+
+# Logging
+LOG_CHANNEL=stack
+LOG_LEVEL=error
+
+# Mail (sesuaikan dengan SMTP provider)
+MAIL_MAILER=smtp
+MAIL_HOST=mail.undesia.id
+MAIL_PORT=465
+MAIL_USERNAME=noreply@undesia.id
+MAIL_PASSWORD=password_email
+MAIL_ENCRYPTION=ssl
+MAIL_FROM_ADDRESS="noreply@undesia.id"
+MAIL_FROM_NAME="Undesia"
+
+# Midtrans Payment Gateway (production)
+MIDTRANS_SERVER_KEY=Mid-server-xxxxxxxxxxxx
+MIDTRANS_CLIENT_KEY=Mid-client-xxxxxxxxxxxx
+MIDTRANS_IS_PRODUCTION=true
+
+# WhatsApp API (opsional)
+WA_API_URL=
+WA_API_TOKEN=
+```
+
+---
+
+### Langkah 7 — Ubah Document Root ke Folder `public`
+
+Laravel mensyaratkan Document Root diarahkan ke subfolder `public/` karena `index.php` ada di sana.
+
+1. Buka **hPanel** → **Domains** → **Subdomains**.
+2. Klik **Manage** / **Edit** pada subdomain yang dibuat.
+3. Ubah **Document Root** menjadi:
+   ```
+   public_html/undesia/public
+   ```
+4. Simpan perubahan.
+
+> Untuk domain utama: **hPanel** → **Domains** → **Domain List** → klik domain → ubah Document Root ke `public_html/undesia/public`.
+
+---
+
+### Langkah 8 — Install Dependensi PHP via SSH
+
+```bash
+cd ~/public_html/undesia
+
+# Install Composer dependencies tanpa package development
+composer install --no-dev --optimize-autoloader
+```
+
+Jika Composer tidak tersedia secara global di server:
+
+```bash
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php composer-setup.php
+php composer.phar install --no-dev --optimize-autoloader
+```
+
+---
+
+### Langkah 9 — Generate Application Key
+
+```bash
+php artisan key:generate
+```
+
+Perintah ini mengisi `APP_KEY` di `.env`. **Wajib** dijalankan agar enkripsi session dan cookie berfungsi.
+
+---
+
+### Langkah 10 — Jalankan Migrasi dan Seeder
+
+```bash
+# Jalankan migrasi tabel
+php artisan migrate --force
+
+# Jalankan seeder data awal (hanya pertama kali)
+php artisan db:seed --force
+```
+
+Flag `--force` diperlukan karena Laravel memblokir operasi destruktif di environment `production` tanpa konfirmasi eksplisit.
+
+---
+
+### Langkah 11 — Buat Symbolic Link Storage
+
+Laravel menyimpan file upload di `storage/app/public/`. Agar file dapat diakses via URL publik, buat symlink dari `public/storage` ke `storage/app/public`:
+
+```bash
+php artisan storage:link
+```
+
+Jika perintah gagal karena keterbatasan permission di shared hosting, buat symlink manual via SSH:
+
+```bash
+cd ~/public_html/undesia/public
+ln -s ../storage/app/public storage
+```
+
+Verifikasi: akses `https://app.undesia.id/storage/` di browser. Jika tidak muncul error 403/404, symlink berhasil.
+
+---
+
+### Langkah 12 — Konfigurasi Permission Folder
+
+Folder `storage` dan `bootstrap/cache` harus dapat ditulis oleh web server:
+
+```bash
+cd ~/public_html/undesia
+
+chmod -R 755 storage
+chmod -R 755 bootstrap/cache
+```
+
+Jika masih muncul error permission 500, coba:
+
+```bash
+chmod -R 775 storage
+chmod -R 775 bootstrap/cache
+```
+
+---
+
+### Langkah 13 — Optimasi Laravel untuk Production
+
+```bash
+# Cache konfigurasi
+php artisan config:cache
+
+# Cache route
+php artisan route:cache
+
+# Cache view Blade
+php artisan view:cache
+
+# Optimize autoloader dan bootstrap
+php artisan optimize
+```
+
+> Setiap kali mengubah file `.env`, jalankan `php artisan config:cache` kembali agar perubahan terbaca oleh aplikasi.
+
+---
+
+### Langkah 14 — Aktifkan SSL/HTTPS
+
+1. Buka **hPanel** → **Security** → **SSL/TLS**.
+2. Aktifkan **Let's Encrypt SSL** untuk domain/subdomain yang digunakan.
+3. Aktifkan **Force HTTPS** agar semua traffic di-redirect otomatis ke HTTPS.
+4. Pastikan `APP_URL` di `.env` sudah menggunakan `https://`.
+
+---
+
+### Langkah 15 — Konfigurasi Cron Job untuk Scheduler
+
+Jika menggunakan fitur yang membutuhkan queue (notifikasi email, WhatsApp blast, scheduled tasks):
+
+1. Buka **hPanel** → **Advanced** → **Cron Jobs**.
+2. Tambahkan cron job berikut (jalankan setiap menit):
+
+```
+* * * * * /usr/bin/php /home/username/public_html/undesia/artisan schedule:run >> /dev/null 2>&1
+```
+
+Ganti `username` dengan username cPanel/hPanel Niagahoster Anda.
+
+---
+
+### Checklist Deployment
+
+- [ ] Frontend sudah di-build lokal (`npm run build`) — folder `public/build/` ada
+- [ ] Semua file sudah terupload ke server (kecuali `node_modules/` dan `.git/`)
+- [ ] Database MySQL sudah dibuat dan user sudah di-assign dengan All Privileges
+- [ ] File `.env` sudah dikonfigurasi (`APP_ENV=production`, `APP_DEBUG=false`)
+- [ ] `APP_KEY` sudah ter-generate (`php artisan key:generate`)
+- [ ] Dependensi PHP sudah di-install (`composer install --no-dev`)
+- [ ] Migrasi sudah dijalankan (`php artisan migrate --force`)
+- [ ] Seeder sudah dijalankan (`php artisan db:seed --force`)
+- [ ] Document Root sudah diarahkan ke `public_html/undesia/public`
+- [ ] Symbolic link storage sudah dibuat (`php artisan storage:link`)
+- [ ] Permission `storage/` dan `bootstrap/cache/` sudah `755` atau `775`
+- [ ] Cache production sudah dibuat (`php artisan optimize`)
+- [ ] SSL sudah aktif dan `APP_URL` menggunakan `https://`
+- [ ] Cron job sudah ditambahkan (jika menggunakan queue/scheduler)
+
+---
+
+### Troubleshooting Umum
+
+| Masalah | Solusi |
+|---------|--------|
+| Halaman putih / Error 500 | Aktifkan sementara `APP_DEBUG=true`, cek log di `storage/logs/laravel.log` |
+| Gambar/file upload tidak tampil | Pastikan symlink storage sudah dibuat, cek permission folder `storage/` |
+| Route 404 selain homepage | Periksa `public/.htaccess`, pastikan `mod_rewrite` aktif di hPanel |
+| Error database connection | Periksa kredensial DB di `.env`, pastikan `DB_HOST=localhost` |
+| Session expired terus | Pastikan `SESSION_DRIVER=file` dan folder `storage/framework/sessions/` writable |
+| Config tidak berubah setelah edit `.env` | Jalankan `php artisan config:clear && php artisan config:cache` |
+| `php artisan` tidak bisa dijalankan | Gunakan path penuh: `/usr/bin/php artisan` atau `php8.2 artisan` |
 
 ---
 
