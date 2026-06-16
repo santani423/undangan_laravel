@@ -166,6 +166,14 @@ class Invitation extends Model
         return $this->hasMany(DigitalEnvelopeTransaction::class);
     }
 
+    public function digitalWallets(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(DigitalWallet::class, 'invitation_digital_wallets')
+            ->withPivot(['is_displayed', 'display_order'])
+            ->withTimestamps()
+            ->orderByPivot('display_order');
+    }
+
     public function pageViews(): HasMany
     {
         return $this->hasMany(PageView::class);

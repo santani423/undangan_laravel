@@ -230,7 +230,7 @@ function InvitationCard({ invitation }: { invitation: Invitation }) {
                         href={`/customer/invitations/${invitation.slug}/detail`}
                         className="flex-1 text-center rounded-xl border border-border px-3 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors"
                     >
-                        Edit  
+                        Detail  
                     </Link>
                     <a
                         href={`/undangan/${invitation.slug}`}

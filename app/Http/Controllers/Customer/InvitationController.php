@@ -296,7 +296,7 @@ class InvitationController extends Controller
             ->with('success', 'Undangan berhasil dibuat!');
     }
 
-    public function edit($slug): Response
+    public function edit(Request $request, $slug): Response
     {
         $invitation = Invitation::where('slug', $slug)->firstOrFail();
         abort_if($invitation->user_id !== auth()->id(), 403);
@@ -364,6 +364,80 @@ class InvitationController extends Controller
                 : '',
         ])->values()->toArray();
 
+        // ── Themes available for this event type ──────────────────────────────
+        $availableThemes = Theme::active()
+            ->where('event_type', $invitation->eventType->name)
+            ->orderByRaw('is_premium ASC, is_exclusive ASC, usage_count DESC')
+            ->get(['id', 'name', 'slug', 'category', 'description', 'thumbnail_url', 'preview_image_url',
+                   'color_primary', 'color_secondary', 'is_premium', 'is_exclusive', 'price', 'usage_count'])
+            ->map(fn ($t) => [
+                'id'                => $t->id,
+                'name'              => $t->name,
+                'slug'              => $t->slug,
+                'category'          => $t->category,
+                'description'       => $t->description,
+                'thumbnail_url'     => $t->thumbnail_url,
+                'preview_image_url' => $t->preview_image_url,
+                'color_primary'     => $t->color_primary,
+                'color_secondary'   => $t->color_secondary,
+                'is_premium'        => $t->is_premium,
+                'is_exclusive'      => $t->is_exclusive,
+                'price'             => $t->price,
+                'usage_count'       => $t->usage_count,
+            ]);
+
+        // ── Guests data ───────────────────────────────────────────────────────────
+        $guestSearch    = $request->query('guest_search', '');
+        $guestStatus    = $request->query('guest_status', '');
+        $guestCheckedIn = $request->query('guest_checked_in', '');
+
+        $guestQuery = $invitation->guests();
+        if ($guestSearch) {
+            $guestQuery->where(fn ($q) => $q
+                ->where('name', 'like', "%{$guestSearch}%")
+                ->orWhere('email', 'like', "%{$guestSearch}%")
+                ->orWhere('phone_number', 'like', "%{$guestSearch}%"));
+        }
+        if ($guestStatus)    $guestQuery->where('rsvp_status', $guestStatus);
+        if ($guestCheckedIn === 'yes') $guestQuery->whereNotNull('checked_in_at');
+        elseif ($guestCheckedIn === 'no')  $guestQuery->whereNull('checked_in_at');
+
+        $guestsPage = $guestQuery->latest()->paginate(20, ['*'], 'guest_page');
+
+        $guestStats = [
+            'total'        => $invitation->guests()->count(),
+            'attending'    => $invitation->guests()->where('rsvp_status', 'attending')->count(),
+            'notAttending' => $invitation->guests()->where('rsvp_status', 'not_attending')->count(),
+            'maybe'        => $invitation->guests()->where('rsvp_status', 'maybe')->count(),
+            'pending'      => $invitation->guests()->where('rsvp_status', 'pending')->count(),
+            'checkedIn'    => $invitation->guests()->whereNotNull('checked_in_at')->count(),
+            'totalHeads'   => (int) $invitation->guests()->where('rsvp_status', 'attending')->sum('rsvp_headcount'),
+        ];
+
+        // ── Comments data ─────────────────────────────────────────────────────
+        $commentSearch  = $request->query('comment_search', '');
+        $commentStatus  = $request->query('comment_status', '');
+        $commentFlagged = $request->query('comment_flagged', '');
+
+        $commentQuery = $invitation->comments();
+        if ($commentSearch) {
+            $commentQuery->where(fn ($q) => $q
+                ->where('guest_name', 'like', "%{$commentSearch}%")
+                ->orWhere('comment_text', 'like', "%{$commentSearch}%"));
+        }
+        if ($commentStatus)  $commentQuery->where('status', $commentStatus);
+        if ($commentFlagged === 'yes') $commentQuery->where('is_flagged', true);
+
+        $commentsPage = $commentQuery->latest()->paginate(10, ['*'], 'comment_page');
+
+        $commentStats = [
+            'total'    => $invitation->comments()->count(),
+            'approved' => $invitation->comments()->where('status', 'approved')->count(),
+            'pending'  => $invitation->comments()->where('status', 'pending')->count(),
+            'rejected' => $invitation->comments()->where('status', 'rejected')->count(),
+            'flagged'  => $invitation->comments()->where('is_flagged', true)->count(),
+        ];
+
         return Inertia::render('customer/invitations/edit', [
             'invitation'   => [
                 'id'     => $invitation->id,
@@ -374,10 +448,43 @@ class InvitationController extends Controller
             'eventType'    => $invitation->eventType,
             'theme'        => $invitation->theme,
             'package'      => $invitation->package,
-            'fieldValues'  => $fieldValues,
-            'acaraEvents'  => $acaraEvents,
-            'galleryItems' => $galleryItems,
-            'loveStory'    => $loveStory,
+            'fieldValues'     => $fieldValues,
+            'acaraEvents'     => $acaraEvents,
+            'galleryItems'    => $galleryItems,
+            'loveStory'       => $loveStory,
+            'availableThemes' => $availableThemes,
+
+            // Guests
+            'guests'       => $guestsPage->through(fn ($g) => [
+                'id'             => $g->id,
+                'name'           => $g->name,
+                'email'          => $g->email,
+                'phone_number'   => $g->phone_number,
+                'gender'         => $g->gender,
+                'category'       => $g->category,
+                'rsvp_status'    => $g->rsvp_status,
+                'rsvp_headcount' => $g->rsvp_headcount,
+                'rsvp_notes'     => $g->rsvp_notes,
+                'checked_in_at'  => $g->checked_in_at?->toDateTimeString(),
+                'notes'          => $g->notes,
+            ]),
+            'guestStats'    => $guestStats,
+            'guestFilters'  => compact('guestSearch', 'guestStatus', 'guestCheckedIn'),
+
+            // Comments
+            'comments'      => $commentsPage->through(fn ($c) => [
+                'id'           => $c->id,
+                'guest_name'   => $c->guest_name,
+                'guest_email'  => $c->guest_email,
+                'comment_text' => $c->comment_text,
+                'status'       => $c->status,
+                'is_flagged'   => $c->is_flagged,
+                'flag_reason'  => $c->flag_reason,
+                'approved_at'  => $c->approved_at?->toDateTimeString(),
+                'created_at'   => $c->created_at->toDateTimeString(),
+            ]),
+            'commentStats'   => $commentStats,
+            'commentFilters' => compact('commentSearch', 'commentStatus', 'commentFlagged'),
         ]);
     }
 
@@ -551,6 +658,36 @@ class InvitationController extends Controller
         });
 
         return back()->with('success', 'Undangan berhasil diperbarui!');
+    }
+
+    public function updateTheme(Request $request, Invitation $invitation): RedirectResponse
+    {
+        abort_if($invitation->user_id !== auth()->id(), 403);
+
+        $request->validate([
+            'theme_id' => 'required|exists:themes,id',
+        ]);
+
+        $theme = Theme::active()->findOrFail($request->theme_id);
+
+        // Pastikan tema kompatibel dengan jenis acara undangan
+        if ($theme->event_type && $invitation->eventType) {
+            abort_if($theme->event_type !== $invitation->eventType->name, 422, 'Tema tidak kompatibel dengan jenis acara ini.');
+        }
+
+        $oldThemeId = $invitation->theme_id;
+
+        $invitation->update(['theme_id' => $theme->id]);
+
+        // Sesuaikan usage_count
+        if ($oldThemeId && $oldThemeId !== $theme->id) {
+            Theme::where('id', $oldThemeId)->decrement('usage_count');
+        }
+        if ($oldThemeId !== $theme->id) {
+            Theme::where('id', $theme->id)->increment('usage_count');
+        }
+
+        return back()->with('success', "Tema berhasil diubah ke \"{$theme->name}\".");
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

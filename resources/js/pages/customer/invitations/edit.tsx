@@ -3,24 +3,35 @@ import CustomerLayout from '@/layouts/customer-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import {
+    AlertTriangle,
     BookOpen,
     CalendarDays,
     Check,
+    CheckSquare,
     ChevronLeft,
     ChevronRight,
     Crown,
+    Eye,
+    EyeOff,
+    Flag,
     Gem,
     Heart,
     Image,
     Link2,
     Loader2,
     MapPin,
+    MessageSquare,
     Navigation,
+    Paintbrush,
+    Plus,
     Save,
     Search,
+    Trash2,
     Upload,
+    UserCheck,
     Users,
     X,
+    ZoomIn,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -102,20 +113,99 @@ interface AcaraEventData {
     maps_full_address: string;
 }
 
+// ─── Theme item type ──────────────────────────────────────────────────────────
+
+interface ThemeItem {
+    id: number;
+    name: string;
+    slug: string;
+    category: string | null;
+    description: string | null;
+    thumbnail_url: string | null;
+    preview_image_url: string | null;
+    color_primary: string | null;
+    color_secondary: string | null;
+    is_premium: boolean;
+    is_exclusive: boolean;
+    price: number;
+    usage_count: number;
+}
+
+// ─── Guest & Comment types ────────────────────────────────────────────────────
+
+interface GuestData {
+    id: number;
+    name: string;
+    email: string | null;
+    phone_number: string | null;
+    gender: 'male' | 'female' | null;
+    category: string | null;
+    rsvp_status: 'pending' | 'attending' | 'not_attending' | 'maybe';
+    rsvp_headcount: number | null;
+    rsvp_notes: string | null;
+    checked_in_at: string | null;
+    notes: string | null;
+}
+
+interface GuestStats {
+    total: number;
+    attending: number;
+    notAttending: number;
+    maybe: number;
+    pending: number;
+    checkedIn: number;
+    totalHeads: number;
+}
+
+interface CommentData {
+    id: number;
+    guest_name: string;
+    guest_email: string | null;
+    comment_text: string;
+    status: 'pending' | 'approved' | 'rejected';
+    is_flagged: boolean;
+    flag_reason: string | null;
+    approved_at: string | null;
+    created_at: string;
+}
+
+interface CommentStats {
+    total: number;
+    approved: number;
+    pending: number;
+    rejected: number;
+    flagged: number;
+}
+
+interface PaginatedData<T> {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    total: number;
+    links: { url: string | null; label: string; active: boolean }[];
+}
+
 interface Props {
-    invitation:   InvitationMeta;
-    eventType:    EventType;
-    theme:        Theme;
-    package:      PackageItem;
-    fieldValues:  Record<string, string>;
-    acaraEvents:  AcaraEventData[];
-    galleryItems: GalleryItemData[];
-    loveStory:    LoveStoryData[];
+    invitation:     InvitationMeta;
+    eventType:      EventType;
+    theme:          Theme;
+    package:        PackageItem;
+    fieldValues:    Record<string, string>;
+    acaraEvents:    AcaraEventData[];
+    galleryItems:   GalleryItemData[];
+    loveStory:      LoveStoryData[];
+    availableThemes: ThemeItem[];
+    guests:         PaginatedData<GuestData>;
+    guestStats:     GuestStats;
+    guestFilters:   { guestSearch: string; guestStatus: string; guestCheckedIn: string };
+    comments:       PaginatedData<CommentData>;
+    commentStats:   CommentStats;
+    commentFilters: { commentSearch: string; commentStatus: string; commentFlagged: string };
 }
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
-type TabKey = 'couple' | 'acara' | 'gallery' | 'love_story' | 'info' | 'host';
+type TabKey = 'couple' | 'acara' | 'gallery' | 'love_story' | 'info' | 'host' | 'theme' | 'guests' | 'comments';
 
 interface TabDef {
     key: TabKey;
@@ -130,7 +220,13 @@ const TAB_DEFINITIONS: Record<TabKey, TabDef> = {
     love_story: { key: 'love_story', label: 'Love Story',    icon: <BookOpen className="size-4" /> },
     info:       { key: 'info',       label: 'Info Acara',    icon: <CalendarDays className="size-4" /> },
     host:       { key: 'host',       label: 'Penyelenggara', icon: <Users className="size-4" /> },
+    theme:      { key: 'theme',      label: 'Ganti Tema',    icon: <Paintbrush className="size-4" /> },
+    guests:     { key: 'guests',     label: 'Buku Tamu',     icon: <UserCheck className="size-4" /> },
+    comments:   { key: 'comments',   label: 'Komentar',      icon: <MessageSquare className="size-4" /> },
 };
+
+// Management tabs always appended to every event type
+const MANAGEMENT_TABS: TabKey[] = ['theme', 'guests', 'comments'];
 
 const EVENT_TYPE_TABS: Record<string, TabKey[]> = {
     wedding:       ['couple', 'acara', 'gallery', 'love_story'],
@@ -770,6 +866,818 @@ function LoveStoryTab({ entries, setEntries }: { entries: LoveStoryEntry[]; setE
     );
 }
 
+// ─── Theme Tab ────────────────────────────────────────────────────────────────
+
+function ThemePreviewModal({ theme, onClose }: { theme: ThemeItem; onClose: () => void }) {
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+            <div className="relative w-full max-w-2xl bg-background rounded-2xl shadow-2xl overflow-hidden">
+                <div className="flex items-center justify-between px-5 py-3 border-b border-border">
+                    <div>
+                        <p className="font-semibold text-foreground">{theme.name}</p>
+                        <p className="text-xs text-muted-foreground">{theme.category}</p>
+                    </div>
+                    <button onClick={onClose} className="size-8 flex items-center justify-center rounded-lg hover:bg-muted transition-colors">
+                        <X className="size-4 text-muted-foreground" />
+                    </button>
+                </div>
+                {theme.preview_image_url ? (
+                    <img src={theme.preview_image_url} alt={theme.name} className="w-full max-h-[70vh] object-contain bg-muted" />
+                ) : (
+                    <div className="flex items-center justify-center h-64 bg-muted">
+                        <div className="text-center">
+                            <div className="w-20 h-20 rounded-2xl mx-auto mb-3 border border-border/60"
+                                style={{ background: `linear-gradient(135deg, ${theme.color_primary ?? '#e5e7eb'}, ${theme.color_secondary ?? theme.color_primary ?? '#d1d5db'})` }} />
+                            <p className="text-sm text-muted-foreground">Preview tidak tersedia</p>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+function ThemeCard({
+    theme,
+    isActive,
+    isPending,
+    onSelect,
+    onPreview,
+}: {
+    theme: ThemeItem;
+    isActive: boolean;
+    isPending: boolean;
+    onSelect: () => void;
+    onPreview: () => void;
+}) {
+    return (
+        <div
+            onClick={onSelect}
+            className={`group relative rounded-2xl border-2 overflow-hidden cursor-pointer transition-all ${
+                isPending  ? 'border-primary shadow-lg shadow-primary/20 scale-[1.01]' :
+                isActive   ? 'border-emerald-500 shadow-md' :
+                             'border-border hover:border-primary/50 hover:shadow-md'
+            }`}
+        >
+            {/* Thumbnail */}
+            <div className="relative aspect-[3/4] bg-muted overflow-hidden">
+                {theme.thumbnail_url ? (
+                    <img src={theme.thumbnail_url} alt={theme.name}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                ) : (
+                    <div className="w-full h-full"
+                        style={{ background: `linear-gradient(135deg, ${theme.color_primary ?? '#e5e7eb'} 0%, ${theme.color_secondary ?? theme.color_primary ?? '#d1d5db'} 100%)` }} />
+                )}
+
+                {/* Overlay badges */}
+                <div className="absolute top-2 left-2 flex flex-col gap-1">
+                    {isActive && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-600 text-white text-[10px] font-bold">
+                            <Check className="size-2.5" /> Aktif
+                        </span>
+                    )}
+                    {isPending && !isActive && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-primary text-primary-foreground text-[10px] font-bold">
+                            <Check className="size-2.5" /> Dipilih
+                        </span>
+                    )}
+                    {theme.is_exclusive && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-purple-600 text-white text-[10px] font-semibold">
+                            <Gem className="size-2.5" /> Eksklusif
+                        </span>
+                    )}
+                    {!theme.is_exclusive && theme.is_premium && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500 text-white text-[10px] font-semibold">
+                            <Crown className="size-2.5" /> Premium
+                        </span>
+                    )}
+                </div>
+
+                {/* Preview button */}
+                <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onPreview(); }}
+                    className="absolute bottom-2 right-2 size-8 rounded-xl bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
+                    title="Lihat preview"
+                >
+                    <ZoomIn className="size-3.5" />
+                </button>
+            </div>
+
+            {/* Info */}
+            <div className="p-3">
+                <p className="font-semibold text-foreground text-sm leading-tight line-clamp-1">{theme.name}</p>
+                <div className="flex items-center justify-between mt-1.5">
+                    {/* Color swatches */}
+                    <div className="flex gap-1">
+                        <div className="size-3.5 rounded-full border border-white/50 shadow-sm ring-1 ring-border/40"
+                            style={{ background: theme.color_primary ?? '#e5e7eb' }} />
+                        <div className="size-3.5 rounded-full border border-white/50 shadow-sm ring-1 ring-border/40"
+                            style={{ background: theme.color_secondary ?? theme.color_primary ?? '#d1d5db' }} />
+                    </div>
+                    <span className="text-[10px] text-muted-foreground">
+                        {theme.price > 0
+                            ? `Rp ${theme.price.toLocaleString('id-ID')}`
+                            : 'Gratis'}
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function ThemeTab({
+    currentTheme,
+    availableThemes,
+    slug,
+}: {
+    currentTheme: Theme;
+    availableThemes: ThemeItem[];
+    slug: string;
+}) {
+    const [pendingId,   setPendingId]   = useState<number>(currentTheme.id);
+    const [categoryFilter, setCategory] = useState('');
+    const [search,      setSearch]      = useState('');
+    const [saving,      setSaving]      = useState(false);
+    const [previewTheme, setPreview]    = useState<ThemeItem | null>(null);
+
+    const categories = [...new Set(availableThemes.map((t) => t.category).filter(Boolean))] as string[];
+
+    const filtered = availableThemes.filter((t) => {
+        if (categoryFilter && t.category !== categoryFilter) return false;
+        if (search && !t.name.toLowerCase().includes(search.toLowerCase())) return false;
+        return true;
+    });
+
+    const pendingTheme = availableThemes.find((t) => t.id === pendingId);
+    const hasChanged   = pendingId !== currentTheme.id;
+
+    function handleSave() {
+        if (!hasChanged || saving) return;
+        setSaving(true);
+        router.patch(
+            `/customer/invitations/${slug}/theme`,
+            { theme_id: pendingId },
+            { onFinish: () => setSaving(false) },
+        );
+    }
+
+    return (
+        <div className="flex flex-col gap-5">
+            {previewTheme && <ThemePreviewModal theme={previewTheme} onClose={() => setPreview(null)} />}
+
+            {/* Current theme banner */}
+            <div className="flex items-center gap-4 rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 p-4">
+                <div className="relative shrink-0">
+                    {currentTheme.thumbnail_url ? (
+                        <img src={currentTheme.thumbnail_url} alt={currentTheme.name}
+                            className="w-16 h-20 rounded-xl object-cover border border-border" />
+                    ) : (
+                        <div className="w-16 h-20 rounded-xl border border-border"
+                            style={{ background: `linear-gradient(135deg, ${currentTheme.color_primary ?? '#e5e7eb'}, ${currentTheme.color_secondary ?? currentTheme.color_primary ?? '#d1d5db'})` }} />
+                    )}
+                    <span className="absolute -top-1.5 -right-1.5 size-5 rounded-full bg-emerald-600 flex items-center justify-center">
+                        <Check className="size-3 text-white" />
+                    </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400 uppercase tracking-wide mb-0.5">Tema Saat Ini</p>
+                    <p className="font-bold text-foreground">{currentTheme.name}</p>
+                    <div className="flex items-center gap-2 mt-1.5">
+                        <div className="flex gap-1">
+                            <div className="size-3 rounded-full" style={{ background: currentTheme.color_primary ?? '#e5e7eb' }} />
+                            <div className="size-3 rounded-full" style={{ background: currentTheme.color_secondary ?? currentTheme.color_primary ?? '#d1d5db' }} />
+                        </div>
+                        {currentTheme.is_exclusive && <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-purple-600"><Gem className="size-2.5" /> Eksklusif</span>}
+                        {!currentTheme.is_exclusive && currentTheme.is_premium && <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-amber-600"><Crown className="size-2.5" /> Premium</span>}
+                    </div>
+                </div>
+            </div>
+
+            {/* Pending selection preview bar */}
+            {hasChanged && pendingTheme && (
+                <div className="flex items-center gap-3 rounded-2xl border border-primary/40 bg-primary/5 p-3">
+                    <div className="shrink-0">
+                        {pendingTheme.thumbnail_url ? (
+                            <img src={pendingTheme.thumbnail_url} alt={pendingTheme.name}
+                                className="w-10 h-12 rounded-lg object-cover border border-border" />
+                        ) : (
+                            <div className="w-10 h-12 rounded-lg border border-border"
+                                style={{ background: `linear-gradient(135deg, ${pendingTheme.color_primary ?? '#e5e7eb'}, ${pendingTheme.color_secondary ?? '#d1d5db'})` }} />
+                        )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-xs text-muted-foreground">Akan diganti ke:</p>
+                        <p className="font-semibold text-foreground text-sm">{pendingTheme.name}</p>
+                    </div>
+                    <div className="flex gap-2 shrink-0">
+                        <button
+                            onClick={() => setPendingId(currentTheme.id)}
+                            className="px-3 py-1.5 rounded-xl border border-border text-xs font-medium hover:bg-muted transition-colors"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            disabled={saving}
+                            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                        >
+                            {saving ? <><Loader2 className="size-3 animate-spin" /> Menyimpan…</> : <><Paintbrush className="size-3" /> Ganti Tema</>}
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Filter bar */}
+            <div className="flex flex-wrap items-center gap-2">
+                <div className="flex-1 min-w-44 flex items-center gap-2 bg-background border border-border rounded-xl px-3">
+                    <Search className="size-4 text-muted-foreground shrink-0" />
+                    <input
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Cari nama tema…"
+                        className="flex-1 py-2 text-sm bg-transparent focus:outline-none placeholder:text-muted-foreground"
+                    />
+                    {search && (
+                        <button onClick={() => setSearch('')}><X className="size-3.5 text-muted-foreground" /></button>
+                    )}
+                </div>
+
+                {/* Category pills */}
+                <div className="flex gap-1.5 flex-wrap">
+                    <button
+                        onClick={() => setCategory('')}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors border ${!categoryFilter ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-foreground hover:bg-muted'}`}
+                    >
+                        Semua
+                    </button>
+                    {categories.map((cat) => (
+                        <button
+                            key={cat}
+                            onClick={() => setCategory(cat === categoryFilter ? '' : cat)}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors border ${categoryFilter === cat ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-foreground hover:bg-muted'}`}
+                        >
+                            {cat}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Count info */}
+            <p className="text-xs text-muted-foreground">
+                Menampilkan <span className="font-medium text-foreground">{filtered.length}</span> dari {availableThemes.length} tema tersedia
+            </p>
+
+            {/* Theme grid */}
+            {filtered.length === 0 ? (
+                <div className="rounded-2xl border border-border p-10 text-center">
+                    <Paintbrush className="size-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Tidak ada tema ditemukan.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                    {filtered.map((t) => (
+                        <ThemeCard
+                            key={t.id}
+                            theme={t}
+                            isActive={t.id === currentTheme.id}
+                            isPending={t.id === pendingId && t.id !== currentTheme.id}
+                            onSelect={() => setPendingId(t.id)}
+                            onPreview={() => setPreview(t)}
+                        />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ─── Guests Tab ───────────────────────────────────────────────────────────────
+
+const RSVP_LABEL: Record<string, string> = {
+    pending: 'Belum Konfirmasi', attending: 'Hadir',
+    not_attending: 'Tidak Hadir', maybe: 'Masih Ragu',
+};
+const RSVP_CLASS: Record<string, string> = {
+    pending:       'bg-muted text-muted-foreground',
+    attending:     'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    not_attending: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
+    maybe:         'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-500',
+};
+
+function GuestsTab({
+    slug,
+    guests,
+    guestStats,
+    guestFilters,
+}: {
+    slug: string;
+    guests: PaginatedData<GuestData>;
+    guestStats: GuestStats;
+    guestFilters: { guestSearch: string; guestStatus: string; guestCheckedIn: string };
+}) {
+    const [search,     setSearch]     = useState(guestFilters.guestSearch);
+    const [showAdd,    setShowAdd]    = useState(false);
+    const [addForm,    setAddForm]    = useState({ name: '', email: '', phone_number: '', gender: '', category: '', notes: '' });
+    const [addSaving,  setAddSaving]  = useState(false);
+
+    const reload = useCallback((extra: Record<string, string>) => {
+        router.get(
+            window.location.pathname,
+            { guest_search: search, guest_status: guestFilters.guestStatus, guest_checked_in: guestFilters.guestCheckedIn, ...extra },
+            { only: ['guests', 'guestStats', 'guestFilters'], preserveState: true, preserveScroll: true },
+        );
+    }, [search, guestFilters]);
+
+    const setAdd = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+        setAddForm((f) => ({ ...f, [k]: e.target.value }));
+
+    function handleAddSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        setAddSaving(true);
+        router.post(`/customer/invitations/${slug}/guests`, addForm, {
+            only: ['guests', 'guestStats', 'guestFilters'],
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () => { setShowAdd(false); setAddForm({ name: '', email: '', phone_number: '', gender: '', category: '', notes: '' }); },
+            onFinish: () => setAddSaving(false),
+        });
+    }
+
+    function handleCheckIn(g: GuestData) {
+        router.patch(`/customer/invitations/${slug}/guests/${g.id}/checkin`, {}, {
+            only: ['guests', 'guestStats'],
+            preserveState: true,
+            preserveScroll: true,
+        });
+    }
+
+    function handleDelete(g: GuestData) {
+        if (!confirm(`Hapus tamu "${g.name}"?`)) return;
+        router.delete(`/customer/invitations/${slug}/guests/${g.id}`, {
+            only: ['guests', 'guestStats'],
+            preserveState: true,
+            preserveScroll: true,
+        });
+    }
+
+    const inputCls = 'w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition';
+
+    return (
+        <div className="flex flex-col gap-5">
+            {/* Stats mini cards */}
+            <div className="grid grid-cols-4 gap-3 sm:grid-cols-7">
+                {[
+                    { label: 'Total',      value: guestStats.total,        color: 'text-blue-500' },
+                    { label: 'Hadir',      value: guestStats.attending,    color: 'text-emerald-500' },
+                    { label: 'Tdk Hadir',  value: guestStats.notAttending, color: 'text-red-500' },
+                    { label: 'Ragu',       value: guestStats.maybe,        color: 'text-amber-500' },
+                    { label: 'Pending',    value: guestStats.pending,      color: 'text-muted-foreground' },
+                    { label: 'Check-in',   value: guestStats.checkedIn,    color: 'text-violet-500' },
+                    { label: 'Jml Kepala', value: guestStats.totalHeads,   color: 'text-sky-500' },
+                ].map(({ label, value, color }) => (
+                    <div key={label} className="bg-muted/40 rounded-xl border border-border p-3 flex flex-col items-center gap-0.5">
+                        <span className={`text-lg font-bold ${color}`}>{value}</span>
+                        <span className="text-[10px] text-muted-foreground text-center leading-tight">{label}</span>
+                    </div>
+                ))}
+            </div>
+
+            {/* Toolbar */}
+            <div className="flex flex-wrap items-center gap-2">
+                <form
+                    onSubmit={(e) => { e.preventDefault(); reload({ guest_search: search }); }}
+                    className="flex-1 min-w-44 flex items-center gap-2 bg-background border border-border rounded-xl px-3"
+                >
+                    <Search className="size-4 text-muted-foreground shrink-0" />
+                    <input
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Cari nama, email, no HP…"
+                        className="flex-1 py-2 text-sm bg-transparent focus:outline-none text-foreground placeholder:text-muted-foreground"
+                    />
+                    {search && (
+                        <button type="button" onClick={() => { setSearch(''); reload({ guest_search: '' }); }}>
+                            <X className="size-3.5 text-muted-foreground" />
+                        </button>
+                    )}
+                </form>
+                <select
+                    value={guestFilters.guestStatus}
+                    onChange={(e) => reload({ guest_status: e.target.value })}
+                    className="rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
+                >
+                    <option value="">Semua Status</option>
+                    <option value="attending">Hadir</option>
+                    <option value="not_attending">Tidak Hadir</option>
+                    <option value="maybe">Masih Ragu</option>
+                    <option value="pending">Belum Konfirmasi</option>
+                </select>
+                <select
+                    value={guestFilters.guestCheckedIn}
+                    onChange={(e) => reload({ guest_checked_in: e.target.value })}
+                    className="rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
+                >
+                    <option value="">Semua Check-in</option>
+                    <option value="yes">Sudah Check-in</option>
+                    <option value="no">Belum Check-in</option>
+                </select>
+                <a
+                    href={`/customer/invitations/${slug}/guests/export/csv`}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                >
+                    Export CSV
+                </a>
+                <button
+                    onClick={() => setShowAdd((v) => !v)}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                    <Plus className="size-4" /> Tambah Tamu
+                </button>
+            </div>
+
+            {/* Add form */}
+            {showAdd && (
+                <div className="rounded-2xl border border-border bg-muted/30 p-4">
+                    <p className="font-medium text-sm text-foreground mb-3">Tambah Tamu Baru</p>
+                    <form onSubmit={handleAddSubmit} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div className="sm:col-span-2">
+                            <label className="text-xs font-medium text-foreground">Nama *</label>
+                            <input required value={addForm.name} onChange={setAdd('name')} className={`mt-1 ${inputCls}`} placeholder="Nama tamu" />
+                        </div>
+                        <div>
+                            <label className="text-xs font-medium text-foreground">Email</label>
+                            <input type="email" value={addForm.email} onChange={setAdd('email')} className={`mt-1 ${inputCls}`} />
+                        </div>
+                        <div>
+                            <label className="text-xs font-medium text-foreground">No HP</label>
+                            <input value={addForm.phone_number} onChange={setAdd('phone_number')} className={`mt-1 ${inputCls}`} />
+                        </div>
+                        <div>
+                            <label className="text-xs font-medium text-foreground">Jenis Kelamin</label>
+                            <select value={addForm.gender} onChange={setAdd('gender')} className={`mt-1 ${inputCls}`}>
+                                <option value="">—</option>
+                                <option value="male">Laki-laki</option>
+                                <option value="female">Perempuan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="text-xs font-medium text-foreground">Kategori</label>
+                            <input value={addForm.category} onChange={setAdd('category')} placeholder="Keluarga, Rekan…" className={`mt-1 ${inputCls}`} />
+                        </div>
+                        <div className="sm:col-span-2 flex gap-2">
+                            <button type="submit" disabled={addSaving} className="flex-1 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors">
+                                {addSaving ? 'Menyimpan…' : 'Simpan'}
+                            </button>
+                            <button type="button" onClick={() => setShowAdd(false)} className="flex-1 rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors">
+                                Batal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
+
+            {/* Table */}
+            <div className="rounded-2xl border border-border overflow-hidden">
+                {guests.data.length === 0 ? (
+                    <div className="p-10 text-center">
+                        <Users className="size-8 text-muted-foreground mx-auto mb-2" />
+                        <p className="text-sm text-muted-foreground">Belum ada tamu.</p>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead className="bg-muted/40 border-b border-border">
+                                <tr>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Nama</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Kategori</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Status</th>
+                                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase">Jml</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Check-in</th>
+                                    <th className="px-4 py-3" />
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {guests.data.map((g) => (
+                                    <tr key={g.id} className="border-b border-border hover:bg-muted/20 transition-colors">
+                                        <td className="px-4 py-3">
+                                            <p className="font-medium text-foreground">{g.name}</p>
+                                            {g.email && <p className="text-xs text-muted-foreground">{g.email}</p>}
+                                            {g.phone_number && <p className="text-xs text-muted-foreground">{g.phone_number}</p>}
+                                        </td>
+                                        <td className="px-4 py-3 text-xs text-muted-foreground">{g.category ?? '—'}</td>
+                                        <td className="px-4 py-3">
+                                            <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${RSVP_CLASS[g.rsvp_status]}`}>
+                                                {RSVP_LABEL[g.rsvp_status]}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3 text-center text-sm">{g.rsvp_headcount ?? 1}</td>
+                                        <td className="px-4 py-3">
+                                            {g.checked_in_at ? (
+                                                <span className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                                    <CheckSquare className="size-3.5" />
+                                                    {new Date(g.checked_in_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                            ) : (
+                                                <span className="text-xs text-muted-foreground">—</span>
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="flex items-center gap-1">
+                                                <button
+                                                    title={g.checked_in_at ? 'Batalkan Check-in' : 'Check-in'}
+                                                    onClick={() => handleCheckIn(g)}
+                                                    className={`p-1.5 rounded-lg transition-colors ${g.checked_in_at ? 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20' : 'text-muted-foreground hover:bg-muted'}`}
+                                                >
+                                                    <CheckSquare className="size-4" />
+                                                </button>
+                                                <button
+                                                    title="Hapus"
+                                                    onClick={() => handleDelete(g)}
+                                                    className="p-1.5 rounded-lg text-destructive hover:bg-destructive/5 transition-colors"
+                                                >
+                                                    <Trash2 className="size-4" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+
+                {/* Pagination */}
+                {guests.last_page > 1 && (
+                    <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+                        <p className="text-xs text-muted-foreground">Total {guests.total} tamu</p>
+                        <div className="flex gap-1">
+                            {guests.links.map((link, i) => (
+                                link.url ? (
+                                    <Link key={i} href={link.url} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${link.active ? 'bg-primary text-primary-foreground' : 'border border-border text-foreground hover:bg-muted'}`} dangerouslySetInnerHTML={{ __html: link.label }} />
+                                ) : (
+                                    <span key={i} className="px-3 py-1.5 rounded-lg text-xs text-muted-foreground opacity-40" dangerouslySetInnerHTML={{ __html: link.label }} />
+                                )
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+// ─── Comments Tab ─────────────────────────────────────────────────────────────
+
+const COMMENT_STATUS_LABEL: Record<string, string> = {
+    pending: 'Menunggu', approved: 'Ditampilkan', rejected: 'Disembunyikan',
+};
+const COMMENT_STATUS_CLASS: Record<string, string> = {
+    pending:  'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    approved: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    rejected: 'bg-muted text-muted-foreground',
+};
+
+function CommentsTab({
+    slug,
+    comments,
+    commentStats,
+    commentFilters,
+}: {
+    slug: string;
+    comments: PaginatedData<CommentData>;
+    commentStats: CommentStats;
+    commentFilters: { commentSearch: string; commentStatus: string; commentFlagged: string };
+}) {
+    const [search, setSearch] = useState(commentFilters.commentSearch);
+    const [selected, setSelected] = useState<number[]>([]);
+    const [bulkAction, setBulkAction] = useState('');
+
+    const reload = useCallback((extra: Record<string, string>) => {
+        router.get(
+            window.location.pathname,
+            { comment_search: search, comment_status: commentFilters.commentStatus, comment_flagged: commentFilters.commentFlagged, ...extra },
+            { only: ['comments', 'commentStats', 'commentFilters'], preserveState: true, preserveScroll: true },
+        );
+    }, [search, commentFilters]);
+
+    function act(comment: CommentData, action: 'approve' | 'reject') {
+        const url = `/customer/invitations/${slug}/comments/${comment.id}/${action}`;
+        router.patch(url, {}, { only: ['comments', 'commentStats'], preserveState: true, preserveScroll: true });
+    }
+
+    function handleFlag(comment: CommentData) {
+        router.patch(`/customer/invitations/${slug}/comments/${comment.id}/flag`, {}, {
+            only: ['comments', 'commentStats'], preserveState: true, preserveScroll: true,
+        });
+    }
+
+    function handleDelete(comment: CommentData) {
+        if (!confirm('Hapus komentar ini?')) return;
+        router.delete(`/customer/invitations/${slug}/comments/${comment.id}`, {
+            only: ['comments', 'commentStats'], preserveState: true, preserveScroll: true,
+        });
+    }
+
+    function handleBulk() {
+        if (!bulkAction || selected.length === 0) return;
+        if (bulkAction === 'delete' && !confirm(`Hapus ${selected.length} komentar?`)) return;
+        router.post(`/customer/invitations/${slug}/comments/bulk`, { action: bulkAction, ids: selected }, {
+            only: ['comments', 'commentStats'],
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () => { setSelected([]); setBulkAction(''); },
+        });
+    }
+
+    const toggleSelect = (id: number) =>
+        setSelected((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+
+    return (
+        <div className="flex flex-col gap-5">
+            {/* Stats mini cards */}
+            <div className="grid grid-cols-5 gap-3">
+                {[
+                    { label: 'Total',         value: commentStats.total,    color: 'text-blue-500' },
+                    { label: 'Ditampilkan',   value: commentStats.approved, color: 'text-emerald-500' },
+                    { label: 'Menunggu',      value: commentStats.pending,  color: 'text-amber-500' },
+                    { label: 'Disembunyikan', value: commentStats.rejected, color: 'text-muted-foreground' },
+                    { label: 'Ditandai',      value: commentStats.flagged,  color: 'text-red-500' },
+                ].map(({ label, value, color }) => (
+                    <div key={label} className="bg-muted/40 rounded-xl border border-border p-3 flex flex-col items-center gap-0.5">
+                        <span className={`text-lg font-bold ${color}`}>{value}</span>
+                        <span className="text-[10px] text-muted-foreground text-center leading-tight">{label}</span>
+                    </div>
+                ))}
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-wrap items-center gap-2">
+                <form
+                    onSubmit={(e) => { e.preventDefault(); reload({ comment_search: search }); }}
+                    className="flex-1 min-w-44 flex items-center gap-2 bg-background border border-border rounded-xl px-3"
+                >
+                    <Search className="size-4 text-muted-foreground shrink-0" />
+                    <input
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Cari nama atau isi komentar…"
+                        className="flex-1 py-2 text-sm bg-transparent focus:outline-none placeholder:text-muted-foreground"
+                    />
+                    {search && (
+                        <button type="button" onClick={() => { setSearch(''); reload({ comment_search: '' }); }}>
+                            <X className="size-3.5 text-muted-foreground" />
+                        </button>
+                    )}
+                </form>
+                <select
+                    value={commentFilters.commentStatus}
+                    onChange={(e) => reload({ comment_status: e.target.value })}
+                    className="rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
+                >
+                    <option value="">Semua Status</option>
+                    <option value="pending">Menunggu</option>
+                    <option value="approved">Ditampilkan</option>
+                    <option value="rejected">Disembunyikan</option>
+                </select>
+                <select
+                    value={commentFilters.commentFlagged}
+                    onChange={(e) => reload({ comment_flagged: e.target.value })}
+                    className="rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
+                >
+                    <option value="">Semua</option>
+                    <option value="yes">Hanya Ditandai</option>
+                </select>
+            </div>
+
+            {/* Bulk action bar */}
+            {selected.length > 0 && (
+                <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-xl border border-primary/20">
+                    <span className="text-sm font-medium text-foreground">{selected.length} dipilih</span>
+                    <select value={bulkAction} onChange={(e) => setBulkAction(e.target.value)} className="rounded-xl border border-border bg-background px-2 py-1.5 text-sm focus:outline-none">
+                        <option value="">Pilih aksi…</option>
+                        <option value="approve">Tampilkan semua</option>
+                        <option value="reject">Sembunyikan semua</option>
+                        <option value="delete">Hapus semua</option>
+                    </select>
+                    <button onClick={handleBulk} disabled={!bulkAction} className="px-3 py-1.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium disabled:opacity-40 transition-colors">
+                        Terapkan
+                    </button>
+                    <button onClick={() => setSelected([])} className="ml-auto text-xs text-muted-foreground hover:text-foreground">Batal</button>
+                </div>
+            )}
+
+            {/* Select all */}
+            {comments.data.length > 0 && (
+                <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                        type="checkbox"
+                        checked={selected.length === comments.data.length}
+                        onChange={() => setSelected(selected.length === comments.data.length ? [] : comments.data.map((c) => c.id))}
+                        className="h-4 w-4 rounded border-border text-primary"
+                    />
+                    <span className="text-xs text-muted-foreground">Pilih semua di halaman ini</span>
+                </label>
+            )}
+
+            {/* Comment list */}
+            {comments.data.length === 0 ? (
+                <div className="rounded-2xl border border-border p-10 text-center">
+                    <MessageSquare className="size-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Belum ada komentar.</p>
+                </div>
+            ) : (
+                <div className="flex flex-col gap-3">
+                    {comments.data.map((c) => (
+                        <div key={c.id} className={`rounded-2xl border shadow-sm p-4 flex flex-col gap-3 transition-colors ${c.is_flagged ? 'border-red-300 dark:border-red-800' : 'border-border'} ${selected.includes(c.id) ? 'ring-2 ring-primary' : ''}`}>
+                            {/* Header */}
+                            <div className="flex items-start gap-3">
+                                <input
+                                    type="checkbox"
+                                    checked={selected.includes(c.id)}
+                                    onChange={() => toggleSelect(c.id)}
+                                    className="mt-0.5 h-4 w-4 rounded border-border text-primary cursor-pointer"
+                                />
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="font-medium text-foreground text-sm">{c.guest_name}</span>
+                                        {c.guest_email && <span className="text-xs text-muted-foreground">{c.guest_email}</span>}
+                                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${COMMENT_STATUS_CLASS[c.status]}`}>
+                                            {COMMENT_STATUS_LABEL[c.status]}
+                                        </span>
+                                        {c.is_flagged && (
+                                            <span className="inline-flex items-center gap-0.5 text-xs text-red-600 dark:text-red-400">
+                                                <Flag className="size-3" /> Ditandai
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                        {new Date(c.created_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Comment text */}
+                            <p className="text-sm text-foreground leading-relaxed pl-7">{c.comment_text}</p>
+
+                            {/* Preview bubble */}
+                            <div className="pl-7">
+                                <div className="bg-muted/50 rounded-xl px-4 py-3 border border-border/60 max-w-xs">
+                                    <p className="text-xs font-semibold text-foreground mb-0.5">{c.guest_name}</p>
+                                    <p className="text-xs text-muted-foreground leading-relaxed">{c.comment_text}</p>
+                                </div>
+                            </div>
+
+                            {c.is_flagged && c.flag_reason && (
+                                <div className="pl-7 flex items-start gap-1.5 text-xs text-red-600 dark:text-red-400">
+                                    <AlertTriangle className="size-3.5 mt-0.5 shrink-0" />
+                                    <span>{c.flag_reason}</span>
+                                </div>
+                            )}
+
+                            {/* Actions */}
+                            <div className="flex items-center gap-2 pl-7 flex-wrap">
+                                {c.status !== 'approved' && (
+                                    <button onClick={() => act(c, 'approve')} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-medium hover:bg-emerald-700 transition-colors">
+                                        <Eye className="size-3.5" /> Tampilkan
+                                    </button>
+                                )}
+                                {c.status !== 'rejected' && (
+                                    <button onClick={() => act(c, 'reject')} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border text-xs font-medium hover:bg-muted transition-colors">
+                                        <EyeOff className="size-3.5" /> Sembunyikan
+                                    </button>
+                                )}
+                                <button onClick={() => handleFlag(c)} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-colors ${c.is_flagged ? 'border-red-300 text-red-600 hover:bg-red-50 dark:border-red-800' : 'border-border text-muted-foreground hover:bg-muted'}`}>
+                                    <Flag className="size-3.5" /> {c.is_flagged ? 'Hapus Tanda' : 'Tandai'}
+                                </button>
+                                <button onClick={() => handleDelete(c)} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-destructive/40 text-xs font-medium text-destructive hover:bg-destructive/5 transition-colors">
+                                    <Trash2 className="size-3.5" /> Hapus
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Pagination */}
+            {comments.last_page > 1 && (
+                <div className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">Total {comments.total} komentar</p>
+                    <div className="flex gap-1">
+                        {comments.links.map((link, i) => (
+                            link.url ? (
+                                <Link key={i} href={link.url} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${link.active ? 'bg-primary text-primary-foreground' : 'border border-border text-foreground hover:bg-muted'}`} dangerouslySetInnerHTML={{ __html: link.label }} />
+                            ) : (
+                                <span key={i} className="px-3 py-1.5 rounded-lg text-xs text-muted-foreground opacity-40" dangerouslySetInnerHTML={{ __html: link.label }} />
+                            )
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
 // ─── Success Toast ────────────────────────────────────────────────────────────
 
 function SuccessToast({ message, onClose }: { message: string; onClose: () => void }) {
@@ -794,6 +1702,13 @@ export default function InvitationsEdit({
     acaraEvents: initAcaraEvents,
     galleryItems: initGallery,
     loveStory: initLoveStory,
+    availableThemes,
+    guests,
+    guestStats,
+    guestFilters,
+    comments,
+    commentStats,
+    commentFilters,
 }: Props) {
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -802,8 +1717,11 @@ export default function InvitationsEdit({
         { title: invitation.title, href: '#' },
     ];
 
-    const tabKeys: TabKey[] = EVENT_TYPE_TABS[eventType.name] ?? DEFAULT_TABS;
+    const contentTabKeys: TabKey[] = EVENT_TYPE_TABS[eventType.name] ?? DEFAULT_TABS;
+    const tabKeys: TabKey[] = [...contentTabKeys, ...MANAGEMENT_TABS];
     const [activeTab, setActiveTab] = useState<TabKey>(tabKeys[0]);
+
+    const isManagementTab = MANAGEMENT_TABS.includes(activeTab);
     const currentTabIndex = tabKeys.indexOf(activeTab);
 
     // ── State ─────────────────────────────────────────────────────────────────
@@ -906,6 +1824,12 @@ export default function InvitationsEdit({
                 return <FieldGroup fields={eventType.fields} values={fieldValues} onChange={handleFieldChange} />;
             case 'host':
                 return <FieldGroup fields={eventType.fields.filter((f) => ['host_name', 'host_photo', 'occasion', 'opening_message'].includes(f.field_key))} values={fieldValues} onChange={handleFieldChange} />;
+            case 'theme':
+                return <ThemeTab currentTheme={theme} availableThemes={availableThemes} slug={invitation.slug} />;
+            case 'guests':
+                return <GuestsTab slug={invitation.slug} guests={guests} guestStats={guestStats} guestFilters={guestFilters} />;
+            case 'comments':
+                return <CommentsTab slug={invitation.slug} comments={comments} commentStats={commentStats} commentFilters={commentFilters} />;
             default:
                 return null;
         }
@@ -960,17 +1884,34 @@ export default function InvitationsEdit({
                 <div className="flex gap-1 border-b border-border overflow-x-auto">
                     {tabKeys.map((key) => {
                         const tab = TAB_DEFINITIONS[key];
+                        const isFirstManagement = key === MANAGEMENT_TABS[0];
                         return (
-                            <button
-                                key={key}
-                                type="button"
-                                onClick={() => setActiveTab(key)}
-                                className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors -mb-px ${
-                                    activeTab === key ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
-                                }`}
-                            >
-                                {tab.icon} {tab.label}
-                            </button>
+                            <div key={key} className="flex items-center">
+                                {/* Separator before management tabs */}
+                                {isFirstManagement && (
+                                    <div className="h-5 w-px bg-border mx-1 self-center shrink-0" />
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveTab(key)}
+                                    className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors -mb-px ${
+                                        activeTab === key ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
+                                    }`}
+                                >
+                                    {tab.icon} {tab.label}
+                                    {/* Badge untuk jumlah */}
+                                    {key === 'guests' && guestStats.total > 0 && (
+                                        <span className="ml-1 inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full bg-primary/10 text-primary text-[10px] font-semibold">
+                                            {guestStats.total}
+                                        </span>
+                                    )}
+                                    {key === 'comments' && commentStats.pending > 0 && (
+                                        <span className="ml-1 inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px] font-semibold">
+                                            {commentStats.pending}
+                                        </span>
+                                    )}
+                                </button>
+                            </div>
                         );
                     })}
                 </div>
@@ -995,14 +1936,16 @@ export default function InvitationsEdit({
                         )}
                     </div>
 
-                    <button
-                        type="button"
-                        onClick={handleSubmit}
-                        disabled={submitting}
-                        className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
-                    >
-                        {submitting ? <><Loader2 className="size-4 animate-spin" /> Menyimpan...</> : <><Save className="size-4" /> Simpan Perubahan</>}
-                    </button>
+                    {!isManagementTab && (
+                        <button
+                            type="button"
+                            onClick={handleSubmit}
+                            disabled={submitting}
+                            className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                        >
+                            {submitting ? <><Loader2 className="size-4 animate-spin" /> Menyimpan...</> : <><Save className="size-4" /> Simpan Perubahan</>}
+                        </button>
+                    )}
                 </div>
             </div>
 
