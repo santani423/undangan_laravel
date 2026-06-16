@@ -1,7 +1,7 @@
 import ImageCropUpload, { compressImage } from '@/components/image-crop-upload';
 import CustomerLayout from '@/layouts/customer-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     AlertTriangle,
     BookOpen,
@@ -1828,6 +1828,8 @@ function SettingsTab({
     const [musicSource,    setMusicSource]    = useState<'library' | 'upload' | ''>(initSettings?.music_source ?? '');
     const [musicLibraryId, setMusicLibraryId] = useState(initSettings?.music_library_id ?? '');
     const [musicUploadUrl, setMusicUploadUrl] = useState(initSettings?.music_url ?? '');
+    const [musicUploading, setMusicUploading] = useState(false);
+    const [musicUploadError, setMusicUploadError] = useState('');
     const [previewingId,   setPreviewingId]   = useState<string | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -1876,10 +1878,40 @@ function SettingsTab({
     function handleMusicFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
         if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => setMusicUploadUrl(ev.target?.result as string ?? '');
-        reader.readAsDataURL(file);
         e.target.value = '';
+
+        const MAX_MUSIC_MB = 10;
+        if (file.size > MAX_MUSIC_MB * 1024 * 1024) {
+            setMusicUploadError(`Ukuran file terlalu besar. Maksimal ${MAX_MUSIC_MB} MB.`);
+            return;
+        }
+
+        const allowed = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/aac'];
+        if (!allowed.includes(file.type) && !file.name.match(/\.(mp3|wav|ogg|aac)$/i)) {
+            setMusicUploadError('Format file tidak didukung. Gunakan MP3, WAV, OGG, atau AAC.');
+            return;
+        }
+
+        setMusicUploadError('');
+        const formData = new FormData();
+        formData.append('music_file', file);
+
+        setMusicUploading(true);
+        fetch(`/customer/invitations/${slug}/upload-music`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '' },
+            body: formData,
+        })
+            .then(async (r) => {
+                const data = await r.json();
+                if (!r.ok) {
+                    setMusicUploadError(data.message ?? 'Gagal mengupload file musik.');
+                } else if (data.url) {
+                    setMusicUploadUrl(data.url);
+                }
+            })
+            .catch(() => setMusicUploadError('Gagal mengupload file musik. Coba lagi.'))
+            .finally(() => setMusicUploading(false));
     }
 
     function handleSave() {
@@ -2173,24 +2205,34 @@ function SettingsTab({
                         {musicSource === 'upload' && (
                             <div className="flex flex-col gap-2">
                                 <p className="text-xs font-medium text-foreground">Upload File Musik</p>
-                                {musicUploadUrl ? (
+                                {musicUploading ? (
+                                    <div className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border py-8 text-muted-foreground">
+                                        <div className="size-5 animate-spin rounded-full border-2 border-border border-t-primary" />
+                                        <span className="text-sm font-medium">Mengupload...</span>
+                                    </div>
+                                ) : musicUploadUrl ? (
                                     <div className="flex flex-col gap-2">
                                         <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3">
                                             <Music2 className="size-4 text-primary shrink-0" />
                                             <span className="text-sm text-foreground flex-1 truncate">File musik telah diunggah</span>
-                                            <button type="button" onClick={() => setMusicUploadUrl('')} className="shrink-0 text-xs text-destructive hover:underline flex items-center gap-1">
+                                            <button type="button" onClick={() => { setMusicUploadUrl(''); setMusicUploadError(''); }} className="shrink-0 text-xs text-destructive hover:underline flex items-center gap-1">
                                                 <X className="size-3" /> Hapus
                                             </button>
                                         </div>
                                         <audio controls src={musicUploadUrl} className="w-full h-9 rounded-xl" />
                                     </div>
                                 ) : (
-                                    <label className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border py-8 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors text-muted-foreground">
-                                        <Upload className="size-5" />
+                                    <label className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed py-8 cursor-pointer transition-colors text-muted-foreground ${musicUploadError ? 'border-destructive bg-destructive/5' : 'border-border hover:border-primary hover:bg-primary/5'}`}>
+                                        <Upload className={`size-5 ${musicUploadError ? 'text-destructive' : ''}`} />
                                         <span className="text-sm font-medium">Klik untuk upload</span>
-                                        <span className="text-xs">MP3, WAV, OGG — maks. 10 MB</span>
-                                        <input type="file" accept="audio/*" className="sr-only" onChange={handleMusicFileChange} />
+                                        <span className="text-xs">MP3, WAV, OGG, AAC — maks. 10 MB</span>
+                                        <input type="file" accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/aac,.mp3,.wav,.ogg,.aac" className="sr-only" onChange={handleMusicFileChange} />
                                     </label>
+                                )}
+                                {musicUploadError && (
+                                    <p className="flex items-center gap-1.5 text-xs text-destructive mt-1">
+                                        <X className="size-3 shrink-0" />{musicUploadError}
+                                    </p>
                                 )}
                             </div>
                         )}
@@ -2314,9 +2356,11 @@ export default function InvitationsEdit({
         { title: invitation.title, href: '#' },
     ];
 
+    const { url } = usePage();
     const contentTabKeys: TabKey[] = EVENT_TYPE_TABS[eventType.name] ?? DEFAULT_TABS;
     const tabKeys: TabKey[] = [...contentTabKeys, ...MANAGEMENT_TABS];
-    const [activeTab, setActiveTab] = useState<TabKey>(tabKeys[0]);
+    const initialTab: TabKey = url.endsWith('/settings') ? 'settings' : tabKeys[0];
+    const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
 
     const isManagementTab = MANAGEMENT_TABS.includes(activeTab);
     const currentTabIndex = tabKeys.indexOf(activeTab);

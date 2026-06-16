@@ -45,7 +45,10 @@ class DatabaseSeeder extends Seeder
             // 5. Customer accounts (depends on roles)
             CustomerSeeder::class,
 
-            // 6. Payment gateway configs
+            // 6. Sample invitations per customer (1 per event type)
+            InvitationSeeder::class,
+
+            // 7. Payment gateway configs
             PaymentGatewayConfigSeeder::class,
 
             // 7. Application settings (defaults)
@@ -65,6 +68,7 @@ class DatabaseSeeder extends Seeder
         $this->command->info('  ✓ themes (12 themes)');
         $this->command->info('  ✓ roles & permissions (47 permissions, 3 roles)');
         $this->command->info('  ✓ users (super_admin, admin, demo customer)');
+        $this->command->info('  ✓ invitations (5 customers × 6 types = 30 undangan)');
         $this->command->info('  ✓ payment_gateway_configs');
         $this->command->info('  ✓ app_settings (defaults)');
         $this->command->info('');

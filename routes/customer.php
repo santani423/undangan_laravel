@@ -23,7 +23,9 @@ Route::prefix('customer')->name('customer.')->middleware(['auth'])->group(functi
         Route::get('/{invitation}',           fn () => Inertia::render('customer/invitations/show'))->name('show');
         Route::get('/{invitation}/edit',      [InvitationController::class, 'edit'])->name('edit');
         Route::get('/{slug}/detail',          [InvitationController::class, 'edit'])->name('detail');
+        Route::get('/{slug}/settings',        [InvitationController::class, 'edit'])->name('settings');
         Route::patch('/{slug}/settings',      [InvitationController::class, 'updateSettings'])->name('update-settings');
+        Route::post('/{slug}/upload-music',   [InvitationController::class, 'uploadMusic'])->name('upload-music');
         Route::patch('/{invitation}/theme',   [InvitationController::class, 'updateTheme'])->name('update-theme');
         Route::patch('/{invitation}',         [InvitationController::class, 'update'])->name('update');
         Route::delete('/{invitation}',        fn () => abort(501))->name('destroy');
