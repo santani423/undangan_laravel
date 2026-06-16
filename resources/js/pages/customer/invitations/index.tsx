@@ -118,7 +118,7 @@ function CardMenu({ invitation }: { invitation: Invitation }) {
                             Edit Undangan
                         </Link>
                         <a
-                            href={`/undangan/${invitation.slug}`}
+                            href={`/${invitation.slug}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
@@ -233,7 +233,7 @@ function InvitationCard({ invitation }: { invitation: Invitation }) {
                         Detail  
                     </Link>
                     <a
-                        href={`/undangan/${invitation.slug}`}
+                        href={`/${invitation.slug}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-1 text-center rounded-xl bg-primary px-3 py-2 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"

@@ -11,16 +11,18 @@ use Inertia\Response;
 class InvitationPublicController extends Controller
 {
     public function show(Request $request, string $code): Response
-    {
+    {   
         $invitation = Invitation::with([
             'theme',
             'events'         => fn ($q) => $q->orderBy('display_order')->orderBy('event_date'),
             'contents',
             'digitalWallets' => fn ($q) => $q->wherePivot('is_displayed', true)->orderByPivot('display_order'),
         ])
-            ->where('invitation_code', $code)
-            ->where('status', 'active')
-            ->firstOrFail();
+        ->where('invitation_code', $code)
+        ->active()
+        ->firstOrFail();
+
+        abort_if($invitation->isExpired(), 410, 'Undangan ini sudah tidak aktif.');
 
         $theme = $invitation->theme;
         abort_if(! $theme, 404, 'Tema undangan tidak tersedia.');
@@ -144,7 +146,7 @@ class InvitationPublicController extends Controller
         if ($eventType === 'birthday') {
             $celebrantName = $contents->get('celebrant_name', '');
             $celebrantNick = $contents->get('celebrant_nickname', $celebrantName);
-P
+
             return array_merge($base, [
                 'pageTitle'         => $invitation->title ?: "Birthday Invitation - {$celebrantName}",
                 'celebrantName'     => $celebrantName,

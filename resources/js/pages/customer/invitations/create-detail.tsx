@@ -1173,70 +1173,234 @@ function GalleryTab({ items, setItems, maxUploads }: {
     setItems: React.Dispatch<React.SetStateAction<GalleryItem[]>>;
     maxUploads: number | null;
 }) {
+    const [dragOver, setDragOver] = useState(false);
+    const [dragId,   setDragId]   = useState<number | null>(null);
+    const [preview,  setPreview]  = useState<string | null>(null);
+    const fileInputRef            = useRef<HTMLInputElement>(null);
+
+    const atLimit    = maxUploads !== null && items.length >= maxUploads;
+    const remaining  = maxUploads !== null ? maxUploads - items.length : null;
+
+    async function processFiles(files: File[]) {
+        const slots = remaining !== null ? remaining : files.length;
+        const batch = files.filter((f) => f.type.startsWith('image/')).slice(0, slots);
+        for (const file of batch) {
+            await new Promise<void>((resolve) => {
+                const reader = new FileReader();
+                reader.onload = async (ev) => {
+                    const compressed = await compressImage(ev.target?.result as string);
+                    setItems((prev) => [
+                        ...prev,
+                        { id: Date.now() + Math.random(), file, preview: compressed, caption: '' },
+                    ]);
+                    resolve();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    }
+
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const files = Array.from(e.target.files ?? []);
-        const remaining = maxUploads ? maxUploads - items.length : Infinity;
-        files.slice(0, remaining).forEach((file) => {
-            const reader = new FileReader();
-            reader.onload = async (ev) => {
-                const compressed = await compressImage(ev.target?.result as string);
-                setItems((prev) => [
-                    ...prev,
-                    { id: Date.now() + Math.random(), file, preview: compressed, caption: '' },
-                ]);
-            };
-            reader.readAsDataURL(file);
-        });
+        processFiles(Array.from(e.target.files ?? []));
         e.target.value = '';
+    }
+
+    function handleDropZoneDrop(e: React.DragEvent) {
+        e.preventDefault();
+        setDragOver(false);
+        if (atLimit) return;
+        processFiles(Array.from(e.dataTransfer.files));
     }
 
     function removeItem(id: number) {
         setItems((prev) => prev.filter((i) => i.id !== id));
+        if (preview === items.find((i) => i.id === id)?.preview) setPreview(null);
     }
 
     function updateCaption(id: number, val: string) {
         setItems((prev) => prev.map((i) => (i.id === id ? { ...i, caption: val } : i)));
     }
 
-    const atLimit = maxUploads !== null && items.length >= maxUploads;
+    // Drag-to-reorder
+    function handleDragStart(id: number) { setDragId(id); }
+    function handleDragEnter(targetId: number) {
+        if (dragId === null || dragId === targetId) return;
+        setItems((prev) => {
+            const arr  = [...prev];
+            const from = arr.findIndex((i) => i.id === dragId);
+            const to   = arr.findIndex((i) => i.id === targetId);
+            if (from === -1 || to === -1) return prev;
+            const [moved] = arr.splice(from, 1);
+            arr.splice(to, 0, moved);
+            return arr;
+        });
+    }
 
     return (
-        <div className="flex flex-col gap-5">
-            {maxUploads && (
-                <p className="text-xs text-muted-foreground">
-                    Paket Anda memungkinkan upload maksimal{' '}
-                    <span className="font-medium text-foreground">{maxUploads} foto</span>.{' '}
-                    ({items.length}/{maxUploads} digunakan)
-                </p>
-            )}
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                {items.map((item) => (
-                    <div key={item.id} className="relative group rounded-xl overflow-hidden border border-border">
-                        <img src={item.preview} alt="" className="w-full aspect-square object-cover" />
-                        <button
-                            type="button"
-                            onClick={() => removeItem(item.id)}
-                            className="absolute top-1.5 right-1.5 size-6 rounded-full bg-black/60 text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                            ×
-                        </button>
-                        <input
-                            type="text"
-                            placeholder="Caption..."
-                            value={item.caption}
-                            onChange={(e) => updateCaption(item.id, e.target.value)}
-                            className="absolute inset-x-0 bottom-0 bg-black/50 text-white placeholder:text-white/60 text-xs px-2 py-1 outline-none"
-                        />
+        <div className="flex flex-col gap-6">
+            {/* Counter + progress */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <p className="text-sm font-medium text-foreground">Foto Gallery</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                        {maxUploads
+                            ? `${items.length} dari ${maxUploads} foto diunggah`
+                            : `${items.length} foto diunggah`}
+                    </p>
+                </div>
+                {maxUploads && (
+                    <div className="flex items-center gap-2">
+                        <div className="w-24 h-1.5 rounded-full bg-border overflow-hidden">
+                            <div
+                                className="h-full rounded-full bg-primary transition-all"
+                                style={{ width: `${Math.min(100, (items.length / maxUploads) * 100)}%` }}
+                            />
+                        </div>
+                        <span className="text-xs text-muted-foreground tabular-nums">
+                            {items.length}/{maxUploads}
+                        </span>
                     </div>
-                ))}
-                {!atLimit && (
-                    <label className="flex flex-col items-center justify-center gap-2 aspect-square rounded-xl border-2 border-dashed border-border cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors text-muted-foreground">
-                        <span className="text-2xl leading-none">+</span>
-                        <span className="text-xs">Tambah Foto</span>
-                        <input type="file" accept="image/*" multiple className="sr-only" onChange={handleFileChange} />
-                    </label>
                 )}
             </div>
+
+            {/* Drop zone */}
+            {!atLimit && (
+                <div
+                    onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={handleDropZoneDrop}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed py-8 cursor-pointer transition-colors ${
+                        dragOver
+                            ? 'border-primary bg-primary/8 text-primary'
+                            : 'border-border hover:border-primary hover:bg-primary/5 text-muted-foreground'
+                    }`}
+                >
+                    <div className={`size-10 rounded-xl flex items-center justify-center transition-colors ${dragOver ? 'bg-primary/15' : 'bg-muted'}`}>
+                        <Upload className="size-5" />
+                    </div>
+                    <div className="text-center">
+                        <p className="text-sm font-medium">
+                            {dragOver ? 'Lepaskan untuk mengunggah' : 'Klik atau seret foto ke sini'}
+                        </p>
+                        <p className="text-xs mt-0.5">
+                            {remaining !== null
+                                ? `Maks. ${remaining} foto lagi · JPG, PNG, WEBP`
+                                : 'JPG, PNG, WEBP'}
+                        </p>
+                    </div>
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="sr-only"
+                        onChange={handleFileChange}
+                    />
+                </div>
+            )}
+
+            {atLimit && (
+                <div className="flex items-center gap-2 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-4 py-3 text-sm text-amber-700 dark:text-amber-400">
+                    <Image className="size-4 shrink-0" />
+                    Batas foto untuk paket ini telah tercapai ({maxUploads} foto).
+                </div>
+            )}
+
+            {/* Empty state */}
+            {items.length === 0 && (
+                <div className="flex flex-col items-center gap-2 py-6 text-center text-muted-foreground">
+                    <Image className="size-10 opacity-30" />
+                    <p className="text-sm">Belum ada foto. Mulai unggah di atas.</p>
+                </div>
+            )}
+
+            {/* Grid */}
+            {items.length > 0 && (
+                <>
+                    <p className="text-xs text-muted-foreground -mb-3">
+                        Seret kartu untuk mengubah urutan foto.
+                    </p>
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                        {items.map((item, idx) => (
+                            <div
+                                key={item.id}
+                                draggable
+                                onDragStart={() => handleDragStart(item.id)}
+                                onDragEnter={() => handleDragEnter(item.id)}
+                                onDragEnd={() => setDragId(null)}
+                                className={`flex flex-col rounded-2xl border bg-card overflow-hidden transition-all ${
+                                    dragId === item.id ? 'opacity-50 scale-95 border-primary' : 'border-border'
+                                }`}
+                            >
+                                {/* Image */}
+                                <div className="relative group aspect-square">
+                                    <img
+                                        src={item.preview}
+                                        alt={`Gallery ${idx + 1}`}
+                                        className="w-full h-full object-cover"
+                                    />
+                                    {/* Order badge */}
+                                    <div className="absolute top-2 left-2 size-5 rounded-full bg-black/60 text-white text-xs flex items-center justify-center font-medium">
+                                        {idx + 1}
+                                    </div>
+                                    {/* Action overlay */}
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                                        <button
+                                            type="button"
+                                            onClick={() => setPreview(item.preview)}
+                                            className="size-8 rounded-full bg-white/90 text-foreground flex items-center justify-center hover:bg-white transition-colors shadow"
+                                            title="Preview"
+                                        >
+                                            <Search className="size-3.5" />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => removeItem(item.id)}
+                                            className="size-8 rounded-full bg-white/90 text-destructive flex items-center justify-center hover:bg-white transition-colors shadow"
+                                            title="Hapus"
+                                        >
+                                            <X className="size-3.5" />
+                                        </button>
+                                    </div>
+                                </div>
+                                {/* Caption */}
+                                <div className="px-2.5 py-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Tambah caption..."
+                                        value={item.caption}
+                                        onChange={(e) => updateCaption(item.id, e.target.value)}
+                                        className="w-full text-xs bg-transparent outline-none text-foreground placeholder:text-muted-foreground border-b border-transparent focus:border-border transition-colors py-0.5"
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </>
+            )}
+
+            {/* Fullscreen preview modal */}
+            {preview && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+                    onClick={() => setPreview(null)}
+                >
+                    <img
+                        src={preview}
+                        alt="preview"
+                        className="max-w-full max-h-full rounded-2xl object-contain shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                    <button
+                        type="button"
+                        onClick={() => setPreview(null)}
+                        className="absolute top-4 right-4 size-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors"
+                    >
+                        <X className="size-5" />
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
