@@ -169,7 +169,7 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                 </section>
 
                 {/* ── COUPLE ────────────────────────────────────────────────────── */}
-                <section className="wb-section wb-couple">
+                {isEnabled('couple_profile') && <section className="wb-section wb-couple">
                     <h2 className="wb-section-title wb-anim-up">Mempelai</h2>
                     <div className="wb-gold-divider wb-anim-up"><span>💍</span></div>
                     <div className="wb-couple-grid">
@@ -224,10 +224,10 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                             {invitation.brideBio && <p className="wb-couple-bio">{invitation.brideBio}</p>}
                         </div>
                     </div>
-                </section>
+                </section>}
 
                 {/* ── EVENTS ────────────────────────────────────────────────────── */}
-                {invitation.events.length > 0 && (
+                {isEnabled('event_detail') && invitation.events.length > 0 && (
                     <section className="wb-section wb-events-bg">
                         <h2 className="wb-section-title light wb-anim-up">Rangkaian Acara</h2>
                         <div className="wb-gold-divider wb-anim-up"><span>🌿</span></div>
@@ -312,7 +312,7 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                 })()}
 
                 {/* ── LOVE STORY TIMELINE ───────────────────────────────────────── */}
-                {isEnabled('timeline') && invitation.loveStory?.length > 0 && (
+                {isEnabled('love_story') && invitation.loveStory?.length > 0 && (
                     <section className="wb-section">
                         <h2 className="wb-section-title wb-anim-up">Perjalanan Cinta Kami</h2>
                         <div className="wb-gold-divider wb-anim-up"><span>💕</span></div>
@@ -381,7 +381,7 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                 )}
 
                 {/* ── DRESS CODE ────────────────────────────────────────────────── */}
-                {isEnabled('dresscode') && (
+                {(invitation.dressCodes && invitation.dressCodes.length > 0) && (
                     <section className="wb-section wb-dresscode-bg">
                         <h2 className="wb-section-title light wb-anim-up">Dress Code</h2>
                         <div className="wb-gold-divider wb-anim-up"><span>👗</span></div>
@@ -426,7 +426,7 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                 )}
 
                 {/* ── DIGITAL WALLET ────────────────────────────────────────────── */}
-                {isEnabled('digitalWallet') && (invitation.bankAccounts?.length > 0 || invitation.digitalWallets?.length > 0) && (
+                {isEnabled('digital_envelope') && (invitation.bankAccounts?.length > 0 || invitation.digitalWallets?.length > 0) && (
                     <section className="wb-section">
                         <h2 className="wb-section-title wb-anim-up">Amplop Digital</h2>
                         <div className="wb-gold-divider wb-anim-up"><span>💌</span></div>

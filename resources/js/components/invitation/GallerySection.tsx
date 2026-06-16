@@ -53,7 +53,7 @@ export default function GallerySection({ items, styles, filters, showFilters = f
 
     return (
         <>
-            {showFilters && filters && (
+            {/* {showFilters && filters && (
                 <div className={styles.filterBar}>
                     <button
                         className={activeFilter === 'all' ? styles.filterBtnActive : styles.filterBtn}
@@ -71,7 +71,7 @@ export default function GallerySection({ items, styles, filters, showFilters = f
                         </button>
                     ))}
                 </div>
-            )}
+            )} */}
 
             <div className={styles.grid}>
                 {filtered.map((item, i) => (

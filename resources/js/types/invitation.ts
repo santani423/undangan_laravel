@@ -71,17 +71,28 @@ interface InvitationBase {
     allowComments: boolean;
     rsvpEndpoint: string;
     wishesEndpoint: string;
-    // Feature flags from theme settings (optional — undefined means enabled)
+    // Feature flags from invitation settings (optional — undefined means enabled)
+    // Keys match INVITATION_FEATURES in edit.tsx
     features?: {
-        rsvp?: boolean;
-        wishes?: boolean;
-        gallery?: boolean;
-        digitalWallet?: boolean;
-        music?: boolean;
-        timeline?: boolean;
-        dresscode?: boolean;
+        cover?: boolean;
+        greeting?: boolean;
+        couple_profile?: boolean;
+        event_detail?: boolean;
         countdown?: boolean;
         location?: boolean;
+        gallery?: boolean;
+        video?: boolean;
+        love_story?: boolean;
+        rsvp?: boolean;
+        guestbook?: boolean;
+        wishes?: boolean;
+        digital_envelope?: boolean;
+        gift_wishlist?: boolean;
+        add_to_calendar?: boolean;
+        music?: boolean;
+        confetti?: boolean;
+        footer?: boolean;
+        [key: string]: boolean | undefined;
     };
     music?: {
         url: string;

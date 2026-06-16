@@ -442,6 +442,23 @@ class InvitationController extends Controller
             'flagged'  => $invitation->comments()->where('is_flagged', true)->count(),
         ];
 
+        // Invitation settings
+        $settings = $invitation->settings;
+        $invitationSettings = $settings ? [
+            'greeting_title'       => $settings->greeting_title       ?? 'Kepada Yth.',
+            'greeting_message'     => $settings->greeting_message     ?? 'Dengan hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di acara kami.',
+            'greeting_guest_label' => $settings->greeting_guest_label ?? 'Tamu Undangan',
+            'greeting_button_text' => $settings->greeting_button_text ?? 'Buka Undangan',
+            'invitation_code'      => $invitation->invitation_code    ?? $invitation->slug,
+            'music_enabled'        => (bool) ($settings->music_enabled  ?? false),
+            'music_autoplay'       => (bool) ($settings->music_autoplay ?? true),
+            'music_loop'           => (bool) ($settings->music_loop     ?? true),
+            'music_source'         => $settings->music_source         ?? '',
+            'music_library_id'     => $settings->music_library_id     ?? '',
+            'music_url'            => $settings->music_url            ?? '',
+            'features'             => $settings->features             ?? [],
+        ] : null;
+
         return Inertia::render('customer/invitations/edit', [
             'invitation'   => [
                 'id'     => $invitation->id,
@@ -452,11 +469,13 @@ class InvitationController extends Controller
             'eventType'    => $invitation->eventType,
             'theme'        => $invitation->theme,
             'package'      => $invitation->package,
-            'fieldValues'     => $fieldValues,
-            'acaraEvents'     => $acaraEvents,
-            'galleryItems'    => $galleryItems,
-            'loveStory'       => $loveStory,
-            'availableThemes' => $availableThemes,
+            'fieldValues'        => $fieldValues,
+            'acaraEvents'        => $acaraEvents,
+            'galleryItems'       => $galleryItems,
+            'loveStory'          => $loveStory,
+            'availableThemes'    => $availableThemes,
+            'invitationSettings' => $invitationSettings,
+            'availableMusic'     => [],
 
             // Guests
             'guests'       => $guestsPage->through(fn ($g) => [
@@ -665,6 +684,52 @@ class InvitationController extends Controller
         });
 
         return back()->with('success', 'Undangan berhasil diperbarui!');
+    }
+
+    public function updateSettings(Request $request, string $slug): RedirectResponse
+    {
+        $invitation = Invitation::where('slug', $slug)->firstOrFail();
+        abort_if($invitation->user_id !== auth()->id(), 403);
+
+        $request->validate([
+            'greeting_title'       => 'nullable|string|max:100',
+            'greeting_message'     => 'nullable|string|max:1000',
+            'greeting_guest_label' => 'nullable|string|max:100',
+            'greeting_button_text' => 'nullable|string|max:100',
+            'invitation_code'      => 'nullable|string|max:100|unique:invitations,invitation_code,' . $invitation->id,
+            'music_enabled'        => 'boolean',
+            'music_autoplay'       => 'boolean',
+            'music_loop'           => 'boolean',
+            'music_source'         => 'nullable|string|in:library,upload,',
+            'music_library_id'     => 'nullable|string|max:100',
+            'music_url'            => 'nullable|string|max:2000',
+            'features'             => 'nullable|array',
+        ]);
+
+        // Update invitation_code on invitations table
+        if ($request->filled('invitation_code')) {
+            $invitation->update(['invitation_code' => $request->input('invitation_code')]);
+        }
+
+        // Update or create invitation settings
+        $invitation->settings()->updateOrCreate(
+            ['invitation_id' => $invitation->id],
+            [
+                'greeting_title'       => $request->input('greeting_title', 'Kepada Yth.'),
+                'greeting_message'     => $request->input('greeting_message'),
+                'greeting_guest_label' => $request->input('greeting_guest_label', 'Tamu Undangan'),
+                'greeting_button_text' => $request->input('greeting_button_text', 'Buka Undangan'),
+                'music_enabled'        => $request->boolean('music_enabled'),
+                'music_autoplay'       => $request->boolean('music_autoplay'),
+                'music_loop'           => $request->boolean('music_loop'),
+                'music_source'         => $request->input('music_source') ?: null,
+                'music_library_id'     => $request->input('music_library_id') ?: null,
+                'music_url'            => $request->input('music_url') ?: null,
+                'features'             => $request->input('features') ?: null,
+            ]
+        );
+
+        return back()->with('success', 'Pengaturan berhasil disimpan.');
     }
 
     public function updateTheme(Request $request, Invitation $invitation): RedirectResponse

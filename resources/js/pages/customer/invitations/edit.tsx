@@ -31,7 +31,6 @@ import {
     Pause,
     Play,
     Plus,
-    RefreshCw,
     Save,
     Search,
     Settings,
@@ -1821,7 +1820,6 @@ function SettingsTab({
     const [codeEditing,   setCodeEditing]   = useState(false);
     const [codeDraft,     setCodeDraft]     = useState(initSettings?.invitation_code ?? slug);
     const [codeCopied,    setCodeCopied]    = useState(false);
-    const [codeGenerating, setCodeGenerating] = useState(false);
 
     // ── Music ─────────────────────────────────────────────────────────────────
     const [musicEnabled,   setMusicEnabled]   = useState(initSettings?.music_enabled   ?? false);
@@ -1868,17 +1866,6 @@ function SettingsTab({
             setCodeCopied(true);
             setTimeout(() => setCodeCopied(false), 2000);
         });
-    }
-
-    function handleGenerateCode() {
-        setCodeGenerating(true);
-        const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-        const newCode = Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-        setTimeout(() => {
-            setCode(newCode);
-            setCodeDraft(newCode);
-            setCodeGenerating(false);
-        }, 600);
     }
 
     function handleCodeSave() {
@@ -2088,20 +2075,6 @@ function SettingsTab({
                         </a>
                     </div>
 
-                    {/* Generate new code */}
-                    <div className="flex items-center gap-3 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 px-4 py-3">
-                        <AlertTriangle className="size-4 text-amber-600 shrink-0" />
-                        <p className="text-xs text-amber-700 dark:text-amber-400 flex-1">Mengubah kode akan mengubah link undangan. Tamu lama yang sudah menyimpan link lama tidak bisa mengaksesnya lagi.</p>
-                        <button
-                            type="button"
-                            onClick={handleGenerateCode}
-                            disabled={codeGenerating}
-                            className="shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-amber-300 dark:border-amber-700 bg-white dark:bg-amber-900/40 px-3 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/60 disabled:opacity-60 transition-colors"
-                        >
-                            {codeGenerating ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
-                            Generate Baru
-                        </button>
-                    </div>
                 </div>
             </section>
 

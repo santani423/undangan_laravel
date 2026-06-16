@@ -14,6 +14,7 @@ class InvitationPublicController extends Controller
     {   
         $invitation = Invitation::with([
             'theme',
+            'settings',
             'events'         => fn ($q) => $q->orderBy('display_order')->orderBy('event_date'),
             'contents',
             'galleryPhotos'  => fn ($q) => $q->where('category', 'general')->orderBy('display_order'),
@@ -95,14 +96,19 @@ class InvitationPublicController extends Controller
             'label'    => $p->title ?? '',
         ])->values()->all();
 
-        // Feature flags from invitation settings
-        $featuresRaw = json_decode($contents->get('features', '{}'), true) ?? [];
-        $features    = ! empty($featuresRaw) ? $featuresRaw : null;
+        // Feature flags & music from invitation_settings table
+        $settings     = $invitation->settings;
+        $featuresRaw  = $settings?->features ?? [];
+        $features     = ! empty($featuresRaw) ? $featuresRaw : null;
 
-        // Music settings — music_url may be stored as path or data URL
-        $musicUrl     = $this->resolveContentUrl($invitation, 'music_url');
-        $musicAutoplay= (bool) ($contents->get('music_autoplay', false));
-        $musicLoop    = (bool) ($contents->get('music_loop', true));
+        // Music — stored in invitation_settings; music_url may be a storage path
+        $rawMusicUrl  = $settings?->music_url ?? '';
+        $musicUrl     = $rawMusicUrl
+            ? (str_starts_with($rawMusicUrl, 'http') ? $rawMusicUrl : asset('storage/' . $rawMusicUrl))
+            : '';
+        $musicEnabled  = (bool) ($settings?->music_enabled ?? false);
+        $musicAutoplay = (bool) ($settings?->music_autoplay ?? true);
+        $musicLoop     = (bool) ($settings?->music_loop ?? true);
 
         $base = [
             'type'           => $eventType,
@@ -124,7 +130,7 @@ class InvitationPublicController extends Controller
         if ($features !== null) {
             $base['features'] = $features;
         }
-        if ($musicUrl) {
+        if ($musicEnabled && $musicUrl) {
             $base['music'] = [
                 'url'      => $musicUrl,
                 'autoplay' => $musicAutoplay,

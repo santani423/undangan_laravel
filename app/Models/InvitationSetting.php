@@ -22,6 +22,20 @@ class InvitationSetting extends Model
         'feature_custom_domain',
         'countdown_label',
         'show_guest_count',
+        // Greeting
+        'greeting_title',
+        'greeting_message',
+        'greeting_guest_label',
+        'greeting_button_text',
+        // Music
+        'music_enabled',
+        'music_autoplay',
+        'music_loop',
+        'music_source',
+        'music_library_id',
+        'music_url',
+        // Feature toggles JSON
+        'features',
     ];
 
     protected function casts(): array
@@ -39,6 +53,10 @@ class InvitationSetting extends Model
             'feature_page_builder'      => 'boolean',
             'feature_custom_domain'     => 'boolean',
             'show_guest_count'          => 'boolean',
+            'music_enabled'             => 'boolean',
+            'music_autoplay'            => 'boolean',
+            'music_loop'                => 'boolean',
+            'features'                  => 'array',
         ];
     }
 
