@@ -86,6 +86,7 @@ interface PackageItem {
     currency: string;
     billing_period: string;
     max_gallery_uploads: number | null;
+    max_music_upload_mb: number | null;
 }
 
 interface InvitationMeta {
@@ -1802,10 +1803,12 @@ function SettingsTab({
     slug,
     initSettings,
     availableMusic,
+    maxMusicMb,
 }: {
     slug: string;
     initSettings: InvitationSettingsData | null;
     availableMusic: MusicTrack[];
+    maxMusicMb: number;
 }) {
     const inputCls = 'w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition placeholder:text-muted-foreground';
 
@@ -1880,9 +1883,8 @@ function SettingsTab({
         if (!file) return;
         e.target.value = '';
 
-        const MAX_MUSIC_MB = 10;
-        if (file.size > MAX_MUSIC_MB * 1024 * 1024) {
-            setMusicUploadError(`Ukuran file terlalu besar. Maksimal ${MAX_MUSIC_MB} MB.`);
+        if (file.size > maxMusicMb * 1024 * 1024) {
+            setMusicUploadError(`Ukuran file terlalu besar. Maksimal ${maxMusicMb} MB.`);
             return;
         }
 
@@ -1908,6 +1910,8 @@ function SettingsTab({
                     setMusicUploadError(data.message ?? 'Gagal mengupload file musik.');
                 } else if (data.url) {
                     setMusicUploadUrl(data.url);
+                    setMusicSource('upload');
+                    setMusicEnabled(true);
                 }
             })
             .catch(() => setMusicUploadError('Gagal mengupload file musik. Coba lagi.'))
@@ -2010,30 +2014,21 @@ function SettingsTab({
                                 </div>
                             </div>
                         ) : (
-                            <label className="group flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border py-8 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors text-muted-foreground hover:text-primary">
-                                <div className="size-12 rounded-xl border border-border group-hover:border-primary/50 bg-muted/40 group-hover:bg-primary/10 flex items-center justify-center transition-colors">
-                                    <Music2 className="size-6" />
+                            <label className={`group flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed py-8 transition-colors text-muted-foreground ${musicUploading ? 'border-primary/40 bg-primary/5 cursor-wait' : 'border-border cursor-pointer hover:border-primary hover:bg-primary/5 hover:text-primary'}`}>
+                                <div className={`size-12 rounded-xl border bg-muted/40 flex items-center justify-center transition-colors ${musicUploading ? 'border-primary/50 bg-primary/10' : 'border-border group-hover:border-primary/50 group-hover:bg-primary/10'}`}>
+                                    {musicUploading ? <Loader2 className="size-6 animate-spin text-primary" /> : <Music2 className="size-6" />}
                                 </div>
                                 <div className="text-center">
-                                    <p className="text-sm font-medium">Klik untuk upload musik latar</p>
-                                    <p className="text-xs mt-0.5">Format MP3, AAC, OGG — maks. 10 MB</p>
+                                    <p className="text-sm font-medium">{musicUploading ? 'Mengupload musik...' : 'Klik untuk upload musik latar'}</p>
+                                    <p className="text-xs mt-0.5">Format MP3, AAC, OGG — maks. {maxMusicMb} MB</p>
                                 </div>
+                                {musicUploadError && <p className="text-xs text-destructive">{musicUploadError}</p>}
                                 <input
                                     type="file"
                                     accept="audio/mp3,audio/mpeg,audio/ogg,audio/aac,audio/*"
                                     className="sr-only"
-                                    onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (!file) return;
-                                        const reader = new FileReader();
-                                        reader.onload = (ev) => {
-                                            setMusicUploadUrl(ev.target?.result as string ?? '');
-                                            setMusicSource('upload');
-                                            setMusicEnabled(true);
-                                        };
-                                        reader.readAsDataURL(file);
-                                        e.target.value = '';
-                                    }}
+                                    disabled={musicUploading}
+                                    onChange={handleMusicFileChange}
                                 />
                             </label>
                         )}
@@ -2225,7 +2220,7 @@ function SettingsTab({
                                     <label className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed py-8 cursor-pointer transition-colors text-muted-foreground ${musicUploadError ? 'border-destructive bg-destructive/5' : 'border-border hover:border-primary hover:bg-primary/5'}`}>
                                         <Upload className={`size-5 ${musicUploadError ? 'text-destructive' : ''}`} />
                                         <span className="text-sm font-medium">Klik untuk upload</span>
-                                        <span className="text-xs">MP3, WAV, OGG, AAC — maks. 10 MB</span>
+                                        <span className="text-xs">MP3, WAV, OGG, AAC — maks. {maxMusicMb} MB</span>
                                         <input type="file" accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/aac,.mp3,.wav,.ogg,.aac" className="sr-only" onChange={handleMusicFileChange} />
                                     </label>
                                 )}
@@ -2478,7 +2473,7 @@ export default function InvitationsEdit({
             case 'comments':
                 return <CommentsTab slug={invitation.slug} comments={comments} commentStats={commentStats} commentFilters={commentFilters} />;
             case 'settings':
-                return <SettingsTab slug={invitation.slug} initSettings={invitationSettings} availableMusic={availableMusic ?? []} />;
+                return <SettingsTab slug={invitation.slug} initSettings={invitationSettings} availableMusic={availableMusic ?? []} maxMusicMb={pkg.max_music_upload_mb ?? 10} />;
             default:
                 return null;
         }

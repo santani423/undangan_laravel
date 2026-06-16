@@ -18,6 +18,7 @@ class Package extends Model
         'duration_days',
         'trial_days',
         'max_gallery_uploads',
+        'max_music_upload_mb',
         'is_active',
         'display_order',
     ];
@@ -30,7 +31,8 @@ class Package extends Model
             'display_order' => 'integer',
             'duration_days'       => 'integer',
             'trial_days'          => 'integer',
-            'max_gallery_uploads' => 'integer',
+            'max_gallery_uploads'  => 'integer',
+        'max_music_upload_mb'  => 'integer',
         ];
     }
 

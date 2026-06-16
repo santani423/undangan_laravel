@@ -764,6 +764,32 @@ class InvitationController extends Controller
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
+    public function uploadMusic(Request $request, string $slug): \Illuminate\Http\JsonResponse
+    {
+        $invitation = Invitation::where('slug', $slug)->firstOrFail();
+        abort_if($invitation->user_id !== auth()->id(), 403);
+
+        $maxMb  = $invitation->package?->max_music_upload_mb ?? 10;
+
+        if ($maxMb === 0) {
+            return response()->json(['message' => 'Paket Anda tidak mengizinkan upload musik.'], 403);
+        }
+
+        $request->validate([
+            'music_file' => "required|file|mimes:mp3,mpeg,ogg,aac,wav|max:{$maxMb}024",
+        ], [
+            'music_file.max' => "Ukuran file terlalu besar. Maksimal {$maxMb} MB.",
+        ]);
+
+        $file = $request->file('music_file');
+        $path = $file->store("invitations/{$invitation->id}/music", 'public');
+
+        return response()->json([
+            'url'    => Storage::disk('public')->url($path),
+            'max_mb' => $maxMb,
+        ]);
+    }
+
     private function saveBase64Image(string $dataUrl, string $directory): string
     {
         $parts     = explode(',', $dataUrl, 2);
