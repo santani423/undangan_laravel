@@ -4,6 +4,7 @@ import type {
     WeddingInvitation,
 } from '@/types/invitation';
 import { Head } from '@inertiajs/react';
+import { useEffect } from 'react';
 import BirthdayStarryNight from './themes/birthday/BirthdayStarryNight';
 import WeddingBase from './themes/wedding/blossom-garden/WeddingBase';
 
@@ -70,10 +71,34 @@ function resolveThemeComponent(
     }
 }
 
+function getFaviconUrl(invitation: InvitationData): string {
+    if (invitation.type === 'wedding') {
+        const w = invitation as WeddingInvitation;
+        return w.couplePhoto || w.groomPhoto || w.bridePhoto || '';
+    }
+    if (invitation.type === 'birthday') {
+        return (invitation as BirthdayInvitation).celebrantPhoto || '';
+    }
+    return '';
+}
+
 export default function InvitationShow({
     invitation,
     themeSlug,
 }: Props) {
+    const faviconUrl = getFaviconUrl(invitation);
+
+    useEffect(() => {
+        if (!faviconUrl) return;
+        // Remove existing favicons
+        document.querySelectorAll('link[rel~="icon"]').forEach((el) => el.remove());
+        const link = document.createElement('link');
+        link.rel = 'icon';
+        link.type = 'image/jpeg';
+        link.href = faviconUrl;
+        document.head.appendChild(link);
+    }, [faviconUrl]);
+
     return (
         <>
             <Head

@@ -52,8 +52,11 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
     const features = invitation.features ?? {};
     const isEnabled = (key: keyof typeof features) => features[key] !== false;
 
-    const groomPhoto = invitation.groomPhoto;
-    const bridePhoto = invitation.bridePhoto;
+    const groomPhoto  = invitation.groomPhoto;
+    const bridePhoto  = invitation.bridePhoto;
+    const couplePhoto = invitation.couplePhoto;
+    // Hero photo: prefer couplePhoto, fallback to groomPhoto
+    const heroPhoto   = couplePhoto || groomPhoto;
 
     return (
         <div className="wb-root">
@@ -64,6 +67,13 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
 
             {/* ── Opening Overlay ────────────────────────────────────────────────── */}
             <div className={`wb-overlay${opened ? ' hide' : ''}`}>
+                {/* Background foto mempelai */}
+                {heroPhoto && (
+                    <div
+                        className="wb-overlay-photo-bg"
+                        style={{ backgroundImage: `url(${heroPhoto})` }}
+                    />
+                )}
                 <div className="wb-overlay-frame">
                     <div className="wb-corner-tr" />
                     <div className="wb-corner-bl" />
@@ -73,6 +83,25 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                     <span className="wb-overlay-leaves wb-leaf-br">🌿</span>
                     <p className="wb-overlay-bismillah">بسم الله الرحمن الرحيم</p>
                     <div className="wb-overlay-divider" />
+                    {/* Foto mempelai bulat di overlay */}
+                    {(groomPhoto || bridePhoto) && (
+                        <div className="wb-overlay-couple-photos">
+                            {groomPhoto && (
+                                <div
+                                    className="wb-overlay-couple-photo"
+                                    style={{ backgroundImage: `url(${groomPhoto})` }}
+                                    title={invitation.groomNickname}
+                                />
+                            )}
+                            {bridePhoto && (
+                                <div
+                                    className="wb-overlay-couple-photo wb-overlay-couple-photo--bride"
+                                    style={{ backgroundImage: `url(${bridePhoto})` }}
+                                    title={invitation.brideNickname}
+                                />
+                            )}
+                        </div>
+                    )}
                     {invitation.guestName && (
                         <p style={{ color: 'rgba(232,213,163,0.6)', fontSize: '0.8rem', marginBottom: '8px', letterSpacing: '2px' }}>
                             Kepada Yth. {invitation.guestName}
@@ -105,12 +134,12 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                         <div
                             className="wb-hero-photo"
                             style={
-                                groomPhoto
-                                    ? { backgroundImage: `url(${groomPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                                heroPhoto
+                                    ? { backgroundImage: `url(${heroPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }
                                     : {}
                             }
                         >
-                            {!groomPhoto && `${invitation.groomInitials} & ${invitation.brideInitials}`}
+                            {!heroPhoto && `${invitation.groomInitials} & ${invitation.brideInitials}`}
                         </div>
                         <p className="wb-hero-date">{invitation.mainDateFormatted}</p>
                         <div className="wb-gold-divider"><span>✦</span></div>
@@ -242,7 +271,7 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
 
                 {/* ── LOCATION ──────────────────────────────────────────────────── */}
                 {isEnabled('location') && invitation.events.length > 0 && (() => {
-                    const ev = invitation.events[0];
+                    const ev = invitation.events.find((e) => e.isCountdown) ?? invitation.events[0];
                     const mapsUrl =
                         ev.locationUrl ||
                         (ev.mapsLat && ev.mapsLng ? `https://maps.google.com/?q=${ev.mapsLat},${ev.mapsLng}` : '');
@@ -251,6 +280,11 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                         <section className="wb-section">
                             <h2 className="wb-section-title wb-anim-up">Lokasi Acara</h2>
                             <div className="wb-gold-divider wb-anim-up"><span>🗺️</span></div>
+                            {ev.locationName && (
+                                <p style={{ textAlign: 'center', color: 'var(--wb-gold)', fontSize: '1rem', marginBottom: '8px', fontStyle: 'italic' }} className="wb-anim-up">
+                                    {ev.name} · {ev.locationName}
+                                </p>
+                            )}
                             <div style={{ maxWidth: '900px', margin: '0 auto' }} className="wb-anim-up">
                                 {ev.mapsEmbed && (
                                     <div className="wb-map-wrapper">
@@ -261,7 +295,7 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                                             style={{ border: 0, display: 'block' }}
                                             allowFullScreen
                                             loading="lazy"
-                                            title="Lokasi"
+                                            title={`Lokasi ${ev.locationName || ev.name}`}
                                         />
                                     </div>
                                 )}

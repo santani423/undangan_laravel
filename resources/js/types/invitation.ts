@@ -12,6 +12,7 @@ export interface InvitationEvent {
     mapsEmbed: string;
     mapsLat: string;
     mapsLng: string;
+    isCountdown: boolean;
 }
 
 export interface GalleryItem {
@@ -107,6 +108,7 @@ export interface WeddingInvitation extends InvitationBase {
     brideMother: string;
     brideBio: string;
     bridePhoto: string;
+    couplePhoto: string;
     loveStory: LoveStoryItem[];
     dressCodes: DressCode[];
     rsvpDeadline: string;

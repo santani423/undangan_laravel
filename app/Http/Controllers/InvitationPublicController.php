@@ -16,6 +16,7 @@ class InvitationPublicController extends Controller
             'theme',
             'events'         => fn ($q) => $q->orderBy('display_order')->orderBy('event_date'),
             'contents',
+            'galleryPhotos'  => fn ($q) => $q->where('category', 'general')->orderBy('display_order'),
             'digitalWallets' => fn ($q) => $q->wherePivot('is_displayed', true)->orderByPivot('display_order'),
         ])
         ->where('invitation_code', $code)
@@ -36,16 +37,28 @@ class InvitationPublicController extends Controller
         ]);
     }
 
+    private function resolveContentUrl(Invitation $invitation, string $key): string
+    {
+        $record = $invitation->contents->firstWhere('content_key', $key);
+        if (! $record) return '';
+        if ($record->content_type === 'path') {
+            return asset('storage/' . $record->content_value);
+        }
+        return (string) $record->content_value;
+    }
+
     private function buildData(Invitation $invitation, string $guestName, string $eventType): array
     {
         $contents = $invitation->contents->pluck('content_value', 'content_key');
         $events   = $invitation->events;
 
+        $countdownEvent    = $events->firstWhere('is_countdown', true) ?? $events->first();
         $firstEvent        = $events->first();
+        $countdownDate     = $countdownEvent && $countdownEvent->event_date ? Carbon::parse($countdownEvent->event_date) : null;
         $mainDate          = $firstEvent && $firstEvent->event_date ? Carbon::parse($firstEvent->event_date) : null;
-        $mainDateFormatted = $mainDate ? $this->formatDateId($mainDate) : '';
-        $countdownDatetime = $mainDate
-            ? $mainDate->format('Y-m-d') . 'T' . ($firstEvent->event_time ?? '08:00:00')
+        $mainDateFormatted = $countdownDate ? $this->formatDateId($countdownDate) : ($mainDate ? $this->formatDateId($mainDate) : '');
+        $countdownDatetime = $countdownDate
+            ? $countdownDate->format('Y-m-d') . 'T' . ($countdownEvent->event_time ?? '08:00:00')
             : '';
 
         $eventsJs = $events->map(fn ($e) => [
@@ -60,6 +73,7 @@ class InvitationPublicController extends Controller
             'mapsEmbed'     => $e->maps_embed ?? '',
             'mapsLat'       => $e->maps_lat ?? '',
             'mapsLng'       => $e->maps_lng ?? '',
+            'isCountdown'   => (bool) $e->is_countdown,
         ])->values()->all();
 
         $wallets = $invitation->digitalWallets->map(fn ($w) => [
@@ -71,16 +85,22 @@ class InvitationPublicController extends Controller
         ])->all();
 
         $bankAccounts = json_decode($contents->get('bank_accounts', '[]'), true) ?? [];
-        $gallery      = json_decode($contents->get('gallery', '[]'), true) ?? [];
         $loveStory    = json_decode($contents->get('love_story', '[]'), true) ?? [];
         $lifeJourney  = json_decode($contents->get('life_journey', '[]'), true) ?? [];
+
+        // Gallery — from GalleryPhoto model (general category)
+        $gallery = $invitation->galleryPhotos->map(fn ($p) => [
+            'url'      => asset('storage/' . $p->file_path),
+            'category' => $p->category ?? 'general',
+            'label'    => $p->title ?? '',
+        ])->values()->all();
 
         // Feature flags from invitation settings
         $featuresRaw = json_decode($contents->get('features', '{}'), true) ?? [];
         $features    = ! empty($featuresRaw) ? $featuresRaw : null;
 
-        // Music settings
-        $musicUrl     = $contents->get('music_url', '');
+        // Music settings — music_url may be stored as path or data URL
+        $musicUrl     = $this->resolveContentUrl($invitation, 'music_url');
         $musicAutoplay= (bool) ($contents->get('music_autoplay', false));
         $musicLoop    = (bool) ($contents->get('music_loop', true));
 
@@ -127,7 +147,8 @@ class InvitationPublicController extends Controller
                 'groomFather'      => $contents->get('groom_father', ''),
                 'groomMother'      => $contents->get('groom_mother', ''),
                 'groomBio'         => $contents->get('groom_bio', ''),
-                'groomPhoto'       => $contents->has('groom_photo') ? asset('storage/' . $contents->get('groom_photo')) : '',
+                'groomPhoto'       => $this->resolveContentUrl($invitation, 'groom_photo'),
+                'couplePhoto'      => $this->resolveContentUrl($invitation, 'couple_photo'),
                 'brideFullName'    => $brideFull,
                 'brideNickname'    => $brideNick,
                 'brideInitials'    => $contents->get('bride_initials', strtoupper(substr($brideNick ?: $brideFull, 0, 1))),
@@ -135,7 +156,7 @@ class InvitationPublicController extends Controller
                 'brideFather'      => $contents->get('bride_father', ''),
                 'brideMother'      => $contents->get('bride_mother', ''),
                 'brideBio'         => $contents->get('bride_bio', ''),
-                'bridePhoto'       => $contents->has('bride_photo') ? asset('storage/' . $contents->get('bride_photo')) : '',
+                'bridePhoto'       => $this->resolveContentUrl($invitation, 'bride_photo'),
                 'loveStory'        => $loveStory,
                 'dressCodes'       => json_decode($contents->get('dress_code_colors', '[]'), true) ?? [],
                 'rsvpDeadline'     => $contents->get('rsvp_deadline', ''),
@@ -153,7 +174,7 @@ class InvitationPublicController extends Controller
                 'celebrantNickname' => $celebrantNick,
                 'celebrantAge'      => $contents->get('celebrant_age', ''),
                 'celebrantBio'      => $contents->get('celebrant_bio', ''),
-                'celebrantPhoto'    => $contents->has('celebrant_photo') ? asset('storage/' . $contents->get('celebrant_photo')) : '',
+                'celebrantPhoto'    => $this->resolveContentUrl($invitation, 'celebrant_photo'),
                 'parentName'        => $contents->get('parent_name', ''),
                 'lifeJourney'       => $lifeJourney,
             ]);

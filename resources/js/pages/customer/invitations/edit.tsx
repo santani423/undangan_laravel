@@ -123,6 +123,7 @@ interface AcaraEventData {
     maps_lat: string;
     maps_lng: string;
     maps_full_address: string;
+    is_countdown?: boolean;
 }
 
 // ─── Theme item type ──────────────────────────────────────────────────────────
@@ -710,6 +711,7 @@ interface AcaraEvent {
     name: string; date: string; time_start: string; time_end: string;
     location_name: string; location_address: string;
     maps_embed: string; maps_url: string; maps_lat: string; maps_lng: string; maps_full_address: string;
+    is_countdown: boolean;
 }
 
 const EMPTY_ACARA_LOCATION = { maps_embed: '', maps_url: '', maps_lat: '', maps_lng: '', maps_full_address: '' };
@@ -719,10 +721,13 @@ function AcaraTab({ events, setEvents }: { events: AcaraEvent[]; setEvents: Reac
     const inputCls = 'w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition';
 
     function addEvent() {
-        setEvents((prev) => [...prev, { id: Date.now(), name: '', date: '', time_start: '', time_end: '', location_name: '', location_address: '', ...EMPTY_ACARA_LOCATION }]);
+        setEvents((prev) => [...prev, { id: Date.now(), name: '', date: '', time_start: '', time_end: '', location_name: '', location_address: '', ...EMPTY_ACARA_LOCATION, is_countdown: prev.length === 0 }]);
     }
     function updateEvent<K extends keyof AcaraEvent>(id: number, key: K, val: AcaraEvent[K]) {
         setEvents((prev) => prev.map((e) => e.id === id ? { ...e, [key]: val } : e));
+    }
+    function setCountdownEvent(id: number) {
+        setEvents((prev) => prev.map((e) => ({ ...e, is_countdown: e.id === id })));
     }
     function applyLocation(id: number, result: LocationResult) {
         setEvents((prev) => prev.map((e) => e.id === id ? { ...e, maps_embed: result.embedUrl, maps_url: result.mapsUrl, maps_lat: result.lat, maps_lng: result.lng, maps_full_address: result.address, location_address: e.location_address || result.address } : e));
@@ -787,6 +792,24 @@ function AcaraTab({ events, setEvents }: { events: AcaraEvent[]; setEvents: Reac
                                 </button>
                             )}
                         </div>
+                    </div>
+                    {/* Countdown selector */}
+                    <div
+                        onClick={() => setCountdownEvent(ev.id)}
+                        className={`flex items-center gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors select-none ${ev.is_countdown ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50 hover:bg-muted/40'}`}
+                    >
+                        <div className={`size-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${ev.is_countdown ? 'border-primary' : 'border-border'}`}>
+                            {ev.is_countdown && <div className="size-2 rounded-full bg-primary" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className={`text-sm font-medium ${ev.is_countdown ? 'text-primary' : 'text-foreground'}`}>Jadikan Countdown</p>
+                            <p className="text-xs text-muted-foreground">Countdown di undangan akan menghitung mundur ke acara ini</p>
+                        </div>
+                        {ev.is_countdown && (
+                            <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold">
+                                <Check className="size-2.5" /> Terpilih
+                            </span>
+                        )}
                     </div>
                     <LocationPickerModal
                         key={locationPickerId === ev.id ? `open-${ev.id}` : `closed-${ev.id}`}
@@ -2332,8 +2355,8 @@ export default function InvitationsEdit({
     const [showSuccess,      setShowSuccess]      = useState(false);
 
     // Acara events — convert from props (no local id yet)
-    const [acaraEvents, setAcaraEvents] = useState<AcaraEvent[]>(() =>
-        (initAcaraEvents ?? []).map((ev) => ({
+    const [acaraEvents, setAcaraEvents] = useState<AcaraEvent[]>(() => {
+        const evs = (initAcaraEvents ?? []).map((ev, idx) => ({
             id: ev.id ?? Date.now() + Math.random(),
             name:             ev.name,
             date:             ev.date,
@@ -2346,8 +2369,13 @@ export default function InvitationsEdit({
             maps_lat:         ev.maps_lat,
             maps_lng:         ev.maps_lng,
             maps_full_address: ev.maps_full_address,
-        }))
-    );
+            is_countdown:     ev.is_countdown ?? idx === 0,
+        }));
+        // ensure exactly one countdown is set when none is marked
+        const hasCountdown = evs.some((e) => e.is_countdown);
+        if (!hasCountdown && evs.length > 0) evs[0].is_countdown = true;
+        return evs;
+    });
 
     // Gallery items
     const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(() =>
@@ -2392,6 +2420,7 @@ export default function InvitationsEdit({
                 maps_url:         ev.maps_url,
                 maps_lat:         ev.maps_lat,
                 maps_lng:         ev.maps_lng,
+                is_countdown:     ev.is_countdown,
             })),
             gallery_items: galleryItems.map((item) => ({
                 ...(item.dbId ? { dbId: item.dbId } : {}),

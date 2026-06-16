@@ -27,8 +27,32 @@ html { scroll-behavior: smooth; }
   background: linear-gradient(135deg, #1a3009 0%, #2D5016 50%, #1a3009 100%);
   display: flex; align-items: center; justify-content: center;
   transition: transform 0.8s cubic-bezier(0.77,0,0.175,1), opacity 0.8s ease;
+  overflow: hidden;
 }
 .wb-overlay.hide { transform: translateY(-100%); opacity: 0; pointer-events: none; }
+/* Full-screen photo background */
+.wb-overlay-photo-bg {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  filter: brightness(0.35) saturate(0.8);
+}
+/* Couple photo frames inside overlay */
+.wb-overlay-couple-photos {
+  display: flex; align-items: center; justify-content: center; gap: 0;
+  margin: 0 auto 20px; position: relative;
+}
+.wb-overlay-couple-photo {
+  width: 90px; height: 90px; border-radius: 50%;
+  background-size: cover; background-position: center;
+  border: 3px solid var(--wb-gold);
+  box-shadow: 0 0 0 2px rgba(201,168,76,0.3), 0 4px 20px rgba(0,0,0,0.6);
+  position: relative; z-index: 1;
+}
+.wb-overlay-couple-photo--bride {
+  margin-left: -16px; z-index: 0;
+  border-color: #d4a0b0;
+  box-shadow: 0 0 0 2px rgba(212,160,176,0.3), 0 4px 20px rgba(0,0,0,0.6);
+}
 .wb-overlay-frame {
   position: relative; padding: 60px 50px; text-align: center; max-width: 500px; width: 90%;
   border: 1px solid rgba(201,168,76,0.4);

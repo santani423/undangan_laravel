@@ -205,7 +205,9 @@ class InvitationController extends Controller
             }
 
             // ── 4. Acara events ───────────────────────────────────────────
-            foreach ($request->input('acara_events', []) as $i => $ev) {
+            $acaraInputs = $request->input('acara_events', []);
+            $hasCountdown = collect($acaraInputs)->contains(fn ($ev) => !empty($ev['is_countdown']));
+            foreach ($acaraInputs as $i => $ev) {
                 if (empty($ev['name']) || empty($ev['date'])) {
                     continue;
                 }
@@ -222,6 +224,7 @@ class InvitationController extends Controller
                     'maps_lat'      => $ev['maps_lat'] ?: null,
                     'maps_lng'      => $ev['maps_lng'] ?: null,
                     'display_order' => $i,
+                    'is_countdown'  => $hasCountdown ? !empty($ev['is_countdown']) : ($i === 0),
                 ]);
             }
 
@@ -338,6 +341,7 @@ class InvitationController extends Controller
             'maps_lat'         => $ev->maps_lat ?? '',
             'maps_lng'         => $ev->maps_lng ?? '',
             'maps_full_address' => $ev->location ?? '',
+            'is_countdown'     => (bool) $ev->is_countdown,
         ])->values()->toArray();
 
         // Gallery
@@ -535,7 +539,9 @@ class InvitationController extends Controller
 
             // ── Acara events — replace all ────────────────────────────────
             $invitation->events()->delete();
-            foreach ($request->input('acara_events', []) as $i => $ev) {
+            $acaraInputs  = $request->input('acara_events', []);
+            $hasCountdown = collect($acaraInputs)->contains(fn ($ev) => !empty($ev['is_countdown']));
+            foreach ($acaraInputs as $i => $ev) {
                 if (empty($ev['name']) || empty($ev['date'])) {
                     continue;
                 }
@@ -552,6 +558,7 @@ class InvitationController extends Controller
                     'maps_lat'      => $ev['maps_lat'] ?: null,
                     'maps_lng'      => $ev['maps_lng'] ?: null,
                     'display_order' => $i,
+                    'is_countdown'  => $hasCountdown ? !empty($ev['is_countdown']) : ($i === 0),
                 ]);
             }
 

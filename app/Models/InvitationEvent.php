@@ -21,6 +21,7 @@ class InvitationEvent extends Model
         'maps_lng',
         'description',
         'display_order',
+        'is_countdown',
     ];
 
     protected function casts(): array
@@ -28,6 +29,7 @@ class InvitationEvent extends Model
         return [
             'event_date'    => 'date',
             'display_order' => 'integer',
+            'is_countdown'  => 'boolean',
         ];
     }
 
