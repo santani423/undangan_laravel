@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Wedding of Budi Santoso & Dewi Rahayu</title>
+<title>{{PAGE_TITLE}}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
@@ -406,12 +406,12 @@
     <div class="overlay-divider"></div>
     <p class="overlay-wedding-of">The Wedding of</p>
     <div class="overlay-names">
-      Budi Santoso
+      {{GROOM_FULL_NAME}}
       <span class="overlay-amp">&</span>
-      Dewi Rahayu
+      {{BRIDE_FULL_NAME}}
     </div>
     <div class="overlay-divider"></div>
-    <p class="overlay-date">Sabtu, 14 Februari 2026</p>
+    <p class="overlay-date">{{OVERLAY_DATE}}</p>
     <button class="btn-open" onclick="openInvitation()">✦ Buka Undangan ✦</button>
   </div>
 </div>
@@ -423,11 +423,11 @@
   <section id="hero">
     <div class="hero-frame animate-in fade-scale">
       <p class="hero-label">The Wedding of</p>
-      <h1 class="hero-name">Budi</h1>
+      <h1 class="hero-name">{{GROOM_NICKNAME}}</h1>
       <span class="hero-amp">&amp;</span>
-      <h1 class="hero-name">Dewi</h1>
-      <div class="hero-photo">B &amp; D</div>
-      <p class="hero-date">Sabtu, 14 Februari 2026</p>
+      <h1 class="hero-name">{{BRIDE_NICKNAME}}</h1>
+      <div class="hero-photo">{{GROOM_INITIALS}} &amp; {{BRIDE_INITIALS}}</div>
+      <p class="hero-date">{{MAIN_EVENT_DATE}}</p>
       <div class="gold-divider"><span>✦</span></div>
       <div class="countdown" id="countdown">
         <div class="countdown-box"><span class="countdown-num" id="cd-days">00</span><span class="countdown-label">Hari</span></div>
@@ -458,22 +458,22 @@
       <!-- Groom -->
       <div class="couple-card animate-in slide-left">
         <span class="couple-badge">♚ Mempelai Pria</span>
-        <div class="couple-photo groom-photo">BS</div>
-        <h3 class="couple-name">Budi Santoso, S.T.</h3>
-        <p class="couple-child">Putra Pertama dari:</p>
-        <p class="couple-parents">Bapak Ahmad Santoso<br>&amp; Ibu Siti Rahayu</p>
-        <p class="couple-bio">"Seorang pria yang menjunjung tinggi kesetiaan dan kesederhanaan dalam mencintai."</p>
+        <div class="couple-photo groom-photo" id="groom-photo-el">{{GROOM_INITIALS}}</div>
+        <h3 class="couple-name">{{GROOM_FULL_NAME}}</h3>
+        <p class="couple-child">{{GROOM_CHILD_ORDER}} dari:</p>
+        <p class="couple-parents">{{GROOM_FATHER}}<br>&amp; {{GROOM_MOTHER}}</p>
+        <p class="couple-bio">{{GROOM_BIO}}</p>
       </div>
       <!-- Heart -->
       <div class="heart-center animate-in fade-scale">❤</div>
       <!-- Bride -->
       <div class="couple-card animate-in slide-right">
         <span class="couple-badge" style="background: #c47f8a;">♛ Mempelai Wanita</span>
-        <div class="couple-photo bride-photo">DR</div>
-        <h3 class="couple-name">Dewi Rahayu, S.Pd.</h3>
-        <p class="couple-child">Putri Kedua dari:</p>
-        <p class="couple-parents">Bapak Hendra Rahayu<br>&amp; Ibu Nur Hasanah</p>
-        <p class="couple-bio">"Wanita penuh kasih yang percaya bahwa cinta sejati tumbuh dari persahabatan yang tulus."</p>
+        <div class="couple-photo bride-photo" id="bride-photo-el">{{BRIDE_INITIALS}}</div>
+        <h3 class="couple-name">{{BRIDE_FULL_NAME}}</h3>
+        <p class="couple-child">{{BRIDE_CHILD_ORDER}} dari:</p>
+        <p class="couple-parents">{{BRIDE_FATHER}}<br>&amp; {{BRIDE_MOTHER}}</p>
+        <p class="couple-bio">{{BRIDE_BIO}}</p>
       </div>
     </div>
   </section>
@@ -482,37 +482,8 @@
   <section id="events">
     <h2 class="section-title light animate-in fade-up">Rangkaian Acara</h2>
     <div class="gold-divider animate-in fade-up"><span>🌿</span></div>
-    <div class="events-grid">
-      <div class="event-card animate-in slide-left">
-        <span class="event-icon">🕌</span>
-        <p class="event-type">Akad Nikah</p>
-        <h3 class="event-name">Akad Nikah</h3>
-        <div class="event-divider"></div>
-        <p class="event-detail"><strong>Sabtu, 14 Februari 2026</strong></p>
-        <p class="event-detail">08.00 – 10.00 WIB</p>
-        <div class="event-divider"></div>
-        <p class="event-detail"><strong>Masjid Al-Ikhlas</strong></p>
-        <p class="event-detail">Jl. Melati No. 5, Kebayoran Baru,<br>Jakarta Selatan</p>
-        <div style="margin-top: 25px;">
-          <a href="https://maps.google.com/?q=-6.2,106.8" target="_blank" class="btn-event">🗺️ Lihat Peta</a>
-          <button class="btn-event" onclick="addToCalendar('akad')">📅 Tambah ke Kalender</button>
-        </div>
-      </div>
-      <div class="event-card animate-in slide-right">
-        <span class="event-icon">🏛️</span>
-        <p class="event-type">Resepsi Pernikahan</p>
-        <h3 class="event-name">Resepsi Pernikahan</h3>
-        <div class="event-divider"></div>
-        <p class="event-detail"><strong>Sabtu, 14 Februari 2026</strong></p>
-        <p class="event-detail">11.00 – 15.00 WIB</p>
-        <div class="event-divider"></div>
-        <p class="event-detail"><strong>Gedung Serbaguna Bunga Raya</strong></p>
-        <p class="event-detail">Jl. Kenanga No. 12, Kemang,<br>Jakarta Selatan</p>
-        <div style="margin-top: 25px;">
-          <a href="https://maps.google.com/?q=-6.2,106.8" target="_blank" class="btn-event">🗺️ Lihat Peta</a>
-          <button class="btn-event" onclick="addToCalendar('resepsi')">📅 Tambah ke Kalender</button>
-        </div>
-      </div>
+    <div class="events-grid" id="events-grid">
+      <!-- Rendered by JS hydration from window.__INVITATION__.events -->
     </div>
   </section>
 
@@ -520,13 +491,8 @@
   <section id="location">
     <h2 class="section-title animate-in fade-up">Lokasi Acara</h2>
     <div class="gold-divider animate-in fade-up"><span>🗺️</span></div>
-    <div class="map-container animate-in fade-up">
-      <div class="map-wrapper">
-        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966!2d106.8!3d-6.2!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNsKwMTInMDAuMCJTIDEwNsKwNDgnMDAuMCJF!5e0!3m2!1sid!2sid!4v1" width="100%" height="400" style="border:0; display: block;" allowfullscreen="" loading="lazy"></iframe>
-      </div>
-      <div style="text-align: center; margin-top: 20px;">
-        <a href="https://maps.google.com/?q=-6.2,106.8" target="_blank" class="btn-maps">🗺️ Buka Google Maps</a>
-      </div>
+    <div class="map-container animate-in fade-up" id="map-container">
+      <!-- Rendered by JS hydration from window.__INVITATION__.events -->
     </div>
   </section>
 
@@ -534,63 +500,9 @@
   <section id="timeline">
     <h2 class="section-title animate-in fade-up">Perjalanan Cinta Kami</h2>
     <div class="gold-divider animate-in fade-up"><span>💕</span></div>
-    <div class="timeline-container">
+    <div class="timeline-container" id="timeline-container">
       <div class="timeline-line"></div>
-
-      <div class="timeline-item">
-        <div class="timeline-content left animate-in slide-left">
-          <div class="timeline-photo" style="background: linear-gradient(135deg, #a8d5a2, #5a9e52);"></div>
-          <p class="timeline-date">Januari 2020</p>
-          <h3 class="timeline-title">Pertemuan Pertama</h3>
-          <p class="timeline-desc">Kami pertama bertemu di kampus saat orientasi mahasiswa baru. Siapa sangka pertemuan singkat itu menjadi awal dari segalanya.</p>
-        </div>
-        <div class="timeline-dot"></div>
-        <div class="timeline-empty"></div>
-      </div>
-
-      <div class="timeline-item">
-        <div class="timeline-empty"></div>
-        <div class="timeline-dot"></div>
-        <div class="timeline-content right animate-in slide-right">
-          <div class="timeline-photo" style="background: linear-gradient(135deg, #f7c5a0, #e89060);"></div>
-          <p class="timeline-date">Maret 2020</p>
-          <h3 class="timeline-title">Awal Persahabatan</h3>
-          <p class="timeline-desc">Tergabung dalam satu kelompok tugas, kami mulai sering menghabiskan waktu bersama dan mengenal satu sama lain lebih dalam.</p>
-        </div>
-      </div>
-
-      <div class="timeline-item">
-        <div class="timeline-content left animate-in slide-left">
-          <div class="timeline-photo" style="background: linear-gradient(135deg, #b8d4f0, #6a9fd8);"></div>
-          <p class="timeline-date">Desember 2021</p>
-          <h3 class="timeline-title">Lebih dari Sekadar Teman</h3>
-          <p class="timeline-desc">Di penghujung tahun, perasaan yang selama ini kami simpan akhirnya terungkap. Kami resmi menjalin hubungan.</p>
-        </div>
-        <div class="timeline-dot"></div>
-        <div class="timeline-empty"></div>
-      </div>
-
-      <div class="timeline-item">
-        <div class="timeline-empty"></div>
-        <div class="timeline-dot"></div>
-        <div class="timeline-content right animate-in slide-right">
-          <div class="timeline-photo" style="background: linear-gradient(135deg, #f0c0d0, #d88095);"></div>
-          <p class="timeline-date">Agustus 2023</p>
-          <h3 class="timeline-title">Lamaran</h3>
-          <p class="timeline-desc">Dengan penuh keberanian dan doa, momen bersejarah itu tiba. Ia melamar dan jawaban yang ditunggu akhirnya terucap: Ya.</p>
-        </div>
-      </div>
-
-      <div class="timeline-item">
-        <div class="timeline-content left animate-in slide-left">
-          <div class="timeline-photo" style="background: linear-gradient(135deg, #d4c5a0, #b8a060);"></div>
-          <p class="timeline-date">Februari 2026</p>
-          <h3 class="timeline-title">Menuju Pelaminan</h3>
-          <p class="timeline-desc">Hari yang paling kami nantikan akhirnya tiba. Melangkah bersama menuju babak baru kehidupan kami.</p>
-        </div>
-        <div class="timeline-dot"></div>
-        <div class="timeline-empty"></div>
-      </div>
+      <!-- Rendered by JS hydration from window.__INVITATION__.loveStory -->
     </div>
   </section>
 
@@ -604,42 +516,7 @@
       <button class="filter-btn" data-filter="engagement">Engagement</button>
     </div>
     <div class="gallery-grid" id="galleryGrid">
-      <div class="gallery-item" data-category="prewedding" onclick="openLightbox(0)">
-        <div class="gallery-thumb" style="background: linear-gradient(135deg, #2D5016, #5a8a30);"></div>
-        <div class="gallery-overlay">Lihat Foto</div>
-      </div>
-      <div class="gallery-item" data-category="engagement" onclick="openLightbox(1)">
-        <div class="gallery-thumb" style="background: linear-gradient(135deg, #C9A84C, #e8c870);"></div>
-        <div class="gallery-overlay">Lihat Foto</div>
-      </div>
-      <div class="gallery-item" data-category="prewedding" onclick="openLightbox(2)">
-        <div class="gallery-thumb" style="background: linear-gradient(135deg, #E8B4B8, #d48890);"></div>
-        <div class="gallery-overlay">Lihat Foto</div>
-      </div>
-      <div class="gallery-item" data-category="engagement" onclick="openLightbox(3)">
-        <div class="gallery-thumb" style="background: linear-gradient(135deg, #6a9fd8, #3a6fa8);"></div>
-        <div class="gallery-overlay">Lihat Foto</div>
-      </div>
-      <div class="gallery-item" data-category="prewedding" onclick="openLightbox(4)">
-        <div class="gallery-thumb" style="background: linear-gradient(135deg, #a0c87a, #608840);"></div>
-        <div class="gallery-overlay">Lihat Foto</div>
-      </div>
-      <div class="gallery-item" data-category="engagement" onclick="openLightbox(5)">
-        <div class="gallery-thumb" style="background: linear-gradient(135deg, #c8a0d0, #9860b0);"></div>
-        <div class="gallery-overlay">Lihat Foto</div>
-      </div>
-      <div class="gallery-item" data-category="prewedding" onclick="openLightbox(6)">
-        <div class="gallery-thumb" style="background: linear-gradient(135deg, #f0d080, #c0a040);"></div>
-        <div class="gallery-overlay">Lihat Foto</div>
-      </div>
-      <div class="gallery-item" data-category="engagement" onclick="openLightbox(7)">
-        <div class="gallery-thumb" style="background: linear-gradient(135deg, #80c8c0, #409890);"></div>
-        <div class="gallery-overlay">Lihat Foto</div>
-      </div>
-      <div class="gallery-item" data-category="prewedding" onclick="openLightbox(8)">
-        <div class="gallery-thumb" style="background: linear-gradient(135deg, #f0a080, #c06040);"></div>
-        <div class="gallery-overlay">Lihat Foto</div>
-      </div>
+      <!-- Rendered by JS hydration from window.__INVITATION__.gallery -->
     </div>
   </section>
 
@@ -696,49 +573,13 @@
     <div class="gold-divider animate-in fade-up"><span>💌</span></div>
     <p class="wallet-subtitle animate-in fade-up">Doa restu Bapak/Ibu/Saudara/i merupakan hadiah yang paling berarti bagi kami. Namun bagi yang ingin memberikan tanda kasih, kami telah menyediakan amplop digital berikut.</p>
 
-    <div class="bank-grid animate-in fade-up">
-      <div class="bank-card">
-        <div class="bank-logo bca">BCA</div>
-        <p class="bank-type">Bank Transfer</p>
-        <p class="bank-number">1234 5678 90</p>
-        <p class="bank-name">a.n. Budi Santoso</p>
-        <button class="btn-copy-bank" onclick="copyText('1234567890', 'No. Rekening BCA')">Salin Nomor</button>
-      </div>
-      <div class="bank-card">
-        <div class="bank-logo mandiri">MANDIRI</div>
-        <p class="bank-type">Bank Transfer</p>
-        <p class="bank-number">098 765 4321</p>
-        <p class="bank-name">a.n. Dewi Rahayu</p>
-        <button class="btn-copy-bank" onclick="copyText('0987654321', 'No. Rekening Mandiri')">Salin Nomor</button>
-      </div>
+    <div class="bank-grid animate-in fade-up" id="bank-grid">
+      <!-- Rendered by JS hydration from window.__INVITATION__.bankAccounts -->
     </div>
 
-    <h3 class="ewallet-title animate-in fade-up">E-Wallet</h3>
-    <div class="ewallet-grid animate-in fade-up">
-      <div class="ewallet-card dana">
-        <p class="ewallet-name">DANA</p>
-        <div class="ewallet-qr">QR</div>
-        <p class="ewallet-phone">0812-3456-789</p>
-        <button class="btn-copy" onclick="copyText('08123456789', 'Nomor DANA')">Salin</button>
-      </div>
-      <div class="ewallet-card ovo">
-        <p class="ewallet-name">OVO</p>
-        <div class="ewallet-qr">QR</div>
-        <p class="ewallet-phone">0812-3456-789</p>
-        <button class="btn-copy" onclick="copyText('08123456789', 'Nomor OVO')">Salin</button>
-      </div>
-      <div class="ewallet-card gopay">
-        <p class="ewallet-name">GoPay</p>
-        <div class="ewallet-qr">QR</div>
-        <p class="ewallet-phone">0812-3456-789</p>
-        <button class="btn-copy" onclick="copyText('08123456789', 'Nomor GoPay')">Salin</button>
-      </div>
-      <div class="ewallet-card shopee">
-        <p class="ewallet-name">ShopeePay</p>
-        <div class="ewallet-qr">QR</div>
-        <p class="ewallet-phone">0812-3456-789</p>
-        <button class="btn-copy" onclick="copyText('08123456789', 'Nomor ShopeePay')">Salin</button>
-      </div>
+    <h3 class="ewallet-title animate-in fade-up" id="ewallet-title" style="display:none">E-Wallet</h3>
+    <div class="ewallet-grid animate-in fade-up" id="ewallet-grid">
+      <!-- Rendered by JS hydration from window.__INVITATION__.digitalWallets -->
     </div>
   </section>
 
@@ -826,14 +667,14 @@
       <div class="gold-line"></div>
       <p class="closing-sub">Atas segala doa dan kehadiran<br>Bapak/Ibu/Saudara/i<br>yang kami muliakan.</p>
       <p class="closing-from">Kami yang berbahagia,</p>
-      <p class="closing-names">Budi &amp; Dewi</p>
+      <p class="closing-names">{{CLOSING_GROOM}} &amp; {{CLOSING_BRIDE}}</p>
       <p class="closing-family">
-        Keluarga Besar Bapak Ahmad Santoso &amp; Ibu Siti Rahayu<br>
-        Keluarga Besar Bapak Hendra Rahayu &amp; Ibu Nur Hasanah
+        Keluarga Besar {{GROOM_FAMILY}}<br>
+        Keluarga Besar {{BRIDE_FAMILY}}
       </p>
       <div class="gold-line"></div>
       <p style="color: var(--gold); font-size: 1.5rem; animation: float 3s ease-in-out infinite;">❤</p>
-      <p class="closing-credit">Created with love ✦ Budi &amp; Dewi Wedding 2026</p>
+      <p class="closing-credit">Created with love ✦ Undesia Digital Invitation</p>
     </div>
   </section>
 
@@ -856,7 +697,8 @@ function openInvitation() {
 
 // ---- COUNTDOWN ----
 function startCountdown() {
-  const target = new Date('2026-02-14T08:00:00');
+  const cdDate = (window.__INVITATION__ && window.__INVITATION__.countdownDate) ? window.__INVITATION__.countdownDate : '2026-02-14T08:00:00';
+  const target = new Date(cdDate);
   function update() {
     const now = new Date();
     const diff = target - now;
@@ -1101,6 +943,231 @@ window.addEventListener('scroll', () => {
 
 // ---- INIT ----
 renderWishesList();
+</script>
+<script>
+// ── INVITATION DATA HYDRATION ───────────────────────────────────────────────
+(function () {
+  const INV = window.__INVITATION__;
+  if (!INV) return;
+
+  // Groom/Bride photo
+  function setPhoto(el, photoUrl, initials) {
+    if (!el) return;
+    if (photoUrl) {
+      el.innerHTML = '';
+      el.style.backgroundImage = 'url(' + photoUrl + ')';
+      el.style.backgroundSize = 'cover';
+      el.style.backgroundPosition = 'center';
+    } else if (initials) {
+      el.textContent = initials;
+    }
+  }
+  setPhoto(document.getElementById('groom-photo-el'), INV.groomPhoto, INV.groomInitials);
+  setPhoto(document.getElementById('bride-photo-el'), INV.bridePhoto, INV.brideInitials);
+
+  // Events grid
+  const eventsGrid = document.getElementById('events-grid');
+  if (eventsGrid && INV.events && INV.events.length) {
+    const icons = ['🕌','🏛️','🎊','🌸','⭐','🎶'];
+    const animCls = ['slide-left','slide-right','slide-left','slide-right'];
+    eventsGrid.innerHTML = INV.events.map(function(ev, i) {
+      const mapsUrl = ev.locationUrl || (ev.mapsLat && ev.mapsLng ? 'https://maps.google.com/?q=' + ev.mapsLat + ',' + ev.mapsLng : '');
+      const timeStr = ev.time ? (ev.timeEnd ? ev.time + ' – ' + ev.timeEnd + ' WIB' : ev.time + ' WIB') : '';
+      return '<div class="event-card animate-in ' + (animCls[i % 4]) + '">' +
+        '<span class="event-icon">' + (icons[i % icons.length]) + '</span>' +
+        '<p class="event-type">' + esc(ev.name) + '</p>' +
+        '<h3 class="event-name">' + esc(ev.name) + '</h3>' +
+        '<div class="event-divider"></div>' +
+        '<p class="event-detail"><strong>' + esc(ev.dateFormatted) + '</strong></p>' +
+        (timeStr ? '<p class="event-detail">' + esc(timeStr) + '</p>' : '') +
+        '<div class="event-divider"></div>' +
+        (ev.locationName ? '<p class="event-detail"><strong>' + esc(ev.locationName) + '</strong></p>' : '') +
+        (ev.location ? '<p class="event-detail">' + esc(ev.location) + '</p>' : '') +
+        '<div style="margin-top:25px;">' +
+        (mapsUrl ? '<a href="' + esc(mapsUrl) + '" target="_blank" class="btn-event">🗺️ Lihat Peta</a>' : '') +
+        '<button class="btn-event" onclick="addToCalendarDyn(' + i + ')">📅 Tambah ke Kalender</button>' +
+        '</div></div>';
+    }).join('');
+    window.__INV_EVENTS = INV.events;
+  }
+
+  window.addToCalendarDyn = function(i) {
+    const ev = (window.__INV_EVENTS || [])[i];
+    if (!ev) return;
+    const start = (ev.date || '').replace(/-/g,'') + 'T' + (ev.time || '080000').replace(/:/g,'') + 'Z';
+    const end   = (ev.date || '').replace(/-/g,'') + 'T' + (ev.timeEnd || ev.time || '100000').replace(/:/g,'') + 'Z';
+    const loc   = ev.locationName ? ev.locationName + (ev.location ? ', ' + ev.location : '') : (ev.location || '');
+    const url   = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' +
+      encodeURIComponent(ev.name) + '&dates=' + start + '/' + end +
+      '&location=' + encodeURIComponent(loc);
+    window.open(url, '_blank');
+  };
+
+  // Maps / Location section
+  const mapCont = document.getElementById('map-container');
+  if (mapCont && INV.events && INV.events.length) {
+    const ev = INV.events[0];
+    const mapsUrl = ev.locationUrl || (ev.mapsLat && ev.mapsLng ? 'https://maps.google.com/?q=' + ev.mapsLat + ',' + ev.mapsLng : '');
+    if (ev.mapsEmbed) {
+      mapCont.innerHTML = '<div class="map-wrapper"><iframe src="' + esc(ev.mapsEmbed) +
+        '" width="100%" height="400" style="border:0;display:block;" allowfullscreen="" loading="lazy"></iframe></div>' +
+        (mapsUrl ? '<div style="text-align:center;margin-top:20px;"><a href="' + esc(mapsUrl) + '" target="_blank" class="btn-maps">🗺️ Buka Google Maps</a></div>' : '');
+    } else if (mapsUrl) {
+      mapCont.innerHTML = '<div style="text-align:center;"><a href="' + esc(mapsUrl) + '" target="_blank" class="btn-maps">🗺️ Buka Google Maps</a></div>';
+    } else {
+      document.getElementById('location') && (document.getElementById('location').style.display = 'none');
+    }
+  }
+
+  // Love story timeline
+  const tlCont = document.getElementById('timeline-container');
+  if (tlCont && INV.loveStory && INV.loveStory.length) {
+    const bgColors = [
+      'linear-gradient(135deg,#a8d5a2,#5a9e52)',
+      'linear-gradient(135deg,#f7c5a0,#e89060)',
+      'linear-gradient(135deg,#b8d4f0,#6a9fd8)',
+      'linear-gradient(135deg,#f0c0d0,#d88095)',
+      'linear-gradient(135deg,#d4c5a0,#b8a060)',
+    ];
+    tlCont.innerHTML = '<div class="timeline-line"></div>' +
+      INV.loveStory.map(function(item, i) {
+        const side = i % 2 === 0 ? 'left' : 'right';
+        const anim = side === 'left' ? 'slide-left' : 'slide-right';
+        const bg   = item.photo ? 'url(' + item.photo + ')' : bgColors[i % bgColors.length];
+        const content = '<div class="timeline-content ' + side + ' animate-in ' + anim + '">' +
+          '<div class="timeline-photo" style="background:' + bg + ';background-size:cover;background-position:center;"></div>' +
+          '<p class="timeline-date">' + esc(item.date || '') + '</p>' +
+          '<h3 class="timeline-title">' + esc(item.title || '') + '</h3>' +
+          '<p class="timeline-desc">' + esc(item.desc || '') + '</p>' +
+          '</div>';
+        const dot  = '<div class="timeline-dot"></div>';
+        const empty= '<div class="timeline-empty"></div>';
+        return '<div class="timeline-item">' +
+          (side === 'left' ? content + dot + empty : empty + dot + content) +
+          '</div>';
+      }).join('');
+  } else if (tlCont) {
+    document.getElementById('timeline') && (document.getElementById('timeline').style.display = 'none');
+  }
+
+  // Gallery
+  const galleryGrid = document.getElementById('galleryGrid');
+  if (galleryGrid && INV.gallery && INV.gallery.length) {
+    window.__galleryItems = INV.gallery;
+    galleryGrid.innerHTML = INV.gallery.map(function(item, i) {
+      const cat = item.category || 'foto';
+      const bg  = item.url ? 'url(' + item.url + ')' : 'linear-gradient(135deg,#a0b8c0,#607880)';
+      return '<div class="gallery-item" data-category="' + esc(cat) + '" onclick="openLightbox(' + i + ')">' +
+        '<div class="gallery-thumb" style="background:' + bg + ';background-size:cover;background-position:center;"></div>' +
+        '<div class="gallery-overlay">Lihat Foto</div></div>';
+    }).join('');
+    // Update lightbox to use real images
+    window.openLightbox = function(idx) {
+      const items = window.__galleryItems || [];
+      window.currentLightbox = idx;
+      const lb  = document.getElementById('lightbox');
+      const img = document.getElementById('lightboxImg');
+      if (items[idx] && items[idx].url) {
+        img.style.background = '';
+        img.style.backgroundImage = 'url(' + items[idx].url + ')';
+        img.style.backgroundSize = 'cover';
+        img.style.backgroundPosition = 'center';
+        img.textContent = '';
+      } else {
+        img.style.background = 'linear-gradient(135deg,#607880,#304050)';
+        img.textContent = 'Foto ' + (idx + 1);
+      }
+      lb.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    };
+    window.prevLightbox = function() {
+      window.currentLightbox = (window.currentLightbox - 1 + (window.__galleryItems || []).length) % (window.__galleryItems || [1]).length;
+      window.openLightbox(window.currentLightbox);
+    };
+    window.nextLightbox = function() {
+      window.currentLightbox = (window.currentLightbox + 1) % (window.__galleryItems || [1]).length;
+      window.openLightbox(window.currentLightbox);
+    };
+  } else if (galleryGrid) {
+    document.getElementById('gallery') && (document.getElementById('gallery').style.display = 'none');
+  }
+
+  // Bank accounts
+  const bankGrid = document.getElementById('bank-grid');
+  if (bankGrid && INV.bankAccounts && INV.bankAccounts.length) {
+    bankGrid.innerHTML = INV.bankAccounts.map(function(b) {
+      const key  = (b.bankName || '').toLowerCase().replace(/\s+/g,'-');
+      const num  = (b.accountNumber || '').replace(/(\d{4})(?=\d)/g,'$1 ');
+      return '<div class="bank-card">' +
+        '<div class="bank-logo ' + esc(key) + '">' + esc((b.bankName || '').toUpperCase()) + '</div>' +
+        '<p class="bank-type">Bank Transfer</p>' +
+        '<p class="bank-number">' + esc(num) + '</p>' +
+        '<p class="bank-name">a.n. ' + esc(b.accountName || '') + '</p>' +
+        '<button class="btn-copy-bank" onclick="copyText(\'' + esc(b.accountNumber || '') + '\',\'No. Rekening ' + esc(b.bankName || '') + '\')">Salin Nomor</button>' +
+        '</div>';
+    }).join('');
+  }
+
+  // Digital wallets
+  const ewalletGrid  = document.getElementById('ewallet-grid');
+  const ewalletTitle = document.getElementById('ewallet-title');
+  if (ewalletGrid && INV.digitalWallets && INV.digitalWallets.length) {
+    if (ewalletTitle) ewalletTitle.style.display = '';
+    ewalletGrid.innerHTML = INV.digitalWallets.map(function(w) {
+      const cls = (w.provider || 'other').toLowerCase();
+      return '<div class="ewallet-card ' + esc(cls) + '">' +
+        (w.logoUrl ? '<img src="' + esc(w.logoUrl) + '" alt="' + esc(w.label) + '" style="height:36px;object-fit:contain;margin-bottom:8px;">' :
+          '<p class="ewallet-name">' + esc(w.label || w.provider) + '</p>') +
+        '<div class="ewallet-qr">QR</div>' +
+        '<p class="ewallet-phone">' + esc(w.accountNumber || '') + '</p>' +
+        '<p style="font-size:.8rem;color:#666;margin-bottom:8px;">' + esc(w.accountName || '') + '</p>' +
+        '<button class="btn-copy" onclick="copyText(\'' + esc(w.accountNumber || '') + '\',\'' + esc(w.label || w.provider) + '\')">Salin</button>' +
+        '</div>';
+    }).join('');
+  }
+
+  // Hide wallet section entirely if nothing to show
+  if ((!INV.bankAccounts || !INV.bankAccounts.length) && (!INV.digitalWallets || !INV.digitalWallets.length)) {
+    document.getElementById('wallet') && (document.getElementById('wallet').style.display = 'none');
+  }
+
+  // RSVP form — wire up to API
+  if (INV.rsvpEndpoint) {
+    window.submitRSVP = function(e) {
+      e.preventDefault();
+      const name       = document.getElementById('rsvpName').value.trim();
+      const attendance = document.querySelector('input[name="attendance"]:checked');
+      let valid = true;
+      if (!name) { document.getElementById('errName').style.display = 'block'; valid = false; }
+      else { document.getElementById('errName').style.display = 'none'; }
+      if (!attendance) { document.getElementById('errAttendance').style.display = 'block'; valid = false; }
+      else { document.getElementById('errAttendance').style.display = 'none'; }
+      if (!valid) return;
+      const payload = {
+        name,
+        phone_number: document.getElementById('rsvpWA').value,
+        number_of_guests: parseInt(document.getElementById('rsvpGuests').value) || 1,
+        rsvp_status: attendance.value === 'hadir' ? 'attending' : (attendance.value === 'tidak' ? 'not_attending' : 'maybe'),
+        message: document.getElementById('rsvpMessage').value,
+      };
+      fetch(INV.rsvpEndpoint, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','Accept':'application/json','X-Requested-With':'XMLHttpRequest'},
+        body: JSON.stringify(payload)
+      }).then(function(r) {
+        document.getElementById('rsvpForm').style.display = 'none';
+        document.getElementById('rsvpSuccess').style.display = 'block';
+      }).catch(function() {
+        document.getElementById('rsvpForm').style.display = 'none';
+        document.getElementById('rsvpSuccess').style.display = 'block';
+      });
+    };
+  }
+
+  function esc(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+})();
 </script>
 </body>
 </html>

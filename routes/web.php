@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\InvitationPublicApiController;
+use App\Http\Controllers\InvitationPublicController;
 use App\Models\Theme;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -46,3 +48,15 @@ require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
 require __DIR__.'/admin.php';
 require __DIR__.'/customer.php';
+
+// ─── Public invitation API (RSVP & wishes — no auth required) ────────────────
+Route::prefix('api/inv/{code}')->group(function () {
+    Route::post('/rsvp',   [InvitationPublicApiController::class, 'rsvp'])->name('inv.rsvp');
+    Route::get('/wishes',  [InvitationPublicApiController::class, 'wishes'])->name('inv.wishes');
+    Route::post('/wishes', [InvitationPublicApiController::class, 'submitWish'])->name('inv.wishes.submit');
+});
+
+// ─── Public invitation viewer — must be last (catch-all) ─────────────────────
+Route::get('/{code}', [InvitationPublicController::class, 'show'])
+    ->name('invitation.view')
+    ->where('code', '[A-Za-z0-9_-]+');
