@@ -19,6 +19,7 @@ Route::prefix('customer')->name('customer.')->middleware(['auth'])->group(functi
         Route::post('/',                      [InvitationController::class, 'store'])->name('store');
         Route::get('/{invitation}',           fn () => Inertia::render('customer/invitations/show'))->name('show');
         Route::get('/{invitation}/edit',      [InvitationController::class, 'edit'])->name('edit');
+        Route::get('/{slug}/detail',    [InvitationController::class, 'edit'])->name('detail');
         Route::patch('/{invitation}',         [InvitationController::class, 'update'])->name('update');
         Route::delete('/{invitation}',        fn () => abort(501))->name('destroy');
 

@@ -57,7 +57,7 @@ class InvitationController extends Controller
                 ] : null,
                 'first_event_date' => $inv->events->first()?->event_date?->toDateString(),
             ]);
-
+        // dd($invitations);
         return Inertia::render('customer/invitations/index', [
             'invitations' => $invitations,
         ]);
@@ -296,8 +296,9 @@ class InvitationController extends Controller
             ->with('success', 'Undangan berhasil dibuat!');
     }
 
-    public function edit(Invitation $invitation): Response
+    public function edit($slug): Response
     {
+        $invitation = Invitation::where('slug', $slug)->firstOrFail();
         abort_if($invitation->user_id !== auth()->id(), 403);
 
         $invitation->load([

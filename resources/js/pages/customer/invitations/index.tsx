@@ -110,7 +110,7 @@ function CardMenu({ invitation }: { invitation: Invitation }) {
                     <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
                     <div className="absolute right-0 top-9 z-20 w-44 bg-background border border-border rounded-xl shadow-lg overflow-hidden">
                         <Link
-                            href={`/customer/invitations/${invitation.id}/edit`}
+                            href={`/customer/invitations/${invitation.slug}/edit`}
                             className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
                             onClick={() => setOpen(false)}
                         >
@@ -227,10 +227,10 @@ function InvitationCard({ invitation }: { invitation: Invitation }) {
                 {/* Footer actions */}
                 <div className="mt-auto pt-3 border-t border-border flex items-center gap-2">
                     <Link
-                        href={`/customer/invitations/${invitation.id}/edit`}
+                        href={`/customer/invitations/${invitation.slug}/detail`}
                         className="flex-1 text-center rounded-xl border border-border px-3 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors"
                     >
-                        Edit
+                        Edit  
                     </Link>
                     <a
                         href={`/undangan/${invitation.slug}`}
