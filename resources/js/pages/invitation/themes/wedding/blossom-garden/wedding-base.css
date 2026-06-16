@@ -1,0 +1,341 @@
+/* ── Wedding Base Theme CSS ──────────────────────────────────────────────────── */
+.wb-root {
+  --wb-green: #2D5016;
+  --wb-green-light: #3d6b1f;
+  --wb-gold: #C9A84C;
+  --wb-gold-light: #E8D5A3;
+  --wb-ivory: #FDF8F0;
+  --wb-rose: #E8B4B8;
+  --wb-charcoal: #2C2C2C;
+}
+
+.wb-root * { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+.wb-root {
+  font-family: 'Lato', sans-serif;
+  background: var(--wb-ivory);
+  color: var(--wb-charcoal);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ── Overlay ─────────────────────────────────────────────────────────────────── */
+.wb-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: linear-gradient(135deg, #1a3009 0%, #2D5016 50%, #1a3009 100%);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.8s cubic-bezier(0.77,0,0.175,1), opacity 0.8s ease;
+}
+.wb-overlay.hide { transform: translateY(-100%); opacity: 0; pointer-events: none; }
+.wb-overlay-frame {
+  position: relative; padding: 60px 50px; text-align: center; max-width: 500px; width: 90%;
+  border: 1px solid rgba(201,168,76,0.4);
+}
+.wb-overlay-frame::before { content: ''; position: absolute; top: -2px; left: -2px; width: 40px; height: 40px; border-width: 2px 0 0 2px; border-color: var(--wb-gold); border-style: solid; }
+.wb-overlay-frame::after  { content: ''; position: absolute; bottom: -2px; right: -2px; width: 40px; height: 40px; border-width: 0 2px 2px 0; border-color: var(--wb-gold); border-style: solid; }
+.wb-corner-tr { position: absolute; top: -2px; right: -2px; width: 40px; height: 40px; border-width: 2px 2px 0 0; border-color: var(--wb-gold); border-style: solid; }
+.wb-corner-bl { position: absolute; bottom: -2px; left: -2px; width: 40px; height: 40px; border-width: 0 0 2px 2px; border-color: var(--wb-gold); border-style: solid; }
+.wb-overlay-bismillah { color: var(--wb-gold-light); font-size: 1.8rem; margin-bottom: 20px; letter-spacing: 2px; }
+.wb-overlay-of { color: rgba(232,213,163,0.7); font-family: 'Lato', sans-serif; font-size: 0.75rem; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 12px; }
+.wb-overlay-names { font-family: 'Playfair Display', serif; color: var(--wb-gold-light); font-size: 2rem; line-height: 1.3; margin-bottom: 6px; }
+.wb-overlay-amp { color: var(--wb-gold); font-size: 1.2rem; display: block; margin: 4px 0; }
+.wb-overlay-date { color: rgba(232,213,163,0.8); font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; letter-spacing: 2px; margin: 20px 0 30px; }
+.wb-overlay-divider { width: 80px; height: 1px; background: linear-gradient(to right, transparent, var(--wb-gold), transparent); margin: 15px auto; }
+.wb-overlay-leaves { position: absolute; font-size: 2rem; opacity: 0.3; }
+.wb-leaf-tl { top: 10px; left: 10px; transform: rotate(-45deg); }
+.wb-leaf-tr { top: 10px; right: 10px; transform: rotate(45deg); }
+.wb-leaf-bl { bottom: 10px; left: 10px; transform: rotate(-135deg); }
+.wb-leaf-br { bottom: 10px; right: 10px; transform: rotate(135deg); }
+.wb-btn-open {
+  background: var(--wb-green); color: var(--wb-gold-light); border: 2px solid var(--wb-gold);
+  padding: 14px 40px; font-family: 'Lato', sans-serif; font-size: 0.85rem; letter-spacing: 3px;
+  text-transform: uppercase; cursor: pointer; transition: all 0.3s ease;
+}
+.wb-btn-open:hover { background: var(--wb-gold); color: var(--wb-green); transform: translateY(-2px); }
+
+/* ── Main Content ─────────────────────────────────────────────────────────────── */
+.wb-main { opacity: 0; transition: opacity 0.8s ease 0.3s; }
+.wb-main.visible { opacity: 1; }
+
+/* ── Sections ─────────────────────────────────────────────────────────────────── */
+.wb-section { padding: 80px 20px; }
+.wb-section-title {
+  font-family: 'Playfair Display', serif; font-size: 2.5rem; text-align: center;
+  margin-bottom: 10px; color: var(--wb-charcoal);
+}
+.wb-section-title.light { color: var(--wb-ivory); }
+.wb-section-sub { text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: #666; margin-bottom: 50px; }
+.wb-gold-divider { display: flex; align-items: center; justify-content: center; gap: 15px; margin: 15px 0 40px; }
+.wb-gold-divider::before, .wb-gold-divider::after { content: ''; flex: 1; max-width: 100px; height: 1px; background: linear-gradient(to right, transparent, var(--wb-gold)); }
+.wb-gold-divider::after { background: linear-gradient(to left, transparent, var(--wb-gold)); }
+.wb-gold-divider span { color: var(--wb-gold); font-size: 1.2rem; }
+
+/* ── Hero ─────────────────────────────────────────────────────────────────────── */
+.wb-hero {
+  min-height: 100vh; background: var(--wb-ivory);
+  background-image: radial-gradient(ellipse at 20% 20%, rgba(45,80,22,0.05) 0%, transparent 60%),
+                    radial-gradient(ellipse at 80% 80%, rgba(201,168,76,0.08) 0%, transparent 60%);
+  display: flex; align-items: center; justify-content: center; text-align: center; position: relative; padding: 100px 20px;
+}
+.wb-hero-frame { border: 1px solid var(--wb-gold-light); padding: 60px 40px; max-width: 700px; width: 100%; position: relative; }
+.wb-hero-label { font-family: 'Lato', sans-serif; font-size: 0.7rem; letter-spacing: 5px; text-transform: uppercase; color: var(--wb-gold); margin-bottom: 20px; }
+.wb-hero-name { font-family: 'Playfair Display', serif; font-size: clamp(3rem, 8vw, 5rem); line-height: 1; color: var(--wb-green); }
+.wb-hero-amp { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 5vw, 3rem); color: var(--wb-gold); display: block; margin: 5px 0; font-style: italic; }
+.wb-hero-photo {
+  width: 200px; height: 200px; border-radius: 50%; margin: 25px auto;
+  background: linear-gradient(135deg, var(--wb-green), var(--wb-gold));
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-family: 'Playfair Display', serif; font-size: 2rem;
+  border: 4px solid var(--wb-gold-light); box-shadow: 0 10px 40px rgba(45,80,22,0.3);
+  animation: wbFloat 3s ease-in-out infinite;
+  background-size: cover; background-position: center;
+  overflow: hidden;
+}
+.wb-hero-date { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: #555; margin: 20px 0; letter-spacing: 3px; }
+.wb-scroll-indicator { margin-top: 30px; animation: wbFloat 2s ease-in-out infinite; color: var(--wb-gold); font-size: 1.5rem; }
+
+/* ── Countdown ─────────────────────────────────────────────────────────────────── */
+.wb-countdown { display: flex; gap: 15px; justify-content: center; margin: 25px 0; flex-wrap: wrap; }
+.wb-countdown-box {
+  background: white; border: 2px solid var(--wb-gold-light); padding: 15px 20px; min-width: 80px; text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+.wb-countdown-num { font-family: 'Playfair Display', serif; font-size: 2.5rem; color: var(--wb-green); display: block; line-height: 1; animation: wbPulse 2s ease-in-out infinite; }
+.wb-countdown-label { font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: var(--wb-gold); display: block; margin-top: 5px; }
+
+/* ── Bismillah ─────────────────────────────────────────────────────────────────── */
+.wb-bismillah { background: var(--wb-green); padding: 80px 20px; text-align: center; }
+.wb-arabic { font-size: clamp(2rem, 5vw, 3.5rem); color: white; line-height: 1.6; margin: 20px 0; direction: rtl; }
+.wb-quran-verse { max-width: 700px; margin: 20px auto; color: var(--wb-gold-light); font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-style: italic; line-height: 1.8; }
+.wb-quran-ref { color: var(--wb-gold); font-size: 0.9rem; margin-top: 10px; letter-spacing: 2px; }
+.wb-gold-line { width: 200px; height: 1px; background: linear-gradient(to right, transparent, var(--wb-gold), transparent); margin: 20px auto; }
+
+/* ── Couple ─────────────────────────────────────────────────────────────────────── */
+.wb-couple { background: var(--wb-ivory); }
+.wb-couple-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 30px; align-items: center; max-width: 900px; margin: 0 auto; }
+.wb-couple-card {
+  background: white; padding: 40px 30px; text-align: center;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.07); border: 1px solid var(--wb-gold-light); position: relative;
+}
+.wb-couple-badge { display: inline-block; background: var(--wb-green); color: var(--wb-gold-light); font-size: 0.7rem; letter-spacing: 2px; padding: 5px 15px; margin-bottom: 20px; text-transform: uppercase; }
+.wb-couple-photo {
+  width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 20px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-family: 'Playfair Display', serif; font-size: 1.8rem;
+  border: 3px solid var(--wb-gold-light);
+  background-size: cover; background-position: center;
+  overflow: hidden;
+}
+.wb-groom-photo { background: linear-gradient(135deg, var(--wb-green), #5a8a30); }
+.wb-bride-photo  { background: linear-gradient(135deg, var(--wb-rose), #d4a0a4); }
+.wb-couple-name   { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--wb-charcoal); margin-bottom: 8px; }
+.wb-couple-child  { font-family: 'Cormorant Garamond', serif; font-size: 0.9rem; color: var(--wb-gold); letter-spacing: 1px; margin-bottom: 8px; }
+.wb-couple-parents{ font-size: 0.9rem; color: #666; line-height: 1.6; margin-bottom: 15px; }
+.wb-couple-bio    { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: #777; font-style: italic; line-height: 1.6; }
+.wb-heart-center  { font-size: 3rem; color: var(--wb-gold); text-align: center; animation: wbPulse 2s ease-in-out infinite; }
+
+/* ── Events ─────────────────────────────────────────────────────────────────────── */
+.wb-events-bg { background: var(--wb-green); }
+.wb-events-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; max-width: 900px; margin: 0 auto; }
+.wb-event-card { background: white; padding: 40px 35px; text-align: center; position: relative; border-top: 4px solid var(--wb-gold); }
+.wb-event-icon  { font-size: 3rem; margin-bottom: 15px; display: block; }
+.wb-event-type  { font-family: 'Lato', sans-serif; font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase; color: var(--wb-gold); margin-bottom: 10px; }
+.wb-event-name  { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--wb-green); margin-bottom: 20px; }
+.wb-event-detail{ margin: 8px 0; font-size: 0.95rem; color: #555; line-height: 1.6; }
+.wb-event-divider{ width: 50px; height: 1px; background: var(--wb-gold-light); margin: 20px auto; }
+.wb-btn-event {
+  display: inline-block; margin: 8px 5px; padding: 10px 20px;
+  border: 1px solid var(--wb-green); color: var(--wb-green); font-size: 0.8rem; letter-spacing: 1px;
+  cursor: pointer; transition: all 0.3s; text-decoration: none; background: transparent;
+}
+.wb-btn-event:hover { background: var(--wb-green); color: white; }
+
+/* ── Location ─────────────────────────────────────────────────────────────────── */
+.wb-map-wrapper { border: 3px solid var(--wb-gold-light); margin: 30px 0; overflow: hidden; }
+.wb-btn-maps {
+  display: inline-block; background: var(--wb-green); color: white; padding: 14px 35px;
+  text-decoration: none; font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase;
+  transition: all 0.3s; border: 2px solid var(--wb-green);
+}
+.wb-btn-maps:hover { background: transparent; color: var(--wb-green); }
+
+/* ── Timeline ─────────────────────────────────────────────────────────────────── */
+.wb-timeline-container { max-width: 900px; margin: 0 auto; position: relative; }
+.wb-timeline-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--wb-gold-light), var(--wb-gold), var(--wb-gold-light)); transform: translateX(-50%); }
+.wb-timeline-item { display: grid; grid-template-columns: 1fr 60px 1fr; gap: 0; margin-bottom: 50px; align-items: center; }
+.wb-timeline-content { padding: 25px; background: white; box-shadow: 0 5px 20px rgba(0,0,0,0.07); border: 1px solid var(--wb-gold-light); }
+.wb-timeline-content.left { grid-column: 1; text-align: right; }
+.wb-timeline-content.right { grid-column: 3; text-align: left; }
+.wb-timeline-dot { grid-column: 2; width: 20px; height: 20px; background: var(--wb-gold); border-radius: 50%; margin: 0 auto; border: 3px solid var(--wb-ivory); box-shadow: 0 0 0 2px var(--wb-gold); }
+.wb-timeline-date  { font-family: 'Cormorant Garamond', serif; color: var(--wb-gold); font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+.wb-timeline-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--wb-green); margin-bottom: 10px; }
+.wb-timeline-desc  { font-size: 0.9rem; color: #666; line-height: 1.7; }
+.wb-timeline-photo { width: 100%; height: 80px; border-radius: 4px; margin-bottom: 12px; background-size: cover; background-position: center; }
+
+/* ── Gallery ─────────────────────────────────────────────────────────────────── */
+.wb-gallery-bg { background: white; }
+.wb-gallery-filter-bar { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
+.wb-filter-btn {
+  padding: 8px 25px; border: 1px solid var(--wb-gold); background: transparent; color: var(--wb-charcoal);
+  cursor: pointer; font-family: 'Lato', sans-serif; font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s;
+}
+.wb-filter-btn:hover, .wb-filter-btn-active { background: var(--wb-green); color: white; border-color: var(--wb-green); }
+.wb-gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 1000px; margin: 0 auto; }
+.wb-gallery-item { position: relative; overflow: hidden; cursor: pointer; }
+.wb-gallery-item:nth-child(3n+1) { grid-row: span 2; }
+.wb-gallery-thumb { width: 100%; height: 250px; display: block; transition: transform 0.5s ease; background-size: cover; background-position: center; }
+.wb-gallery-item:nth-child(3n+1) .wb-gallery-thumb { height: 100%; min-height: 515px; }
+.wb-gallery-overlay {
+  position: absolute; inset: 0; background: rgba(45,80,22,0.7); opacity: 0; transition: opacity 0.3s;
+  display: flex; align-items: center; justify-content: center; color: white;
+  font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; letter-spacing: 2px;
+}
+.wb-gallery-item:hover .wb-gallery-overlay { opacity: 1; }
+.wb-gallery-item:hover .wb-gallery-thumb { transform: scale(1.05); }
+
+/* ── Dress Code ─────────────────────────────────────────────────────────────── */
+.wb-dresscode-bg { background: var(--wb-green); }
+.wb-dresscode-note { color: var(--wb-gold-light); font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; text-align: center; max-width: 600px; margin: 0 auto 40px; font-style: italic; line-height: 1.8; }
+.wb-color-swatches { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin-bottom: 40px; }
+.wb-swatch { text-align: center; }
+.wb-swatch-circle { width: 120px; height: 120px; border-radius: 50%; margin: 0 auto 10px; border: 3px solid rgba(255,255,255,0.2); transition: transform 0.3s; }
+.wb-swatch:hover .wb-swatch-circle { transform: scale(1.1); }
+.wb-swatch-name { color: var(--wb-gold-light); font-size: 0.8rem; letter-spacing: 1px; }
+.wb-swatch-hex  { color: rgba(232,213,163,0.6); font-size: 0.75rem; }
+.wb-dresscode-rules ul { list-style: none; max-width: 500px; margin: 0 auto; }
+.wb-dresscode-rules li { color: var(--wb-gold-light); font-size: 0.95rem; padding: 8px 0 8px 25px; position: relative; border-bottom: 1px solid rgba(201,168,76,0.2); }
+.wb-dresscode-rules li::before { content: '✦'; position: absolute; left: 0; color: var(--wb-gold); font-size: 0.8rem; }
+
+/* ── Digital Wallet ─────────────────────────────────────────────────────────── */
+.wb-wallet-subtitle { text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: #666; max-width: 500px; margin: 0 auto 40px; font-style: italic; line-height: 1.7; }
+.wb-bank-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; max-width: 700px; margin: 0 auto 50px; }
+.wb-bank-card { background: white; border: 1px solid var(--wb-gold-light); padding: 30px 25px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.06); }
+.wb-bank-logo  { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; margin-bottom: 5px; color: var(--wb-charcoal); }
+.wb-bank-type  { font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: #999; margin-bottom: 15px; }
+.wb-bank-number{ font-family: 'Lato', sans-serif; font-size: 1.3rem; letter-spacing: 3px; color: var(--wb-charcoal); margin: 10px 0 5px; font-weight: 700; }
+.wb-bank-name  { font-size: 0.85rem; color: #666; margin-bottom: 15px; }
+.wb-btn-copy-bank {
+  background: var(--wb-green); border: none; color: var(--wb-gold-light);
+  padding: 8px 20px; font-size: 0.8rem; cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+}
+.wb-btn-copy-bank:hover { background: var(--wb-gold); color: var(--wb-green); }
+.wb-ewallet-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; max-width: 900px; margin: 0 auto; }
+.wb-ewallet-card { padding: 25px 15px; text-align: center; color: white; border-radius: 2px; }
+.wb-ewallet-card.ewallet-dana   { background: linear-gradient(135deg, #118EEA, #0077cc); }
+.wb-ewallet-card.ewallet-ovo    { background: linear-gradient(135deg, #4c2a86, #7b4fa6); }
+.wb-ewallet-card.ewallet-gopay  { background: linear-gradient(135deg, #00AED6, #007a99); }
+.wb-ewallet-card.ewallet-shopee { background: linear-gradient(135deg, #EE4D2D, #cc3a1f); }
+.wb-ewallet-card                { background: linear-gradient(135deg, #555, #333); }
+.wb-ewallet-name  { font-weight: 700; font-size: 1rem; margin-bottom: 10px; letter-spacing: 1px; }
+.wb-ewallet-phone { font-size: 0.8rem; margin: 5px 0; opacity: 0.9; }
+.wb-btn-copy-ewallet {
+  background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white;
+  padding: 6px 15px; font-size: 0.75rem; cursor: pointer; transition: all 0.3s; letter-spacing: 1px;
+}
+.wb-btn-copy-ewallet:hover { background: rgba(255,255,255,0.4); }
+.wb-ewallet-title { text-align: center; font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--wb-charcoal); margin: 40px 0 25px; }
+
+/* ── RSVP ─────────────────────────────────────────────────────────────────────── */
+.wb-rsvp-form { max-width: 600px; margin: 0 auto; background: white; padding: 50px 40px; border: 1px solid var(--wb-gold-light); box-shadow: 0 10px 40px rgba(0,0,0,0.07); }
+.wb-rsvp-label { display: block; font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; color: var(--wb-green); margin-bottom: 8px; font-weight: 700; }
+.wb-rsvp-input, .wb-rsvp-select, .wb-rsvp-textarea {
+  width: 100%; padding: 12px 15px; border: 1px solid #ddd; font-family: 'Lato', sans-serif; font-size: 0.95rem;
+  background: var(--wb-ivory); transition: border-color 0.3s; outline: none;
+}
+.wb-rsvp-input:focus, .wb-rsvp-select:focus, .wb-rsvp-textarea:focus { border-color: var(--wb-gold); }
+.wb-rsvp-radio-group { display: flex; flex-direction: column; gap: 12px; }
+.wb-rsvp-radio-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.95rem; color: #555; }
+.wb-rsvp-error { color: #e74c3c; font-size: 0.8rem; margin-top: 5px; }
+.wb-rsvp-submit {
+  width: 100%; background: var(--wb-green); color: var(--wb-gold-light); border: none;
+  padding: 16px; font-family: 'Lato', sans-serif; font-size: 0.85rem; letter-spacing: 3px;
+  text-transform: uppercase; cursor: pointer; transition: all 0.3s;
+}
+.wb-rsvp-submit:hover { background: var(--wb-gold); color: var(--wb-green); }
+.wb-rsvp-success { text-align: center; padding: 30px; }
+
+/* ── Wishes ─────────────────────────────────────────────────────────────────── */
+.wb-wishes-bg { background: white; }
+.wb-wishes-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 1000px; margin: 0 auto; }
+.wb-wishes-form { background: var(--wb-ivory); padding: 35px; border: 1px solid var(--wb-gold-light); }
+.wb-wishes-form-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--wb-green); margin-bottom: 25px; }
+.wb-wish-input { width: 100%; padding: 12px 15px; border: 1px solid #ddd; margin-bottom: 15px; font-family: 'Lato', sans-serif; font-size: 0.9rem; background: white; outline: none; transition: border-color 0.3s; }
+.wb-wish-input:focus { border-color: var(--wb-gold); }
+.wb-wish-btn { background: var(--wb-green); color: var(--wb-gold-light); border: none; padding: 12px 30px; width: 100%; cursor: pointer; font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s; }
+.wb-wish-btn:hover { background: var(--wb-gold); color: var(--wb-green); }
+.wb-wish-card { background: var(--wb-ivory); padding: 20px; border-left: 3px solid var(--wb-gold); }
+.wb-wish-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
+.wb-wish-name   { font-weight: 700; font-size: 0.9rem; color: var(--wb-charcoal); }
+.wb-wish-date   { font-size: 0.75rem; color: #999; }
+.wb-wish-message{ font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: #555; line-height: 1.7; }
+.wb-btn-more { display: block; margin: 20px auto 0; background: transparent; border: 1px solid var(--wb-gold); color: var(--wb-gold); padding: 10px 25px; cursor: pointer; font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s; }
+.wb-btn-more:hover { background: var(--wb-gold); color: var(--wb-green); }
+
+/* ── Closing ─────────────────────────────────────────────────────────────────── */
+.wb-closing {
+  min-height: 100vh; background: var(--wb-green); display: flex; align-items: center; justify-content: center; text-align: center;
+  background-image: radial-gradient(ellipse at 50% 50%, rgba(201,168,76,0.1) 0%, transparent 70%);
+  padding: 80px 20px;
+}
+.wb-closing-frame { border: 1px solid rgba(201,168,76,0.4); padding: 80px 60px; max-width: 600px; width: 100%; position: relative; }
+.wb-closing-title { font-family: 'Playfair Display', serif; color: var(--wb-gold); font-size: clamp(2rem, 6vw, 4rem); margin-bottom: 15px; }
+.wb-closing-sub   { color: var(--wb-gold-light); font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-style: italic; margin-bottom: 30px; line-height: 1.7; }
+.wb-closing-from  { color: rgba(232,213,163,0.7); font-size: 0.8rem; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 15px; }
+.wb-closing-names { font-family: 'Playfair Display', serif; color: white; font-size: 2rem; line-height: 1.4; margin-bottom: 20px; }
+.wb-closing-family{ color: var(--wb-gold-light); font-size: 0.9rem; line-height: 1.8; margin-bottom: 30px; }
+.wb-closing-credit{ color: rgba(232,213,163,0.4); font-size: 0.75rem; letter-spacing: 2px; margin-top: 30px; }
+
+/* ── Toast ─────────────────────────────────────────────────────────────────────── */
+.wb-toast {
+  background: var(--wb-green); color: white; padding: 12px 30px; font-size: 0.9rem;
+  letter-spacing: 1px; border: 1px solid var(--wb-gold);
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}
+
+/* ── Back to Top ─────────────────────────────────────────────────────────────── */
+.wb-back-top {
+  position: fixed; bottom: 80px; right: 25px; z-index: 999;
+  width: 45px; height: 45px; background: var(--wb-green); border: 1px solid var(--wb-gold);
+  color: var(--wb-gold); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+  transition: all 0.3s;
+}
+.wb-back-top:hover { background: var(--wb-gold); color: var(--wb-green); }
+
+/* ── Animations ─────────────────────────────────────────────────────────────── */
+@keyframes wbFloat { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+@keyframes wbPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@keyframes wbFadeInUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+.wb-anim-up { opacity: 0; transform: translateY(40px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.wb-anim-up.wb-visible { opacity: 1; transform: translateY(0); }
+
+/* ── Responsive ─────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .wb-couple-grid  { grid-template-columns: 1fr; gap: 20px; }
+  .wb-heart-center { grid-row: 2; }
+  .wb-events-grid  { grid-template-columns: 1fr; }
+  .wb-gallery-grid { grid-template-columns: repeat(2, 1fr); }
+  .wb-gallery-item:nth-child(3n+1) { grid-row: span 1; }
+  .wb-gallery-item:nth-child(3n+1) .wb-gallery-thumb { min-height: 200px; height: 200px; }
+  .wb-ewallet-grid { grid-template-columns: repeat(2, 1fr); }
+  .wb-bank-grid    { grid-template-columns: 1fr; }
+  .wb-wishes-layout{ grid-template-columns: 1fr; }
+  .wb-timeline-item{ grid-template-columns: 1fr; position: relative; padding-left: 30px; }
+  .wb-timeline-line{ left: 10px; }
+  .wb-timeline-content.left,
+  .wb-timeline-content.right { grid-column: 1; text-align: left; }
+  .wb-timeline-dot { position: absolute; left: 0; margin: 0; }
+  .wb-closing-frame{ padding: 50px 30px; }
+  .wb-rsvp-form    { padding: 30px 20px; }
+  .wb-overlay-frame{ padding: 40px 25px; }
+  .wb-section      { padding: 60px 20px; }
+}
+@media (max-width: 480px) {
+  .wb-gallery-grid { grid-template-columns: 1fr; }
+  .wb-ewallet-grid { grid-template-columns: 1fr 1fr; }
+  .wb-hero-frame   { padding: 40px 20px; }
+  .wb-color-swatches { gap: 15px; }
+  .wb-swatch-circle  { width: 90px; height: 90px; }
+}

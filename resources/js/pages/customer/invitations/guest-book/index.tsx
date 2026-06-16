@@ -11,7 +11,7 @@ import {
     Trash2,
     UserCheck,
     UserMinus,
-    UserQuestion,
+    HelpCircle,
     Users,
     X,
 } from 'lucide-react';
@@ -101,7 +101,7 @@ function StatsBar({ stats }: { stats: Stats }) {
         { label: 'Total Tamu', value: stats.total, icon: Users, color: 'text-blue-500' },
         { label: 'Hadir', value: stats.attending, icon: UserCheck, color: 'text-emerald-500' },
         { label: 'Tidak Hadir', value: stats.notAttending, icon: UserMinus, color: 'text-red-500' },
-        { label: 'Masih Ragu', value: stats.maybe, icon: UserQuestion, color: 'text-amber-500' },
+        { label: 'Masih Ragu', value: stats.maybe, icon: HelpCircle, color: 'text-amber-500' },
         { label: 'Check-in', value: stats.checkedIn, icon: CheckSquare, color: 'text-violet-500' },
         { label: 'Jml Kepala', value: stats.totalHeads, icon: Users, color: 'text-sky-500' },
     ];

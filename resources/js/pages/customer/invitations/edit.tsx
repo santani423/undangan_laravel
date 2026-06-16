@@ -2378,7 +2378,7 @@ export default function InvitationsEdit({
 
     function handleSubmit() {
         setSubmitting(true);
-        router.patch(`/customer/invitations/${invitation.id}`, {
+        router.patch(`/customer/invitations/${invitation.slug}`, {
             status,
             field_values:  fieldValues,
             acara_events:  acaraEvents.map((ev) => ({

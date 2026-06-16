@@ -35,16 +35,15 @@ class InvitationPublicApiController extends Controller
         ]);
 
         $guest = Guest::create([
-            'invitation_id'    => $invitation->id,
-            'name'             => $data['name'],
-            'phone_number'     => $data['phone_number'] ?? null,
-            'rsvp_headcount'   => $data['number_of_guests'] ?? 1,
-            'rsvp_status'      => $data['rsvp_status'] ?? 'attending',
-            'rsvp_notes'       => $data['message'] ?? null,
-            'rsvp_submitted_at'=> now(),
+            'invitation_id'     => $invitation->id,
+            'name'              => $data['name'],
+            'phone_number'      => $data['phone_number'] ?? null,
+            'rsvp_headcount'    => $data['number_of_guests'] ?? 1,
+            'rsvp_status'       => $data['rsvp_status'] ?? 'attending',
+            'rsvp_notes'        => $data['message'] ?? null,
+            'rsvp_submitted_at' => now(),
         ]);
 
-        // If message included, also save as a comment/wish
         if (! empty($data['message']) && $invitation->allow_guest_comments) {
             Comment::create([
                 'invitation_id' => $invitation->id,
@@ -57,23 +56,34 @@ class InvitationPublicApiController extends Controller
         return response()->json(['success' => true, 'guest_id' => $guest->id], 201);
     }
 
-    /** GET /api/inv/{code}/wishes */
-    public function wishes(string $code): JsonResponse
+    /**
+     * GET /api/inv/{code}/wishes
+     *
+     * Supports pagination via ?page= query param (10 items per page).
+     */
+    public function wishes(Request $request, string $code): JsonResponse
     {
         $invitation = $this->findActive($code);
+        $page       = max(1, (int) $request->query('page', 1));
+        $perPage    = 10;
 
         $comments = Comment::where('invitation_id', $invitation->id)
             ->where('status', 'approved')
             ->orderByDesc('approved_at')
-            ->limit(50)
-            ->get(['id', 'author_name', 'content', 'approved_at'])
-            ->map(fn ($c) => [
-                'name'    => $c->author_name,
-                'message' => $c->content,
-                'date'    => $c->approved_at ? $c->approved_at->diffForHumans() : '',
-            ]);
+            ->paginate($perPage, ['id', 'author_name', 'content', 'approved_at'], 'page', $page);
 
-        return response()->json(['wishes' => $comments]);
+        $wishes = collect($comments->items())->map(fn ($c) => [
+            'name'    => $c->author_name,
+            'message' => $c->content,
+            'date'    => $c->approved_at ? $c->approved_at->diffForHumans() : '',
+        ]);
+
+        return response()->json([
+            'wishes'       => $wishes,
+            'current_page' => $comments->currentPage(),
+            'last_page'    => $comments->lastPage(),
+            'total'        => $comments->total(),
+        ]);
     }
 
     /** POST /api/inv/{code}/wishes */
@@ -95,6 +105,9 @@ class InvitationPublicApiController extends Controller
             'status'        => 'pending',
         ]);
 
-        return response()->json(['success' => true, 'message' => 'Ucapan berhasil dikirim dan menunggu persetujuan.'], 201);
+        return response()->json([
+            'success' => true,
+            'message' => 'Ucapan berhasil dikirim dan menunggu persetujuan.',
+        ], 201);
     }
 }

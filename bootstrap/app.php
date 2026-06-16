@@ -17,6 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
+
+        // Public invitation API endpoints — no session/CSRF needed
+        $middleware->validateCsrfTokens(except: [
+            'api/inv/*/rsvp',
+            'api/inv/*/wishes',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

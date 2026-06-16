@@ -1,0 +1,89 @@
+import type {
+    BirthdayInvitation,
+    InvitationData,
+    WeddingInvitation,
+} from '@/types/invitation';
+import { Head } from '@inertiajs/react';
+import BirthdayStarryNight from './themes/birthday/BirthdayStarryNight';
+import WeddingBase from './themes/wedding/blossom-garden/WeddingBase';
+
+interface Props {
+    invitation: InvitationData;
+    themeSlug: string;
+}
+
+function resolveThemeComponent(
+    themeSlug: string,
+    invitation: InvitationData,
+): React.ReactNode {
+    console.log(
+        `Resolving theme component for slug: ${themeSlug}, invitation type: ${invitation.type}`,
+    );
+
+    switch (themeSlug) {
+        // Birthday themes
+        case 'birthday':
+        case 'starry-night':
+            return (
+                <BirthdayStarryNight
+                    invitation={invitation as BirthdayInvitation}
+                />
+            );
+
+        // Wedding themes
+        case 'wedding':
+        case 'blossom-garden':
+        case 'rustic-charm':
+            return (
+                <WeddingBase
+                    invitation={invitation as WeddingInvitation}
+                />
+            );
+
+        // Fallback
+        default:
+            return (
+                <div
+                    style={{
+                        minHeight: '100vh',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontFamily: 'sans-serif',
+                    }}
+                >
+                    <div style={{ textAlign: 'center' }}>
+                        <h1
+                            style={{
+                                fontSize: '2rem',
+                                marginBottom: '1rem',
+                            }}
+                        >
+                            {invitation.title || 'Undangan Digital'}
+                        </h1>
+                        <p style={{ color: '#666' }}>
+                            Tema "{themeSlug}" sedang dalam pengembangan.
+                        </p>
+                    </div>
+                </div>
+            );
+    }
+}
+
+export default function InvitationShow({
+    invitation,
+    themeSlug,
+}: Props) {
+    return (
+        <>
+            <Head
+                title={
+                    invitation.pageTitle ||
+                    invitation.title ||
+                    'Undangan Digital'
+                }
+            />
+            {resolveThemeComponent(themeSlug, invitation)}
+        </>
+    );
+}
