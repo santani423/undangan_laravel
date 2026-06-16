@@ -1899,7 +1899,8 @@ function SettingsTab({
         formData.append('music_file', file);
 
         setMusicUploading(true);
-        const xsrfToken = decodeURIComponent(document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ?? '');
+        const rawCookie = document.cookie.split('; ').find((c) => c.startsWith('XSRF-TOKEN='))?.split('=').slice(1).join('=') ?? '';
+        const xsrfToken = rawCookie ? decodeURIComponent(rawCookie) : (document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '');
         fetch(`/customer/invitations/${slug}/upload-music`, {
             method: 'POST',
             headers: {
@@ -1944,7 +1945,7 @@ function SettingsTab({
     }
 
     const selectedLibraryTrack = musicLibrary.find((t) => t.id === musicLibraryId);
-    const previewUrl = `${window.location.origin}/undangan/${code}`;
+    const previewUrl = `${window.location.origin}/${code}`;
 
     return (
         <div className="flex flex-col gap-6">

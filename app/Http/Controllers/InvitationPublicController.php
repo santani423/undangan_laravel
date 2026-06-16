@@ -12,6 +12,7 @@ class InvitationPublicController extends Controller
 {
     public function show(Request $request, string $code): Response
     {   
+  
         $invitation = Invitation::with([
             'theme',
             'settings',
@@ -21,9 +22,12 @@ class InvitationPublicController extends Controller
             'digitalWallets' => fn ($q) => $q->wherePivot('is_displayed', true)->orderByPivot('display_order'),
         ])
         ->where('invitation_code', $code)
-        ->active()
+     
         ->firstOrFail();
-
+        // $invitation = Invitation::where('invitation_code', $code)
+ 
+        // ->first();
+   
         abort_if($invitation->isExpired(), 410, 'Undangan ini sudah tidak aktif.');
 
         $theme = $invitation->theme;

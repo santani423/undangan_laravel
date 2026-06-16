@@ -4,14 +4,15 @@ interface MusicPlayerProps {
     url: string;
     autoplay?: boolean;
     loop?: boolean;
+    triggerPlay?: boolean;
     buttonStyle?: React.CSSProperties;
     buttonClassName?: string;
 }
 
-export default function MusicPlayer({ url, autoplay = false, loop = true, buttonStyle, buttonClassName = '' }: MusicPlayerProps) {
+export default function MusicPlayer({ url, autoplay = false, loop = true, triggerPlay = false, buttonStyle, buttonClassName = '' }: MusicPlayerProps) {
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const [playing, setPlaying] = useState(false);
-    const [volume, setVolume] = useState(0.35);
+    const [volume] = useState(0.35);
 
     useEffect(() => {
         if (!url) return;
@@ -20,15 +21,17 @@ export default function MusicPlayer({ url, autoplay = false, loop = true, button
         audio.volume = volume;
         audioRef.current = audio;
 
-        if (autoplay) {
-            audio.play().then(() => setPlaying(true)).catch(() => {});
-        }
-
         return () => {
             audio.pause();
             audio.src = '';
         };
     }, [url]);
+
+    // Autoplay dipicu saat triggerPlay menjadi true (setelah user gesture)
+    useEffect(() => {
+        if (!triggerPlay || !autoplay || !audioRef.current) return;
+        audioRef.current.play().then(() => setPlaying(true)).catch(() => {});
+    }, [triggerPlay]);
 
     useEffect(() => {
         if (audioRef.current) audioRef.current.loop = loop;

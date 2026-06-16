@@ -552,6 +552,7 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                     url={invitation.music.url}
                     autoplay={invitation.music.autoplay}
                     loop={invitation.music.loop}
+                    triggerPlay={opened}
                     buttonStyle={{ background: 'var(--wb-green)', border: '1px solid var(--wb-gold)', color: 'var(--wb-gold)' }}
                 />
             )}
