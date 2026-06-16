@@ -47,8 +47,8 @@ class InvitationPublicApiController extends Controller
         if (! empty($data['message']) && $invitation->allow_guest_comments) {
             Comment::create([
                 'invitation_id' => $invitation->id,
-                'author_name'   => $data['name'],
-                'content'       => $data['message'],
+                'guest_name'    => $data['name'],
+                'comment_text'  => $data['message'],
                 'status'        => 'pending',
             ]);
         }
@@ -70,11 +70,11 @@ class InvitationPublicApiController extends Controller
         $comments = Comment::where('invitation_id', $invitation->id)
             ->where('status', 'approved')
             ->orderByDesc('approved_at')
-            ->paginate($perPage, ['id', 'author_name', 'content', 'approved_at'], 'page', $page);
+            ->paginate($perPage, ['id', 'guest_name', 'comment_text', 'approved_at'], 'page', $page);
 
         $wishes = collect($comments->items())->map(fn ($c) => [
-            'name'    => $c->author_name,
-            'message' => $c->content,
+            'name'    => $c->guest_name,
+            'message' => $c->comment_text,
             'date'    => $c->approved_at ? $c->approved_at->diffForHumans() : '',
         ]);
 
@@ -100,8 +100,8 @@ class InvitationPublicApiController extends Controller
 
         Comment::create([
             'invitation_id' => $invitation->id,
-            'author_name'   => $data['name'],
-            'content'       => $data['message'],
+            'guest_name'    => $data['name'],
+            'comment_text'  => $data['message'],
             'status'        => 'pending',
         ]);
 

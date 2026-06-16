@@ -64,8 +64,7 @@ export default function WishesSection({ wishesEndpoint, allowComments, onToast, 
                 } else {
                     setWishes((prev) => [...prev, ...items]);
                 }
-                // If fewer than 10 returned, no more pages
-                setHasMore(items.length >= 10);
+                setHasMore(data.last_page ? pageNum < data.last_page : items.length >= 10);
             } catch {
                 setHasMore(false);
             }
@@ -95,7 +94,7 @@ export default function WishesSection({ wishesEndpoint, allowComments, onToast, 
         }
         setSubmitting(true);
         try {
-            await fetch(wishesEndpoint, {
+            const res = await fetch(wishesEndpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -104,6 +103,11 @@ export default function WishesSection({ wishesEndpoint, allowComments, onToast, 
                 },
                 body: JSON.stringify({ name: name.trim(), message: message.trim() }),
             });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                onToast?.(err?.message ?? 'Gagal mengirim ucapan. Coba lagi.');
+                return;
+            }
             onToast?.('Ucapan berhasil dikirim! 💕');
             setName('');
             setMessage('');
@@ -113,7 +117,7 @@ export default function WishesSection({ wishesEndpoint, allowComments, onToast, 
                 ...prev,
             ]);
         } catch {
-            onToast?.('Ucapan berhasil dikirim! 💕');
+            onToast?.('Gagal mengirim ucapan. Periksa koneksi internet Anda.');
         } finally {
             setSubmitting(false);
         }
