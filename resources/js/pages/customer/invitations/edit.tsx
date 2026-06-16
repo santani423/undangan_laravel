@@ -1899,9 +1899,13 @@ function SettingsTab({
         formData.append('music_file', file);
 
         setMusicUploading(true);
+        const xsrfToken = decodeURIComponent(document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ?? '');
         fetch(`/customer/invitations/${slug}/upload-music`, {
             method: 'POST',
-            headers: { 'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '' },
+            headers: {
+                'X-XSRF-TOKEN': xsrfToken,
+                'Accept': 'application/json',
+            },
             body: formData,
         })
             .then(async (r) => {

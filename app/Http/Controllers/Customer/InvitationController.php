@@ -775,10 +775,12 @@ class InvitationController extends Controller
             return response()->json(['message' => 'Paket Anda tidak mengizinkan upload musik.'], 403);
         }
 
+        $maxKb = $maxMb * 1024;
         $request->validate([
-            'music_file' => "required|file|mimes:mp3,mpeg,ogg,aac,wav|max:{$maxMb}024",
+            'music_file' => "required|file|mimes:mp3,mpeg,ogg,aac,wav|max:{$maxKb}",
         ], [
-            'music_file.max' => "Ukuran file terlalu besar. Maksimal {$maxMb} MB.",
+            'music_file.max'   => "Ukuran file terlalu besar. Maksimal {$maxMb} MB.",
+            'music_file.mimes' => 'Format file tidak didukung. Gunakan MP3, WAV, OGG, atau AAC.',
         ]);
 
         $file = $request->file('music_file');
