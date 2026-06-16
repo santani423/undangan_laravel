@@ -10,26 +10,38 @@ import {
     CheckSquare,
     ChevronLeft,
     ChevronRight,
+    Copy,
     Crown,
+    ExternalLink,
     Eye,
     EyeOff,
     Flag,
     Gem,
+    Globe,
     Heart,
     Image,
+    Key,
     Link2,
     Loader2,
     MapPin,
     MessageSquare,
+    Music2,
     Navigation,
     Paintbrush,
+    Pause,
+    Play,
     Plus,
+    RefreshCw,
     Save,
     Search,
+    Settings,
+    Sliders,
     Trash2,
     Upload,
     UserCheck,
     Users,
+    Volume2,
+    VolumeX,
     X,
     ZoomIn,
 } from 'lucide-react';
@@ -186,26 +198,93 @@ interface PaginatedData<T> {
 }
 
 interface Props {
-    invitation:     InvitationMeta;
-    eventType:      EventType;
-    theme:          Theme;
-    package:        PackageItem;
-    fieldValues:    Record<string, string>;
-    acaraEvents:    AcaraEventData[];
-    galleryItems:   GalleryItemData[];
-    loveStory:      LoveStoryData[];
-    availableThemes: ThemeItem[];
-    guests:         PaginatedData<GuestData>;
-    guestStats:     GuestStats;
-    guestFilters:   { guestSearch: string; guestStatus: string; guestCheckedIn: string };
-    comments:       PaginatedData<CommentData>;
-    commentStats:   CommentStats;
-    commentFilters: { commentSearch: string; commentStatus: string; commentFlagged: string };
+    invitation:          InvitationMeta;
+    eventType:           EventType;
+    theme:               Theme;
+    package:             PackageItem;
+    fieldValues:         Record<string, string>;
+    acaraEvents:         AcaraEventData[];
+    galleryItems:        GalleryItemData[];
+    loveStory:           LoveStoryData[];
+    availableThemes:     ThemeItem[];
+    guests:              PaginatedData<GuestData>;
+    guestStats:          GuestStats;
+    guestFilters:        { guestSearch: string; guestStatus: string; guestCheckedIn: string };
+    comments:            PaginatedData<CommentData>;
+    commentStats:        CommentStats;
+    commentFilters:      { commentSearch: string; commentStatus: string; commentFlagged: string };
+    invitationSettings:  InvitationSettingsData | null;
+    availableMusic:      MusicTrack[];
 }
+
+// ─── Settings types & constants ───────────────────────────────────────────────
+
+interface MusicTrack {
+    id: string;
+    name: string;
+    artist: string;
+    genre: string;
+    preview_url: string;
+}
+
+interface InvitationSettingsData {
+    music_enabled: boolean;
+    music_autoplay: boolean;
+    music_loop: boolean;
+    music_url: string;
+    music_source: 'library' | 'upload' | '';
+    music_library_id: string;
+    features: Record<string, boolean>;
+    greeting_title: string;
+    greeting_message: string;
+    greeting_guest_label: string;
+    greeting_button_text: string;
+    greeting_cover_image: string;
+    invitation_code: string;
+}
+
+const INVITATION_FEATURES = [
+    { key: 'cover',             label: 'Cover',                  desc: 'Halaman sampul utama undangan' },
+    { key: 'greeting',          label: 'Salam Pembuka',          desc: 'Pesan pembuka sebelum masuk undangan' },
+    { key: 'couple_profile',    label: 'Profil Mempelai / Anak', desc: 'Foto dan biodata mempelai atau anak' },
+    { key: 'event_detail',      label: 'Detail Acara',           desc: 'Jadwal dan informasi acara lengkap' },
+    { key: 'countdown',         label: 'Countdown',              desc: 'Hitung mundur menuju hari H' },
+    { key: 'location',          label: 'Lokasi & Maps',          desc: 'Peta dan alamat lokasi acara' },
+    { key: 'gallery',           label: 'Galeri Foto',            desc: 'Koleksi foto undangan' },
+    { key: 'video',             label: 'Video',                  desc: 'Video highlight atau cinematic' },
+    { key: 'love_story',        label: 'Love Story / Perjalanan',desc: 'Kisah perjalanan hidup atau cinta' },
+    { key: 'rsvp',              label: 'RSVP',                   desc: 'Formulir konfirmasi kehadiran tamu' },
+    { key: 'guestbook',         label: 'Buku Tamu',              desc: 'Daftar nama tamu undangan' },
+    { key: 'wishes',            label: 'Ucapan & Doa',           desc: 'Pesan dan doa dari para tamu' },
+    { key: 'digital_envelope',  label: 'Amplop Digital',         desc: 'Nomor rekening dan transfer hadiah' },
+    { key: 'gift_wishlist',     label: 'Wishlist Hadiah',        desc: 'Daftar hadiah yang diinginkan' },
+    { key: 'add_to_calendar',   label: 'Tambah ke Kalender',     desc: 'Tombol simpan acara ke kalender' },
+    { key: 'music',             label: 'Musik Latar',            desc: 'Kontrol musik latar pada undangan' },
+    { key: 'confetti',          label: 'Efek Confetti / Balon',  desc: 'Animasi efek konfeti atau balon' },
+    { key: 'footer',            label: 'Footer',                 desc: 'Bagian bawah halaman undangan' },
+] as const;
+
+const DEFAULT_FEATURES: Record<string, boolean> = Object.fromEntries(
+    INVITATION_FEATURES.map((f) => [
+        f.key,
+        !['video', 'digital_envelope', 'gift_wishlist', 'confetti'].includes(f.key),
+    ]),
+);
+
+const BUILTIN_MUSIC_LIBRARY: MusicTrack[] = [
+    { id: 'canon-d',        name: 'Canon in D',          artist: 'Pachelbel',       genre: 'Klasik',       preview_url: '' },
+    { id: 'thousand-years', name: 'A Thousand Years',    artist: 'Christina Perri', genre: 'Pop Romantis', preview_url: '' },
+    { id: 'perfect',        name: 'Perfect',             artist: 'Ed Sheeran',      genre: 'Pop',          preview_url: '' },
+    { id: 'all-of-me',      name: 'All of Me',           artist: 'John Legend',     genre: 'Pop',          preview_url: '' },
+    { id: 'thinking-out',   name: 'Thinking Out Loud',   artist: 'Ed Sheeran',      genre: 'Pop',          preview_url: '' },
+    { id: 'marry-me',       name: 'Marry Me',            artist: 'Train',           genre: 'Pop',          preview_url: '' },
+    { id: 'at-last',        name: 'At Last',             artist: 'Etta James',      genre: 'Soul',         preview_url: '' },
+    { id: 'lucky',          name: 'Lucky',               artist: 'Jason Mraz',      genre: 'Pop',          preview_url: '' },
+];
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
-type TabKey = 'couple' | 'acara' | 'gallery' | 'love_story' | 'info' | 'host' | 'theme' | 'guests' | 'comments';
+type TabKey = 'couple' | 'acara' | 'gallery' | 'love_story' | 'info' | 'host' | 'theme' | 'guests' | 'comments' | 'settings';
 
 interface TabDef {
     key: TabKey;
@@ -223,10 +302,11 @@ const TAB_DEFINITIONS: Record<TabKey, TabDef> = {
     theme:      { key: 'theme',      label: 'Ganti Tema',    icon: <Paintbrush className="size-4" /> },
     guests:     { key: 'guests',     label: 'Buku Tamu',     icon: <UserCheck className="size-4" /> },
     comments:   { key: 'comments',   label: 'Komentar',      icon: <MessageSquare className="size-4" /> },
+    settings:   { key: 'settings',   label: 'Pengaturan',    icon: <Settings className="size-4" /> },
 };
 
 // Management tabs always appended to every event type
-const MANAGEMENT_TABS: TabKey[] = ['theme', 'guests', 'comments'];
+const MANAGEMENT_TABS: TabKey[] = ['theme', 'guests', 'comments', 'settings'];
 
 const EVENT_TYPE_TABS: Record<string, TabKey[]> = {
     wedding:       ['couple', 'acara', 'gallery', 'love_story'],
@@ -1678,6 +1758,525 @@ function CommentsTab({
     );
 }
 
+// ─── Toggle Switch ────────────────────────────────────────────────────────────
+
+function ToggleSwitch({ enabled, onChange }: { enabled: boolean; onChange: (v: boolean) => void }) {
+    return (
+        <button
+            type="button"
+            role="switch"
+            aria-checked={enabled}
+            onClick={() => onChange(!enabled)}
+            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none ${enabled ? 'bg-primary' : 'bg-border'}`}
+        >
+            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${enabled ? 'translate-x-6' : 'translate-x-1'}`} />
+        </button>
+    );
+}
+
+// ─── Settings Tab ─────────────────────────────────────────────────────────────
+
+function SettingsTab({
+    slug,
+    initSettings,
+    availableMusic,
+}: {
+    slug: string;
+    initSettings: InvitationSettingsData | null;
+    availableMusic: MusicTrack[];
+}) {
+    const inputCls = 'w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition placeholder:text-muted-foreground';
+
+    // ── Greeting ─────────────────────────────────────────────────────────────
+    const [greetingTitle,      setGreetingTitle]      = useState(initSettings?.greeting_title      ?? 'Kepada Yth.');
+    const [greetingMessage,    setGreetingMessage]    = useState(initSettings?.greeting_message    ?? 'Dengan hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di acara kami.');
+    const [greetingGuestLabel, setGreetingGuestLabel] = useState(initSettings?.greeting_guest_label ?? 'Tamu Undangan');
+    const [greetingButtonText, setGreetingButtonText] = useState(initSettings?.greeting_button_text ?? 'Buka Undangan');
+
+    // ── Invitation code ───────────────────────────────────────────────────────
+    const [code,          setCode]          = useState(initSettings?.invitation_code ?? slug);
+    const [codeEditing,   setCodeEditing]   = useState(false);
+    const [codeDraft,     setCodeDraft]     = useState(initSettings?.invitation_code ?? slug);
+    const [codeCopied,    setCodeCopied]    = useState(false);
+    const [codeGenerating, setCodeGenerating] = useState(false);
+
+    // ── Music ─────────────────────────────────────────────────────────────────
+    const [musicEnabled,   setMusicEnabled]   = useState(initSettings?.music_enabled   ?? false);
+    const [musicAutoplay,  setMusicAutoplay]  = useState(initSettings?.music_autoplay  ?? true);
+    const [musicLoop,      setMusicLoop]      = useState(initSettings?.music_loop      ?? true);
+    const [musicSource,    setMusicSource]    = useState<'library' | 'upload' | ''>(initSettings?.music_source ?? '');
+    const [musicLibraryId, setMusicLibraryId] = useState(initSettings?.music_library_id ?? '');
+    const [musicUploadUrl, setMusicUploadUrl] = useState(initSettings?.music_url ?? '');
+    const [previewingId,   setPreviewingId]   = useState<string | null>(null);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+
+    // ── Features ──────────────────────────────────────────────────────────────
+    const [features, setFeatures] = useState<Record<string, boolean>>({
+        ...DEFAULT_FEATURES,
+        ...(initSettings?.features ?? {}),
+    });
+
+    // ── Save ──────────────────────────────────────────────────────────────────
+    const [saving,       setSaving]       = useState(false);
+    const [saveSuccess,  setSaveSuccess]  = useState(false);
+
+    // ─ Helpers ────────────────────────────────────────────────────────────────
+
+    const musicLibrary = [...BUILTIN_MUSIC_LIBRARY, ...availableMusic];
+
+    function handleMusicPreview(track: MusicTrack) {
+        if (previewingId === track.id) {
+            audioRef.current?.pause();
+            setPreviewingId(null);
+            return;
+        }
+        audioRef.current?.pause();
+        if (track.preview_url) {
+            const audio = new Audio(track.preview_url);
+            audioRef.current = audio;
+            audio.play().catch(() => {});
+            audio.onended = () => setPreviewingId(null);
+            setPreviewingId(track.id);
+        }
+    }
+
+    function handleCopyCode() {
+        navigator.clipboard.writeText(code).then(() => {
+            setCodeCopied(true);
+            setTimeout(() => setCodeCopied(false), 2000);
+        });
+    }
+
+    function handleGenerateCode() {
+        setCodeGenerating(true);
+        const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        const newCode = Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+        setTimeout(() => {
+            setCode(newCode);
+            setCodeDraft(newCode);
+            setCodeGenerating(false);
+        }, 600);
+    }
+
+    function handleCodeSave() {
+        setCode(codeDraft.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-'));
+        setCodeEditing(false);
+    }
+
+    function handleMusicFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => setMusicUploadUrl(ev.target?.result as string ?? '');
+        reader.readAsDataURL(file);
+        e.target.value = '';
+    }
+
+    function handleSave() {
+        setSaving(true);
+        router.patch(`/customer/invitations/${slug}/settings`, {
+            greeting_title:       greetingTitle,
+            greeting_message:     greetingMessage,
+            greeting_guest_label: greetingGuestLabel,
+            greeting_button_text: greetingButtonText,
+            invitation_code:      code,
+            music_enabled:        musicEnabled,
+            music_autoplay:       musicAutoplay,
+            music_loop:           musicLoop,
+            music_source:         musicSource,
+            music_library_id:     musicLibraryId,
+            music_url:            musicUploadUrl,
+            features,
+        }, {
+            onSuccess: () => { setSaveSuccess(true); setTimeout(() => setSaveSuccess(false), 3000); },
+            onFinish:  () => setSaving(false),
+        });
+    }
+
+    const selectedLibraryTrack = musicLibrary.find((t) => t.id === musicLibraryId);
+    const previewUrl = `${window.location.origin}/undangan/${code}`;
+
+    return (
+        <div className="flex flex-col gap-6">
+
+            {/* ── 1. Salam Pembuka ─────────────────────────────────────────── */}
+            <section className="rounded-2xl border border-border bg-card p-5 flex flex-col gap-4">
+                <div className="flex items-center gap-2">
+                    <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <Volume2 className="size-4" />
+                    </div>
+                    <div>
+                        <h3 className="font-semibold text-foreground text-sm">Salam Pembuka Undangan</h3>
+                        <p className="text-xs text-muted-foreground">Pesan yang tampil saat tamu membuka link undangan</p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-medium text-foreground">Judul Salam <span className="text-destructive">*</span></label>
+                        <input type="text" value={greetingTitle} onChange={(e) => setGreetingTitle(e.target.value)} placeholder="cth. Kepada Yth." className={inputCls} />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-medium text-foreground">Label Nama Tamu</label>
+                        <input type="text" value={greetingGuestLabel} onChange={(e) => setGreetingGuestLabel(e.target.value)} placeholder="cth. Tamu Undangan" className={inputCls} />
+                        <p className="text-[11px] text-muted-foreground">Tampil di bawah nama tamu pada cover pembuka</p>
+                    </div>
+                    <div className="flex flex-col gap-1.5 sm:col-span-2">
+                        <label className="text-xs font-medium text-foreground">Isi Salam Pembuka</label>
+                        <textarea rows={3} value={greetingMessage} onChange={(e) => setGreetingMessage(e.target.value)} placeholder="Tanpa mengurangi rasa hormat..." className={`${inputCls} resize-none`} />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-medium text-foreground">Teks Tombol</label>
+                        <input type="text" value={greetingButtonText} onChange={(e) => setGreetingButtonText(e.target.value)} placeholder="cth. Buka Undangan" className={inputCls} />
+                    </div>
+                    <div className="flex flex-col gap-1.5 sm:col-span-2">
+                        <label className="text-xs font-medium text-foreground">
+                            Musik Latar Undangan <span className="text-muted-foreground">(MP3, opsional)</span>
+                        </label>
+                        {musicUploadUrl ? (
+                            <div className="flex flex-col gap-2">
+                                <div className="flex items-center gap-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 px-4 py-3">
+                                    <div className="size-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center shrink-0">
+                                        <Music2 className="size-4 text-emerald-600 dark:text-emerald-400" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400 truncate">File musik siap digunakan</p>
+                                        <p className="text-[11px] text-emerald-600/70 dark:text-emerald-500">Akan diputar saat tamu membuka undangan</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => { setMusicUploadUrl(''); setMusicSource(''); setMusicEnabled(false); }}
+                                        className="shrink-0 text-xs text-destructive hover:underline flex items-center gap-1"
+                                    >
+                                        <X className="size-3" /> Hapus
+                                    </button>
+                                </div>
+                                <audio controls src={musicUploadUrl} className="w-full h-9 rounded-xl" />
+                                <div className="flex items-center gap-4 rounded-xl border border-border bg-muted/30 px-4 py-2">
+                                    <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer select-none">
+                                        <input type="checkbox" checked={musicAutoplay} onChange={(e) => setMusicAutoplay(e.target.checked)} className="rounded" />
+                                        Autoplay
+                                    </label>
+                                    <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer select-none">
+                                        <input type="checkbox" checked={musicLoop} onChange={(e) => setMusicLoop(e.target.checked)} className="rounded" />
+                                        Putar Ulang (Loop)
+                                    </label>
+                                    <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer select-none">
+                                        <input type="checkbox" checked={musicEnabled} onChange={(e) => setMusicEnabled(e.target.checked)} className="rounded" />
+                                        Aktifkan Musik
+                                    </label>
+                                </div>
+                            </div>
+                        ) : (
+                            <label className="group flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border py-8 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors text-muted-foreground hover:text-primary">
+                                <div className="size-12 rounded-xl border border-border group-hover:border-primary/50 bg-muted/40 group-hover:bg-primary/10 flex items-center justify-center transition-colors">
+                                    <Music2 className="size-6" />
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-sm font-medium">Klik untuk upload musik latar</p>
+                                    <p className="text-xs mt-0.5">Format MP3, AAC, OGG — maks. 10 MB</p>
+                                </div>
+                                <input
+                                    type="file"
+                                    accept="audio/mp3,audio/mpeg,audio/ogg,audio/aac,audio/*"
+                                    className="sr-only"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+                                        const reader = new FileReader();
+                                        reader.onload = (ev) => {
+                                            setMusicUploadUrl(ev.target?.result as string ?? '');
+                                            setMusicSource('upload');
+                                            setMusicEnabled(true);
+                                        };
+                                        reader.readAsDataURL(file);
+                                        e.target.value = '';
+                                    }}
+                                />
+                            </label>
+                        )}
+                    </div>
+                </div>
+
+                {/* Preview card */}
+                <div className="rounded-xl border border-border/60 bg-muted/30 p-4 flex flex-col items-center gap-2 text-center">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Preview Salam Pembuka</p>
+                    <p className="text-xs text-muted-foreground">{greetingTitle}</p>
+                    <p className="text-base font-semibold text-foreground">{greetingGuestLabel}</p>
+                    <p className="text-xs text-muted-foreground max-w-sm">{greetingMessage}</p>
+                    <span className="mt-1 inline-flex items-center rounded-full bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground">
+                        {greetingButtonText}
+                    </span>
+                </div>
+            </section>
+
+            {/* ── 2. Kode Undangan ──────────────────────────────────────────── */}
+            <section className="rounded-2xl border border-border bg-card p-5 flex flex-col gap-4">
+                <div className="flex items-center gap-2">
+                    <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <Key className="size-4" />
+                    </div>
+                    <div>
+                        <h3 className="font-semibold text-foreground text-sm">Kode Undangan</h3>
+                        <p className="text-xs text-muted-foreground">Kode unik yang digunakan sebagai alamat URL undangan</p>
+                    </div>
+                </div>
+
+                {/* Current code display */}
+                <div className="flex flex-col gap-2">
+                    <label className="text-xs font-medium text-foreground">Kode Saat Ini</label>
+                    {codeEditing ? (
+                        <div className="flex gap-2 items-center">
+                            <input
+                                type="text"
+                                value={codeDraft}
+                                onChange={(e) => setCodeDraft(e.target.value.toLowerCase().replace(/\s+/g, '-'))}
+                                className={`flex-1 ${inputCls}`}
+                                placeholder="kode-unik-anda"
+                            />
+                            <button type="button" onClick={handleCodeSave} className="shrink-0 inline-flex items-center gap-1.5 rounded-xl bg-primary px-3 py-2.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
+                                <Check className="size-3.5" /> Terapkan
+                            </button>
+                            <button type="button" onClick={() => { setCodeDraft(code); setCodeEditing(false); }} className="shrink-0 rounded-xl border border-border px-3 py-2.5 text-xs font-medium hover:bg-muted transition-colors">
+                                Batal
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-2">
+                            <div className="flex-1 flex items-center gap-2 rounded-xl border border-border bg-muted/30 px-4 py-2.5">
+                                <Globe className="size-4 text-muted-foreground shrink-0" />
+                                <span className="text-sm font-mono font-semibold text-foreground flex-1">{code}</span>
+                            </div>
+                            <button type="button" onClick={() => { setCodeDraft(code); setCodeEditing(true); }} className="shrink-0 rounded-xl border border-border px-3 py-2.5 text-xs font-medium hover:bg-muted transition-colors">
+                                Edit
+                            </button>
+                            <button type="button" onClick={handleCopyCode} title="Salin kode" className="shrink-0 size-10 rounded-xl border border-border flex items-center justify-center hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
+                                {codeCopied ? <Check className="size-4 text-emerald-600" /> : <Copy className="size-4" />}
+                            </button>
+                        </div>
+                    )}
+
+                    {/* URL Preview */}
+                    <div className="flex items-center gap-2 rounded-xl bg-muted/40 border border-border/60 px-4 py-2.5">
+                        <ExternalLink className="size-3.5 text-primary shrink-0" />
+                        <span className="text-xs text-muted-foreground font-mono flex-1 truncate">{previewUrl}</span>
+                        <a href={previewUrl} target="_blank" rel="noopener noreferrer" className="shrink-0 text-xs text-primary hover:underline">
+                            Buka
+                        </a>
+                    </div>
+
+                    {/* Generate new code */}
+                    <div className="flex items-center gap-3 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 px-4 py-3">
+                        <AlertTriangle className="size-4 text-amber-600 shrink-0" />
+                        <p className="text-xs text-amber-700 dark:text-amber-400 flex-1">Mengubah kode akan mengubah link undangan. Tamu lama yang sudah menyimpan link lama tidak bisa mengaksesnya lagi.</p>
+                        <button
+                            type="button"
+                            onClick={handleGenerateCode}
+                            disabled={codeGenerating}
+                            className="shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-amber-300 dark:border-amber-700 bg-white dark:bg-amber-900/40 px-3 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/60 disabled:opacity-60 transition-colors"
+                        >
+                            {codeGenerating ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
+                            Generate Baru
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            {/* ── 3. Musik Latar ────────────────────────────────────────────── */}
+            <section className="rounded-2xl border border-border bg-card p-5 flex flex-col gap-4">
+                <div className="flex items-center gap-2">
+                    <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <Music2 className="size-4" />
+                    </div>
+                    <div className="flex-1">
+                        <h3 className="font-semibold text-foreground text-sm">Musik Latar</h3>
+                        <p className="text-xs text-muted-foreground">Musik yang diputar saat tamu membuka undangan</p>
+                    </div>
+                    <ToggleSwitch enabled={musicEnabled} onChange={setMusicEnabled} />
+                </div>
+
+                {musicEnabled && (
+                    <div className="flex flex-col gap-4 pt-1">
+                        {/* Music options */}
+                        <div className="flex flex-col gap-1">
+                            <div className="flex items-center justify-between py-2.5 border-t border-border/50">
+                                <div>
+                                    <p className="text-sm font-medium text-foreground">Autoplay</p>
+                                    <p className="text-xs text-muted-foreground">Putar otomatis saat undangan dibuka</p>
+                                </div>
+                                <ToggleSwitch enabled={musicAutoplay} onChange={setMusicAutoplay} />
+                            </div>
+                            <div className="flex items-center justify-between py-2.5 border-t border-border/50">
+                                <div>
+                                    <p className="text-sm font-medium text-foreground">Loop (Ulang)</p>
+                                    <p className="text-xs text-muted-foreground">Putar ulang musik dari awal setelah selesai</p>
+                                </div>
+                                <ToggleSwitch enabled={musicLoop} onChange={setMusicLoop} />
+                            </div>
+                        </div>
+
+                        {/* Source selector */}
+                        <div className="flex flex-col gap-2">
+                            <label className="text-xs font-medium text-foreground">Sumber Musik</label>
+                            <div className="grid grid-cols-2 gap-2">
+                                {([['library', 'Pilih dari Daftar'], ['upload', 'Upload File']] as const).map(([val, lbl]) => (
+                                    <button
+                                        key={val}
+                                        type="button"
+                                        onClick={() => setMusicSource(val)}
+                                        className={`rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors ${musicSource === val ? 'border-primary bg-primary/5 text-primary' : 'border-border text-muted-foreground hover:bg-muted'}`}
+                                    >
+                                        {lbl}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Library */}
+                        {musicSource === 'library' && (
+                            <div className="flex flex-col gap-2">
+                                <p className="text-xs font-medium text-foreground">Pilih Lagu</p>
+                                <div className="flex flex-col gap-1 max-h-64 overflow-y-auto rounded-xl border border-border divide-y divide-border/60">
+                                    {musicLibrary.map((track) => (
+                                        <div
+                                            key={track.id}
+                                            onClick={() => setMusicLibraryId(track.id)}
+                                            className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${musicLibraryId === track.id ? 'bg-primary/5' : 'hover:bg-muted/40'}`}
+                                        >
+                                            <div className={`size-4 rounded-full border-2 flex items-center justify-center shrink-0 ${musicLibraryId === track.id ? 'border-primary' : 'border-border'}`}>
+                                                {musicLibraryId === track.id && <div className="size-2 rounded-full bg-primary" />}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium text-foreground truncate">{track.name}</p>
+                                                <p className="text-xs text-muted-foreground">{track.artist} · {track.genre}</p>
+                                            </div>
+                                            {track.preview_url && (
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => { e.stopPropagation(); handleMusicPreview(track); }}
+                                                    className="shrink-0 size-7 rounded-full border border-border bg-background flex items-center justify-center hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                                                    title="Preview"
+                                                >
+                                                    {previewingId === track.id ? <Pause className="size-3" /> : <Play className="size-3" />}
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                                {selectedLibraryTrack && (
+                                    <div className="flex items-center gap-2 rounded-xl bg-primary/5 border border-primary/20 px-4 py-2.5">
+                                        <Music2 className="size-4 text-primary shrink-0" />
+                                        <span className="text-xs text-foreground font-medium">{selectedLibraryTrack.name}</span>
+                                        <span className="text-xs text-muted-foreground">— {selectedLibraryTrack.artist}</span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Upload */}
+                        {musicSource === 'upload' && (
+                            <div className="flex flex-col gap-2">
+                                <p className="text-xs font-medium text-foreground">Upload File Musik</p>
+                                {musicUploadUrl ? (
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3">
+                                            <Music2 className="size-4 text-primary shrink-0" />
+                                            <span className="text-sm text-foreground flex-1 truncate">File musik telah diunggah</span>
+                                            <button type="button" onClick={() => setMusicUploadUrl('')} className="shrink-0 text-xs text-destructive hover:underline flex items-center gap-1">
+                                                <X className="size-3" /> Hapus
+                                            </button>
+                                        </div>
+                                        <audio controls src={musicUploadUrl} className="w-full h-9 rounded-xl" />
+                                    </div>
+                                ) : (
+                                    <label className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border py-8 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors text-muted-foreground">
+                                        <Upload className="size-5" />
+                                        <span className="text-sm font-medium">Klik untuk upload</span>
+                                        <span className="text-xs">MP3, WAV, OGG — maks. 10 MB</span>
+                                        <input type="file" accept="audio/*" className="sr-only" onChange={handleMusicFileChange} />
+                                    </label>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </section>
+
+            {/* ── 4. Fitur & Halaman ────────────────────────────────────────── */}
+            <section className="rounded-2xl border border-border bg-card p-5 flex flex-col gap-4">
+                <div className="flex items-center gap-2">
+                    <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <Sliders className="size-4" />
+                    </div>
+                    <div>
+                        <h3 className="font-semibold text-foreground text-sm">Fitur & Halaman Undangan</h3>
+                        <p className="text-xs text-muted-foreground">Aktifkan atau nonaktifkan bagian yang ditampilkan di undangan</p>
+                    </div>
+                    <span className="ml-auto text-xs text-muted-foreground">
+                        {Object.values(features).filter(Boolean).length}/{INVITATION_FEATURES.length} aktif
+                    </span>
+                </div>
+
+                <div className="flex flex-col divide-y divide-border/60">
+                    {INVITATION_FEATURES.map((feature) => (
+                        <div key={feature.key} className="flex items-center justify-between gap-4 py-3">
+                            <div className="flex-1">
+                                <p className="text-sm font-medium text-foreground">{feature.label}</p>
+                                <p className="text-xs text-muted-foreground mt-0.5">{feature.desc}</p>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                                <span className={`text-xs font-medium ${features[feature.key] ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'}`}>
+                                    {features[feature.key] ? 'Tampil' : 'Sembunyi'}
+                                </span>
+                                <ToggleSwitch
+                                    enabled={features[feature.key] ?? false}
+                                    onChange={(v) => setFeatures((prev) => ({ ...prev, [feature.key]: v }))}
+                                />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Bulk actions */}
+                <div className="flex items-center gap-2 pt-1 border-t border-border/50">
+                    <span className="text-xs text-muted-foreground flex-1">Aktifkan / nonaktifkan semua sekaligus:</span>
+                    <button
+                        type="button"
+                        onClick={() => setFeatures(Object.fromEntries(INVITATION_FEATURES.map((f) => [f.key, true])))}
+                        className="rounded-xl border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors"
+                    >
+                        Tampilkan Semua
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setFeatures(Object.fromEntries(INVITATION_FEATURES.map((f) => [f.key, false])))}
+                        className="rounded-xl border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors"
+                    >
+                        Sembunyikan Semua
+                    </button>
+                </div>
+            </section>
+
+            {/* ── Save button ───────────────────────────────────────────────── */}
+            <div className="flex items-center justify-between border-t border-border/60 pt-4 gap-3">
+                {saveSuccess && (
+                    <span className="flex items-center gap-1.5 text-sm text-emerald-600 dark:text-emerald-400">
+                        <Check className="size-4" /> Pengaturan berhasil disimpan
+                    </span>
+                )}
+                <button
+                    type="button"
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="ml-auto inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                >
+                    {saving ? <><Loader2 className="size-4 animate-spin" /> Menyimpan...</> : <><Save className="size-4" /> Simpan Pengaturan</>}
+                </button>
+            </div>
+        </div>
+    );
+}
+
 // ─── Success Toast ────────────────────────────────────────────────────────────
 
 function SuccessToast({ message, onClose }: { message: string; onClose: () => void }) {
@@ -1709,6 +2308,8 @@ export default function InvitationsEdit({
     comments,
     commentStats,
     commentFilters,
+    invitationSettings,
+    availableMusic,
 }: Props) {
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -1830,6 +2431,8 @@ export default function InvitationsEdit({
                 return <GuestsTab slug={invitation.slug} guests={guests} guestStats={guestStats} guestFilters={guestFilters} />;
             case 'comments':
                 return <CommentsTab slug={invitation.slug} comments={comments} commentStats={commentStats} commentFilters={commentFilters} />;
+            case 'settings':
+                return <SettingsTab slug={invitation.slug} initSettings={invitationSettings} availableMusic={availableMusic ?? []} />;
             default:
                 return null;
         }
