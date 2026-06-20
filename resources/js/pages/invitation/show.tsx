@@ -43,6 +43,7 @@ function resolveThemeComponent(
             return (
                 <WeddingBase
                     invitation={invitation as WeddingInvitation}
+                    visitor={visitor}
                 />
             );
 

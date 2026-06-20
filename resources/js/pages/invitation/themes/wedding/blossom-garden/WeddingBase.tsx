@@ -11,6 +11,7 @@ import './wedding-base.css';
 
 interface WeddingBaseProps {
     invitation: WeddingInvitation;
+    visitor?: string;
 }
 
 const EVENT_ICONS = ['🕌', '🏛️', '🎊', '🌸', '⭐', '🎶'];
@@ -23,7 +24,7 @@ function addToCalendar(ev: WeddingInvitation['events'][0]) {
     window.open(url, '_blank');
 }
 
-export default function WeddingBase({ invitation }: WeddingBaseProps) {
+export default function WeddingBase({ invitation, visitor }: WeddingBaseProps) {
     const [opened, setOpened] = useState(false);
     const [showBackTop, setShowBackTop] = useState(false);
     const mainRef = useRef<HTMLDivElement>(null);
@@ -32,10 +33,9 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
     // Scroll-triggered animations
     useEffect(() => {
         if (!opened) return;
-        const observer = new IntersectionObserver(
-            (entries) => entries.forEach((e) => e.isIntersecting && e.target.classList.add('wb-visible')),
-            { threshold: 0.1 },
-        );
+        const observer = new IntersectionObserver((entries) => entries.forEach((e) => e.isIntersecting && e.target.classList.add('wb-visible')), {
+            threshold: 0.1,
+        });
         document.querySelectorAll('.wb-anim-up').forEach((el) => observer.observe(el));
         return () => observer.disconnect();
     }, [opened]);
@@ -52,11 +52,11 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
     const features = invitation.features ?? {};
     const isEnabled = (key: keyof typeof features) => features[key] !== false;
 
-    const groomPhoto  = invitation.groomPhoto;
-    const bridePhoto  = invitation.bridePhoto;
+    const groomPhoto = invitation.groomPhoto;
+    const bridePhoto = invitation.bridePhoto;
     const couplePhoto = invitation.couplePhoto;
     // Hero photo: prefer couplePhoto, fallback to groomPhoto
-    const heroPhoto   = couplePhoto || groomPhoto;
+    const heroPhoto = couplePhoto || groomPhoto;
 
     return (
         <div className="wb-root">
@@ -66,14 +66,9 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
             `}</style>
 
             {/* ── Opening Overlay ────────────────────────────────────────────────── */}
-            <div className={`wb-overlay${opened ? ' hide' : ''}`}>
+            <div className={`wb-overlay${opened ? 'hide' : ''}`}>
                 {/* Background foto mempelai */}
-                {heroPhoto && (
-                    <div
-                        className="wb-overlay-photo-bg"
-                        style={{ backgroundImage: `url(${heroPhoto})` }}
-                    />
-                )}
+                {heroPhoto && <div className="wb-overlay-photo-bg" style={{ backgroundImage: `url(${heroPhoto})` }} />}
                 <div className="wb-overlay-frame">
                     <div className="wb-corner-tr" />
                     <div className="wb-corner-bl" />
@@ -102,11 +97,6 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                             )}
                         </div>
                     )}
-                    {invitation.guestName && (
-                        <p style={{ color: 'rgba(232,213,163,0.6)', fontSize: '0.8rem', marginBottom: '8px', letterSpacing: '2px' }}>
-                            Kepada Yth. {invitation.guestName}
-                        </p>
-                    )}
                     <p className="wb-overlay-of">{invitation.openingQuote}</p>
                     <div className="wb-overlay-names">
                         {invitation.groomFullName}
@@ -114,7 +104,13 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                         {invitation.brideFullName}
                     </div>
                     <div className="wb-overlay-divider" />
-                    <p className="wb-overlay-date">{invitation.mainDateFormatted}</p>
+
+                     
+                    {visitor && (
+                        <p style={{ color: 'rgba(232,213,163,0.6)', fontSize: '0.8rem', marginBottom: '8px', letterSpacing: '2px' }}>
+                            Kepada Yth. {invitation.guestName ? invitation.guestName : visitor}
+                        </p>
+                    )}
                     <button className="wb-btn-open" onClick={openInvitation}>
                         ✦ Buka Undangan ✦
                     </button>
@@ -122,8 +118,7 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
             </div>
 
             {/* ── Main Content ────────────────────────────────────────────────────── */}
-            <div ref={mainRef} className={`wb-main${opened ? ' visible' : ''}`}>
-
+            <div ref={mainRef} className={`wb-main${opened ? 'visible' : ''}`}>
                 {/* ── HERO ──────────────────────────────────────────────────────── */}
                 <section className="wb-hero">
                     <div className="wb-hero-frame wb-anim-up">
@@ -133,16 +128,14 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                         <h1 className="wb-hero-name">{invitation.brideNickname}</h1>
                         <div
                             className="wb-hero-photo"
-                            style={
-                                heroPhoto
-                                    ? { backgroundImage: `url(${heroPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-                                    : {}
-                            }
+                            style={heroPhoto ? { backgroundImage: `url(${heroPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
                         >
                             {!heroPhoto && `${invitation.groomInitials} & ${invitation.brideInitials}`}
                         </div>
                         <p className="wb-hero-date">{invitation.mainDateFormatted}</p>
-                        <div className="wb-gold-divider"><span>✦</span></div>
+                        <div className="wb-gold-divider">
+                            <span>✦</span>
+                        </div>
                         {isEnabled('countdown') && (
                             <Countdown
                                 targetDate={invitation.countdownDate}
@@ -169,88 +162,103 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                 </section>
 
                 {/* ── COUPLE ────────────────────────────────────────────────────── */}
-                {isEnabled('couple_profile') && <section className="wb-section wb-couple">
-                    <h2 className="wb-section-title wb-anim-up">Mempelai</h2>
-                    <div className="wb-gold-divider wb-anim-up"><span>💍</span></div>
-                    <div className="wb-couple-grid">
-                        {/* Groom */}
-                        <div className="wb-couple-card wb-anim-up">
-                            <span className="wb-couple-badge">♚ Mempelai Pria</span>
-                            <div
-                                className="wb-couple-photo wb-groom-photo"
-                                style={
-                                    groomPhoto
-                                        ? { backgroundImage: `url(${groomPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-                                        : {}
-                                }
-                            >
-                                {!groomPhoto && invitation.groomInitials}
-                            </div>
-                            <h3 className="wb-couple-name">{invitation.groomFullName}</h3>
-                            {invitation.groomChildOrder && (
-                                <p className="wb-couple-child">{invitation.groomChildOrder} dari:</p>
-                            )}
-                            <p className="wb-couple-parents">
-                                {invitation.groomFather}
-                                {invitation.groomFather && invitation.groomMother && <><br />&amp; </>}
-                                {invitation.groomMother}
-                            </p>
-                            {invitation.groomBio && <p className="wb-couple-bio">{invitation.groomBio}</p>}
+                {isEnabled('couple_profile') && (
+                    <section className="wb-section wb-couple">
+                        <h2 className="wb-section-title wb-anim-up">Mempelai</h2>
+                        <div className="wb-gold-divider wb-anim-up">
+                            <span>💍</span>
                         </div>
-                        {/* Heart */}
-                        <div className="wb-heart-center wb-anim-up">❤</div>
-                        {/* Bride */}
-                        <div className="wb-couple-card wb-anim-up">
-                            <span className="wb-couple-badge" style={{ background: '#c47f8a' }}>♛ Mempelai Wanita</span>
-                            <div
-                                className="wb-couple-photo wb-bride-photo"
-                                style={
-                                    bridePhoto
-                                        ? { backgroundImage: `url(${bridePhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-                                        : {}
-                                }
-                            >
-                                {!bridePhoto && invitation.brideInitials}
+                        <div className="wb-couple-grid">
+                            {/* Groom */}
+                            <div className="wb-couple-card wb-anim-up">
+                                <span className="wb-couple-badge">♚ Mempelai Pria</span>
+                                <div
+                                    className="wb-couple-photo wb-groom-photo"
+                                    style={
+                                        groomPhoto
+                                            ? { backgroundImage: `url(${groomPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                                            : {}
+                                    }
+                                >
+                                    {!groomPhoto && invitation.groomInitials}
+                                </div>
+                                <h3 className="wb-couple-name">{invitation.groomFullName}</h3>
+                                {invitation.groomChildOrder && <p className="wb-couple-child">{invitation.groomChildOrder} dari:</p>}
+                                <p className="wb-couple-parents">
+                                    {invitation.groomFather}
+                                    {invitation.groomFather && invitation.groomMother && (
+                                        <>
+                                            <br />
+                                            &amp;{' '}
+                                        </>
+                                    )}
+                                    {invitation.groomMother}
+                                </p>
+                                {invitation.groomBio && <p className="wb-couple-bio">{invitation.groomBio}</p>}
                             </div>
-                            <h3 className="wb-couple-name">{invitation.brideFullName}</h3>
-                            {invitation.brideChildOrder && (
-                                <p className="wb-couple-child">{invitation.brideChildOrder} dari:</p>
-                            )}
-                            <p className="wb-couple-parents">
-                                {invitation.brideFather}
-                                {invitation.brideFather && invitation.brideMother && <><br />&amp; </>}
-                                {invitation.brideMother}
-                            </p>
-                            {invitation.brideBio && <p className="wb-couple-bio">{invitation.brideBio}</p>}
+                            {/* Heart */}
+                            <div className="wb-heart-center wb-anim-up">❤</div>
+                            {/* Bride */}
+                            <div className="wb-couple-card wb-anim-up">
+                                <span className="wb-couple-badge" style={{ background: '#c47f8a' }}>
+                                    ♛ Mempelai Wanita
+                                </span>
+                                <div
+                                    className="wb-couple-photo wb-bride-photo"
+                                    style={
+                                        bridePhoto
+                                            ? { backgroundImage: `url(${bridePhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                                            : {}
+                                    }
+                                >
+                                    {!bridePhoto && invitation.brideInitials}
+                                </div>
+                                <h3 className="wb-couple-name">{invitation.brideFullName}</h3>
+                                {invitation.brideChildOrder && <p className="wb-couple-child">{invitation.brideChildOrder} dari:</p>}
+                                <p className="wb-couple-parents">
+                                    {invitation.brideFather}
+                                    {invitation.brideFather && invitation.brideMother && (
+                                        <>
+                                            <br />
+                                            &amp;{' '}
+                                        </>
+                                    )}
+                                    {invitation.brideMother}
+                                </p>
+                                {invitation.brideBio && <p className="wb-couple-bio">{invitation.brideBio}</p>}
+                            </div>
                         </div>
-                    </div>
-                </section>}
+                    </section>
+                )}
 
                 {/* ── EVENTS ────────────────────────────────────────────────────── */}
                 {isEnabled('event_detail') && invitation.events.length > 0 && (
                     <section className="wb-section wb-events-bg">
                         <h2 className="wb-section-title light wb-anim-up">Rangkaian Acara</h2>
-                        <div className="wb-gold-divider wb-anim-up"><span>🌿</span></div>
+                        <div className="wb-gold-divider wb-anim-up">
+                            <span>🌿</span>
+                        </div>
                         <div className="wb-events-grid">
                             {invitation.events.map((ev, i) => {
                                 const mapsUrl =
-                                    ev.locationUrl ||
-                                    (ev.mapsLat && ev.mapsLng ? `https://maps.google.com/?q=${ev.mapsLat},${ev.mapsLng}` : '');
-                                const timeStr = ev.time
-                                    ? ev.timeEnd
-                                        ? `${ev.time} – ${ev.timeEnd} WIB`
-                                        : `${ev.time} WIB`
-                                    : '';
+                                    ev.locationUrl || (ev.mapsLat && ev.mapsLng ? `https://maps.google.com/?q=${ev.mapsLat},${ev.mapsLng}` : '');
+                                const timeStr = ev.time ? (ev.timeEnd ? `${ev.time} – ${ev.timeEnd} WIB` : `${ev.time} WIB`) : '';
                                 return (
                                     <div key={i} className="wb-event-card wb-anim-up">
                                         <span className="wb-event-icon">{EVENT_ICONS[i % EVENT_ICONS.length]}</span>
                                         <p className="wb-event-type">{ev.name}</p>
                                         <h3 className="wb-event-name">{ev.name}</h3>
                                         <div className="wb-event-divider" />
-                                        <p className="wb-event-detail"><strong>{ev.dateFormatted}</strong></p>
+                                        <p className="wb-event-detail">
+                                            <strong>{ev.dateFormatted}</strong>
+                                        </p>
                                         {timeStr && <p className="wb-event-detail">{timeStr}</p>}
                                         <div className="wb-event-divider" />
-                                        {ev.locationName && <p className="wb-event-detail"><strong>{ev.locationName}</strong></p>}
+                                        {ev.locationName && (
+                                            <p className="wb-event-detail">
+                                                <strong>{ev.locationName}</strong>
+                                            </p>
+                                        )}
                                         {ev.location && <p className="wb-event-detail">{ev.location}</p>}
                                         <div style={{ marginTop: '25px' }}>
                                             {mapsUrl && (
@@ -270,64 +278,72 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                 )}
 
                 {/* ── LOCATION ──────────────────────────────────────────────────── */}
-                {isEnabled('location') && invitation.events.length > 0 && (() => {
-                    const ev = invitation.events.find((e) => e.isCountdown) ?? invitation.events[0];
-                    const mapsUrl =
-                        ev.locationUrl ||
-                        (ev.mapsLat && ev.mapsLng ? `https://maps.google.com/?q=${ev.mapsLat},${ev.mapsLng}` : '');
-                    if (!ev.mapsEmbed && !mapsUrl) return null;
-                    return (
-                        <section className="wb-section">
-                            <h2 className="wb-section-title wb-anim-up">Lokasi Acara</h2>
-                            <div className="wb-gold-divider wb-anim-up"><span>🗺️</span></div>
-                            {ev.locationName && (
-                                <p style={{ textAlign: 'center', color: 'var(--wb-gold)', fontSize: '1rem', marginBottom: '8px', fontStyle: 'italic' }} className="wb-anim-up">
-                                    {ev.name} · {ev.locationName}
-                                </p>
-                            )}
-                            <div style={{ maxWidth: '900px', margin: '0 auto' }} className="wb-anim-up">
-                                {ev.mapsEmbed && (
-                                    <div className="wb-map-wrapper">
-                                        <iframe
-                                            src={ev.mapsEmbed}
-                                            width="100%"
-                                            height="400"
-                                            style={{ border: 0, display: 'block' }}
-                                            allowFullScreen
-                                            loading="lazy"
-                                            title={`Lokasi ${ev.locationName || ev.name}`}
-                                        />
-                                    </div>
+                {isEnabled('location') &&
+                    invitation.events.length > 0 &&
+                    (() => {
+                        const ev = invitation.events.find((e) => e.isCountdown) ?? invitation.events[0];
+                        const mapsUrl = ev.locationUrl || (ev.mapsLat && ev.mapsLng ? `https://maps.google.com/?q=${ev.mapsLat},${ev.mapsLng}` : '');
+                        if (!ev.mapsEmbed && !mapsUrl) return null;
+                        return (
+                            <section className="wb-section">
+                                <h2 className="wb-section-title wb-anim-up">Lokasi Acara</h2>
+                                <div className="wb-gold-divider wb-anim-up">
+                                    <span>🗺️</span>
+                                </div>
+                                {ev.locationName && (
+                                    <p
+                                        style={{
+                                            textAlign: 'center',
+                                            color: 'var(--wb-gold)',
+                                            fontSize: '1rem',
+                                            marginBottom: '8px',
+                                            fontStyle: 'italic',
+                                        }}
+                                        className="wb-anim-up"
+                                    >
+                                        {ev.name} · {ev.locationName}
+                                    </p>
                                 )}
-                                {mapsUrl && (
-                                    <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                                        <a href={mapsUrl} target="_blank" rel="noreferrer" className="wb-btn-maps">
-                                            🗺️ Buka Google Maps
-                                        </a>
-                                    </div>
-                                )}
-                            </div>
-                        </section>
-                    );
-                })()}
+                                <div style={{ maxWidth: '900px', margin: '0 auto' }} className="wb-anim-up">
+                                    {ev.mapsEmbed && (
+                                        <div className="wb-map-wrapper">
+                                            <iframe
+                                                src={ev.mapsEmbed}
+                                                width="100%"
+                                                height="400"
+                                                style={{ border: 0, display: 'block' }}
+                                                allowFullScreen
+                                                loading="lazy"
+                                                title={`Lokasi ${ev.locationName || ev.name}`}
+                                            />
+                                        </div>
+                                    )}
+                                    {mapsUrl && (
+                                        <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                                            <a href={mapsUrl} target="_blank" rel="noreferrer" className="wb-btn-maps">
+                                                🗺️ Buka Google Maps
+                                            </a>
+                                        </div>
+                                    )}
+                                </div>
+                            </section>
+                        );
+                    })()}
 
                 {/* ── LOVE STORY TIMELINE ───────────────────────────────────────── */}
                 {isEnabled('love_story') && invitation.loveStory?.length > 0 && (
                     <section className="wb-section">
                         <h2 className="wb-section-title wb-anim-up">Perjalanan Cinta Kami</h2>
-                        <div className="wb-gold-divider wb-anim-up"><span>💕</span></div>
+                        <div className="wb-gold-divider wb-anim-up">
+                            <span>💕</span>
+                        </div>
                         <div className="wb-timeline-container">
                             <div className="wb-timeline-line" />
                             {invitation.loveStory.map((item, i) => {
                                 const side = i % 2 === 0 ? 'left' : 'right';
                                 const content = (
                                     <div className={`wb-timeline-content ${side} wb-anim-up`}>
-                                        {item.photo && (
-                                            <div
-                                                className="wb-timeline-photo"
-                                                style={{ backgroundImage: `url(${item.photo})` }}
-                                            />
-                                        )}
+                                        {item.photo && <div className="wb-timeline-photo" style={{ backgroundImage: `url(${item.photo})` }} />}
                                         <p className="wb-timeline-date">{item.date}</p>
                                         <h3 className="wb-timeline-title">{item.title}</h3>
                                         <p className="wb-timeline-desc">{item.desc}</p>
@@ -359,7 +375,9 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                 {isEnabled('gallery') && invitation.gallery?.length > 0 && (
                     <section className="wb-section wb-gallery-bg">
                         <h2 className="wb-section-title wb-anim-up">Galeri Foto</h2>
-                        <div className="wb-gold-divider wb-anim-up"><span>📷</span></div>
+                        <div className="wb-gold-divider wb-anim-up">
+                            <span>📷</span>
+                        </div>
                         <GallerySection
                             items={invitation.gallery}
                             showFilters
@@ -381,10 +399,12 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                 )}
 
                 {/* ── DRESS CODE ────────────────────────────────────────────────── */}
-                {(invitation.dressCodes && invitation.dressCodes.length > 0) && (
+                {invitation.dressCodes && invitation.dressCodes.length > 0 && (
                     <section className="wb-section wb-dresscode-bg">
                         <h2 className="wb-section-title light wb-anim-up">Dress Code</h2>
-                        <div className="wb-gold-divider wb-anim-up"><span>👗</span></div>
+                        <div className="wb-gold-divider wb-anim-up">
+                            <span>👗</span>
+                        </div>
                         <p className="wb-dresscode-note wb-anim-up">
                             Kami dengan hormat memohon tamu undangan untuk mengenakan pakaian formal/semi-formal sesuai palet warna berikut:
                         </p>
@@ -429,10 +449,12 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                 {isEnabled('digital_envelope') && (invitation.bankAccounts?.length > 0 || invitation.digitalWallets?.length > 0) && (
                     <section className="wb-section">
                         <h2 className="wb-section-title wb-anim-up">Amplop Digital</h2>
-                        <div className="wb-gold-divider wb-anim-up"><span>💌</span></div>
+                        <div className="wb-gold-divider wb-anim-up">
+                            <span>💌</span>
+                        </div>
                         <p className="wb-wallet-subtitle wb-anim-up">
-                            Doa restu Bapak/Ibu/Saudara/i merupakan hadiah yang paling berarti bagi kami. Namun bagi yang ingin
-                            memberikan tanda kasih, kami telah menyediakan amplop digital berikut.
+                            Doa restu Bapak/Ibu/Saudara/i merupakan hadiah yang paling berarti bagi kami. Namun bagi yang ingin memberikan tanda
+                            kasih, kami telah menyediakan amplop digital berikut.
                         </p>
                         <DigitalWalletSection
                             bankAccounts={invitation.bankAccounts ?? []}
@@ -461,14 +483,21 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                 {isEnabled('rsvp') && (
                     <section className="wb-section">
                         <h2 className="wb-section-title wb-anim-up">Konfirmasi Kehadiran</h2>
-                        <div className="wb-gold-divider wb-anim-up"><span>✉️</span></div>
+                        <div className="wb-gold-divider wb-anim-up">
+                            <span>✉️</span>
+                        </div>
                         {invitation.rsvpDeadline && (
                             <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                                <span style={{
-                                    background: 'var(--wb-green)', color: 'var(--wb-gold-light)',
-                                    padding: '10px 20px', fontSize: '0.85rem', letterSpacing: '2px',
-                                    display: 'inline-block',
-                                }}>
+                                <span
+                                    style={{
+                                        background: 'var(--wb-green)',
+                                        color: 'var(--wb-gold-light)',
+                                        padding: '10px 20px',
+                                        fontSize: '0.85rem',
+                                        letterSpacing: '2px',
+                                        display: 'inline-block',
+                                    }}
+                                >
                                     ⏰ Konfirmasi sebelum {invitation.rsvpDeadline}
                                 </span>
                             </div>
@@ -496,7 +525,9 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                 {isEnabled('wishes') && (
                     <section className="wb-section wb-wishes-bg">
                         <h2 className="wb-section-title wb-anim-up">Ucapan &amp; Doa</h2>
-                        <div className="wb-gold-divider wb-anim-up"><span>💬</span></div>
+                        <div className="wb-gold-divider wb-anim-up">
+                            <span>💬</span>
+                        </div>
                         <WishesSection
                             wishesEndpoint={invitation.wishesEndpoint}
                             allowComments={invitation.allowComments}
@@ -526,8 +557,10 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                         <p className="wb-closing-title">Terima Kasih</p>
                         <div className="wb-gold-line" />
                         <p className="wb-closing-sub">
-                            Atas segala doa dan kehadiran<br />
-                            Bapak/Ibu/Saudara/i<br />
+                            Atas segala doa dan kehadiran
+                            <br />
+                            Bapak/Ibu/Saudara/i
+                            <br />
                             yang kami muliakan.
                         </p>
                         <p className="wb-closing-from">Kami yang berbahagia,</p>
@@ -535,16 +568,19 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                             {invitation.groomNickname} &amp; {invitation.brideNickname}
                         </p>
                         <p className="wb-closing-family">
-                            Keluarga Besar {invitation.groomFather}{invitation.groomMother ? ` & ${invitation.groomMother}` : ''}<br />
-                            Keluarga Besar {invitation.brideFather}{invitation.brideMother ? ` & ${invitation.brideMother}` : ''}
+                            Keluarga Besar {invitation.groomFather}
+                            {invitation.groomMother ? ` & ${invitation.groomMother}` : ''}
+                            <br />
+                            Keluarga Besar {invitation.brideFather}
+                            {invitation.brideMother ? ` & ${invitation.brideMother}` : ''}
                         </p>
                         <div className="wb-gold-line" />
                         <p style={{ color: 'var(--wb-gold)', fontSize: '1.5rem', animation: 'wbFloat 3s ease-in-out infinite' }}>❤</p>
                         <p className="wb-closing-credit">Created with love ✦ Undesia Digital Invitation</p>
                     </div>
                 </section>
-
-            </div>{/* end main */}
+            </div>
+            {/* end main */}
 
             {/* ── Music Player ──────────────────────────────────────────────────── */}
             {isEnabled('music') && invitation.music?.url && (

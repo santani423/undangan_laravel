@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Invitation;
+use App\Models\Guest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -37,9 +38,11 @@ class InvitationPublicController extends Controller
         $theme = $invitation->theme;
         abort_if(! $theme, 404, 'Tema undangan tidak tersedia.');
 
-        $guestName = trim((string) $request->query('to', ''));
-        $data      = $this->buildData($invitation, $guestName, $theme->event_type);
-        // dd($visitor);
+        $guest = Guest::where('invitation_id', $invitation->id)
+            ->where('slug', $visitor)
+            ->first();
+        $data      = $this->buildData($invitation, $guest ? $guest->name : $visitor, $theme->event_type);
+        dd($guest);
         return Inertia::render('invitation/show', [
             'invitation' => $data,
             'themeSlug'  => $theme->slug,
