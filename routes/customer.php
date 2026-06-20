@@ -38,6 +38,7 @@ Route::prefix('customer')->name('customer.')->middleware(['auth'])->group(functi
             Route::patch('/{guest}/checkin', [GuestBookController::class, 'checkIn'])->name('checkin');
             Route::delete('/{guest}',        [GuestBookController::class, 'destroy'])->name('destroy');
             Route::get('/export/csv',        [GuestBookController::class, 'export'])->name('export');
+            Route::get('/check-slug',        [GuestBookController::class, 'checkSlug'])->name('check-slug');
         });
 
         // ── Komentar ──────────────────────────────────────────────────────────

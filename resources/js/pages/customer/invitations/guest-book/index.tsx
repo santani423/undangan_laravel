@@ -15,7 +15,7 @@ import {
     Users,
     X,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -28,6 +28,7 @@ interface InvitationInfo {
 interface GuestRow {
     id: number;
     name: string;
+    slug: string | null;
     email: string | null;
     phone_number: string | null;
     gender: 'male' | 'female' | null;
@@ -94,6 +95,84 @@ function formatDateTime(dt: string | null): string {
     });
 }
 
+function toSlug(text: string): string {
+    return text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+}
+
+// ─── Slug Field ───────────────────────────────────────────────────────────────
+
+function SlugField({
+    invitationSlug,
+    value,
+    onChange,
+    excludeId,
+}: {
+    invitationSlug: string;
+    value: string;
+    onChange: (v: string) => void;
+    excludeId?: number;
+}) {
+    const [status, setStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        if (!value) { setStatus('idle'); return; }
+
+        setStatus('checking');
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+
+        debounceRef.current = setTimeout(async () => {
+            try {
+                const params = new URLSearchParams({ slug: value });
+                if (excludeId !== undefined) params.set('exclude_id', String(excludeId));
+                const res = await fetch(
+                    `/customer/invitations/${invitationSlug}/guests/check-slug?${params}`,
+                    { headers: { 'X-Requested-With': 'XMLHttpRequest' } },
+                );
+                const json = await res.json();
+                setStatus(json.available ? 'available' : 'taken');
+            } catch {
+                setStatus('idle');
+            }
+        }, 400);
+
+        return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+    }, [value, invitationSlug, excludeId]);
+
+    const borderClass =
+        status === 'taken' ? 'border-red-400 focus:ring-red-400' :
+        status === 'available' ? 'border-emerald-400 focus:ring-emerald-400' :
+        'border-border';
+
+    return (
+        <div>
+            <label className="text-sm font-medium text-foreground">Slug</label>
+            <input
+                value={value}
+                onChange={(e) => onChange(toSlug(e.target.value))}
+                placeholder="otomatis dari nama"
+                className={`mt-1 w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 ${borderClass}`}
+            />
+            {status === 'checking' && (
+                <p className="mt-1 text-xs text-muted-foreground">Memeriksa ketersediaan…</p>
+            )}
+            {status === 'taken' && (
+                <p className="mt-1 text-xs text-red-500">Slug sudah digunakan pada undangan ini.</p>
+            )}
+            {status === 'available' && (
+                <p className="mt-1 text-xs text-emerald-600">Slug tersedia.</p>
+            )}
+        </div>
+    );
+}
+
 // ─── Stats Bar ────────────────────────────────────────────────────────────────
 
 function StatsBar({ stats }: { stats: Stats }) {
@@ -120,17 +199,33 @@ function StatsBar({ stats }: { stats: Stats }) {
 
 // ─── Add Guest Modal ──────────────────────────────────────────────────────────
 
-function AddGuestModal({ slug, onClose }: { slug: string; onClose: () => void }) {
-    const [form, setForm] = useState({ name: '', email: '', phone_number: '', gender: '', category: '', notes: '' });
+function AddGuestModal({ slug: invSlug, onClose }: { slug: string; onClose: () => void }) {
+    const [form, setForm] = useState({ name: '', slug: '', email: '', phone_number: '', gender: '', category: '', notes: '' });
+    const [slugManual, setSlugManual] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [slugTaken, setSlugTaken] = useState(false);
 
-    const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-        setForm((f) => ({ ...f, [k]: e.target.value }));
+    const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const val = e.target.value;
+        setForm((f) => {
+            const next = { ...f, [k]: val };
+            if (k === 'name' && !slugManual) {
+                next.slug = toSlug(val);
+            }
+            return next;
+        });
+    };
+
+    const handleSlugChange = (v: string) => {
+        setSlugManual(true);
+        setForm((f) => ({ ...f, slug: v }));
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (slugTaken) return;
         setSaving(true);
-        router.post(`/customer/invitations/${slug}/guests`, form, {
+        router.post(`/customer/invitations/${invSlug}/guests`, form, {
             onSuccess: onClose,
             onFinish: () => setSaving(false),
         });
@@ -138,15 +233,22 @@ function AddGuestModal({ slug, onClose }: { slug: string; onClose: () => void })
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="bg-background rounded-2xl shadow-xl w-full max-w-md">
+            <div className="bg-background rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between px-5 py-4 border-b border-border">
                     <h2 className="font-semibold text-foreground">Tambah Tamu</h2>
                     <button onClick={onClose} className="size-8 flex items-center justify-center rounded-lg hover:bg-muted"><X className="size-4" /></button>
                 </div>
                 <form onSubmit={handleSubmit} className="p-5 grid gap-4">
-                    <div>
-                        <label className="text-sm font-medium text-foreground">Nama *</label>
-                        <input required value={form.name} onChange={set('name')} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="text-sm font-medium text-foreground">Nama *</label>
+                            <input required value={form.name} onChange={set('name')} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                        </div>
+                        <SlugField
+                            invitationSlug={invSlug}
+                            value={form.slug}
+                            onChange={(v) => { handleSlugChange(v); setSlugTaken(false); }}
+                        />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div>
@@ -177,7 +279,112 @@ function AddGuestModal({ slug, onClose }: { slug: string; onClose: () => void })
                         <textarea value={form.notes} onChange={set('notes')} rows={2} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
                     </div>
                     <div className="flex gap-2 pt-2">
-                        <button type="submit" disabled={saving} className="flex-1 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors">
+                        <button type="submit" disabled={saving || slugTaken} className="flex-1 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors">
+                            {saving ? 'Menyimpan…' : 'Simpan'}
+                        </button>
+                        <button type="button" onClick={onClose} className="flex-1 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">Batal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+// ─── Edit Guest Modal ─────────────────────────────────────────────────────────
+
+function EditGuestModal({ guest, invSlug, onClose }: { guest: GuestRow; invSlug: string; onClose: () => void }) {
+    const [form, setForm] = useState({
+        name: guest.name,
+        slug: guest.slug ?? '',
+        email: guest.email ?? '',
+        phone_number: guest.phone_number ?? '',
+        gender: guest.gender ?? '',
+        category: guest.category ?? '',
+        notes: guest.notes ?? '',
+        rsvp_status: guest.rsvp_status,
+        rsvp_headcount: String(guest.rsvp_headcount ?? 1),
+    });
+    const [slugTaken, setSlugTaken] = useState(false);
+    const [saving, setSaving] = useState(false);
+
+    const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+        setForm((f) => ({ ...f, [k]: e.target.value }));
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (slugTaken) return;
+        setSaving(true);
+        router.patch(`/customer/invitations/${invSlug}/guests/${guest.id}`, form, {
+            onSuccess: onClose,
+            onFinish: () => setSaving(false),
+        });
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="bg-background rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                    <h2 className="font-semibold text-foreground">Edit Tamu</h2>
+                    <button onClick={onClose} className="size-8 flex items-center justify-center rounded-lg hover:bg-muted"><X className="size-4" /></button>
+                </div>
+                <form onSubmit={handleSubmit} className="p-5 grid gap-4">
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="text-sm font-medium text-foreground">Nama *</label>
+                            <input required value={form.name} onChange={set('name')} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                        </div>
+                        <SlugField
+                            invitationSlug={invSlug}
+                            value={form.slug}
+                            onChange={(v) => { setForm((f) => ({ ...f, slug: v })); setSlugTaken(false); }}
+                            excludeId={guest.id}
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="text-sm font-medium text-foreground">Email</label>
+                            <input type="email" value={form.email} onChange={set('email')} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                        </div>
+                        <div>
+                            <label className="text-sm font-medium text-foreground">No HP</label>
+                            <input value={form.phone_number} onChange={set('phone_number')} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="text-sm font-medium text-foreground">Jenis Kelamin</label>
+                            <select value={form.gender} onChange={set('gender')} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                                <option value="">—</option>
+                                <option value="male">Laki-laki</option>
+                                <option value="female">Perempuan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="text-sm font-medium text-foreground">Kategori</label>
+                            <input placeholder="Keluarga, Rekan, dll." value={form.category} onChange={set('category')} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="text-sm font-medium text-foreground">Status RSVP</label>
+                            <select value={form.rsvp_status} onChange={set('rsvp_status')} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                                <option value="pending">Belum Konfirmasi</option>
+                                <option value="attending">Hadir</option>
+                                <option value="not_attending">Tidak Hadir</option>
+                                <option value="maybe">Masih Ragu</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="text-sm font-medium text-foreground">Jml Tamu</label>
+                            <input type="number" min={0} max={100} value={form.rsvp_headcount} onChange={set('rsvp_headcount')} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium text-foreground">Catatan</label>
+                        <textarea value={form.notes} onChange={set('notes')} rows={2} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                        <button type="submit" disabled={saving || slugTaken} className="flex-1 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors">
                             {saving ? 'Menyimpan…' : 'Simpan'}
                         </button>
                         <button type="button" onClick={onClose} className="flex-1 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">Batal</button>
@@ -190,7 +397,7 @@ function AddGuestModal({ slug, onClose }: { slug: string; onClose: () => void })
 
 // ─── Guest Row ────────────────────────────────────────────────────────────────
 
-function GuestTableRow({ guest, slug }: { guest: GuestRow; slug: string }) {
+function GuestTableRow({ guest, slug, onEdit }: { guest: GuestRow; slug: string; onEdit: (g: GuestRow) => void }) {
     const handleCheckIn = () => {
         router.patch(`/customer/invitations/${slug}/guests/${guest.id}/checkin`);
     };
@@ -205,6 +412,11 @@ function GuestTableRow({ guest, slug }: { guest: GuestRow; slug: string }) {
                 <p className="font-medium text-foreground text-sm">{guest.name}</p>
                 {guest.email && <p className="text-xs text-muted-foreground">{guest.email}</p>}
                 {guest.phone_number && <p className="text-xs text-muted-foreground">{guest.phone_number}</p>}
+            </td>
+            <td className="px-4 py-3">
+                {guest.slug
+                    ? <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded text-muted-foreground">{guest.slug}</span>
+                    : <span className="text-xs text-muted-foreground">—</span>}
             </td>
             <td className="px-4 py-3 text-xs text-muted-foreground">{guest.category ?? '—'}</td>
             <td className="px-4 py-3">
@@ -234,6 +446,7 @@ function GuestTableRow({ guest, slug }: { guest: GuestRow; slug: string }) {
                     </button>
                     <button
                         title="Edit"
+                        onClick={() => onEdit(guest)}
                         className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted transition-colors"
                     >
                         <Pencil className="size-4" />
@@ -263,6 +476,7 @@ export default function GuestBookIndex({ invitation, guests, stats, filters }: P
 
     const [search, setSearch] = useState(filters.search ?? '');
     const [showAddModal, setShowAddModal] = useState(false);
+    const [editingGuest, setEditingGuest] = useState<GuestRow | null>(null);
 
     const applyFilter = (extra: Record<string, string>) => {
         router.get(
@@ -287,6 +501,13 @@ export default function GuestBookIndex({ invitation, guests, stats, filters }: P
         <CustomerLayout breadcrumbs={breadcrumbs}>
             <Head title={`Buku Tamu — ${invitation.title}`} />
             {showAddModal && <AddGuestModal slug={invitation.slug} onClose={() => setShowAddModal(false)} />}
+            {editingGuest && (
+                <EditGuestModal
+                    guest={editingGuest}
+                    invSlug={invitation.slug}
+                    onClose={() => setEditingGuest(null)}
+                />
+            )}
 
             <div className="flex flex-col gap-6 p-6">
 
@@ -376,6 +597,7 @@ export default function GuestBookIndex({ invitation, guests, stats, filters }: P
                                 <thead className="bg-muted/40 border-b border-border">
                                     <tr>
                                         <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Nama</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Slug</th>
                                         <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Kategori</th>
                                         <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Status RSVP</th>
                                         <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide">Jml</th>
@@ -385,7 +607,7 @@ export default function GuestBookIndex({ invitation, guests, stats, filters }: P
                                 </thead>
                                 <tbody>
                                     {guests.data.map((g) => (
-                                        <GuestTableRow key={g.id} guest={g} slug={invitation.slug} />
+                                        <GuestTableRow key={g.id} guest={g} slug={invitation.slug} onEdit={setEditingGuest} />
                                     ))}
                                 </tbody>
                             </table>

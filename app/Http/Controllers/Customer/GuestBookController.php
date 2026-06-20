@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\Guest;
 use App\Models\Invitation;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
@@ -54,6 +56,7 @@ class GuestBookController extends Controller
             'guests'  => $guests->through(fn ($g) => [
                 'id'               => $g->id,
                 'name'             => $g->name,
+                'slug'             => $g->slug,
                 'email'            => $g->email,
                 'phone_number'     => $g->phone_number,
                 'gender'           => $g->gender,
@@ -70,9 +73,26 @@ class GuestBookController extends Controller
         ]);
     }
 
+    public function checkSlug(Request $request, Invitation $invitation): JsonResponse
+    {
+        abort_if($invitation->user_id !== auth()->id(), 403);
+
+        $slug      = $request->query('slug', '');
+        $excludeId = $request->query('exclude_id');
+
+        $exists = $invitation->guests()
+            ->where('slug', $slug)
+            ->when($excludeId, fn ($q) => $q->where('id', '!=', $excludeId))
+            ->exists();
+
+        return response()->json(['available' => ! $exists]);
+    }
+
     public function store(Request $request, Invitation $invitation): RedirectResponse
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
+
+        $slug = Str::slug($request->input('slug', '')) ?: Str::slug($request->input('name', ''));
 
         $request->validate([
             'name'         => 'required|string|max:255',
@@ -83,8 +103,13 @@ class GuestBookController extends Controller
             'notes'        => 'nullable|string|max:500',
         ]);
 
+        if ($slug && $invitation->guests()->where('slug', $slug)->exists()) {
+            return back()->withErrors(['slug' => 'Slug sudah digunakan pada undangan ini.'])->withInput();
+        }
+
         $invitation->guests()->create([
             'name'         => $request->name,
+            'slug'         => $slug ?: null,
             'email'        => $request->email,
             'phone_number' => $request->phone_number,
             'gender'       => $request->gender,
@@ -113,7 +138,18 @@ class GuestBookController extends Controller
             'checked_in_at'  => 'nullable|date',
         ]);
 
+        if ($request->has('slug')) {
+            $slug = Str::slug($request->input('slug', ''));
+            if ($slug && $invitation->guests()->where('slug', $slug)->where('id', '!=', $guest->id)->exists()) {
+                return back()->withErrors(['slug' => 'Slug sudah digunakan pada undangan ini.'])->withInput();
+            }
+        }
+
         $data = $request->only(['name', 'email', 'phone_number', 'gender', 'category', 'notes', 'rsvp_status', 'rsvp_headcount']);
+
+        if ($request->has('slug')) {
+            $data['slug'] = Str::slug($request->input('slug', '')) ?: null;
+        }
 
         if ($request->has('checked_in_at')) {
             $data['checked_in_at'] = $request->checked_in_at ? now() : null;

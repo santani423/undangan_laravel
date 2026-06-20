@@ -6,12 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
 
 class Guest extends Model
 {
     protected $fillable = [
         'invitation_id',
         'name',
+        'slug',
         'email',
         'phone_number',
         'gender',
@@ -25,6 +27,23 @@ class Guest extends Model
         'rsvp_submitted_at',
         'checked_in_at',
     ];
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::creating(function (Guest $guest) {
+            if (empty($guest->qr_code_data)) {
+                $token = Str::uuid()->toString();
+                $guest->qr_code_data = $token;
+            }
+
+            if (empty($guest->qr_code_url)) {
+                $invSlug = $guest->invitation?->slug ?? $guest->invitation_id;
+                $guest->qr_code_url = url("/inv/{$invSlug}/g/{$guest->qr_code_data}");
+            }
+        });
+    }
 
     protected function casts(): array
     {

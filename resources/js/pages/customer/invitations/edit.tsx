@@ -1279,10 +1279,13 @@ function GuestsTab({
     guestStats: GuestStats;
     guestFilters: { guestSearch: string; guestStatus: string; guestCheckedIn: string };
 }) {
-    const [search,     setSearch]     = useState(guestFilters.guestSearch);
-    const [showAdd,    setShowAdd]    = useState(false);
-    const [addForm,    setAddForm]    = useState({ name: '', email: '', phone_number: '', gender: '', category: '', notes: '' });
-    const [addSaving,  setAddSaving]  = useState(false);
+    const [search,      setSearch]      = useState(guestFilters.guestSearch);
+    const [showAdd,     setShowAdd]     = useState(false);
+    const [addForm,     setAddForm]     = useState({ name: '', slug: '', email: '', phone_number: '', gender: '', category: '', notes: '' });
+    const [addSlugManual, setAddSlugManual] = useState(false);
+    const [addSlugStatus, setAddSlugStatus] = useState<'idle'|'checking'|'available'|'taken'>('idle');
+    const addSlugDebounce = useRef<ReturnType<typeof setTimeout>|null>(null);
+    const [addSaving,   setAddSaving]   = useState(false);
 
     const reload = useCallback((extra: Record<string, string>) => {
         router.get(
@@ -1292,17 +1295,63 @@ function GuestsTab({
         );
     }, [search, guestFilters]);
 
-    const setAdd = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-        setAddForm((f) => ({ ...f, [k]: e.target.value }));
+    const guestToSlug = (text: string) =>
+        text.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+            .replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-');
+
+    const setAdd = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const val = e.target.value;
+        setAddForm((f) => {
+            const next = { ...f, [k]: val };
+            if (k === 'name' && !addSlugManual) {
+                next.slug = guestToSlug(val);
+            }
+            return next;
+        });
+    };
+
+    const handleAddSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = guestToSlug(e.target.value);
+        setAddSlugManual(true);
+        setAddForm((f) => ({ ...f, slug: val }));
+        setAddSlugStatus('idle');
+
+        if (addSlugDebounce.current) clearTimeout(addSlugDebounce.current);
+        if (!val) { setAddSlugStatus('idle'); return; }
+        setAddSlugStatus('checking');
+        addSlugDebounce.current = setTimeout(async () => {
+            try {
+                const res = await fetch(`/customer/invitations/${slug}/guests/check-slug?slug=${encodeURIComponent(val)}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                const json = await res.json();
+                setAddSlugStatus(json.available ? 'available' : 'taken');
+            } catch { setAddSlugStatus('idle'); }
+        }, 400);
+    };
+
+    useEffect(() => {
+        const val = addForm.slug;
+        if (!val || addSlugManual) return;
+        if (addSlugDebounce.current) clearTimeout(addSlugDebounce.current);
+        if (!val) { setAddSlugStatus('idle'); return; }
+        setAddSlugStatus('checking');
+        addSlugDebounce.current = setTimeout(async () => {
+            try {
+                const res = await fetch(`/customer/invitations/${slug}/guests/check-slug?slug=${encodeURIComponent(val)}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                const json = await res.json();
+                setAddSlugStatus(json.available ? 'available' : 'taken');
+            } catch { setAddSlugStatus('idle'); }
+        }, 400);
+    }, [addForm.slug]);
 
     function handleAddSubmit(e: React.FormEvent) {
         e.preventDefault();
+        if (addSlugStatus === 'taken') return;
         setAddSaving(true);
         router.post(`/customer/invitations/${slug}/guests`, addForm, {
             only: ['guests', 'guestStats', 'guestFilters'],
             preserveState: true,
             preserveScroll: true,
-            onSuccess: () => { setShowAdd(false); setAddForm({ name: '', email: '', phone_number: '', gender: '', category: '', notes: '' }); },
+            onSuccess: () => { setShowAdd(false); setAddForm({ name: '', slug: '', email: '', phone_number: '', gender: '', category: '', notes: '' }); setAddSlugManual(false); setAddSlugStatus('idle'); },
             onFinish: () => setAddSaving(false),
         });
     }
@@ -1404,9 +1453,21 @@ function GuestsTab({
                 <div className="rounded-2xl border border-border bg-muted/30 p-4">
                     <p className="font-medium text-sm text-foreground mb-3">Tambah Tamu Baru</p>
                     <form onSubmit={handleAddSubmit} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <div className="sm:col-span-2">
+                        <div>
                             <label className="text-xs font-medium text-foreground">Nama *</label>
                             <input required value={addForm.name} onChange={setAdd('name')} className={`mt-1 ${inputCls}`} placeholder="Nama tamu" />
+                        </div>
+                        <div>
+                            <label className="text-xs font-medium text-foreground">Slug</label>
+                            <input
+                                value={addForm.slug}
+                                onChange={handleAddSlugChange}
+                                placeholder="otomatis dari nama"
+                                className={`mt-1 ${inputCls} ${addSlugStatus === 'taken' ? 'border-red-400 focus:ring-red-400' : addSlugStatus === 'available' ? 'border-emerald-400 focus:ring-emerald-400' : ''}`}
+                            />
+                            {addSlugStatus === 'checking' && <p className="mt-0.5 text-[11px] text-muted-foreground">Memeriksa…</p>}
+                            {addSlugStatus === 'taken'    && <p className="mt-0.5 text-[11px] text-red-500">Slug sudah digunakan.</p>}
+                            {addSlugStatus === 'available'&& <p className="mt-0.5 text-[11px] text-emerald-600">Slug tersedia.</p>}
                         </div>
                         <div>
                             <label className="text-xs font-medium text-foreground">Email</label>
@@ -1429,7 +1490,7 @@ function GuestsTab({
                             <input value={addForm.category} onChange={setAdd('category')} placeholder="Keluarga, Rekan…" className={`mt-1 ${inputCls}`} />
                         </div>
                         <div className="sm:col-span-2 flex gap-2">
-                            <button type="submit" disabled={addSaving} className="flex-1 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors">
+                            <button type="submit" disabled={addSaving || addSlugStatus === 'taken'} className="flex-1 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors">
                                 {addSaving ? 'Menyimpan…' : 'Simpan'}
                             </button>
                             <button type="button" onClick={() => setShowAdd(false)} className="flex-1 rounded-xl border border-border px-4 py-2 text-sm font-medium hover:bg-muted transition-colors">
