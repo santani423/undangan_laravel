@@ -16,7 +16,7 @@ class InvitationPublicController extends Controller
 
         $visitor = $visitor
             ? urldecode($visitor)
-            : ($request->query('visitor') ?? $request->query('tamu'));
+            : ($request->query('visitor') ?? $request->query('tamu') ?? $request->query('guests'));
 
         $invitation = Invitation::with([
             'theme',
@@ -30,7 +30,7 @@ class InvitationPublicController extends Controller
 
             ->firstOrFail();
         // $invitation = Invitation::where('invitation_code', $code)
-
+ 
         // ->first();
 
         abort_if($invitation->isExpired(), 410, 'Undangan ini sudah tidak aktif.');
