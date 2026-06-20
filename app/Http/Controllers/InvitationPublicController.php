@@ -35,7 +35,7 @@ class InvitationPublicController extends Controller
 
         $guestName = trim((string) $request->query('to', ''));
         $data      = $this->buildData($invitation, $guestName, $theme->event_type);
-
+        // dd($data);
         return Inertia::render('invitation/show', [
             'invitation' => $data,
             'themeSlug'  => $theme->slug,
@@ -141,7 +141,7 @@ class InvitationPublicController extends Controller
                 'loop'     => $musicLoop,
             ];
         }
-
+       
         if ($eventType === 'wedding') {
             $groomNick = $contents->get('groom_nickname', '');
             $brideNick = $contents->get('bride_nickname', '');

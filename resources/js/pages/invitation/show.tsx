@@ -20,7 +20,8 @@ function resolveThemeComponent(
     console.log(
         `Resolving theme component for slug: ${themeSlug}, invitation type: ${invitation.type}`,
     );
-
+    console.log("invitation",invitation);
+    
     switch (themeSlug) {
         // Birthday themes
         case 'birthday':

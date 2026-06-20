@@ -98,7 +98,7 @@ const menuGroups: { label: string; items: MenuItem[] }[] = [
                     { title: 'Kategori Tema', url: '/admin/themes/categories' },
                 ],
             },
-            { title: 'Paket & Harga', url: '/admin/packages', icon: Package },
+            // { title: 'Paket & Harga', url: '/admin/packages', icon: Package },
         ],
     },
     {

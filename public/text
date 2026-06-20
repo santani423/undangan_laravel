@@ -1,0 +1,57 @@
++-------------------------------+
+| Tables_in_undesia             |
++-------------------------------+
+| activity_logs                 |
+| app_settings                  |
+| bank_accounts                 |
+| cache                         |
+| cache_locks                   |
+| comments                      |
+| digital_envelope_transactions |
+| digital_wallets               |
+| dress_code_items              |
+| dress_code_palettes           |
+| dress_codes                   |
+| event_type_fields             |
+| event_types                   |
+| failed_jobs                   |
+| gallery_photos                |
+| game_responses                |
+| gender_poll_votes             |
+| gift_wishlist_items           |
+| guests                        |
+| instagram_filters             |
+| interactive_games             |
+| invitation_contents           |
+| invitation_digital_wallets    |
+| invitation_events             |
+| invitation_payment_methods    |
+| invitation_settings           |
+| invitations     ok              |
+| job_batches                   |
+| jobs                          |
+| live_stream_sessions          |
+| migrations                    |
+| model_has_permissions         |
+| model_has_roles               |
+| package_features              |
+| packages                      |
+| page_views                    |
+| password_reset_tokens         |
+| payment_gateway_audit_logs    |
+| payment_gateway_configs       |
+| payments                      |
+| permissions                   |
+| qris_accounts                 |
+| role_has_permissions          |
+| roles                         |
+| rsvps                         |
+| sessions                      |
+| slider_photos                 |
+| stories                       |
+| testimonials                  |
+| themes                        |
+| transactions                  |
+| user_profiles                 |
+| users            ok             |
++-------------------------------+

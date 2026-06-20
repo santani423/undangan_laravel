@@ -81,8 +81,8 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                     <span className="wb-overlay-leaves wb-leaf-tr">🌿</span>
                     <span className="wb-overlay-leaves wb-leaf-bl">🌿</span>
                     <span className="wb-overlay-leaves wb-leaf-br">🌿</span>
-                    <p className="wb-overlay-bismillah">بسم الله الرحمن الرحيم</p>
-                    <div className="wb-overlay-divider" />
+                    {/* <p className="wb-overlay-bismillah">{invitation.openingQuote}</p> */}
+                    {/* <div className="wb-overlay-divider" /> */}
                     {/* Foto mempelai bulat di overlay */}
                     {(groomPhoto || bridePhoto) && (
                         <div className="wb-overlay-couple-photos">
@@ -107,7 +107,7 @@ export default function WeddingBase({ invitation }: WeddingBaseProps) {
                             Kepada Yth. {invitation.guestName}
                         </p>
                     )}
-                    <p className="wb-overlay-of">The Wedding of</p>
+                    <p className="wb-overlay-of">{invitation.openingQuote}</p>
                     <div className="wb-overlay-names">
                         {invitation.groomFullName}
                         <span className="wb-overlay-amp">&</span>
