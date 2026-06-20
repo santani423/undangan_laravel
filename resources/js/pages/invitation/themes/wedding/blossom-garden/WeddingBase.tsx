@@ -67,7 +67,7 @@ export default function WeddingBase({ invitation, visitor }: WeddingBaseProps) {
             `}</style>
 
             {/* ── Opening Overlay ────────────────────────────────────────────────── */}
-            <div className={`wb-overlay${opened ? 'hide' : ''}`}>
+            <div className={`wb-overlay${opened ? ' hide' : ''}`}>
                 {/* Background foto mempelai */}
                 {heroPhoto && <div className="wb-overlay-photo-bg" style={{ backgroundImage: `url(${heroPhoto})` }} />}
                 <div className="wb-overlay-frame">
@@ -98,7 +98,7 @@ export default function WeddingBase({ invitation, visitor }: WeddingBaseProps) {
                             )}
                         </div>
                     )}
-                    <p className="wb-overlay-of">{invitation.openingQuote}</p>
+                  
                     <div className="wb-overlay-names">
                         {invitation.groomFullName}
                         <span className="wb-overlay-amp">&</span>
@@ -131,7 +131,7 @@ export default function WeddingBase({ invitation, visitor }: WeddingBaseProps) {
             </div>
 
             {/* ── Main Content ────────────────────────────────────────────────────── */}
-            <div ref={mainRef} className={`wb-main${opened ? 'visible' : ''}`}>
+            <div ref={mainRef} className={`wb-main${opened ? ' visible' : ''}`}>
                 {/* ── HERO ──────────────────────────────────────────────────────── */}
                 <section className="wb-hero">
                     <div className="wb-hero-frame wb-anim-up">
@@ -163,16 +163,17 @@ export default function WeddingBase({ invitation, visitor }: WeddingBaseProps) {
                 </section>
 
                 {/* ── BISMILLAH ─────────────────────────────────────────────────── */}
-                <section className="wb-bismillah">
-                    <div className="wb-gold-line" />
-                    <p className="wb-arabic">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</p>
-                    <div className="wb-gold-line" />
-                    <p className="wb-quran-verse wb-anim-up">
-                        {invitation.openingQuote ||
+                {invitation.openingQuote && (
+                    <section className="wb-bismillah">
+                        <div className="wb-gold-line" /> 
+                        <p className="wb-quran-verse wb-anim-up">
+                            {invitation.openingQuote ||
                             '"Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih dan sayang."'}
-                    </p>
-                    <p className="wb-quran-ref wb-anim-up">(QS. Ar-Rum: 21)</p>
-                </section>
+                        </p>
+                        
+                        <div className="wb-gold-line" />
+                    </section>
+                )}
 
                 {/* ── COUPLE ────────────────────────────────────────────────────── */}
                 {isEnabled('couple_profile') && (
