@@ -33,6 +33,7 @@ export interface DigitalWallet {
     accountNumber: string;
     accountName: string;
     logoUrl: string;
+    qrisQrUrl?: string | null;
 }
 
 export interface LoveStoryItem {

@@ -101,7 +101,8 @@ class InvitationPublicController extends Controller
             'label'         => $w->provider_label ?? '',
             'accountNumber' => $w->account_number ?? '',
             'accountName'   => $w->account_name ?? '',
-            'logoUrl'       => $w->logo_path ? asset('storage/' . $w->logo_path) : '',
+            'logoUrl'       => $w->logo_path    ? asset('storage/' . $w->logo_path)    : '',
+            'qrisQrUrl'     => $w->qris_qr_path ? asset('storage/' . $w->qris_qr_path) : null,
         ])->all();
 
         $bankAccounts = json_decode($contents->get('bank_accounts', '[]'), true) ?? [];
