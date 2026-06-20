@@ -1,6 +1,7 @@
 import Countdown from '@/components/invitation/Countdown';
 import DigitalWalletSection from '@/components/invitation/DigitalWalletSection';
 import GallerySection from '@/components/invitation/GallerySection';
+import GuestQrCode from '@/components/invitation/GuestQrCode';
 import MusicPlayer from '@/components/invitation/MusicPlayer';
 import RSVPForm from '@/components/invitation/RSVPForm';
 import Toast, { useToast } from '@/components/invitation/Toast';
@@ -110,6 +111,18 @@ export default function WeddingBase({ invitation, visitor }: WeddingBaseProps) {
                         <p style={{ color: 'rgba(232,213,163,0.6)', fontSize: '0.8rem', marginBottom: '8px', letterSpacing: '2px' }}>
                             Kepada Yth. {invitation.guestName ? invitation.guestName : visitor}
                         </p>
+                    )}
+                    {invitation.guestQrData && (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '12px 0' }}>
+                            <GuestQrCode
+                                data={invitation.guestQrData}
+                                size={120}
+                                style={{ borderRadius: '8px', border: '3px solid rgba(232,213,163,0.6)' }}
+                            />
+                            <p style={{ color: 'rgba(232,213,163,0.55)', fontSize: '0.65rem', marginTop: '6px', letterSpacing: '1.5px' }}>
+                                QR Check-in Tamu
+                            </p>
+                        </div>
                     )}
                     <button className="wb-btn-open" onClick={openInvitation}>
                         ✦ Buka Undangan ✦

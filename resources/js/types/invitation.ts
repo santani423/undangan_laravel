@@ -99,6 +99,7 @@ interface InvitationBase {
         autoplay: boolean;
         loop: boolean;
     };
+    guestQrData?: string;
 }
 
 export interface WeddingInvitation extends InvitationBase {

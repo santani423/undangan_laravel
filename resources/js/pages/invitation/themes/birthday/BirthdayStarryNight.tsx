@@ -1,4 +1,5 @@
 import Countdown from '@/components/invitation/Countdown';
+import GuestQrCode from '@/components/invitation/GuestQrCode';
 import MusicPlayer from '@/components/invitation/MusicPlayer';
 import RSVPForm from '@/components/invitation/RSVPForm';
 import Toast, { useToast } from '@/components/invitation/Toast';
@@ -163,6 +164,18 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
                         <p className="sn-cover-guest">
                             Kepada Yth. <span>{visitor}</span>
                         </p>
+                    )}
+                    {invitation.guestQrData && (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '12px 0' }}>
+                            <GuestQrCode
+                                data={invitation.guestQrData}
+                                size={120}
+                                style={{ borderRadius: '8px', border: '3px solid rgba(196,181,253,0.5)' }}
+                            />
+                            <p style={{ color: 'rgba(196,181,253,0.6)', fontSize: '0.65rem', marginTop: '6px', letterSpacing: '1.5px' }}>
+                                QR Check-in Tamu
+                            </p>
+                        </div>
                     )}
                     <button className="sn-btn-open" onClick={() => setOpened(true)}>
                         <span>🎉 Open Invitation 🎉</span>
