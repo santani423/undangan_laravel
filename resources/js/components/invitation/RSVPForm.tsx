@@ -2,6 +2,8 @@ import { FormEvent, useState } from 'react';
 
 interface RSVPFormProps {
     rsvpEndpoint: string;
+    guestName?: string;
+    guestSlug?: string;
     onSuccess?: () => void;
     onToast?: (msg: string) => void;
     // Style props for theming
@@ -19,7 +21,6 @@ interface RSVPFormProps {
     };
     labels?: {
         name?: string;
-        phone?: string;
         guests?: string;
         attendance?: string;
         attending?: string;
@@ -34,7 +35,6 @@ interface RSVPFormProps {
 
 const DEFAULT_LABELS = {
     name: 'Nama Lengkap *',
-    phone: 'No. WhatsApp',
     guests: 'Jumlah Tamu',
     attendance: 'Konfirmasi Kehadiran *',
     attending: '✓ Insya Allah Hadir',
@@ -46,10 +46,9 @@ const DEFAULT_LABELS = {
     successSub: 'Kami menantikan kehadiran Anda!',
 };
 
-export default function RSVPForm({ rsvpEndpoint, onToast, styles, labels = {} }: RSVPFormProps) {
+export default function RSVPForm({ rsvpEndpoint, guestName, guestSlug, onToast, styles, labels = {} }: RSVPFormProps) {
     const L = { ...DEFAULT_LABELS, ...labels };
-    const [name, setName] = useState('');
-    const [phone, setPhone] = useState('');
+    const [name, setName] = useState(guestName ?? '');
     const [guests, setGuests] = useState('1');
     const [attendance, setAttendance] = useState('');
     const [message, setMessage] = useState('');
@@ -74,12 +73,12 @@ export default function RSVPForm({ rsvpEndpoint, onToast, styles, labels = {} }:
             tidak: 'not_attending',
             belum: 'maybe',
         };
-        const payload = {
+        const payload: Record<string, string | number | undefined> = {
             name: name.trim(),
-            phone_number: phone,
             number_of_guests: parseInt(guests) || 1,
             rsvp_status: rsvpStatusMap[attendance] ?? attendance,
             message,
+            guest_slug: guestSlug,
         };
         try {
             await fetch(rsvpEndpoint, {
@@ -117,23 +116,13 @@ export default function RSVPForm({ rsvpEndpoint, onToast, styles, labels = {} }:
                 <input
                     type="text"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => !guestName && setName(e.target.value)}
                     placeholder="Masukkan nama lengkap Anda"
                     className={styles.input}
+                    readOnly={!!guestName}
+                    style={guestName ? { opacity: 0.75, cursor: 'not-allowed' } : undefined}
                 />
                 {errors.name && <p className={styles.errorText}>{errors.name}</p>}
-            </div>
-
-            {/* Phone */}
-            <div style={{ marginBottom: '25px' }}>
-                <label className={styles.label}>{L.phone}</label>
-                <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="08xx-xxxx-xxxx"
-                    className={styles.input}
-                />
             </div>
 
             {/* Guests */}

@@ -43,8 +43,11 @@ class InvitationPublicController extends Controller
             ->first();
         $data = $this->buildData($invitation, $guest ? $guest->name : $visitor, $theme->event_type);
 
-        if ($guest && ! empty($guest->qr_code_data)) {
-            $data['guestQrData'] = $guest->qr_code_data;
+        if ($guest) {
+            if (! empty($guest->qr_code_data)) {
+                $data['guestQrData'] = $guest->qr_code_data;
+            }
+            $data['guestSlug'] = $guest->slug;
         }
 
         return Inertia::render('invitation/show', [

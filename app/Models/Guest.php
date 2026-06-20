@@ -26,6 +26,7 @@ class Guest extends Model
         'rsvp_notes',
         'rsvp_submitted_at',
         'checked_in_at',
+        'message',
     ];
 
     protected static function boot(): void

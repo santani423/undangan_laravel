@@ -518,6 +518,8 @@ export default function WeddingBase({ invitation, visitor }: WeddingBaseProps) {
                         )}
                         <RSVPForm
                             rsvpEndpoint={invitation.rsvpEndpoint}
+                            guestName={invitation.guestName || undefined}
+                            guestSlug={invitation.guestSlug}
                             onToast={showToast}
                             styles={{
                                 form: 'wb-rsvp-form',

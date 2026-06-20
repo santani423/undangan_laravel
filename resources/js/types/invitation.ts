@@ -100,6 +100,7 @@ interface InvitationBase {
         loop: boolean;
     };
     guestQrData?: string;
+    guestSlug?: string;
 }
 
 export interface WeddingInvitation extends InvitationBase {

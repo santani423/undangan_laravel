@@ -32,17 +32,36 @@ class InvitationPublicApiController extends Controller
             'number_of_guests' => 'nullable|integer|min:1|max:50',
             'rsvp_status'      => 'nullable|in:attending,not_attending,maybe',
             'message'          => 'nullable|string|max:1000',
+            'guest_slug'       => 'nullable|string|max:255',
         ]);
 
-        $guest = Guest::create([
-            'invitation_id'     => $invitation->id,
-            'name'              => $data['name'],
-            'phone_number'      => $data['phone_number'] ?? null,
-            'rsvp_headcount'    => $data['number_of_guests'] ?? 1,
-            'rsvp_status'       => $data['rsvp_status'] ?? 'attending',
-            'rsvp_notes'        => $data['message'] ?? null,
-            'rsvp_submitted_at' => now(),
-        ]);
+        // If guest_slug provided, update the existing guest record
+        $guest = null;
+        if (! empty($data['guest_slug'])) {
+            $guest = Guest::where('invitation_id', $invitation->id)
+                ->where('slug', $data['guest_slug'])
+                ->first();
+        }
+
+        if ($guest) {
+            $guest->update([
+                'phone_number'      => $data['phone_number'] ?? $guest->phone_number,
+                'rsvp_headcount'    => $data['number_of_guests'] ?? $guest->rsvp_headcount,
+                'rsvp_status'       => $data['rsvp_status'] ?? 'attending',
+                'message'        => $data['message'] ?? null,
+                'rsvp_submitted_at' => now(),
+            ]);
+        } else {
+            $guest = Guest::create([
+                'invitation_id'     => $invitation->id,
+                'name'              => $data['name'],
+                'phone_number'      => $data['phone_number'] ?? null,
+                'rsvp_headcount'    => $data['number_of_guests'] ?? 1,
+                'rsvp_status'       => $data['rsvp_status'] ?? 'attending',
+                'message'        => $data['message'] ?? null,
+                'rsvp_submitted_at' => now(),
+            ]);
+        }
 
         if (! empty($data['message']) && $invitation->allow_guest_comments) {
             Comment::create([
