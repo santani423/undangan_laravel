@@ -52,3 +52,7 @@ require __DIR__.'/customer.php';
 Route::get('/{code}', [InvitationPublicController::class, 'show'])
     ->name('invitation.view')
     ->where('code', '[A-Za-z0-9_-]+');
+Route::get('/{code}/{visitor}', [InvitationPublicController::class, 'show'])
+    ->name('invitation.view')
+    ->where('code', '[A-Za-z0-9_-]+')
+    ->where('visitor', '[A-Za-z0-9_-]+');

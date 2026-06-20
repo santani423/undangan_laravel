@@ -9,6 +9,7 @@ import './starry-night.css';
 
 interface Props {
     invitation: BirthdayInvitation;
+    visitor?: string;
 }
 
 const ROYAL_DIVIDER_ICON = (
@@ -26,12 +27,13 @@ function addToCalendar(ev: BirthdayInvitation['events'][0]) {
 }
 
 function copyText(text: string, label: string, onToast: (msg: string) => void) {
-    navigator.clipboard.writeText(text)
+    navigator.clipboard
+        .writeText(text)
         .then(() => onToast(`✓ ${label} disalin!`))
         .catch(() => onToast(`✓ ${label} disalin!`));
 }
 
-export default function BirthdayStarryNight({ invitation }: Props) {
+export default function BirthdayStarryNight({ invitation, visitor }: Props) {
     const [opened, setOpened] = useState(false);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [galleryFilter, setGalleryFilter] = useState('all');
@@ -92,10 +94,9 @@ export default function BirthdayStarryNight({ invitation }: Props) {
     // Scroll animations after open
     useEffect(() => {
         if (!opened) return;
-        const obs = new IntersectionObserver(
-            (entries) => entries.forEach((e) => e.isIntersecting && e.target.classList.add('sn-visible')),
-            { threshold: 0.1 },
-        );
+        const obs = new IntersectionObserver((entries) => entries.forEach((e) => e.isIntersecting && e.target.classList.add('sn-visible')), {
+            threshold: 0.1,
+        });
         document.querySelectorAll('.sn-fade-up,.sn-fade-left,.sn-fade-right').forEach((el) => obs.observe(el));
         return () => obs.disconnect();
     }, [opened]);
@@ -110,8 +111,8 @@ export default function BirthdayStarryNight({ invitation }: Props) {
         const handler = (e: KeyboardEvent) => {
             if (lightboxIdx === null) return;
             if (e.key === 'Escape') setLightboxIdx(null);
-            if (e.key === 'ArrowLeft') setLightboxIdx((i) => i !== null ? (i - 1 + filteredGallery.length) % filteredGallery.length : null);
-            if (e.key === 'ArrowRight') setLightboxIdx((i) => i !== null ? (i + 1) % filteredGallery.length : null);
+            if (e.key === 'ArrowLeft') setLightboxIdx((i) => (i !== null ? (i - 1 + filteredGallery.length) % filteredGallery.length : null));
+            if (e.key === 'ArrowRight') setLightboxIdx((i) => (i !== null ? (i + 1) % filteredGallery.length : null));
         };
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
@@ -127,7 +128,7 @@ export default function BirthdayStarryNight({ invitation }: Props) {
             <canvas ref={canvasRef} className="sn-particles-canvas" />
 
             {/* ── Cover Overlay ─────────────────────────────────────────────────── */}
-            <div id="cover" className={`sn-cover${opened ? ' hidden' : ''}`}>
+            <div id="cover" className={`sn-cover${opened ? 'hidden' : ''}`}>
                 <div className="sn-stars-bg" id="stars-bg">
                     {Array.from({ length: 80 }).map((_, i) => {
                         const sz = 1 + Math.random() * 2;
@@ -158,6 +159,11 @@ export default function BirthdayStarryNight({ invitation }: Props) {
                             Dear <span>{invitation.guestName}</span>
                         </p>
                     )}
+                    {visitor && (
+                        <p className="sn-cover-guest">
+                            Kepada Yth. <span>{visitor}</span>
+                        </p>
+                    )}
                     <button className="sn-btn-open" onClick={() => setOpened(true)}>
                         <span>🎉 Open Invitation 🎉</span>
                     </button>
@@ -166,7 +172,6 @@ export default function BirthdayStarryNight({ invitation }: Props) {
 
             {/* ── Main Content ────────────────────────────────────────────────────── */}
             <main className="sn-main" style={{ display: opened ? 'block' : 'none' }}>
-
                 {/* HERO */}
                 <section className="sn-hero sn-section">
                     <div className="sn-hero-crown">👑</div>
@@ -206,16 +211,14 @@ export default function BirthdayStarryNight({ invitation }: Props) {
                                 <div className="sn-profile-photo-frame">
                                     <div
                                         className="sn-profile-photo-inner"
-                                        style={
-                                            celebrantPhoto
-                                                ? { backgroundImage: `url(${celebrantPhoto})`, backgroundSize: 'cover' }
-                                                : {}
-                                        }
+                                        style={celebrantPhoto ? { backgroundImage: `url(${celebrantPhoto})`, backgroundSize: 'cover' } : {}}
                                     >
                                         {!celebrantPhoto && '🌸'}
                                     </div>
                                 </div>
-                                <div className="sn-profile-fullname" style={{ marginTop: '1rem' }}>{invitation.celebrantName}</div>
+                                <div className="sn-profile-fullname" style={{ marginTop: '1rem' }}>
+                                    {invitation.celebrantName}
+                                </div>
                                 <div className="sn-profile-nickname">{invitation.celebrantNickname}</div>
                                 <div style={{ display: 'flex', justifyContent: 'center', gap: '.5rem', marginTop: '.5rem', fontSize: '1.2rem' }}>
                                     🌸 ✨ 👑
@@ -274,7 +277,8 @@ export default function BirthdayStarryNight({ invitation }: Props) {
                             </div>
                             <div className="sn-event-grid">
                                 {invitation.events.map((ev, i) => {
-                                    const mapsUrl = ev.locationUrl || (ev.mapsLat && ev.mapsLng ? `https://maps.google.com/?q=${ev.mapsLat},${ev.mapsLng}` : '');
+                                    const mapsUrl =
+                                        ev.locationUrl || (ev.mapsLat && ev.mapsLng ? `https://maps.google.com/?q=${ev.mapsLat},${ev.mapsLng}` : '');
                                     return (
                                         <div key={i} className="sn-event-card sn-glass-card sn-fade-up">
                                             <div className="sn-event-card-icon">🎉</div>
@@ -282,12 +286,14 @@ export default function BirthdayStarryNight({ invitation }: Props) {
                                             <p className="sn-event-card-date">📅 {ev.dateFormatted}</p>
                                             {ev.time && (
                                                 <p className="sn-event-card-time">
-                                                    ⏰ {ev.time}{ev.timeEnd ? ` – ${ev.timeEnd}` : ''} WIB
+                                                    ⏰ {ev.time}
+                                                    {ev.timeEnd ? ` – ${ev.timeEnd}` : ''} WIB
                                                 </p>
                                             )}
                                             {(ev.locationName || ev.location) && (
                                                 <p className="sn-event-card-location">
-                                                    📍 {ev.locationName}{ev.location ? `, ${ev.location}` : ''}
+                                                    📍 {ev.locationName}
+                                                    {ev.location ? `, ${ev.location}` : ''}
                                                 </p>
                                             )}
                                             <div className="sn-event-btns">
@@ -326,10 +332,7 @@ export default function BirthdayStarryNight({ invitation }: Props) {
                                         </div>
                                         <div className="sn-timeline-content-box sn-glass-card">
                                             {item.photo && (
-                                                <div
-                                                    className="sn-timeline-content-photo"
-                                                    style={{ backgroundImage: `url(${item.photo})` }}
-                                                />
+                                                <div className="sn-timeline-content-photo" style={{ backgroundImage: `url(${item.photo})` }} />
                                             )}
                                             <p className="sn-timeline-content-date">{item.date}</p>
                                             <h3 className="sn-timeline-content-title">{item.title}</h3>
@@ -355,7 +358,7 @@ export default function BirthdayStarryNight({ invitation }: Props) {
                             {galleryCategories.length > 0 && (
                                 <div className="sn-gallery-tabs">
                                     <button
-                                        className={`sn-gallery-tab${galleryFilter === 'all' ? ' active' : ''}`}
+                                        className={`sn-gallery-tab${galleryFilter === 'all' ? 'active' : ''}`}
                                         onClick={() => setGalleryFilter('all')}
                                     >
                                         All
@@ -363,7 +366,7 @@ export default function BirthdayStarryNight({ invitation }: Props) {
                                     {galleryCategories.map((cat) => (
                                         <button
                                             key={cat}
-                                            className={`sn-gallery-tab${galleryFilter === cat ? ' active' : ''}`}
+                                            className={`sn-gallery-tab${galleryFilter === cat ? 'active' : ''}`}
                                             onClick={() => setGalleryFilter(cat)}
                                         >
                                             {cat}
@@ -388,39 +391,61 @@ export default function BirthdayStarryNight({ invitation }: Props) {
                 )}
 
                 {/* LOCATION */}
-                {isEnabled('location') && invitation.events.length > 0 && (() => {
-                    const ev = invitation.events[0];
-                    const mapsUrl = ev.locationUrl || (ev.mapsLat && ev.mapsLng ? `https://maps.google.com/?q=${ev.mapsLat},${ev.mapsLng}` : '');
-                    if (!ev.mapsEmbed && !mapsUrl) return null;
-                    return (
-                        <section className="sn-section sn-maps">
-                            <div className="sn-container">
-                                <div className="sn-text-center sn-fade-up">
-                                    <span className="sn-section-badge" style={{ background: 'rgba(251,191,36,.15)', borderColor: 'rgba(251,191,36,.3)', color: 'var(--sn-gold)' }}>📍 Location</span>
-                                    <h2 className="sn-section-title" style={{ color: 'var(--sn-gold)' }}>Find the Castle</h2>
-                                    <div className="sn-royal-divider">{ROYAL_DIVIDER_ICON}</div>
-                                    {(ev.locationName || ev.location) && (
-                                        <p style={{ color: 'rgba(255,255,255,.6)', fontSize: '.9rem' }}>
-                                            {ev.locationName}{ev.location ? ` · ${ev.location}` : ''}
-                                        </p>
+                {isEnabled('location') &&
+                    invitation.events.length > 0 &&
+                    (() => {
+                        const ev = invitation.events[0];
+                        const mapsUrl = ev.locationUrl || (ev.mapsLat && ev.mapsLng ? `https://maps.google.com/?q=${ev.mapsLat},${ev.mapsLng}` : '');
+                        if (!ev.mapsEmbed && !mapsUrl) return null;
+                        return (
+                            <section className="sn-section sn-maps">
+                                <div className="sn-container">
+                                    <div className="sn-text-center sn-fade-up">
+                                        <span
+                                            className="sn-section-badge"
+                                            style={{
+                                                background: 'rgba(251,191,36,.15)',
+                                                borderColor: 'rgba(251,191,36,.3)',
+                                                color: 'var(--sn-gold)',
+                                            }}
+                                        >
+                                            📍 Location
+                                        </span>
+                                        <h2 className="sn-section-title" style={{ color: 'var(--sn-gold)' }}>
+                                            Find the Castle
+                                        </h2>
+                                        <div className="sn-royal-divider">{ROYAL_DIVIDER_ICON}</div>
+                                        {(ev.locationName || ev.location) && (
+                                            <p style={{ color: 'rgba(255,255,255,.6)', fontSize: '.9rem' }}>
+                                                {ev.locationName}
+                                                {ev.location ? ` · ${ev.location}` : ''}
+                                            </p>
+                                        )}
+                                    </div>
+                                    {ev.mapsEmbed && (
+                                        <div className="sn-map-wrap sn-fade-up">
+                                            <iframe
+                                                src={ev.mapsEmbed}
+                                                width="100%"
+                                                height="400"
+                                                style={{ border: 0, display: 'block' }}
+                                                allowFullScreen
+                                                loading="lazy"
+                                                title="Lokasi"
+                                            />
+                                        </div>
+                                    )}
+                                    {mapsUrl && (
+                                        <div className="sn-text-center sn-fade-up" style={{ marginTop: '1rem' }}>
+                                            <a href={mapsUrl} target="_blank" rel="noreferrer" className="sn-btn-maps">
+                                                🗺️ Open Google Maps
+                                            </a>
+                                        </div>
                                     )}
                                 </div>
-                                {ev.mapsEmbed && (
-                                    <div className="sn-map-wrap sn-fade-up">
-                                        <iframe src={ev.mapsEmbed} width="100%" height="400" style={{ border: 0, display: 'block' }} allowFullScreen loading="lazy" title="Lokasi" />
-                                    </div>
-                                )}
-                                {mapsUrl && (
-                                    <div className="sn-text-center sn-fade-up" style={{ marginTop: '1rem' }}>
-                                        <a href={mapsUrl} target="_blank" rel="noreferrer" className="sn-btn-maps">
-                                            🗺️ Open Google Maps
-                                        </a>
-                                    </div>
-                                )}
-                            </div>
-                        </section>
-                    );
-                })()}
+                            </section>
+                        );
+                    })()}
 
                 {/* RSVP */}
                 {isEnabled('rsvp') && (
@@ -447,11 +472,11 @@ export default function BirthdayStarryNight({ invitation }: Props) {
                                     successBox: 'sn-rsvp-success sn-glass-card',
                                 }}
                                 labels={{
-                                    attending: '🎉 Yes, I\'ll Be There!',
+                                    attending: "🎉 Yes, I'll Be There!",
                                     notAttending: '😢 Regretfully Declining',
                                     maybe: '🤔 Maybe',
                                     submit: '✨ Send RSVP ✨',
-                                    successTitle: '🎉 Thank you! We can\'t wait to see you!',
+                                    successTitle: "🎉 Thank you! We can't wait to see you!",
                                     successSub: 'See you at the party!',
                                 }}
                             />
@@ -497,10 +522,19 @@ export default function BirthdayStarryNight({ invitation }: Props) {
                     <section className="sn-section sn-gift">
                         <div className="sn-container">
                             <div className="sn-text-center sn-fade-up">
-                                <span className="sn-section-badge" style={{ background: 'rgba(251,191,36,.15)', borderColor: 'rgba(251,191,36,.3)', color: 'var(--sn-gold)' }}>🎁 Royal Gifts</span>
-                                <h2 className="sn-section-title" style={{ color: 'var(--sn-gold)' }}>Send a Gift</h2>
+                                <span
+                                    className="sn-section-badge"
+                                    style={{ background: 'rgba(251,191,36,.15)', borderColor: 'rgba(251,191,36,.3)', color: 'var(--sn-gold)' }}
+                                >
+                                    🎁 Royal Gifts
+                                </span>
+                                <h2 className="sn-section-title" style={{ color: 'var(--sn-gold)' }}>
+                                    Send a Gift
+                                </h2>
                                 <div className="sn-royal-divider">{ROYAL_DIVIDER_ICON}</div>
-                                <p style={{ color: 'rgba(255,255,255,.6)', fontSize: '.9rem' }}>Your presence is the greatest gift, but if you'd like to share some love</p>
+                                <p style={{ color: 'rgba(255,255,255,.6)', fontSize: '.9rem' }}>
+                                    Your presence is the greatest gift, but if you'd like to share some love
+                                </p>
                             </div>
                             <div className="sn-gift-grid sn-fade-up">
                                 {invitation.bankAccounts?.map((b, i) => (
@@ -509,7 +543,10 @@ export default function BirthdayStarryNight({ invitation }: Props) {
                                         <div className="sn-gift-card-name">{b.bankName}</div>
                                         <div className="sn-gift-card-number">{b.accountNumber}</div>
                                         <div className="sn-gift-card-owner">a.n. {b.accountName}</div>
-                                        <button className="sn-gift-copy-btn" onClick={() => copyText(b.accountNumber, `No. Rekening ${b.bankName}`, showToast)}>
+                                        <button
+                                            className="sn-gift-copy-btn"
+                                            onClick={() => copyText(b.accountNumber, `No. Rekening ${b.bankName}`, showToast)}
+                                        >
                                             📋 Copy
                                         </button>
                                     </div>
@@ -517,14 +554,21 @@ export default function BirthdayStarryNight({ invitation }: Props) {
                                 {invitation.digitalWallets?.map((w, i) => (
                                     <div key={i} className="sn-gift-card">
                                         {w.logoUrl ? (
-                                            <img src={w.logoUrl} alt={w.label} style={{ height: '36px', objectFit: 'contain', marginBottom: '8px' }} />
+                                            <img
+                                                src={w.logoUrl}
+                                                alt={w.label}
+                                                style={{ height: '36px', objectFit: 'contain', marginBottom: '8px' }}
+                                            />
                                         ) : (
                                             <div className="sn-gift-card-logo">💳</div>
                                         )}
                                         <div className="sn-gift-card-name">{w.label || w.provider}</div>
                                         <div className="sn-gift-card-number">{w.accountNumber}</div>
                                         <div className="sn-gift-card-owner">{w.accountName}</div>
-                                        <button className="sn-gift-copy-btn" onClick={() => copyText(w.accountNumber, w.label || w.provider, showToast)}>
+                                        <button
+                                            className="sn-gift-copy-btn"
+                                            onClick={() => copyText(w.accountNumber, w.label || w.provider, showToast)}
+                                        >
                                             📋 Copy
                                         </button>
                                     </div>
@@ -542,7 +586,6 @@ export default function BirthdayStarryNight({ invitation }: Props) {
                     <div className="sn-footer-hearts">💜 🌸 👑 🌸 💜</div>
                     <p className="sn-footer-credit">Created with love ✦ Undesia Digital Invitation ✨</p>
                 </footer>
-
             </main>
 
             {/* Music */}
@@ -562,17 +605,88 @@ export default function BirthdayStarryNight({ invitation }: Props) {
             {lightboxIdx !== null && (
                 <div
                     onClick={() => setLightboxIdx(null)}
-                    style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: 9999,
+                        background: 'rgba(0,0,0,0.9)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexDirection: 'column',
+                    }}
                 >
-                    <button onClick={() => setLightboxIdx(null)} style={{ position: 'absolute', top: '20px', right: '30px', color: 'white', fontSize: '2rem', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
+                    <button
+                        onClick={() => setLightboxIdx(null)}
+                        style={{
+                            position: 'absolute',
+                            top: '20px',
+                            right: '30px',
+                            color: 'white',
+                            fontSize: '2rem',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        ✕
+                    </button>
                     {filteredGallery[lightboxIdx]?.url ? (
-                        <img src={filteredGallery[lightboxIdx].url} alt="Gallery" style={{ maxWidth: '80vw', maxHeight: '80vh', borderRadius: '12px' }} onClick={(e) => e.stopPropagation()} />
+                        <img
+                            src={filteredGallery[lightboxIdx].url}
+                            alt="Gallery"
+                            style={{ maxWidth: '80vw', maxHeight: '80vh', borderRadius: '12px' }}
+                            onClick={(e) => e.stopPropagation()}
+                        />
                     ) : (
-                        <div style={{ width: '400px', height: '300px', background: '#ede9fe', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '4rem' }}>📷</div>
+                        <div
+                            style={{
+                                width: '400px',
+                                height: '300px',
+                                background: '#ede9fe',
+                                borderRadius: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '4rem',
+                            }}
+                        >
+                            📷
+                        </div>
                     )}
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                        <button onClick={(e) => { e.stopPropagation(); setLightboxIdx((i) => i !== null ? (i - 1 + filteredGallery.length) % filteredGallery.length : null); }} style={{ padding: '.75rem 2rem', borderRadius: '50px', background: 'rgba(255,255,255,.1)', color: 'white', border: '1px solid rgba(255,255,255,.3)', cursor: 'pointer' }}>← Prev</button>
-                        <button onClick={(e) => { e.stopPropagation(); setLightboxIdx((i) => i !== null ? (i + 1) % filteredGallery.length : null); }} style={{ padding: '.75rem 2rem', borderRadius: '50px', background: 'rgba(255,255,255,.1)', color: 'white', border: '1px solid rgba(255,255,255,.3)', cursor: 'pointer' }}>Next →</button>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setLightboxIdx((i) => (i !== null ? (i - 1 + filteredGallery.length) % filteredGallery.length : null));
+                            }}
+                            style={{
+                                padding: '.75rem 2rem',
+                                borderRadius: '50px',
+                                background: 'rgba(255,255,255,.1)',
+                                color: 'white',
+                                border: '1px solid rgba(255,255,255,.3)',
+                                cursor: 'pointer',
+                            }}
+                        >
+                            ← Prev
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setLightboxIdx((i) => (i !== null ? (i + 1) % filteredGallery.length : null));
+                            }}
+                            style={{
+                                padding: '.75rem 2rem',
+                                borderRadius: '50px',
+                                background: 'rgba(255,255,255,.1)',
+                                color: 'white',
+                                border: '1px solid rgba(255,255,255,.3)',
+                                cursor: 'pointer',
+                            }}
+                        >
+                            Next →
+                        </button>
                     </div>
                 </div>
             )}

@@ -11,16 +11,19 @@ import WeddingBase from './themes/wedding/blossom-garden/WeddingBase';
 interface Props {
     invitation: InvitationData;
     themeSlug: string;
+    visitor?: string;
 }
 
 function resolveThemeComponent(
     themeSlug: string,
     invitation: InvitationData,
+    visitor?: string,
 ): React.ReactNode {
     console.log(
         `Resolving theme component for slug: ${themeSlug}, invitation type: ${invitation.type}`,
     );
     console.log("invitation",invitation);
+    console.log("visitor",visitor);
     
     switch (themeSlug) {
         // Birthday themes
@@ -29,6 +32,7 @@ function resolveThemeComponent(
             return (
                 <BirthdayStarryNight
                     invitation={invitation as BirthdayInvitation}
+                    visitor={visitor}
                 />
             );
 
@@ -86,6 +90,7 @@ function getFaviconUrl(invitation: InvitationData): string {
 export default function InvitationShow({
     invitation,
     themeSlug,
+    visitor,
 }: Props) {
     const faviconUrl = getFaviconUrl(invitation);
 
@@ -109,7 +114,7 @@ export default function InvitationShow({
                     'Undangan Digital'
                 }
             />
-            {resolveThemeComponent(themeSlug, invitation)}
+            {resolveThemeComponent(themeSlug, invitation, visitor)}
         </>
     );
 }

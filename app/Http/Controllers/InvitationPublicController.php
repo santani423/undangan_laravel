@@ -10,24 +10,28 @@ use Inertia\Response;
 
 class InvitationPublicController extends Controller
 {
-    public function show(Request $request, string $code): Response
-    {   
-  
+    public function show(Request $request, string $code, string $visitor = null): Response
+    {
+
+        $visitor = $visitor
+            ? urldecode($visitor)
+            : ($request->query('visitor') ?? $request->query('tamu'));
+
         $invitation = Invitation::with([
             'theme',
             'settings',
-            'events'         => fn ($q) => $q->orderBy('display_order')->orderBy('event_date'),
+            'events'         => fn($q) => $q->orderBy('display_order')->orderBy('event_date'),
             'contents',
-            'galleryPhotos'  => fn ($q) => $q->where('category', 'general')->orderBy('display_order'),
-            'digitalWallets' => fn ($q) => $q->wherePivot('is_displayed', true)->orderByPivot('display_order'),
+            'galleryPhotos'  => fn($q) => $q->where('category', 'general')->orderBy('display_order'),
+            'digitalWallets' => fn($q) => $q->wherePivot('is_displayed', true)->orderByPivot('display_order'),
         ])
-        ->where('invitation_code', $code)
-     
-        ->firstOrFail();
+            ->where('invitation_code', $code)
+
+            ->firstOrFail();
         // $invitation = Invitation::where('invitation_code', $code)
- 
+
         // ->first();
-   
+
         abort_if($invitation->isExpired(), 410, 'Undangan ini sudah tidak aktif.');
 
         $theme = $invitation->theme;
@@ -35,10 +39,11 @@ class InvitationPublicController extends Controller
 
         $guestName = trim((string) $request->query('to', ''));
         $data      = $this->buildData($invitation, $guestName, $theme->event_type);
-        // dd($data);
+        // dd($visitor);
         return Inertia::render('invitation/show', [
             'invitation' => $data,
             'themeSlug'  => $theme->slug,
+            'visitor'    => $visitor,
         ]);
     }
 
@@ -66,7 +71,7 @@ class InvitationPublicController extends Controller
             ? $countdownDate->format('Y-m-d') . 'T' . ($countdownEvent->event_time ?? '08:00:00')
             : '';
 
-        $eventsJs = $events->map(fn ($e) => [
+        $eventsJs = $events->map(fn($e) => [
             'name'          => $e->event_name ?? '',
             'date'          => $e->event_date ? Carbon::parse($e->event_date)->format('Y-m-d') : '',
             'dateFormatted' => $e->event_date ? $this->formatDateId(Carbon::parse($e->event_date)) : '',
@@ -81,7 +86,7 @@ class InvitationPublicController extends Controller
             'isCountdown'   => (bool) $e->is_countdown,
         ])->values()->all();
 
-        $wallets = $invitation->digitalWallets->map(fn ($w) => [
+        $wallets = $invitation->digitalWallets->map(fn($w) => [
             'provider'      => $w->provider ?? '',
             'label'         => $w->provider_label ?? '',
             'accountNumber' => $w->account_number ?? '',
@@ -94,7 +99,7 @@ class InvitationPublicController extends Controller
         $lifeJourney  = json_decode($contents->get('life_journey', '[]'), true) ?? [];
 
         // Gallery — from GalleryPhoto model (general category)
-        $gallery = $invitation->galleryPhotos->map(fn ($p) => [
+        $gallery = $invitation->galleryPhotos->map(fn($p) => [
             'url'      => asset('storage/' . $p->file_path),
             'category' => $p->category ?? 'general',
             'label'    => $p->title ?? '',
@@ -141,7 +146,7 @@ class InvitationPublicController extends Controller
                 'loop'     => $musicLoop,
             ];
         }
-       
+
         if ($eventType === 'wedding') {
             $groomNick = $contents->get('groom_nickname', '');
             $brideNick = $contents->get('bride_nickname', '');
@@ -196,8 +201,21 @@ class InvitationPublicController extends Controller
     private function formatDateId(Carbon $date): string
     {
         $days   = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-        $months = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        $months = [
+            '',
+            'Januari',
+            'Februari',
+            'Maret',
+            'April',
+            'Mei',
+            'Juni',
+            'Juli',
+            'Agustus',
+            'September',
+            'Oktober',
+            'November',
+            'Desember'
+        ];
 
         return $days[$date->dayOfWeek] . ', ' . $date->day . ' ' . $months[$date->month] . ' ' . $date->year;
     }
