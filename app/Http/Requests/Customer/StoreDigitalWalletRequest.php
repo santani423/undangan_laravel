@@ -18,7 +18,8 @@ class StoreDigitalWalletRequest extends FormRequest
             'provider_label' => 'required|string|max:100',
             'account_number' => 'required|string|max:50',
             'account_name'   => 'required|string|max:150',
-            'logo'           => 'nullable|string', // base64 or existing path
+            'logo'           => 'nullable|string',
+            'qris_qr'        => 'nullable|string', // base64 image
             'is_active'      => 'boolean',
         ];
     }

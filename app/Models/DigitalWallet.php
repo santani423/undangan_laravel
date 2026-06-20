@@ -15,6 +15,7 @@ class DigitalWallet extends Model
         'account_number',
         'account_name',
         'logo_path',
+        'qris_qr_path',
         'is_active',
     ];
 
@@ -54,9 +55,13 @@ class DigitalWallet extends Model
 
     public function getLogoUrlAttribute(): ?string
     {
-        if (!$this->logo_path) {
-            return null;
-        }
+        if (!$this->logo_path) return null;
         return \Illuminate\Support\Facades\Storage::disk('public')->url($this->logo_path);
+    }
+
+    public function getQrisQrUrlAttribute(): ?string
+    {
+        if (!$this->qris_qr_path) return null;
+        return \Illuminate\Support\Facades\Storage::disk('public')->url($this->qris_qr_path);
     }
 }

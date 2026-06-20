@@ -36,22 +36,42 @@ class DigitalWalletController extends Controller
         ]);
     }
 
-    public function store(StoreDigitalWalletRequest $request): RedirectResponse
+    public function store(StoreDigitalWalletRequest $request): RedirectResponse|\Illuminate\Http\JsonResponse
     {
+        $dir      = 'digital-wallets/' . auth()->id();
         $logoPath = null;
         if ($request->filled('logo') && str_starts_with($request->logo, 'data:image/')) {
-            $logoPath = $this->saveBase64Image($request->logo, 'digital-wallets/' . auth()->id());
+            $logoPath = $this->saveBase64Image($request->logo, $dir);
         }
 
-        DigitalWallet::create([
+        $qrisPath = null;
+        if ($request->filled('qris_qr') && str_starts_with($request->qris_qr, 'data:image/')) {
+            $qrisPath = $this->saveBase64Image($request->qris_qr, $dir);
+        }
+
+        $wallet = DigitalWallet::create([
             'user_id'        => auth()->id(),
             'provider'       => $request->provider,
             'provider_label' => $request->provider_label,
             'account_number' => $request->account_number,
             'account_name'   => $request->account_name,
             'logo_path'      => $logoPath,
+            'qris_qr_path'   => $qrisPath,
             'is_active'      => $request->boolean('is_active', true),
         ]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'id'             => $wallet->id,
+                'provider'       => $wallet->provider,
+                'provider_label' => $wallet->provider_label,
+                'account_number' => $wallet->account_number,
+                'account_name'   => $wallet->account_name,
+                'logo_url'       => $wallet->logo_url,
+                'qris_qr_url'    => $wallet->qris_qr_url,
+                'is_active'      => $wallet->is_active,
+            ], 201);
+        }
 
         return redirect()->route('customer.digital-wallets.index')
             ->with('success', 'Dompet digital berhasil ditambahkan.');
@@ -139,7 +159,7 @@ class DigitalWalletController extends Controller
         ]);
     }
 
-    public function syncInvitationWallets(Request $request, Invitation $invitation): RedirectResponse
+    public function syncInvitationWallets(Request $request, Invitation $invitation): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
 

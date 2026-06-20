@@ -442,6 +442,28 @@ class InvitationController extends Controller
             'flagged'  => $invitation->comments()->where('is_flagged', true)->count(),
         ];
 
+        // ── Digital wallets ───────────────────────────────────────────────────
+        $myWallets = \App\Models\DigitalWallet::where('user_id', auth()->id())
+            ->active()
+            ->get(['id', 'provider', 'provider_label', 'account_number', 'account_name', 'logo_path', 'qris_qr_path']);
+
+        $linkedWallets = $invitation->digitalWallets()
+            ->get(['digital_wallets.id', 'invitation_digital_wallets.is_displayed', 'invitation_digital_wallets.display_order'])
+            ->keyBy('id');
+
+        $digitalWallets = $myWallets->map(fn ($w) => [
+            'id'             => $w->id,
+            'provider'       => $w->provider,
+            'provider_label' => $w->provider_label,
+            'account_number' => $w->account_number,
+            'account_name'   => $w->account_name,
+            'logo_url'       => $w->logo_url,
+            'qris_qr_url'    => $w->qris_qr_url,
+            'is_linked'      => $linkedWallets->has($w->id),
+            'is_displayed'   => $linkedWallets->has($w->id) ? (bool) $linkedWallets[$w->id]->pivot->is_displayed : false,
+            'display_order'  => $linkedWallets->has($w->id) ? (int) $linkedWallets[$w->id]->pivot->display_order : 99,
+        ])->sortBy('display_order')->values()->toArray();
+
         // Invitation settings
         $settings = $invitation->settings;
         $invitationSettings = $settings ? [
@@ -476,6 +498,7 @@ class InvitationController extends Controller
             'availableThemes'    => $availableThemes,
             'invitationSettings' => $invitationSettings,
             'availableMusic'     => [],
+            'digitalWallets'     => $digitalWallets,
 
             // Guests
             'guests'       => $guestsPage->through(fn ($g) => [

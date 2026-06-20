@@ -8,8 +8,10 @@ import {
     CalendarDays,
     Check,
     CheckSquare,
+    ChevronDown,
     ChevronLeft,
     ChevronRight,
+    ChevronUp,
     Copy,
     Crown,
     ExternalLink,
@@ -41,6 +43,7 @@ import {
     Users,
     Volume2,
     VolumeX,
+    Wallet,
     X,
     ZoomIn,
 } from 'lucide-react';
@@ -198,6 +201,19 @@ interface PaginatedData<T> {
     links: { url: string | null; label: string; active: boolean }[];
 }
 
+interface DigitalWalletItem {
+    id:             number;
+    provider:       string;
+    provider_label: string;
+    account_number: string;
+    account_name:   string;
+    logo_url:       string | null;
+    qris_qr_url:    string | null;
+    is_linked:      boolean;
+    is_displayed:   boolean;
+    display_order:  number;
+}
+
 interface Props {
     invitation:          InvitationMeta;
     eventType:           EventType;
@@ -216,6 +232,7 @@ interface Props {
     commentFilters:      { commentSearch: string; commentStatus: string; commentFlagged: string };
     invitationSettings:  InvitationSettingsData | null;
     availableMusic:      MusicTrack[];
+    digitalWallets:      DigitalWalletItem[];
 }
 
 // ─── Settings types & constants ───────────────────────────────────────────────
@@ -285,7 +302,7 @@ const BUILTIN_MUSIC_LIBRARY: MusicTrack[] = [
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
-type TabKey = 'couple' | 'acara' | 'gallery' | 'love_story' | 'info' | 'host' | 'theme' | 'guests' | 'comments' | 'settings';
+type TabKey = 'couple' | 'acara' | 'gallery' | 'love_story' | 'info' | 'host' | 'theme' | 'guests' | 'comments' | 'digital_envelope' | 'settings';
 
 interface TabDef {
     key: TabKey;
@@ -300,14 +317,15 @@ const TAB_DEFINITIONS: Record<TabKey, TabDef> = {
     love_story: { key: 'love_story', label: 'Love Story',    icon: <BookOpen className="size-4" /> },
     info:       { key: 'info',       label: 'Info Acara',    icon: <CalendarDays className="size-4" /> },
     host:       { key: 'host',       label: 'Penyelenggara', icon: <Users className="size-4" /> },
-    theme:      { key: 'theme',      label: 'Ganti Tema',    icon: <Paintbrush className="size-4" /> },
-    guests:     { key: 'guests',     label: 'Buku Tamu',     icon: <UserCheck className="size-4" /> },
-    comments:   { key: 'comments',   label: 'Komentar',      icon: <MessageSquare className="size-4" /> },
-    settings:   { key: 'settings',   label: 'Pengaturan',    icon: <Settings className="size-4" /> },
+    theme:            { key: 'theme',            label: 'Ganti Tema',     icon: <Paintbrush className="size-4" /> },
+    guests:           { key: 'guests',           label: 'Buku Tamu',      icon: <UserCheck className="size-4" /> },
+    comments:         { key: 'comments',         label: 'Komentar',       icon: <MessageSquare className="size-4" /> },
+    digital_envelope: { key: 'digital_envelope', label: 'Amplop Digital', icon: <Wallet className="size-4" /> },
+    settings:         { key: 'settings',         label: 'Pengaturan',     icon: <Settings className="size-4" /> },
 };
 
 // Management tabs always appended to every event type
-const MANAGEMENT_TABS: TabKey[] = ['theme', 'guests', 'comments', 'settings'];
+const MANAGEMENT_TABS: TabKey[] = ['theme', 'guests', 'comments', 'digital_envelope', 'settings'];
 
 const EVENT_TYPE_TABS: Record<string, TabKey[]> = {
     wedding:       ['couple', 'acara', 'gallery', 'love_story'],
@@ -2376,6 +2394,722 @@ function SettingsTab({
     );
 }
 
+// ─── Digital Envelope Tab ─────────────────────────────────────────────────────
+
+const WALLET_PROVIDERS: { value: string; label: string }[] = [
+    { value: 'dana',      label: 'DANA' },
+    { value: 'ovo',       label: 'OVO' },
+    { value: 'gopay',     label: 'GoPay' },
+    { value: 'shopeepay', label: 'ShopeePay' },
+    { value: 'linkaja',   label: 'LinkAja' },
+    { value: 'jeniuspay', label: 'Jenius Pay' },
+    { value: 'other',     label: 'Lainnya' },
+];
+
+const PROVIDER_COLORS: Record<string, string> = {
+    dana:       'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    ovo:        'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+    gopay:      'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    shopeepay:  'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+    linkaja:    'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    jeniuspay:  'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
+    other:      'bg-muted text-muted-foreground',
+};
+
+function WalletProviderBadge({ provider, providerLabel, logoUrl }: { provider: string; providerLabel: string; logoUrl: string | null }) {
+    if (logoUrl) {
+        return <img src={logoUrl} alt={providerLabel} className="size-9 rounded-lg object-contain bg-muted" />;
+    }
+    const colorCls = PROVIDER_COLORS[provider] ?? PROVIDER_COLORS.other;
+    return (
+        <div className={`size-9 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${colorCls}`}>
+            {providerLabel.slice(0, 2).toUpperCase()}
+        </div>
+    );
+}
+
+function QrisPreviewModal({
+    url,
+    providerLabel,
+    accountName,
+    accountNumber,
+    onClose,
+}: {
+    url: string;
+    providerLabel: string;
+    accountName: string;
+    accountNumber: string;
+    onClose: () => void;
+}) {
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', handler);
+        return () => document.removeEventListener('keydown', handler);
+    }, [onClose]);
+
+    return (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+            onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        >
+            <div className="flex flex-col items-center gap-4 w-full max-w-xs">
+                {/* Card */}
+                <div className="w-full rounded-2xl bg-white dark:bg-card border border-border shadow-2xl overflow-hidden">
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-5 py-3.5 border-b border-border">
+                        <div>
+                            <p className="text-sm font-semibold text-foreground">{providerLabel}</p>
+                            <p className="text-xs text-muted-foreground">{accountNumber} · {accountName}</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        >
+                            <X className="size-4" />
+                        </button>
+                    </div>
+                    {/* QR Image */}
+                    <div className="p-6 flex items-center justify-center bg-white">
+                        <img
+                            src={url}
+                            alt={`QRIS ${providerLabel}`}
+                            className="w-full max-w-[240px] object-contain"
+                        />
+                    </div>
+                    <div className="px-5 py-3 bg-muted/40 text-center">
+                        <p className="text-xs text-muted-foreground">Scan QR Code untuk transfer</p>
+                    </div>
+                </div>
+                <button
+                    type="button"
+                    onClick={onClose}
+                    className="text-sm text-white/80 hover:text-white transition-colors"
+                >
+                    Tutup
+                </button>
+            </div>
+        </div>
+    );
+}
+
+function getCsrfToken(): string {
+    const match = document.cookie.split(';').find((c) => c.trim().startsWith('XSRF-TOKEN='));
+    return match ? decodeURIComponent(match.split('=').slice(1).join('=')) : '';
+}
+
+interface CreateWalletForm {
+    provider:       string;
+    provider_label: string;
+    account_number: string;
+    account_name:   string;
+}
+
+type CreateWalletErrors = Partial<Record<keyof CreateWalletForm | 'qris_qr' | 'general', string>>;
+
+function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload  = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+function AddWalletModal({
+    onClose,
+    onCreated,
+}: {
+    onClose: () => void;
+    onCreated: (wallet: Omit<DigitalWalletItem, 'is_linked' | 'is_displayed' | 'display_order'>) => void;
+}) {
+    const inputCls = 'w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition placeholder:text-muted-foreground';
+
+    const [form, setForm]           = useState<CreateWalletForm>({
+        provider:       'dana',
+        provider_label: 'DANA',
+        account_number: '',
+        account_name:   '',
+    });
+    const [qrisPreview, setQrisPreview] = useState<string | null>(null);
+    const [qrisBase64,  setQrisBase64]  = useState<string | null>(null);
+    const [submitting,  setSubmitting]  = useState(false);
+    const [errors,      setErrors]      = useState<CreateWalletErrors>({});
+    const qrisInputRef = useRef<HTMLInputElement>(null);
+
+    function handleProviderChange(value: string) {
+        const found = WALLET_PROVIDERS.find((p) => p.value === value);
+        setForm((prev) => ({ ...prev, provider: value, provider_label: found?.label ?? '' }));
+        setErrors((prev) => ({ ...prev, provider: undefined }));
+    }
+
+    function handleField(key: keyof CreateWalletForm, value: string) {
+        setForm((prev) => ({ ...prev, [key]: value }));
+        setErrors((prev) => ({ ...prev, [key]: undefined }));
+    }
+
+    async function handleQrisFile(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!['image/png', 'image/jpeg', 'image/jpg'].includes(file.type)) {
+            setErrors((prev) => ({ ...prev, qris_qr: 'Format file harus PNG atau JPG.' }));
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            setErrors((prev) => ({ ...prev, qris_qr: 'Ukuran file maksimal 2 MB.' }));
+            return;
+        }
+        const b64 = await fileToBase64(file);
+        setQrisBase64(b64);
+        setQrisPreview(b64);
+        setErrors((prev) => ({ ...prev, qris_qr: undefined }));
+    }
+
+    function removeQris() {
+        setQrisBase64(null);
+        setQrisPreview(null);
+        if (qrisInputRef.current) qrisInputRef.current.value = '';
+    }
+
+    function validate(): boolean {
+        const e: CreateWalletErrors = {};
+        if (!form.provider)       e.provider       = 'Pilih penyedia dompet digital.';
+        if (!form.provider_label) e.provider_label = 'Nama penyedia wajib diisi.';
+        if (!form.account_number) e.account_number = 'Nomor akun wajib diisi.';
+        if (!form.account_name)   e.account_name   = 'Nama pemilik akun wajib diisi.';
+        setErrors(e);
+        return Object.keys(e).length === 0;
+    }
+
+    async function handleSubmit() {
+        if (!validate() || submitting) return;
+        setSubmitting(true);
+        setErrors({});
+        try {
+            const res = await fetch('/customer/digital-wallets', {
+                method:  'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept':       'application/json',
+                    'X-XSRF-TOKEN': getCsrfToken(),
+                },
+                body: JSON.stringify({
+                    provider:       form.provider,
+                    provider_label: form.provider_label,
+                    account_number: form.account_number,
+                    account_name:   form.account_name,
+                    is_active:      true,
+                    ...(qrisBase64 ? { qris_qr: qrisBase64 } : {}),
+                }),
+            });
+
+            if (!res.ok) {
+                const body = await res.json().catch(() => ({}));
+                if (body.errors) {
+                    const mapped: CreateWalletErrors = {};
+                    for (const [k, v] of Object.entries(body.errors as Record<string, string[]>)) {
+                        mapped[k as keyof CreateWalletErrors] = (v as string[])[0];
+                    }
+                    setErrors(mapped);
+                } else {
+                    setErrors({ general: body.message ?? 'Terjadi kesalahan. Coba lagi.' });
+                }
+                setSubmitting(false);
+                return;
+            }
+
+            const created = await res.json();
+            // Call parent handlers before any state update to avoid unmount issues
+            onCreated({ ...created, qris_qr_url: created.qris_qr_url ?? null });
+            onClose();
+            // Do NOT call setSubmitting after this — component unmounts
+        } catch {
+            setErrors({ general: 'Gagal terhubung ke server. Periksa koneksi dan coba lagi.' });
+            setSubmitting(false);
+        }
+    }
+
+    function handleBackdrop(e: React.MouseEvent<HTMLDivElement>) {
+        if (e.target === e.currentTarget && !submitting) onClose();
+    }
+
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => { if (e.key === 'Escape' && !submitting) onClose(); };
+        document.addEventListener('keydown', handler);
+        return () => document.removeEventListener('keydown', handler);
+    }, [onClose, submitting]);
+
+    return (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            onClick={handleBackdrop}
+        >
+            <div className="w-full max-w-md rounded-2xl bg-card border border-border shadow-2xl flex flex-col max-h-[90vh]">
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+                    <div className="flex items-center gap-2">
+                        <Wallet className="size-4 text-primary" />
+                        <h3 className="text-base font-semibold text-foreground">Tambah Dompet Digital</h3>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => !submitting && onClose()}
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-40"
+                        disabled={submitting}
+                    >
+                        <X className="size-4" />
+                    </button>
+                </div>
+
+                {/* Body */}
+                <div className="px-6 py-5 flex flex-col gap-4 overflow-y-auto">
+                    {errors.general && (
+                        <div className="flex items-center gap-2 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-600 dark:text-red-400">
+                            <AlertTriangle className="size-4 shrink-0" />
+                            {errors.general}
+                        </div>
+                    )}
+
+                    {/* Provider */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-medium text-muted-foreground">Penyedia <span className="text-red-500">*</span></label>
+                        <select
+                            value={form.provider}
+                            onChange={(e) => handleProviderChange(e.target.value)}
+                            className={inputCls}
+                        >
+                            {WALLET_PROVIDERS.map((p) => (
+                                <option key={p.value} value={p.value}>{p.label}</option>
+                            ))}
+                        </select>
+                        {errors.provider && <p className="text-xs text-red-500">{errors.provider}</p>}
+                    </div>
+
+                    {/* Custom provider label — only for "other" */}
+                    {form.provider === 'other' && (
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-xs font-medium text-muted-foreground">Nama Penyedia <span className="text-red-500">*</span></label>
+                            <input
+                                type="text"
+                                value={form.provider_label}
+                                onChange={(e) => handleField('provider_label', e.target.value)}
+                                placeholder="Contoh: Bank BCA, Transfer Tunai..."
+                                className={inputCls}
+                            />
+                            {errors.provider_label && <p className="text-xs text-red-500">{errors.provider_label}</p>}
+                        </div>
+                    )}
+
+                    {/* Account number */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-medium text-muted-foreground">Nomor Akun / HP <span className="text-red-500">*</span></label>
+                        <input
+                            type="text"
+                            value={form.account_number}
+                            onChange={(e) => handleField('account_number', e.target.value)}
+                            placeholder="Contoh: 08123456789"
+                            className={inputCls}
+                        />
+                        {errors.account_number && <p className="text-xs text-red-500">{errors.account_number}</p>}
+                    </div>
+
+                    {/* Account name */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-medium text-muted-foreground">Nama Pemilik <span className="text-red-500">*</span></label>
+                        <input
+                            type="text"
+                            value={form.account_name}
+                            onChange={(e) => handleField('account_name', e.target.value)}
+                            placeholder="Nama sesuai akun"
+                            className={inputCls}
+                        />
+                        {errors.account_name && <p className="text-xs text-red-500">{errors.account_name}</p>}
+                    </div>
+
+                    {/* QRIS upload */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-medium text-muted-foreground">QR Code / QRIS <span className="text-muted-foreground/60 font-normal">(opsional)</span></label>
+                        {qrisPreview ? (
+                            <div className="relative w-full rounded-xl border border-border overflow-hidden bg-muted/30">
+                                <img
+                                    src={qrisPreview}
+                                    alt="QRIS Preview"
+                                    className="w-full max-h-48 object-contain p-4"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={removeQris}
+                                    className="absolute top-2 right-2 p-1 rounded-full bg-background/80 border border-border text-muted-foreground hover:text-red-500 transition-colors"
+                                >
+                                    <X className="size-3.5" />
+                                </button>
+                            </div>
+                        ) : (
+                            <label className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-muted/30 py-6 cursor-pointer hover:bg-muted/50 transition-colors">
+                                <Upload className="size-5 text-muted-foreground" />
+                                <span className="text-xs text-muted-foreground text-center">
+                                    Klik untuk upload gambar QRIS<br />
+                                    <span className="text-[10px]">PNG / JPG · Maks 2 MB</span>
+                                </span>
+                                <input
+                                    ref={qrisInputRef}
+                                    type="file"
+                                    accept="image/png,image/jpeg,image/jpg"
+                                    onChange={handleQrisFile}
+                                    className="sr-only"
+                                />
+                            </label>
+                        )}
+                        {errors.qris_qr && <p className="text-xs text-red-500">{errors.qris_qr}</p>}
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border shrink-0">
+                    <button
+                        type="button"
+                        onClick={() => !submitting && onClose()}
+                        disabled={submitting}
+                        className="rounded-xl border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-40"
+                    >
+                        Batal
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleSubmit}
+                        disabled={submitting}
+                        className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                    >
+                        {submitting
+                            ? <><Loader2 className="size-4 animate-spin" /> Menyimpan...</>
+                            : <><Plus className="size-4" /> Tambah Dompet</>}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function DigitalEnvelopeTab({
+    invitationSlug,
+    initWallets,
+}: {
+    invitationSlug: string;
+    initWallets: DigitalWalletItem[];
+}) {
+    const [wallets, setWallets] = useState<DigitalWalletItem[]>(() =>
+        [...initWallets].sort((a, b) => (a.is_linked ? a.display_order : 99) - (b.is_linked ? b.display_order : 99))
+    );
+    const [saving,      setSaving]      = useState(false);
+    const [saveSuccess, setSaveSuccess] = useState(false);
+    const [saveError,   setSaveError]   = useState(false);
+    const [showModal,   setShowModal]   = useState(false);
+    const [previewQris, setPreviewQris] = useState<DigitalWalletItem | null>(null);
+
+    const linkedWallets   = wallets.filter((w) => w.is_linked);
+    const unlinkedWallets = wallets.filter((w) => !w.is_linked);
+
+    // ── Sync helpers ─────────────────────────────────────────────────────────
+
+    function syncToServer(nextWallets: DigitalWalletItem[]) {
+        setSaving(true);
+        setSaveSuccess(false);
+        const syncWallets = nextWallets
+            .filter((w) => w.is_linked)
+            .sort((a, b) => a.display_order - b.display_order)
+            .map((w, i) => ({ id: w.id, is_displayed: w.is_displayed, display_order: i }));
+        router.post(
+            `/customer/invitations/${invitationSlug}/digital-wallets/sync`,
+            { wallets: syncWallets },
+            {
+                preserveState:  true,
+                preserveScroll: true,
+                only:           ['digitalWallets'],
+                onSuccess: () => { setSaveSuccess(true); setTimeout(() => setSaveSuccess(false), 2500); },
+                onError:   () => { setSaveError(true);   setTimeout(() => setSaveError(false),   4000); },
+                onFinish:  () => setSaving(false),
+            },
+        );
+    }
+
+    function toggleLinked(id: number) {
+        setWallets((prev) => {
+            const linked = prev.filter((w) => w.is_linked);
+            const next = prev.map((w) => {
+                if (w.id !== id) return w;
+                if (w.is_linked) return { ...w, is_linked: false, display_order: 99 };
+                return { ...w, is_linked: true, is_displayed: true, display_order: linked.length };
+            });
+            syncToServer(next);
+            return next;
+        });
+    }
+
+    function toggleDisplayed(id: number) {
+        setWallets((prev) => {
+            const next = prev.map((w) => w.id === id ? { ...w, is_displayed: !w.is_displayed } : w);
+            syncToServer(next);
+            return next;
+        });
+    }
+
+    function moveUp(id: number) {
+        setWallets((prev) => {
+            const sorted = prev.filter((w) => w.is_linked).sort((a, b) => a.display_order - b.display_order);
+            const idx = sorted.findIndex((w) => w.id === id);
+            if (idx <= 0) return prev;
+            [sorted[idx - 1], sorted[idx]] = [sorted[idx], sorted[idx - 1]];
+            const reordered = sorted.map((w, i) => ({ ...w, display_order: i }));
+            const next = [...prev.filter((w) => !w.is_linked), ...reordered];
+            syncToServer(next);
+            return next;
+        });
+    }
+
+    function moveDown(id: number) {
+        setWallets((prev) => {
+            const sorted = prev.filter((w) => w.is_linked).sort((a, b) => a.display_order - b.display_order);
+            const idx = sorted.findIndex((w) => w.id === id);
+            if (idx >= sorted.length - 1) return prev;
+            [sorted[idx], sorted[idx + 1]] = [sorted[idx + 1], sorted[idx]];
+            const reordered = sorted.map((w, i) => ({ ...w, display_order: i }));
+            const next = [...prev.filter((w) => !w.is_linked), ...reordered];
+            syncToServer(next);
+            return next;
+        });
+    }
+
+    function handleWalletCreated(created: Omit<DigitalWalletItem, 'is_linked' | 'is_displayed' | 'display_order'>) {
+        setWallets((prev) => {
+            if (prev.some((w) => w.id === created.id)) return prev;
+            return [...prev, { ...created, is_linked: false, is_displayed: false, display_order: 99 }];
+        });
+    }
+
+    function handleSave() {
+        syncToServer(wallets);
+    }
+
+    return (
+        <>
+        <div className="flex flex-col gap-6">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-4">
+                <div>
+                    <h2 className="text-base font-semibold text-foreground">Amplop Digital</h2>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                        Pilih dompet digital yang ditampilkan pada undangan dan atur urutannya.
+                    </p>
+                </div>
+                <button
+                    type="button"
+                    onClick={() => setShowModal(true)}
+                    className="shrink-0 inline-flex items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                    <Plus className="size-3.5" /> Tambah Dompet
+                </button>
+            </div>
+
+            {wallets.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-border bg-muted/30 flex flex-col items-center justify-center gap-3 py-14 text-center">
+                    <div className="size-12 rounded-full bg-muted flex items-center justify-center">
+                        <Wallet className="size-5 text-muted-foreground" />
+                    </div>
+                    <div>
+                        <p className="text-sm font-medium text-foreground">Belum ada dompet digital</p>
+                        <p className="text-xs text-muted-foreground mt-1">Tambahkan dompet digital untuk ditampilkan di undangan.</p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setShowModal(true)}
+                        className="mt-1 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                    >
+                        <Plus className="size-4" /> Tambah Dompet Digital
+                    </button>
+                </div>
+            ) : (
+                <>
+                    {/* Aktif di Undangan */}
+                    <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                        <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-semibold text-foreground">Aktif di Undangan</p>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                    {linkedWallets.length === 0 ? 'Belum ada dompet yang ditambahkan.' : `${linkedWallets.length} dompet dipilih`}
+                                </p>
+                            </div>
+                            {linkedWallets.length > 0 && (
+                                <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold">
+                                    {linkedWallets.length}
+                                </span>
+                            )}
+                        </div>
+
+                        {linkedWallets.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+                                <p className="text-sm text-muted-foreground">Pilih dompet di bawah untuk ditampilkan di undangan.</p>
+                            </div>
+                        ) : (
+                            <ul className="divide-y divide-border">
+                                {linkedWallets
+                                    .sort((a, b) => a.display_order - b.display_order)
+                                    .map((w, idx) => (
+                                        <li key={w.id} className="flex items-center gap-3 px-5 py-3.5">
+                                            {/* Order buttons */}
+                                            <div className="flex flex-col gap-0.5 shrink-0">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => moveUp(w.id)}
+                                                    disabled={idx === 0}
+                                                    className="p-0.5 rounded text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+                                                >
+                                                    <ChevronUp className="size-3.5" />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => moveDown(w.id)}
+                                                    disabled={idx === linkedWallets.length - 1}
+                                                    className="p-0.5 rounded text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+                                                >
+                                                    <ChevronDown className="size-3.5" />
+                                                </button>
+                                            </div>
+
+                                            {/* Logo */}
+                                            <WalletProviderBadge provider={w.provider} providerLabel={w.provider_label} logoUrl={w.logo_url} />
+
+                                            {/* Info */}
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium text-foreground truncate">{w.provider_label}</p>
+                                                <p className="text-xs text-muted-foreground truncate">{w.account_number} · {w.account_name}</p>
+                                                {w.qris_qr_url && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setPreviewQris(w)}
+                                                        className="inline-flex items-center gap-1 mt-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400 hover:underline underline-offset-2 transition-colors"
+                                                    >
+                                                        <ZoomIn className="size-3" /> Lihat QRIS
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            {/* Tampilkan toggle */}
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                <span className="text-xs text-muted-foreground hidden sm:inline">Tampilkan</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => toggleDisplayed(w.id)}
+                                                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none ${
+                                                        w.is_displayed ? 'bg-primary' : 'bg-muted'
+                                                    }`}
+                                                >
+                                                    <span className={`pointer-events-none inline-block size-4 transform rounded-full bg-white shadow-lg transition-transform ${w.is_displayed ? 'translate-x-4' : 'translate-x-0'}`} />
+                                                </button>
+                                            </div>
+
+                                            {/* Unlink button */}
+                                            <button
+                                                type="button"
+                                                onClick={() => toggleLinked(w.id)}
+                                                className="shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                                title="Hapus dari undangan"
+                                            >
+                                                <X className="size-4" />
+                                            </button>
+                                        </li>
+                                    ))}
+                            </ul>
+                        )}
+                    </div>
+
+                    {/* Dompet tersedia */}
+                    {unlinkedWallets.length > 0 && (
+                        <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                            <div className="px-5 py-4 border-b border-border">
+                                <p className="text-sm font-semibold text-foreground">Dompet Tersedia</p>
+                                <p className="text-xs text-muted-foreground mt-0.5">Klik tombol + untuk menambahkan ke undangan.</p>
+                            </div>
+                            <ul className="divide-y divide-border">
+                                {unlinkedWallets.map((w) => (
+                                    <li key={w.id} className="flex items-center gap-3 px-5 py-3.5 opacity-60 hover:opacity-100 transition-opacity">
+                                        <WalletProviderBadge provider={w.provider} providerLabel={w.provider_label} logoUrl={w.logo_url} />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-foreground truncate">{w.provider_label}</p>
+                                            <p className="text-xs text-muted-foreground truncate">{w.account_number} · {w.account_name}</p>
+                                            {w.qris_qr_url && (
+                                                <span className="inline-flex items-center gap-1 mt-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                                                    <Check className="size-3" /> QRIS tersedia
+                                                </span>
+                                            )}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleLinked(w.id)}
+                                            className="shrink-0 inline-flex items-center gap-1 rounded-lg border border-primary/30 bg-primary/5 px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary/10 transition-colors"
+                                        >
+                                            <Plus className="size-3.5" /> Tambahkan
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                </>
+            )}
+
+            {/* Save status bar */}
+            <div className="flex items-center justify-between border-t border-border/60 pt-4 min-h-[44px]">
+                <div className="flex items-center gap-2">
+                    {saving && (
+                        <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+                            <Loader2 className="size-3.5 animate-spin" /> Menyimpan...
+                        </span>
+                    )}
+                    {!saving && saveSuccess && (
+                        <span className="inline-flex items-center gap-1.5 text-sm text-emerald-600 dark:text-emerald-400 font-medium">
+                            <Check className="size-4" /> Tersimpan
+                        </span>
+                    )}
+                    {!saving && saveError && (
+                        <span className="inline-flex items-center gap-1.5 text-sm text-red-500 font-medium">
+                            <AlertTriangle className="size-4" /> Gagal menyimpan —
+                            <button type="button" onClick={handleSave} className="underline underline-offset-2 hover:opacity-80">
+                                coba lagi
+                            </button>
+                        </span>
+                    )}
+                </div>
+                <button
+                    type="button"
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-40 transition-colors"
+                >
+                    <Save className="size-3.5" /> Simpan Manual
+                </button>
+            </div>
+        </div>
+
+        {showModal && (
+            <AddWalletModal
+                onClose={() => setShowModal(false)}
+                onCreated={handleWalletCreated}
+            />
+        )}
+
+        {previewQris?.qris_qr_url && (
+            <QrisPreviewModal
+                url={previewQris.qris_qr_url}
+                providerLabel={previewQris.provider_label}
+                accountName={previewQris.account_name}
+                accountNumber={previewQris.account_number}
+                onClose={() => setPreviewQris(null)}
+            />
+        )}
+        </>
+    );
+}
+
 // ─── Success Toast ────────────────────────────────────────────────────────────
 
 function SuccessToast({ message, onClose }: { message: string; onClose: () => void }) {
@@ -2409,6 +3143,7 @@ export default function InvitationsEdit({
     commentFilters,
     invitationSettings,
     availableMusic,
+    digitalWallets,
 }: Props) {
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -2538,6 +3273,8 @@ export default function InvitationsEdit({
                 return <GuestsTab slug={invitation.slug} guests={guests} guestStats={guestStats} guestFilters={guestFilters} />;
             case 'comments':
                 return <CommentsTab slug={invitation.slug} comments={comments} commentStats={commentStats} commentFilters={commentFilters} />;
+            case 'digital_envelope':
+                return <DigitalEnvelopeTab invitationSlug={invitation.slug} initWallets={digitalWallets} />;
             case 'settings':
                 return <SettingsTab slug={invitation.slug} initSettings={invitationSettings} availableMusic={availableMusic ?? []} maxMusicMb={pkg.max_music_upload_mb ?? 10} />;
             default:
