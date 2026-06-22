@@ -42,7 +42,7 @@ const menuGroups: { label: string; items: MenuItem[] }[] = [
     {
         label: 'Langganan',
         items: [
-            { title: 'Paket Saya', url: '/customer/subscription', icon: Package },
+            // { title: 'Paket Saya', url: '/customer/subscription', icon: Package },
             { title: 'Transaksi', url: '/customer/transactions', icon: CreditCard },
         ],
     },
