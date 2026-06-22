@@ -1,18 +1,7 @@
 import CustomerLayout from '@/layouts/customer-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import {
-    BookHeart,
-    Calendar,
-    Crown,
-    ExternalLink,
-    Gem,
-    MoreVertical,
-    Pencil,
-    Plus,
-    Trash2,
-    Users,
-} from 'lucide-react';
+import { BookHeart, Calendar, Crown, ExternalLink, Gem, MoreVertical, Pencil, Plus, Trash2, Users } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -64,23 +53,25 @@ interface Props {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const STATUS_LABEL: Record<string, string> = {
-    draft:    'Draft',
-    active:   'Aktif',
-    expired:  'Kadaluarsa',
+    draft: 'Draft',
+    active: 'Aktif',
+    expired: 'Kadaluarsa',
     archived: 'Diarsipkan',
 };
 
 const STATUS_CLASS: Record<string, string> = {
-    draft:    'bg-muted text-muted-foreground',
-    active:   'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-    expired:  'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
+    draft: 'bg-muted text-muted-foreground',
+    active: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    expired: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
     archived: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-500',
 };
 
 function formatDate(dateStr: string | null): string {
     if (!dateStr) return '—';
     return new Date(dateStr).toLocaleDateString('id-ID', {
-        day: 'numeric', month: 'short', year: 'numeric',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
     });
 }
 
@@ -100,7 +91,7 @@ function CardMenu({ invitation }: { invitation: Invitation }) {
             <button
                 type="button"
                 onClick={() => setOpen((v) => !v)}
-                className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
+                className="text-muted-foreground hover:bg-muted flex size-8 items-center justify-center rounded-lg transition-colors"
             >
                 <MoreVertical className="size-4" />
             </button>
@@ -108,30 +99,33 @@ function CardMenu({ invitation }: { invitation: Invitation }) {
             {open && (
                 <>
                     <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-                    <div className="absolute right-0 top-9 z-20 w-44 bg-background border border-border rounded-xl shadow-lg overflow-hidden">
+                    <div className="bg-background border-border absolute top-9 right-0 z-20 w-44 overflow-hidden rounded-xl border shadow-lg">
                         <Link
                             href={`/customer/invitations/${invitation.slug}/edit`}
-                            className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
+                            className="text-foreground hover:bg-muted flex items-center gap-2.5 px-3.5 py-2.5 text-sm transition-colors"
                             onClick={() => setOpen(false)}
                         >
-                            <Pencil className="size-4 text-muted-foreground" />
+                            <Pencil className="text-muted-foreground size-4" />
                             Edit Undangan
                         </Link>
                         <a
                             href={`/${invitation.slug}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
+                            className="text-foreground hover:bg-muted flex items-center gap-2.5 px-3.5 py-2.5 text-sm transition-colors"
                             onClick={() => setOpen(false)}
                         >
-                            <ExternalLink className="size-4 text-muted-foreground" />
+                            <ExternalLink className="text-muted-foreground size-4" />
                             Lihat Undangan
                         </a>
-                        <div className="border-t border-border" />
+                        <div className="border-border border-t" />
                         <button
                             type="button"
-                            onClick={() => { setOpen(false); handleDelete(); }}
-                            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-destructive hover:bg-destructive/5 transition-colors"
+                            onClick={() => {
+                                setOpen(false);
+                                handleDelete();
+                            }}
+                            className="text-destructive hover:bg-destructive/5 flex w-full items-center gap-2.5 px-3.5 py-2.5 text-sm transition-colors"
                         >
                             <Trash2 className="size-4" />
                             Hapus
@@ -149,14 +143,10 @@ function InvitationCard({ invitation }: { invitation: Invitation }) {
     const theme = invitation.theme;
 
     const thumbnail = theme?.thumbnail_url ? (
-        <img
-            src={theme.thumbnail_url}
-            alt={theme.name}
-            className="w-full h-full object-cover"
-        />
+        <img src={theme.thumbnail_url} alt={theme.name} className="h-full w-full object-cover" />
     ) : (
         <div
-            className="w-full h-full"
+            className="h-full w-full"
             style={{
                 background: theme?.color_primary
                     ? `linear-gradient(135deg, ${theme.color_primary}88, ${theme.color_secondary ?? theme.color_primary}cc)`
@@ -166,42 +156,47 @@ function InvitationCard({ invitation }: { invitation: Invitation }) {
     );
 
     return (
-        <div className="group bg-card rounded-2xl border border-border shadow-sm overflow-hidden hover:shadow-md transition-shadow flex flex-col">
+        <div className="group bg-card border-border flex flex-col overflow-hidden rounded-2xl border shadow-sm transition-shadow hover:shadow-md">
             {/* Thumbnail */}
-            <div className="relative h-40 overflow-hidden bg-muted">
+            <div className="bg-muted relative h-40 overflow-hidden">
                 {thumbnail}
 
                 {/* Status badge */}
-                <span className={`absolute top-3 left-3 px-2.5 py-1 rounded-lg text-xs font-semibold ${STATUS_CLASS[invitation.status]}`}>
+                <span className={`absolute top-3 left-3 rounded-lg px-2.5 py-1 text-xs font-semibold ${STATUS_CLASS[invitation.status]}`}>
                     {STATUS_LABEL[invitation.status]}
                 </span>
 
                 {/* Theme badge */}
                 {theme && (
-                    <span className="absolute top-3 right-3 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-black/50 text-white text-xs font-medium backdrop-blur-sm">
+                    <span className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-lg bg-black/50 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
                         {theme.is_exclusive ? (
-                            <><Gem className="size-3" /> Eksklusif</>
+                            <>
+                                <Gem className="size-3" /> Eksklusif
+                            </>
                         ) : theme.is_premium ? (
-                            <><Crown className="size-3" /> Premium</>
+                            <>
+                                <Crown className="size-3" /> Premium
+                            </>
                         ) : null}
                         {!theme.is_exclusive && !theme.is_premium ? theme.name : null}
-                        {(theme.is_exclusive || theme.is_premium) ? ` · ${theme.name}` : null}
+                        {theme.is_exclusive || theme.is_premium ? ` · ${theme.name}` : null}
                     </span>
                 )}
             </div>
 
             {/* Body */}
-            <div className="flex flex-col gap-3 p-4 flex-1">
+            <div className="flex flex-1 flex-col gap-3 p-4">
                 {/* Title row */}
                 <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-foreground text-base leading-tight line-clamp-1">
-                            {invitation.title}
-                        </h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">
+                    <div className="min-w-0 flex-1">
+                        <h3 className="text-foreground line-clamp-1 text-base leading-tight font-semibold">{invitation.title}</h3>
+                        <p className="text-muted-foreground mt-0.5 text-xs">
                             {invitation.event_type?.label ?? '—'}
                             {invitation.package && (
-                                <> · <span className="text-foreground/70">{invitation.package.label}</span></>
+                                <>
+                                    {' '}
+                                    · <span className="text-foreground/70">{invitation.package.label}</span>
+                                </>
                             )}
                         </p>
                     </div>
@@ -209,14 +204,10 @@ function InvitationCard({ invitation }: { invitation: Invitation }) {
                 </div>
 
                 {/* Meta */}
-                <div className="flex flex-col gap-1.5 text-xs text-muted-foreground">
+                <div className="text-muted-foreground flex flex-col gap-1.5 text-xs">
                     <div className="flex items-center gap-1.5">
                         <Calendar className="size-3.5 shrink-0" />
-                        <span>
-                            {invitation.first_event_date
-                                ? formatDate(invitation.first_event_date)
-                                : 'Tanggal belum ditentukan'}
-                        </span>
+                        <span>{invitation.first_event_date ? formatDate(invitation.first_event_date) : 'Tanggal belum ditentukan'}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                         <Users className="size-3.5 shrink-0" />
@@ -225,30 +216,30 @@ function InvitationCard({ invitation }: { invitation: Invitation }) {
                 </div>
 
                 {/* Footer actions */}
-                <div className="mt-auto pt-3 border-t border-border flex items-center gap-2">
-                    <Link
-                        href={`/customer/invitations/${invitation.slug}/detail`}
-                        className="flex-1 text-center rounded-xl border border-border px-3 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors"
-                    >
-                        Detail
-                    </Link>
+                <div className="border-border mt-auto flex items-center gap-2 border-t pt-3">
                     {invitation.status === 'draft' ? (
                         <Link
                             href={`/customer/invitations/${invitation.slug}/payment`}
-                            className="flex-1 text-center rounded-xl bg-amber-500 px-3 py-2 text-xs font-medium text-white hover:bg-amber-600 transition-colors"
+                            className="flex-1 rounded-xl bg-amber-500 px-3 py-2 text-center text-xs font-medium text-white transition-colors hover:bg-amber-600"
                         >
                             Bayar
                         </Link>
                     ) : (
-                        <a
-                            href={`/${invitation.slug}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-1 text-center rounded-xl bg-primary px-3 py-2 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                        <Link
+                            href={`/customer/invitations/${invitation.slug}/detail`}
+                            className="border-border text-foreground hover:bg-muted flex-1 rounded-xl border px-3 py-2 text-center text-xs font-medium transition-colors"
                         >
-                            Lihat
-                        </a>
+                            Detail
+                        </Link>
                     )}
+                    <a
+                        href={`/${invitation.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1 rounded-xl px-3 py-2 text-center text-xs font-medium transition-colors"
+                    >
+                        Lihat
+                    </a>
                 </div>
             </div>
         </div>
@@ -260,22 +251,19 @@ function InvitationCard({ invitation }: { invitation: Invitation }) {
 export default function InvitationsIndex({ invitations }: Props) {
     return (
         <CustomerLayout breadcrumbs={breadcrumbs}>
-            <Head title="Undangan Saya hhhhhhhhhhhhhh" />
+            <Head title="Undangan Saya" />
             <div className="flex flex-col gap-6 p-6">
-
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">Undangan Saya</h1>
-                        <p className="text-muted-foreground text-sm mt-1">
-                            {invitations.length > 0
-                                ? `${invitations.length} undangan dibuat`
-                                : 'Kelola semua undangan digital Anda.'}
+                        <h1 className="text-foreground text-2xl font-bold">Undangan Saya</h1>
+                        <p className="text-muted-foreground mt-1 text-sm">
+                            {invitations.length > 0 ? `${invitations.length} undangan dibuat` : 'Kelola semua undangan digital Anda.'}
                         </p>
                     </div>
                     <Link
                         href="/customer/invitations/create"
-                        className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors"
                     >
                         <Plus className="size-4" />
                         Buat Undangan
@@ -284,17 +272,15 @@ export default function InvitationsIndex({ invitations }: Props) {
 
                 {/* List / Empty state */}
                 {invitations.length === 0 ? (
-                    <div className="bg-card rounded-2xl border border-border/60 p-12 shadow-sm flex flex-col items-center justify-center text-center">
-                        <div className="bg-muted p-4 rounded-2xl mb-4">
-                            <BookHeart className="size-8 text-muted-foreground" />
+                    <div className="bg-card border-border/60 flex flex-col items-center justify-center rounded-2xl border p-12 text-center shadow-sm">
+                        <div className="bg-muted mb-4 rounded-2xl p-4">
+                            <BookHeart className="text-muted-foreground size-8" />
                         </div>
-                        <h3 className="font-semibold text-foreground mb-1">Belum Ada Undangan</h3>
-                        <p className="text-sm text-muted-foreground mb-4">
-                            Mulai buat undangan digital pertama Anda.
-                        </p>
+                        <h3 className="text-foreground mb-1 font-semibold">Belum Ada Undangan</h3>
+                        <p className="text-muted-foreground mb-4 text-sm">Mulai buat undangan digital pertama Anda.</p>
                         <Link
                             href="/customer/invitations/create"
-                            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                            className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors"
                         >
                             <Plus className="size-4" />
                             Buat Undangan Pertama
@@ -309,9 +295,9 @@ export default function InvitationsIndex({ invitations }: Props) {
                         {/* Add new card */}
                         <Link
                             href="/customer/invitations/create"
-                            className="flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-border min-h-[280px] text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors"
+                            className="border-border text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 flex min-h-[280px] flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed transition-colors"
                         >
-                            <div className="size-12 rounded-full border-2 border-current flex items-center justify-center">
+                            <div className="flex size-12 items-center justify-center rounded-full border-2 border-current">
                                 <Plus className="size-6" />
                             </div>
                             <span className="text-sm font-medium">Buat Undangan Baru</span>

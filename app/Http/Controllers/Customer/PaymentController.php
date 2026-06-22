@@ -89,7 +89,7 @@ class PaymentController extends Controller
 
     // ─── Initiate Payment (Create Invoice) ───────────────────────────────────
 
-    public function pay(Request $request, Invitation $invitation): RedirectResponse
+    public function pay(Request $request, Invitation $invitation): RedirectResponse|\Illuminate\Http\Response
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
 
@@ -120,7 +120,7 @@ class PaymentController extends Controller
                 ->latest()
                 ->first();
             if ($existing) {
-                return redirect()->away($existing->gateway_order_id);
+                return Inertia::location($existing->gateway_order_id);
             }
         }
 
@@ -195,7 +195,7 @@ class PaymentController extends Controller
             ]);
         });
 
-        return redirect()->away($xenditData['invoice_url']);
+        return Inertia::location($xenditData['invoice_url']);
     }
 
     // ─── Success & Failed Redirect Pages ─────────────────────────────────────
