@@ -13,10 +13,10 @@ class InvitationPublicController extends Controller
 {
     public function show(Request $request, string $code, string $visitor = null): Response
     {
-
         $visitor = $visitor
-            ? urldecode($visitor)
-            : ($request->query('visitor') ?? $request->query('tamu') ?? $request->query('guests'));
+        ? urldecode($visitor)
+        : ($request->query('visitor') ?? $request->query('tamu') ?? $request->query('guests'));
+   
 
         $invitation = Invitation::with([
             'theme',
@@ -41,19 +41,20 @@ class InvitationPublicController extends Controller
         $guest = Guest::where('invitation_id', $invitation->id)
             ->where('slug', $visitor)
             ->first();
-        $data = $this->buildData($invitation, $guest ? $guest->name : $visitor, $theme->event_type);
-
+            // dd($visitor);
+        $data = $this->buildData($invitation, $theme->event_type, $guest ? $guest->name : ($visitor ?? ''));
         if ($guest) {
             if (! empty($guest->qr_code_data)) {
                 $data['guestQrData'] = $guest->qr_code_data;
             }
             $data['guestSlug'] = $guest->slug;
         }
-
+    // dd($data);
         return Inertia::render('invitation/show', [
             'invitation' => $data,
             'themeSlug'  => $theme->slug,
             'visitor'    => $visitor,
+            
         ]);
     }
 
@@ -67,8 +68,9 @@ class InvitationPublicController extends Controller
         return (string) $record->content_value;
     }
 
-    private function buildData(Invitation $invitation, string $guestName, string $eventType): array
+    private function buildData(Invitation $invitation, string $eventType, string $guestName = ''): array
     {
+        
         $contents = $invitation->contents->pluck('content_value', 'content_key');
         $events   = $invitation->events;
 
@@ -116,35 +118,62 @@ class InvitationPublicController extends Controller
             'label'    => $p->title ?? '',
         ])->values()->all();
 
-        // Feature flags & music from invitation_settings table
-        $settings     = $invitation->settings;
-        $featuresRaw  = $settings?->features ?? [];
-        $features     = ! empty($featuresRaw) ? $featuresRaw : null;
+        // Settings from invitation_settings table
+        $settings      = $invitation->settings;
+        $featuresRaw   = $settings?->features ?? [];
+        $features      = ! empty($featuresRaw) ? $featuresRaw : null;
 
         // Music — stored in invitation_settings; music_url may be a storage path
-        $rawMusicUrl  = $settings?->music_url ?? '';
-        $musicUrl     = $rawMusicUrl
+        $rawMusicUrl   = $settings?->music_url ?? '';
+        $musicUrl      = $rawMusicUrl
             ? (str_starts_with($rawMusicUrl, 'http') ? $rawMusicUrl : asset('storage/' . $rawMusicUrl))
             : '';
         $musicEnabled  = (bool) ($settings?->music_enabled ?? false);
         $musicAutoplay = (bool) ($settings?->music_autoplay ?? true);
         $musicLoop     = (bool) ($settings?->music_loop ?? true);
 
+        // Greeting / cover page settings
+        $greeting = [
+            'title'       => $settings?->greeting_title       ?? 'Kepada Yth.',
+            'message'     => $settings?->greeting_message      ?? null,
+            'guestLabel'  => $settings?->greeting_guest_label  ?? 'Tamu Undangan',
+            'buttonText'  => $settings?->greeting_button_text  ?? 'Buka Undangan',
+        ];
+
+        // Individual feature toggles
+        $featureToggles = [
+            'rsvp'             => (bool) ($settings?->feature_rsvp             ?? true),
+            'giftWishlist'     => (bool) ($settings?->feature_gift_wishlist     ?? false),
+            'genderPoll'       => (bool) ($settings?->feature_gender_poll       ?? false),
+            'liveStream'       => (bool) ($settings?->feature_live_stream       ?? false),
+            'interactiveGames' => (bool) ($settings?->feature_interactive_games ?? false),
+            'dressCode'        => (bool) ($settings?->feature_dress_code        ?? false),
+            'amplopDigital'    => (bool) ($settings?->feature_amplop_digital    ?? false),
+            'instagramFilter'  => (bool) ($settings?->feature_instagram_filter  ?? false),
+            'analytics'        => (bool) ($settings?->feature_analytics         ?? false),
+            'pageBuilder'      => (bool) ($settings?->feature_page_builder      ?? false),
+            'customDomain'     => (bool) ($settings?->feature_custom_domain     ?? false),
+        ];
+
         $base = [
-            'type'           => $eventType,
-            'code'           => $invitation->invitation_code,
-            'slug'           => $invitation->slug,
-            'title'          => $invitation->title ?? '',
-            'guestName'      => $guestName,
-            'countdownDate'  => $countdownDatetime,
+            'type'              => $eventType,
+            'code'              => $invitation->invitation_code,
+            'slug'              => $invitation->slug,
+            'title'             => $invitation->title ?? '',
+            'guestName'         => $guestName,
+            'countdownDate'     => $countdownDatetime,
+            'countdownLabel'    => $settings?->countdown_label ?? 'Hitung Mundur',
+            'showGuestCount'    => (bool) ($settings?->show_guest_count ?? true),
             'mainDateFormatted' => $mainDateFormatted,
-            'events'         => $eventsJs,
-            'gallery'        => $gallery,
-            'bankAccounts'   => $bankAccounts,
-            'digitalWallets' => $wallets,
-            'allowComments'  => (bool) $invitation->allow_guest_comments,
-            'rsvpEndpoint'   => url("/api/inv/{$invitation->invitation_code}/rsvp"),
-            'wishesEndpoint' => url("/api/inv/{$invitation->invitation_code}/wishes"),
+            'events'            => $eventsJs,
+            'gallery'           => $gallery,
+            'bankAccounts'      => $bankAccounts,
+            'digitalWallets'    => $wallets,
+            'allowComments'     => (bool) $invitation->allow_guest_comments,
+            'greeting'          => $greeting,
+            'featureToggles'    => $featureToggles,
+            'rsvpEndpoint'      => url("/api/inv/{$invitation->invitation_code}/rsvp"),
+            'wishesEndpoint'    => url("/api/inv/{$invitation->invitation_code}/wishes"),
         ];
 
         if ($features !== null) {
@@ -163,7 +192,7 @@ class InvitationPublicController extends Controller
             $brideNick = $contents->get('bride_nickname', '');
             $groomFull = $contents->get('groom_full_name', 'Mempelai Pria');
             $brideFull = $contents->get('bride_full_name', 'Mempelai Wanita');
-
+// dd($base);
             return array_merge($base, [
                 'pageTitle'        => $invitation->title ?: "The Wedding of {$groomFull} & {$brideFull}",
                 'groomFullName'    => $groomFull,

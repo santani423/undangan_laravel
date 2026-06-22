@@ -1,5 +1,6 @@
 import type {
     BirthdayInvitation,
+    Greeting,
     InvitationData,
     WeddingInvitation,
 } from '@/types/invitation';
@@ -18,12 +19,10 @@ function resolveThemeComponent(
     themeSlug: string,
     invitation: InvitationData,
     visitor?: string,
+    greeting?: Greeting,
 ): React.ReactNode {
-    console.log(
-        `Resolving theme component for slug: ${themeSlug}, invitation type: ${invitation.type}`,
-    );
-    console.log("invitation",invitation);
-    console.log("visitor",visitor);
+     
+    console.log('reso',invitation);
     
     switch (themeSlug) {
         // Birthday themes
@@ -44,6 +43,7 @@ function resolveThemeComponent(
                 <WeddingBase
                     invitation={invitation as WeddingInvitation}
                     visitor={visitor}
+                    greeting={invitation.greeting}
                 />
             );
 
@@ -115,7 +115,7 @@ export default function InvitationShow({
                     'Undangan Digital'
                 }
             />
-            {resolveThemeComponent(themeSlug, invitation, visitor)}
+            {resolveThemeComponent(themeSlug, invitation, visitor, invitation.greeting)}
         </>
     );
 }

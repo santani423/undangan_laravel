@@ -6,13 +6,14 @@ import MusicPlayer from '@/components/invitation/MusicPlayer';
 import RSVPForm from '@/components/invitation/RSVPForm';
 import Toast, { useToast } from '@/components/invitation/Toast';
 import WishesSection from '@/components/invitation/WishesSection';
-import type { WeddingInvitation } from '@/types/invitation';
+import type { WeddingInvitation,Greeting } from '@/types/invitation';
 import { useEffect, useRef, useState } from 'react';
 import './wedding-base.css';
 
 interface WeddingBaseProps {
     invitation: WeddingInvitation;
     visitor?: string;
+    greeting?: Greeting;
 }
 
 const EVENT_ICONS = ['🕌', '🏛️', '🎊', '🌸', '⭐', '🎶'];
@@ -25,7 +26,7 @@ function addToCalendar(ev: WeddingInvitation['events'][0]) {
     window.open(url, '_blank');
 }
 
-export default function WeddingBase({ invitation, visitor }: WeddingBaseProps) {
+export default function WeddingBase({ invitation, visitor, greeting }: WeddingBaseProps) {
     const [opened, setOpened] = useState(false);
     const [showBackTop, setShowBackTop] = useState(false);
     const mainRef = useRef<HTMLDivElement>(null);
@@ -77,7 +78,7 @@ export default function WeddingBase({ invitation, visitor }: WeddingBaseProps) {
                     <span className="wb-overlay-leaves wb-leaf-tr">🌿</span>
                     <span className="wb-overlay-leaves wb-leaf-bl">🌿</span>
                     <span className="wb-overlay-leaves wb-leaf-br">🌿</span>
-                    {/* <p className="wb-overlay-bismillah">{invitation.openingQuote}</p> */}
+                    {/* <p className="wb-overlay-bismillah">{invitation?.greeting?.message}</p> */}
                     {/* <div className="wb-overlay-divider" /> */}
                     {/* Foto mempelai bulat di overlay */}
                     {(groomPhoto || bridePhoto) && (
@@ -107,9 +108,15 @@ export default function WeddingBase({ invitation, visitor }: WeddingBaseProps) {
                     <div className="wb-overlay-divider" />
 
                      
-                    {visitor && (
+                    {(visitor || invitation.guestName) && (
                         <p style={{ color: 'rgba(232,213,163,0.6)', fontSize: '0.8rem', marginBottom: '8px', letterSpacing: '2px' }}>
-                            Kepada Yth. {invitation.guestName ? invitation.guestName : visitor}
+                            {greeting?.title ?? 'Kepada Yth.'}{' '}
+                            {invitation.guestName || visitor}
+                        </p>
+                    )}
+                    {greeting?.message && (
+                        <p style={{ color: 'rgba(232,213,163,0.7)', fontSize: '0.75rem', marginBottom: '10px', fontStyle: 'italic', textAlign: 'center', padding: '0 12px' }}>
+                            {greeting.message}
                         </p>
                     )}
                     {invitation.guestQrData && (
@@ -125,7 +132,7 @@ export default function WeddingBase({ invitation, visitor }: WeddingBaseProps) {
                         </div>
                     )}
                     <button className="wb-btn-open" onClick={openInvitation}>
-                        ✦ Buka Undangan ✦
+                        ✦ {greeting?.buttonText ?? 'Buka Undangan'} ✦
                     </button>
                 </div>
             </div>

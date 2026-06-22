@@ -53,6 +53,12 @@ export interface WishItem {
     message: string;
     date: string;
 }
+export interface Greeting {
+    buttonText: string;
+    guestLabel: string;
+    message: string;
+    title: string;
+}
 
 // ─── Base invitation data (common to all event types) ─────────────────────────
 
@@ -66,7 +72,7 @@ interface InvitationBase {
     pageTitle: string;
     mainDateFormatted: string;
     events: InvitationEvent[];
-    gallery: GalleryItem[];
+    gallery: GalleryItem[]; 
     bankAccounts: BankAccount[];
     digitalWallets: DigitalWallet[];
     allowComments: boolean;
@@ -100,6 +106,7 @@ interface InvitationBase {
         autoplay: boolean;
         loop: boolean;
     };
+    greeting?: Greeting;
     guestQrData?: string;
     guestSlug?: string;
 }
