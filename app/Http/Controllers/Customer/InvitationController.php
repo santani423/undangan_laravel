@@ -57,7 +57,7 @@ class InvitationController extends Controller
                 ] : null,
                 'first_event_date' => $inv->events->first()?->event_date?->toDateString(),
             ]);
-        // dd($invitations);
+        dd($invitations);
         return Inertia::render('customer/invitations/index', [
             'invitations' => $invitations,
         ]);

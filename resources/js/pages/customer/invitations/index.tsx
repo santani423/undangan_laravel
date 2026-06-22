@@ -260,7 +260,7 @@ function InvitationCard({ invitation }: { invitation: Invitation }) {
 export default function InvitationsIndex({ invitations }: Props) {
     return (
         <CustomerLayout breadcrumbs={breadcrumbs}>
-            <Head title="Undangan Sayadddddd" />
+            <Head title="Undangan Saya" />
             <div className="flex flex-col gap-6 p-6">
 
                 {/* Header */}
