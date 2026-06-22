@@ -4,6 +4,8 @@ use App\Http\Controllers\Customer\CommentController;
 use App\Http\Controllers\Customer\DigitalWalletController;
 use App\Http\Controllers\Customer\GuestBookController;
 use App\Http\Controllers\Customer\InvitationController;
+use App\Http\Controllers\Customer\PaymentController;
+use App\Http\Controllers\Customer\TransactionController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -21,6 +23,8 @@ Route::prefix('customer')->name('customer.')->middleware(['auth'])->group(functi
         Route::get('/check-code',             [InvitationController::class, 'checkCode'])->name('check-code');
         Route::post('/',                      [InvitationController::class, 'store'])->name('store');
         Route::get('/{invitation}',           fn () => Inertia::render('customer/invitations/show'))->name('show');
+        Route::get('/{invitation}/payment',    [PaymentController::class, 'show'])->name('payment');
+        Route::post('/{invitation}/payment',   [PaymentController::class, 'pay'])->name('pay');
         Route::get('/{invitation}/edit',      [InvitationController::class, 'edit'])->name('edit');
         Route::get('/{slug}/detail',          [InvitationController::class, 'edit'])->name('detail');
         Route::get('/{slug}/settings',        [InvitationController::class, 'edit'])->name('settings');
@@ -72,10 +76,16 @@ Route::prefix('customer')->name('customer.')->middleware(['auth'])->group(functi
         Route::get('/upgrade', fn () => Inertia::render('customer/subscription/upgrade'))->name('upgrade');
     });
 
+    // ─── Pembayaran (success / failed redirect dari Xendit) ───────────────────
+    Route::prefix('payments')->name('payments.')->group(function () {
+        Route::get('/success', [PaymentController::class, 'success'])->name('success');
+        Route::get('/failed',  [PaymentController::class, 'failed'])->name('failed');
+    });
+
     // ─── Transaksi ────────────────────────────────────────────────────────────
     Route::prefix('transactions')->name('transactions.')->group(function () {
-        Route::get('/',              fn () => Inertia::render('customer/transactions/index'))->name('index');
-        Route::get('/{transaction}', fn () => Inertia::render('customer/transactions/show'))->name('show');
+        Route::get('/',              [TransactionController::class, 'index'])->name('index');
+        Route::get('/{transaction}', [TransactionController::class, 'show'])->name('show');
     });
 
     // ─── Profil ───────────────────────────────────────────────────────────────

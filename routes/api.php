@@ -1,7 +1,11 @@
 <?php
 
 use App\Http\Controllers\InvitationPublicApiController;
+use App\Http\Controllers\Webhook\XenditWebhookController;
 use Illuminate\Support\Facades\Route;
+
+// ─── Xendit Payment Webhook (no auth, verified via callback token) ────────────
+Route::post('/webhooks/xendit', [XenditWebhookController::class, 'handle'])->name('webhooks.xendit');
 
 // ─── Public invitation API (RSVP & wishes — no auth required) ────────────────
 Route::prefix('inv/{code}')->group(function () {

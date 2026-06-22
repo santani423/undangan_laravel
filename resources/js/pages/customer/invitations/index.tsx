@@ -230,16 +230,25 @@ function InvitationCard({ invitation }: { invitation: Invitation }) {
                         href={`/customer/invitations/${invitation.slug}/detail`}
                         className="flex-1 text-center rounded-xl border border-border px-3 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors"
                     >
-                        Detail  
+                        Detail
                     </Link>
-                    <a
-                        href={`/${invitation.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 text-center rounded-xl bg-primary px-3 py-2 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-                    >
-                        Lihat
-                    </a>
+                    {invitation.status === 'draft' ? (
+                        <Link
+                            href={`/customer/invitations/${invitation.slug}/payment`}
+                            className="flex-1 text-center rounded-xl bg-amber-500 px-3 py-2 text-xs font-medium text-white hover:bg-amber-600 transition-colors"
+                        >
+                            Bayar
+                        </Link>
+                    ) : (
+                        <a
+                            href={`/${invitation.slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 text-center rounded-xl bg-primary px-3 py-2 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                        >
+                            Lihat
+                        </a>
+                    )}
                 </div>
             </div>
         </div>
