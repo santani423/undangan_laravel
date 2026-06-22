@@ -103,31 +103,48 @@ const FEATURE_CATALOGUE: {
     type: 'boolean' | 'level';
     levels?: string[];
 }[] = [
-    // Konten Dasar
-    { key: 'themes',             label: 'Template / Tema',              cat: 'Desain & Tema',      type: 'level',   levels: ['basic','extended','full']         },
-    { key: 'page_builder',       label: 'Page Builder',                 cat: 'Desain & Tema',      type: 'level',   levels: ['basic','intermediate','full']      },
-    { key: 'custom_css',         label: 'Custom CSS',                   cat: 'Desain & Tema',      type: 'boolean'  },
-    { key: 'custom_branding',    label: 'Custom Branding (No Watermark)',cat: 'Desain & Tema',     type: 'boolean'  },
+    // Desain & Tema
+    { key: 'themes',                label: 'Template / Tema',                   cat: 'Desain & Tema',      type: 'level',   levels: ['basic','extended','full'] },
+    { key: 'theme_change_unlimited', label: 'Bebas Ganti Tema Kapan Saja',      cat: 'Desain & Tema',      type: 'boolean' },
+    { key: 'page_builder',          label: 'Page Builder',                      cat: 'Desain & Tema',      type: 'level',   levels: ['basic','intermediate','full'] },
+    { key: 'background_music',      label: 'Pengaturan Musik Latar',            cat: 'Desain & Tema',      type: 'boolean' },
+    { key: 'custom_css',            label: 'Custom CSS',                        cat: 'Desain & Tema',      type: 'boolean' },
+    { key: 'custom_branding',       label: 'Watermark Removal',                 cat: 'Desain & Tema',      type: 'boolean' },
     // Domain & Akses
-    { key: 'custom_domain',      label: 'Custom Domain',                cat: 'Domain & Akses',     type: 'boolean'  },
-    { key: 'page_password',      label: 'Password Halaman',             cat: 'Domain & Akses',     type: 'boolean'  },
+    { key: 'custom_domain',         label: 'Custom Domain',                     cat: 'Domain & Akses',     type: 'boolean' },
+    { key: 'page_password',         label: 'Password Halaman',                  cat: 'Domain & Akses',     type: 'boolean' },
+    { key: 'multi_event',           label: 'Dukungan Multi Acara',              cat: 'Domain & Akses',     type: 'boolean' },
+    { key: 'unlimited_edits',       label: 'Edit Data Undangan Tanpa Batas',    cat: 'Domain & Akses',     type: 'boolean' },
+    // Tamu & RSVP
+    { key: 'rsvp',                  label: 'RSVP (Konfirmasi Kehadiran)',        cat: 'Tamu & RSVP',        type: 'boolean' },
+    { key: 'guestbook',             label: 'Buku Tamu',                         cat: 'Tamu & RSVP',        type: 'boolean' },
+    { key: 'send_invitation',       label: 'Kirim Undangan',                    cat: 'Tamu & RSVP',        type: 'boolean' },
+    { key: 'import_guests',         label: 'Import Data Tamu',                  cat: 'Tamu & RSVP',        type: 'boolean' },
+    { key: 'export_guests',         label: 'Ekspor Data Tamu',                  cat: 'Tamu & RSVP',        type: 'boolean' },
+    // Konten & Media
+    { key: 'photo_gallery',         label: 'Galeri Foto',                       cat: 'Konten & Media',     type: 'boolean' },
+    { key: 'video_gallery',         label: 'Galeri Video',                      cat: 'Konten & Media',     type: 'boolean' },
+    { key: 'countdown_timer',       label: 'Hitung Mundur Acara (Countdown)',   cat: 'Konten & Media',     type: 'boolean' },
+    { key: 'love_story',            label: 'Love Story / Cerita Acara',         cat: 'Konten & Media',     type: 'boolean' },
+    { key: 'maps_location',         label: 'Denah Lokasi & Google Maps',        cat: 'Konten & Media',     type: 'boolean' },
     // Konten Interaktif
-    { key: 'gender_poll',        label: 'Gender Poll / Prediksi',       cat: 'Konten Interaktif',  type: 'boolean'  },
-    { key: 'interactive_games',  label: 'Mini Games Interaktif',        cat: 'Konten Interaktif',  type: 'boolean'  },
-    { key: 'dress_code',         label: 'Dress Code Info',              cat: 'Konten Interaktif',  type: 'boolean'  },
-    { key: 'live_stream',        label: 'Live Streaming',               cat: 'Konten Interaktif',  type: 'boolean'  },
-    { key: 'instagram_filter',   label: 'Instagram Filter AR',          cat: 'Konten Interaktif',  type: 'boolean'  },
+    { key: 'live_stream',           label: 'Live Streaming',                    cat: 'Konten Interaktif',  type: 'boolean' },
+    { key: 'social_share',          label: 'Fitur Share ke Media Sosial',       cat: 'Konten Interaktif',  type: 'boolean' },
+    { key: 'gender_poll',           label: 'Gender Poll / Prediksi',            cat: 'Konten Interaktif',  type: 'boolean' },
+    { key: 'interactive_games',     label: 'Mini Games Interaktif',             cat: 'Konten Interaktif',  type: 'boolean' },
+    { key: 'dress_code',            label: 'Dress Code Info',                   cat: 'Konten Interaktif',  type: 'boolean' },
+    { key: 'instagram_filter',      label: 'Instagram Filter AR',               cat: 'Konten Interaktif',  type: 'boolean' },
     // Komunikasi
-    { key: 'wa_reminders',       label: 'WhatsApp Reminder Tamu',       cat: 'Komunikasi',         type: 'boolean'  },
-    { key: 'email_marketing',    label: 'Email Marketing',              cat: 'Komunikasi',         type: 'boolean'  },
+    { key: 'wa_reminders',          label: 'WhatsApp Reminder Tamu',            cat: 'Komunikasi',         type: 'boolean' },
+    { key: 'email_marketing',       label: 'Email Marketing',                   cat: 'Komunikasi',         type: 'boolean' },
     // Gift & Pembayaran
-    { key: 'amplop_digital',     label: 'Amplop Digital (Rekening/QRIS)',cat: 'Gift & Pembayaran', type: 'boolean'  },
-    { key: 'gift_wishlist',      label: 'Gift Wishlist',                cat: 'Gift & Pembayaran',  type: 'boolean'  },
+    { key: 'amplop_digital',        label: 'Amplop Digital / Gift (Rekening & QRIS)', cat: 'Gift & Pembayaran', type: 'boolean' },
+    { key: 'gift_wishlist',         label: 'Gift Wishlist',                     cat: 'Gift & Pembayaran',  type: 'boolean' },
     // Analytics & Support
-    { key: 'analytics',          label: 'Analytics / Statistik',        cat: 'Lainnya',            type: 'level',   levels: ['basic','intermediate','full']      },
-    { key: 'api_access',         label: 'API Access',                   cat: 'Lainnya',            type: 'boolean'  },
-    { key: 'priority_support',   label: 'Prioritas Support',            cat: 'Lainnya',            type: 'boolean'  },
-    { key: 'account_manager',    label: 'Account Manager Dedicated',    cat: 'Lainnya',            type: 'boolean'  },
+    { key: 'analytics',             label: 'Statistik Pengunjung',              cat: 'Analytics & Support', type: 'level',  levels: ['basic','intermediate','full'] },
+    { key: 'api_access',            label: 'API Access',                        cat: 'Analytics & Support', type: 'boolean' },
+    { key: 'priority_support',      label: 'Prioritas Dukungan Teknis',         cat: 'Analytics & Support', type: 'boolean' },
+    { key: 'account_manager',       label: 'Account Manager Dedicated',         cat: 'Analytics & Support', type: 'boolean' },
 ];
 
 interface PageProps {
@@ -1365,43 +1382,50 @@ function TabPackages({ packages }: { packages: PackageData[] }) {
 
 // ─── Tab: Fitur Paket ─────────────────────────────────────────────────────────
 
-// Sesuai dengan database/seeders/PackageSeeder.php dan PLATFORM_FULL_DESIGN.md
+// Sesuai dengan FEATURE_CATALOGUE dan PackageSeeder.php
 const featureMatrix = [
-    // Konten Dasar
-    { key: 'unlimited_guests',    label: 'Tamu Tidak Terbatas',          cat: 'Konten Dasar',  basic: true,  premium: true,  exclusive: true  },
-    { key: 'guestbook',           label: 'Buku Tamu Digital',            cat: 'Konten Dasar',  basic: true,  premium: true,  exclusive: true  },
-    { key: 'rsvp_advanced',       label: 'RSVP Lengkap + Konfirmasi',    cat: 'Konten Dasar',  basic: true,  premium: true,  exclusive: true  },
-    { key: 'countdown',           label: 'Countdown Timer',              cat: 'Konten Dasar',  basic: true,  premium: true,  exclusive: true  },
-    { key: 'maps',                label: 'Google Maps Embed',            cat: 'Konten Dasar',  basic: true,  premium: true,  exclusive: true  },
-    { key: 'qr_code',             label: 'QR Code Undangan',             cat: 'Konten Dasar',  basic: true,  premium: true,  exclusive: true  },
-    // Konten Lanjutan
-    { key: 'music',               label: 'Musik Latar',                  cat: 'Konten Lanjutan', basic: false, premium: true, exclusive: true  },
-    { key: 'dress_code',          label: 'Dress Code Info',              cat: 'Konten Lanjutan', basic: false, premium: true, exclusive: true  },
-    { key: 'gender_poll',         label: 'Gender Poll / Prediksi',       cat: 'Konten Lanjutan', basic: false, premium: true, exclusive: true  },
-    { key: 'interactive_games',   label: 'Mini Games Interaktif',        cat: 'Konten Lanjutan', basic: false, premium: true, exclusive: true  },
-    { key: 'live_stream',         label: 'Live Streaming',               cat: 'Konten Lanjutan', basic: false, premium: false, exclusive: true  },
     // Desain & Tema
-    { key: 'all_templates',       label: 'Semua Template',               cat: 'Desain & Tema', basic: false, premium: true,  exclusive: true  },
-    { key: 'exclusive_templates', label: 'Template Eksklusif',           cat: 'Desain & Tema', basic: false, premium: false, exclusive: true  },
-    { key: 'custom_css',          label: 'Custom CSS',                   cat: 'Desain & Tema', basic: false, premium: false, exclusive: true  },
-    { key: 'page_builder',        label: 'Page Builder (Drag & Drop)',   cat: 'Desain & Tema', basic: false, premium: false, exclusive: true  },
+    { key: 'themes',                label: 'Template / Tema',                   cat: 'Desain & Tema',      basic: true,  premium: true,  exclusive: true  },
+    { key: 'theme_change_unlimited', label: 'Bebas Ganti Tema Kapan Saja',      cat: 'Desain & Tema',      basic: false, premium: true,  exclusive: true  },
+    { key: 'background_music',      label: 'Pengaturan Musik Latar',            cat: 'Desain & Tema',      basic: false, premium: true,  exclusive: true  },
+    { key: 'page_builder',          label: 'Page Builder',                      cat: 'Desain & Tema',      basic: true,  premium: true,  exclusive: true  },
+    { key: 'custom_css',            label: 'Custom CSS',                        cat: 'Desain & Tema',      basic: false, premium: false, exclusive: true  },
+    { key: 'custom_branding',       label: 'Watermark Removal',                 cat: 'Desain & Tema',      basic: false, premium: false, exclusive: true  },
     // Domain & Akses
-    { key: 'custom_domain',       label: 'Custom Domain',                cat: 'Domain & Akses', basic: false, premium: true, exclusive: true  },
-    { key: 'page_password',       label: 'Password Halaman Undangan',    cat: 'Domain & Akses', basic: false, premium: true, exclusive: true  },
-    { key: 'custom_branding',     label: 'Custom Branding (No Watermark)', cat: 'Domain & Akses', basic: false, premium: false, exclusive: true },
+    { key: 'custom_domain',         label: 'Custom Domain',                     cat: 'Domain & Akses',     basic: false, premium: true,  exclusive: true  },
+    { key: 'page_password',         label: 'Password Halaman Undangan',         cat: 'Domain & Akses',     basic: false, premium: true,  exclusive: true  },
+    { key: 'multi_event',           label: 'Dukungan Multi Acara',              cat: 'Domain & Akses',     basic: false, premium: false, exclusive: true  },
+    { key: 'unlimited_edits',       label: 'Edit Data Undangan Tanpa Batas',    cat: 'Domain & Akses',     basic: false, premium: true,  exclusive: true  },
+    // Tamu & RSVP
+    { key: 'rsvp',                  label: 'RSVP (Konfirmasi Kehadiran)',        cat: 'Tamu & RSVP',        basic: true,  premium: true,  exclusive: true  },
+    { key: 'guestbook',             label: 'Buku Tamu',                         cat: 'Tamu & RSVP',        basic: true,  premium: true,  exclusive: true  },
+    { key: 'send_invitation',       label: 'Kirim Undangan',                    cat: 'Tamu & RSVP',        basic: true,  premium: true,  exclusive: true  },
+    { key: 'import_guests',         label: 'Import Data Tamu',                  cat: 'Tamu & RSVP',        basic: false, premium: true,  exclusive: true  },
+    { key: 'export_guests',         label: 'Ekspor Data Tamu',                  cat: 'Tamu & RSVP',        basic: false, premium: true,  exclusive: true  },
+    // Konten & Media
+    { key: 'photo_gallery',         label: 'Galeri Foto',                       cat: 'Konten & Media',     basic: true,  premium: true,  exclusive: true  },
+    { key: 'video_gallery',         label: 'Galeri Video',                      cat: 'Konten & Media',     basic: false, premium: true,  exclusive: true  },
+    { key: 'countdown_timer',       label: 'Hitung Mundur Acara (Countdown)',   cat: 'Konten & Media',     basic: true,  premium: true,  exclusive: true  },
+    { key: 'love_story',            label: 'Love Story / Cerita Acara',         cat: 'Konten & Media',     basic: true,  premium: true,  exclusive: true  },
+    { key: 'maps_location',         label: 'Denah Lokasi & Google Maps',        cat: 'Konten & Media',     basic: true,  premium: true,  exclusive: true  },
+    // Konten Interaktif
+    { key: 'live_stream',           label: 'Live Streaming',                    cat: 'Konten Interaktif',  basic: false, premium: false, exclusive: true  },
+    { key: 'social_share',          label: 'Fitur Share ke Media Sosial',       cat: 'Konten Interaktif',  basic: true,  premium: true,  exclusive: true  },
+    { key: 'gender_poll',           label: 'Gender Poll / Prediksi',            cat: 'Konten Interaktif',  basic: false, premium: true,  exclusive: true  },
+    { key: 'interactive_games',     label: 'Mini Games Interaktif',             cat: 'Konten Interaktif',  basic: false, premium: true,  exclusive: true  },
+    { key: 'dress_code',            label: 'Dress Code Info',                   cat: 'Konten Interaktif',  basic: false, premium: true,  exclusive: true  },
+    { key: 'instagram_filter',      label: 'Instagram Filter AR',               cat: 'Konten Interaktif',  basic: false, premium: false, exclusive: true  },
     // Komunikasi
-    { key: 'wa_reminders',        label: 'WhatsApp Reminder Tamu',       cat: 'Komunikasi',   basic: false, premium: true,  exclusive: true  },
-    { key: 'wa_blast',            label: 'WhatsApp Blast Massal',        cat: 'Komunikasi',   basic: false, premium: true,  exclusive: true  },
-    { key: 'email_marketing',     label: 'Email Marketing',              cat: 'Komunikasi',   basic: false, premium: false, exclusive: true  },
-    // Gift & Monetisasi
-    { key: 'amplop_digital',      label: 'Amplop Digital (Rekening)',    cat: 'Gift & Monetisasi', basic: false, premium: true, exclusive: true },
-    { key: 'gift_wishlist',       label: 'Gift Wishlist',                cat: 'Gift & Monetisasi', basic: false, premium: true, exclusive: true },
-    { key: 'qris_envelope',       label: 'Amplop Digital (QRIS)',        cat: 'Gift & Monetisasi', basic: false, premium: false, exclusive: true },
-    // Premium Eksklusif
-    { key: 'instagram_filter',    label: 'Instagram Filter AR',          cat: 'Fitur Eksklusif', basic: false, premium: false, exclusive: true },
-    { key: 'api_access',          label: 'API Access',                   cat: 'Fitur Eksklusif', basic: false, premium: false, exclusive: true },
-    { key: 'priority_support',    label: 'Prioritas Support',            cat: 'Fitur Eksklusif', basic: false, premium: false, exclusive: true },
-    { key: 'account_manager',     label: 'Account Manager Dedicated',   cat: 'Fitur Eksklusif', basic: false, premium: false, exclusive: true },
+    { key: 'wa_reminders',          label: 'WhatsApp Reminder Tamu',            cat: 'Komunikasi',         basic: false, premium: true,  exclusive: true  },
+    { key: 'email_marketing',       label: 'Email Marketing',                   cat: 'Komunikasi',         basic: false, premium: false, exclusive: true  },
+    // Gift & Pembayaran
+    { key: 'amplop_digital',        label: 'Amplop Digital / Gift (Rekening & QRIS)', cat: 'Gift & Pembayaran', basic: false, premium: true, exclusive: true },
+    { key: 'gift_wishlist',         label: 'Gift Wishlist',                     cat: 'Gift & Pembayaran',  basic: false, premium: true,  exclusive: true  },
+    // Analytics & Support
+    { key: 'analytics',             label: 'Statistik Pengunjung',              cat: 'Analytics & Support', basic: true,  premium: true,  exclusive: true  },
+    { key: 'priority_support',      label: 'Prioritas Dukungan Teknis',         cat: 'Analytics & Support', basic: false, premium: false, exclusive: true  },
+    { key: 'api_access',            label: 'API Access',                        cat: 'Analytics & Support', basic: false, premium: false, exclusive: true  },
+    { key: 'account_manager',       label: 'Account Manager Dedicated',         cat: 'Analytics & Support', basic: false, premium: false, exclusive: true  },
 ];
 
 function TabFeatures() {

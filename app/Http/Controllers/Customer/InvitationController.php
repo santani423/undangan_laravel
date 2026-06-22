@@ -130,7 +130,7 @@ class InvitationController extends Controller
             'event_type_id'                   => 'required|exists:event_types,id',
             'theme_id'                        => 'required|exists:themes,id',
             'package_id'                      => 'required|exists:packages,id',
-            'invitation_code'                 => 'nullable|string|max:100|unique:invitations,invitation_code',
+            'invitation_code'                 => 'nullable|string|max:100',
             'field_values'                    => 'nullable|array',
             'acara_events'                    => 'nullable|array',
             'acara_events.*.name'             => 'required_with:acara_events|string|max:255',

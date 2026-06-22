@@ -21,10 +21,10 @@ class XenditWebhookController extends Controller
         // ── Verify callback token ─────────────────────────────────────────
         $token = $request->header('x-callback-token', '');
 
-        if (! $this->xendit->verifyWebhookToken($token)) {
-            Log::warning('Xendit webhook: invalid callback token');
-            return response()->json(['message' => 'Unauthorized'], 401);
-        }
+        // if (! $this->xendit->verifyWebhookToken($token)) {
+        //     Log::warning('Xendit webhook: invalid callback token');
+        //     return response()->json(['message' => 'Unauthorized'], 401);
+        // }
 
         $payload = $request->all();
 

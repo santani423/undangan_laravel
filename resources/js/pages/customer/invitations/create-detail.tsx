@@ -1597,7 +1597,9 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
             package_id:       pkg.id,
             invitation_code:  invitationCode || null,
             field_values:     fieldValues,
-            acara_events:  acaraEvents.map((ev) => ({
+            acara_events:  acaraEvents
+                .filter((ev) => ev.name.trim() && ev.date.trim())
+                .map((ev) => ({
                 name:             ev.name,
                 date:             ev.date,
                 time_start:       ev.time_start,
