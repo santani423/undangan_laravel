@@ -97,6 +97,7 @@ class GuestBookController extends Controller
             'background_color' => 'nullable|string|max:20',
             'overlay_color' => 'nullable|string|max:20',
             'overlay_opacity' => 'nullable|numeric|min:0|max:1',
+            'slider_enabled' => 'nullable|boolean',
         ]);
 
         $max = $invitation->package?->max_gallery_uploads;
@@ -147,6 +148,7 @@ class GuestBookController extends Controller
             'guestbook_background_color' => $data['background_color'] ?? '#f8fafc',
             'guestbook_overlay_color' => $data['overlay_color'] ?? '#000000',
             'guestbook_overlay_opacity' => (string) ($data['overlay_opacity'] ?? '0.35'),
+            'guestbook_slider_enabled' => ($data['slider_enabled'] ?? true) ? '1' : '0',
         ];
 
         foreach ($settings as $key => $value) {
@@ -205,18 +207,31 @@ class GuestBookController extends Controller
         abort_if($invitation->user_id !== auth()->id(), 403);
 
         $search = trim((string) $request->query('q', ''));
+        $status = (string) $request->query('status', '');
+        $phoneSearch = preg_replace('/\D+/', '', $search) ?? '';
 
         $guests = $invitation->guests()
-            ->when($search !== '', function ($query) use ($search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('phone_number', 'like', "%{$search}%")
-                        ->orWhere('slug', 'like', "%{$search}%")
-                        ->orWhere('qr_code_data', 'like', "%{$search}%");
+            ->when($status === 'checked_in', fn ($query) => $query->whereNotNull('checked_in_at'))
+            ->when($status === 'not_checked_in', fn ($query) => $query->whereNull('checked_in_at'))
+            ->when($search !== '' || $phoneSearch !== '', function ($query) use ($search, $phoneSearch) {
+                $query->where(function ($q) use ($search, $phoneSearch) {
+                    if ($search !== '') {
+                        $q->where('name', 'like', "%{$search}%")
+                            ->orWhere('phone_number', 'like', "%{$search}%")
+                            ->orWhere('slug', 'like', "%{$search}%")
+                            ->orWhere('qr_code_data', 'like', "%{$search}%");
+                    }
+
+                    if ($phoneSearch !== '') {
+                        $q->orWhereRaw(
+                            "REPLACE(REPLACE(REPLACE(REPLACE(phone_number, ' ', ''), '-', ''), '+', ''), '.', '') LIKE ?",
+                            ["%{$phoneSearch}%"],
+                        );
+                    }
                 });
             })
             ->orderBy('name')
-            ->limit(20)
+            ->limit(50)
             ->get()
             ->map(fn (Guest $guest) => $this->guestPayload($guest));
 
@@ -545,6 +560,7 @@ class GuestBookController extends Controller
             'guestbook_background_color',
             'guestbook_overlay_color',
             'guestbook_overlay_opacity',
+            'guestbook_slider_enabled',
         ])->get()->keyBy('content_key');
 
         $background = $contents->get('guestbook_background_image')?->content_value ?? '';
@@ -554,6 +570,7 @@ class GuestBookController extends Controller
             'background_color' => $contents->get('guestbook_background_color')?->content_value ?? '#f8fafc',
             'overlay_color' => $contents->get('guestbook_overlay_color')?->content_value ?? '#000000',
             'overlay_opacity' => (float) ($contents->get('guestbook_overlay_opacity')?->content_value ?? 0.35),
+            'slider_enabled' => ($contents->get('guestbook_slider_enabled')?->content_value ?? '1') !== '0',
         ];
     }
 

@@ -1485,11 +1485,19 @@ function GuestsTab({
                     <option value="yes">Sudah Check-in</option>
                     <option value="no">Belum Check-in</option>
                 </select>
-                <Link
+                <a
                     href={`/customer/invitations/${slug}/guests/operator`}
+                    target="_blank"
+                    rel="noreferrer"
                     className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition-colors"
                 >
-                    <ExternalLink className="size-4" /> Akses Buku Tamu
+                    <ExternalLink className="size-4" /> Mode Petugas
+                </a>
+                <Link
+                    href={`/customer/invitations/${slug}/guests#display-settings`}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                >
+                    <Sliders className="size-4" /> Atur Tampilan
                 </Link>
                 <a
                     href={`/customer/invitations/${slug}/guests/export/csv`}

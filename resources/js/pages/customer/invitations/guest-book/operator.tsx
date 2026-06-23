@@ -1,9 +1,7 @@
-import CustomerLayout from '@/layouts/customer-layout';
-import { type BreadcrumbItem } from '@/types';
 import { BrowserQRCodeReader, type IScannerControls } from '@zxing/browser';
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, Camera, CheckCircle2, Download, QrCode, Search } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface InvitationInfo {
     id: number;
@@ -42,6 +40,7 @@ interface DisplaySettings {
     background_color: string;
     overlay_color: string;
     overlay_opacity: number;
+    slider_enabled: boolean;
 }
 
 interface SliderImage {
@@ -78,20 +77,38 @@ function csrfHeaders(): HeadersInit {
     };
 }
 
-export default function GuestBookOperator({ invitation, stats: initialStats, dailyStats, guests: initialGuests, recentScans, displaySettings, sliderImages, filters }: Props) {
-    const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Dashboard', href: '/customer' },
-        { title: 'Undangan', href: '/customer/invitations' },
-        { title: invitation.title, href: `/customer/invitations/${invitation.slug}/edit` },
-        { title: 'Petugas Buku Tamu', href: '#' },
-    ];
+function mergeGuest(list: GuestRow[], next: GuestRow): GuestRow[] {
+    let found = false;
+    const updated = list.map((guest) => {
+        if (guest.id !== next.id) return guest;
+        found = true;
+        return next;
+    });
 
+    return found ? updated : [next, ...updated];
+}
+
+function replaceGuest(list: GuestRow[], next: GuestRow): GuestRow[] {
+    let found = false;
+    const updated = list.map((guest) => {
+        if (guest.id !== next.id) return guest;
+        found = true;
+        return next;
+    });
+
+    return found ? updated : list;
+}
+
+export default function GuestBookOperator({ invitation, stats: initialStats, dailyStats, guests: initialGuests, recentScans, displaySettings, sliderImages, filters }: Props) {
     const [stats, setStats] = useState(initialStats);
     const [guests, setGuests] = useState(initialGuests);
     const [recent, setRecent] = useState(recentScans);
     const [selectedGuest, setSelectedGuest] = useState<GuestRow | null>(null);
     const [notice, setNotice] = useState<{ status: ScanStatus; message: string }>({ status: 'idle', message: 'Siap melakukan scan QR.' });
     const [query, setQuery] = useState('');
+    const [searchResults, setSearchResults] = useState<GuestRow[]>([]);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [searchError, setSearchError] = useState('');
     const [manualCode, setManualCode] = useState('');
     const [scanning, setScanning] = useState(false);
     const [startingScanner, setStartingScanner] = useState(false);
@@ -102,23 +119,60 @@ export default function GuestBookOperator({ invitation, stats: initialStats, dai
     const streamRef = useRef<MediaStream | null>(null);
     const lastCodeRef = useRef('');
 
-    const filteredGuests = useMemo(() => {
-        const q = query.trim().toLowerCase();
-        if (!q) return guests;
-        return guests.filter((g) => [g.name, g.phone_number, g.slug, g.qr_code_data].some((v) => String(v ?? '').toLowerCase().includes(q)));
-    }, [guests, query]);
-
     useEffect(() => {
-        if (!sliderImages.length) return;
+        if (!displaySettings.slider_enabled || !sliderImages.length) return;
         const id = window.setInterval(() => setSlideIndex((i) => (i + 1) % sliderImages.length), 5000);
         return () => window.clearInterval(id);
-    }, [sliderImages.length]);
+    }, [displaySettings.slider_enabled, sliderImages.length]);
+
+    useEffect(() => {
+        const searchTerm = query.trim();
+        if (!searchTerm) {
+            setSearchResults([]);
+            setSearchLoading(false);
+            setSearchError('');
+            return;
+        }
+
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(async () => {
+            setSearchLoading(true);
+            setSearchError('');
+
+            try {
+                const params = new URLSearchParams({ q: searchTerm });
+                if (filters.status) params.set('status', filters.status);
+
+                const res = await fetch(`/customer/invitations/${invitation.slug}/guests/search?${params.toString()}`, {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    signal: controller.signal,
+                });
+                const json = await res.json();
+                if (!res.ok) throw new Error(json.message ?? 'Search failed');
+
+                setSearchResults(Array.isArray(json.guests) ? json.guests : []);
+            } catch {
+                if (!controller.signal.aborted) {
+                    setSearchResults([]);
+                    setSearchError('Gagal mencari tamu. Coba lagi.');
+                }
+            } finally {
+                if (!controller.signal.aborted) setSearchLoading(false);
+            }
+        }, 300);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+            controller.abort();
+        };
+    }, [filters.status, invitation.slug, query]);
 
     useEffect(() => () => stopScanner(), []);
 
     function updateGuest(next: GuestRow) {
         setSelectedGuest(next);
-        setGuests((prev) => prev.map((g) => (g.id === next.id ? next : g)));
+        setGuests((prev) => mergeGuest(prev, next));
+        setSearchResults((prev) => replaceGuest(prev, next));
         setRecent((prev) => [next, ...prev.filter((g) => g.id !== next.id)].slice(0, 10));
     }
 
@@ -258,12 +312,14 @@ export default function GuestBookOperator({ invitation, stats: initialStats, dai
         backgroundPosition: 'center',
     };
 
-    const activeSlide = sliderImages[slideIndex];
+    const activeSlide = displaySettings.slider_enabled ? sliderImages[slideIndex] : undefined;
+    const searchTerm = query.trim();
+    const visibleGuests = searchTerm ? searchResults : guests;
 
     return (
-        <CustomerLayout breadcrumbs={breadcrumbs}>
+        <>
             <Head title={`Petugas Buku Tamu - ${invitation.title}`} />
-            <div className="min-h-[calc(100vh-4rem)] p-4 sm:p-6" style={backgroundStyle}>
+            <div className="min-h-screen p-4 text-foreground sm:p-6" style={backgroundStyle}>
                 <div className="fixed inset-0 pointer-events-none" style={{ backgroundColor: displaySettings.overlay_color, opacity: displaySettings.overlay_opacity }} />
                 <div className="relative z-10 mx-auto flex max-w-7xl flex-col gap-5">
                     <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/20 bg-background/95 p-4 shadow-sm backdrop-blur">
@@ -352,10 +408,20 @@ export default function GuestBookOperator({ invitation, stats: initialStats, dai
                             <h2 className="font-semibold text-foreground">Manajemen Kehadiran</h2>
                             <div className="mt-3 flex items-center gap-2 rounded-xl border border-border px-3">
                                 <Search className="size-4 text-muted-foreground" />
-                                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cari nama, WhatsApp, atau kode undangan" className="min-w-0 flex-1 bg-transparent py-2 text-sm outline-none" />
+                                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cari nama, nomor WhatsApp, atau kode undangan" className="min-w-0 flex-1 bg-transparent py-2 text-sm outline-none" />
+                                {query && (
+                                    <button type="button" onClick={() => setQuery('')} className="rounded-lg px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
+                                        Reset
+                                    </button>
+                                )}
+                            </div>
+                            <div className={`mt-2 text-xs ${searchError ? 'text-red-600' : 'text-muted-foreground'}`}>
+                                {searchLoading
+                                    ? 'Mencari tamu...'
+                                    : searchError || (searchTerm ? `${visibleGuests.length} hasil ditemukan.` : `${visibleGuests.length} tamu ditampilkan.`)}
                             </div>
                             <div className="mt-4 max-h-[470px] space-y-2 overflow-y-auto pr-1">
-                                {filteredGuests.map((guest) => (
+                                {visibleGuests.length ? visibleGuests.map((guest) => (
                                     <div key={guest.id} className="flex items-center justify-between gap-3 rounded-xl border border-border p-3">
                                         <div className="min-w-0">
                                             <p className="truncate text-sm font-semibold text-foreground">{guest.name}</p>
@@ -368,7 +434,11 @@ export default function GuestBookOperator({ invitation, stats: initialStats, dai
                                             <button onClick={() => void manualCheckIn(guest)} className="shrink-0 rounded-xl bg-primary px-3 py-2 text-xs font-medium text-primary-foreground hover:bg-primary/90">Check-in</button>
                                         )}
                                     </div>
-                                ))}
+                                )) : (
+                                    <div className="rounded-xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
+                                        {searchTerm ? 'Tidak ada tamu yang cocok dengan pencarian.' : 'Belum ada data tamu.'}
+                                    </div>
+                                )}
                             </div>
                         </section>
                     </div>
@@ -399,6 +469,6 @@ export default function GuestBookOperator({ invitation, stats: initialStats, dai
                     </div>
                 </div>
             </div>
-        </CustomerLayout>
+        </>
     );
 }

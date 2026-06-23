@@ -84,6 +84,7 @@ interface DisplaySettings {
     background_color: string;
     overlay_color: string;
     overlay_opacity: number;
+    slider_enabled: boolean;
 }
 
 interface SliderImage {
@@ -243,6 +244,7 @@ function DisplaySettingsPanel({
     const [backgroundColor, setBackgroundColor] = useState(initialSettings.background_color);
     const [overlayColor, setOverlayColor] = useState(initialSettings.overlay_color);
     const [overlayOpacity, setOverlayOpacity] = useState(initialSettings.overlay_opacity);
+    const [sliderEnabled, setSliderEnabled] = useState(initialSettings.slider_enabled);
     const [saving, setSaving] = useState(false);
 
     const max = invitation.max_gallery_uploads;
@@ -277,6 +279,7 @@ function DisplaySettingsPanel({
             background_color: backgroundColor,
             overlay_color: overlayColor,
             overlay_opacity: overlayOpacity,
+            slider_enabled: sliderEnabled,
         }, {
             preserveScroll: true,
             onFinish: () => setSaving(false),
@@ -284,7 +287,7 @@ function DisplaySettingsPanel({
     }
 
     return (
-        <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+        <section id="display-settings" className="rounded-2xl border border-border bg-card p-5 shadow-sm">
             <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
                     <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -292,7 +295,7 @@ function DisplaySettingsPanel({
                     </div>
                     <div>
                         <h2 className="text-sm font-semibold text-foreground">Pengaturan Tampilan Buku Tamu</h2>
-                        <p className="text-xs text-muted-foreground">Atur slider, background, overlay, dan opacity untuk halaman petugas.</p>
+                        <p className="text-xs text-muted-foreground">Atur tampilan Mode Petugas: slider, background, overlay, dan opacity.</p>
                     </div>
                 </div>
                 <button type="button" onClick={handleSave} disabled={saving} className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60">
@@ -302,14 +305,29 @@ function DisplaySettingsPanel({
 
             <div className="grid gap-5 lg:grid-cols-[1.15fr_.85fr]">
                 <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-muted/30 px-4 py-3">
+                        <div>
+                            <p className="text-sm font-medium text-foreground">Tampilkan Slider di Mode Petugas</p>
+                            <p className="text-xs text-muted-foreground">Nonaktifkan jika layar petugas hanya ingin menampilkan data tamu tanpa gambar slider.</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setSliderEnabled((value) => !value)}
+                            aria-pressed={sliderEnabled}
+                            className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${sliderEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                        >
+                            <span className={`absolute left-0 top-1 size-5 rounded-full bg-white shadow transition-transform ${sliderEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                        </button>
+                    </div>
                     <div className="flex items-center justify-between gap-3">
                         <div>
                             <p className="text-sm font-medium text-foreground">Upload Slider Buku Tamu</p>
                             <p className="text-xs text-muted-foreground">
                                 Maksimal {sliderLimit ?? 'tak terbatas'} gambar mengikuti batas galeri paket. ({sliderImages.length}{sliderLimit ? `/${sliderLimit}` : ''})
+                                {!sliderEnabled && ' Slider sedang nonaktif.'}
                             </p>
                         </div>
-                        {!atLimit && (
+                        {sliderEnabled && !atLimit && (
                             <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border px-3 py-2 text-xs font-medium text-foreground hover:bg-muted">
                                 <Image className="size-4" /> Tambah
                                 <input type="file" accept="image/*" multiple className="sr-only" onChange={(e) => { void handleSliderFiles(e.target.files); e.target.value = ''; }} />
@@ -699,12 +717,14 @@ export default function GuestBookIndex({ invitation, guests, stats, displaySetti
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <Link
+                        <a
                             href={`/customer/invitations/${invitation.slug}/guests/operator`}
+                            target="_blank"
+                            rel="noreferrer"
                             className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition-colors"
                         >
-                            <ExternalLink className="size-4" /> Akses Buku Tamu
-                        </Link>
+                            <ExternalLink className="size-4" /> Mode Petugas
+                        </a>
                         <a
                             href={`/customer/invitations/${invitation.slug}/guests/export/csv`}
                             className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
