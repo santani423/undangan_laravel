@@ -56,7 +56,7 @@ export interface WishItem {
 export interface Greeting {
     buttonText: string;
     guestLabel: string;
-    message: string;
+    message?: string | null;
     title: string;
 }
 

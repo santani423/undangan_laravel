@@ -67,6 +67,21 @@ html { scroll-behavior: smooth; }
 .wb-overlay-amp { color: var(--wb-gold); font-size: 1.2rem; display: block; margin: 4px 0; }
 .wb-overlay-date { color: rgba(232,213,163,0.8); font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; letter-spacing: 2px; margin: 20px 0 30px; }
 .wb-overlay-divider { width: 80px; height: 1px; background: linear-gradient(to right, transparent, var(--wb-gold), transparent); margin: 15px auto; }
+.wb-overlay-greeting { margin: 0 auto 10px; color: rgba(232,213,163,0.72); text-align: center; }
+.wb-overlay-greeting-title { font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+.wb-overlay-guest-name { color: var(--wb-gold-light); font-family: 'Cormorant Garamond', serif; font-size: 1.35rem; line-height: 1.2; overflow-wrap: anywhere; }
+.wb-overlay-guest-label { color: rgba(232,213,163,0.55); font-size: 0.72rem; letter-spacing: 1.5px; margin-top: 4px; }
+.wb-overlay-message {
+  color: rgba(232,213,163,0.74);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.95rem;
+  font-style: italic;
+  line-height: 1.5;
+  max-width: 360px;
+  margin: 0 auto 14px;
+  padding: 0 12px;
+  overflow-wrap: anywhere;
+}
 .wb-overlay-leaves { position: absolute; font-size: 2rem; opacity: 0.3; }
 .wb-leaf-tl { top: 10px; left: 10px; transform: rotate(-45deg); }
 .wb-leaf-tr { top: 10px; right: 10px; transform: rotate(45deg); }

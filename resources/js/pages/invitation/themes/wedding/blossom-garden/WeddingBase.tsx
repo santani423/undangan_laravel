@@ -27,7 +27,12 @@ function addToCalendar(ev: WeddingInvitation['events'][0]) {
 }
 
 export default function WeddingBase({ invitation, visitor, greeting }: WeddingBaseProps) {
-    const [opened, setOpened] = useState(false);
+    const features = invitation.features ?? {};
+   
+    
+    const coverEnabled = features.cover !== false;
+    const greetingEnabled = features.greeting !== false;
+    const [opened, setOpened] = useState(!coverEnabled);
     const [showBackTop, setShowBackTop] = useState(false);
     const mainRef = useRef<HTMLDivElement>(null);
     const { toast, showToast, clearToast } = useToast();
@@ -51,7 +56,6 @@ export default function WeddingBase({ invitation, visitor, greeting }: WeddingBa
 
     const openInvitation = () => setOpened(true);
 
-    const features = invitation.features ?? {};
     const isEnabled = (key: keyof typeof features) => features[key] !== false;
 
     const groomPhoto = invitation.groomPhoto;
@@ -59,6 +63,8 @@ export default function WeddingBase({ invitation, visitor, greeting }: WeddingBa
     const couplePhoto = invitation.couplePhoto;
     // Hero photo: prefer couplePhoto, fallback to groomPhoto
     const heroPhoto = couplePhoto || groomPhoto;
+    const guestName = invitation.guestName || visitor || '';
+    const coverGuestName = guestName || greeting?.guestLabel || '';
 
     return (
         <div className="wb-root">
@@ -68,7 +74,7 @@ export default function WeddingBase({ invitation, visitor, greeting }: WeddingBa
             `}</style>
 
             {/* ── Opening Overlay ────────────────────────────────────────────────── */}
-            <div className={`wb-overlay${opened ? ' hide' : ''}`}>
+            {coverEnabled && <div className={`wb-overlay${opened ? ' hide' : ''}`}>
                 {/* Background foto mempelai */}
                 {heroPhoto && <div className="wb-overlay-photo-bg" style={{ backgroundImage: `url(${heroPhoto})` }} />}
                 <div className="wb-overlay-frame">
@@ -108,14 +114,15 @@ export default function WeddingBase({ invitation, visitor, greeting }: WeddingBa
                     <div className="wb-overlay-divider" />
 
                      
-                    {(visitor || invitation.guestName) && (
-                        <p style={{ color: 'rgba(232,213,163,0.6)', fontSize: '0.8rem', marginBottom: '8px', letterSpacing: '2px' }}>
-                            {greeting?.title ?? 'Kepada Yth.'}{' '}
-                            {invitation.guestName || visitor}
-                        </p>
+                    {greetingEnabled && coverGuestName && (
+                        <div className="wb-overlay-greeting">
+                            <p className="wb-overlay-greeting-title">{greeting?.title ?? 'Kepada Yth.'}</p>
+                            <p className="wb-overlay-guest-name">{coverGuestName}</p>
+                            {guestName && greeting?.guestLabel && <p className="wb-overlay-guest-label">{greeting.guestLabel}</p>}
+                        </div>
                     )}
-                    {greeting?.message && (
-                        <p style={{ color: 'rgba(232,213,163,0.7)', fontSize: '0.75rem', marginBottom: '10px', fontStyle: 'italic', textAlign: 'center', padding: '0 12px' }}>
+                    {greetingEnabled && greeting?.message && (
+                        <p className="wb-overlay-message">
                             {greeting.message}
                         </p>
                     )}
@@ -135,7 +142,7 @@ export default function WeddingBase({ invitation, visitor, greeting }: WeddingBa
                         ✦ {greeting?.buttonText ?? 'Buka Undangan'} ✦
                     </button>
                 </div>
-            </div>
+            </div>}
 
             {/* ── Main Content ────────────────────────────────────────────────────── */}
             <div ref={mainRef} className={`wb-main${opened ? ' visible' : ''}`}>
