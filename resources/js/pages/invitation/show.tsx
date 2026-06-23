@@ -21,9 +21,6 @@ function resolveThemeComponent(
     visitor?: string,
     greeting?: Greeting,
 ): React.ReactNode {
-     
-    console.log('reso',invitation);
-    
     switch (themeSlug) {
         // Birthday themes
         case 'birthday':

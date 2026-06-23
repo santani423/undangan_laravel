@@ -26,6 +26,35 @@ function addToCalendar(ev: WeddingInvitation['events'][0]) {
     window.open(url, '_blank');
 }
 
+function getVideoEmbedUrl(url: string): string {
+    if (!url) return '';
+
+    try {
+        const parsed = new URL(url);
+        const host = parsed.hostname.replace(/^www\./, '');
+
+        if (host === 'youtu.be') {
+            return `https://www.youtube.com/embed/${parsed.pathname.replace('/', '')}`;
+        }
+
+        if (host === 'youtube.com' || host === 'm.youtube.com') {
+            if (parsed.pathname.startsWith('/embed/')) return url;
+            if (parsed.pathname.startsWith('/shorts/')) return `https://www.youtube.com/embed/${parsed.pathname.split('/')[2] ?? ''}`;
+            const videoId = parsed.searchParams.get('v');
+            if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+        }
+
+        if (host === 'vimeo.com') {
+            const videoId = parsed.pathname.split('/').filter(Boolean)[0];
+            if (videoId) return `https://player.vimeo.com/video/${videoId}`;
+        }
+
+        return url;
+    } catch {
+        return '';
+    }
+}
+
 export default function WeddingBase({ invitation, visitor, greeting }: WeddingBaseProps) {
     const features = invitation.features ?? {};
    
@@ -65,6 +94,7 @@ export default function WeddingBase({ invitation, visitor, greeting }: WeddingBa
     const heroPhoto = couplePhoto || groomPhoto;
     const guestName = invitation.guestName || visitor || '';
     const coverGuestName = guestName || greeting?.guestLabel || '';
+    const coupleVideoEmbedUrl = getVideoEmbedUrl(invitation.coupleVideoUrl ?? '');
 
     return (
         <div className="wb-root">
@@ -427,6 +457,24 @@ export default function WeddingBase({ invitation, visitor, greeting }: WeddingBa
                 )}
 
                 {/* ── DRESS CODE ────────────────────────────────────────────────── */}
+                {isEnabled('video') && coupleVideoEmbedUrl && (
+                    <section className="wb-section">
+                        <h2 className="wb-section-title wb-anim-up">Video Mempelai</h2>
+                        <div className="wb-gold-divider wb-anim-up">
+                            <span>â–¶</span>
+                        </div>
+                        <div className="wb-video-frame wb-anim-up">
+                            <iframe
+                                src={coupleVideoEmbedUrl}
+                                title="Video Mempelai"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowFullScreen
+                                loading="lazy"
+                            />
+                        </div>
+                    </section>
+                )}
+
                 {invitation.dressCodes && invitation.dressCodes.length > 0 && (
                     <section className="wb-section wb-dresscode-bg">
                         <h2 className="wb-section-title light wb-anim-up">Dress Code</h2>

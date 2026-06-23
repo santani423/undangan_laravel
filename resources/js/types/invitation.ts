@@ -73,6 +73,7 @@ interface InvitationBase {
     mainDateFormatted: string;
     events: InvitationEvent[];
     gallery: GalleryItem[]; 
+    coupleVideoUrl?: string;
     bankAccounts: BankAccount[];
     digitalWallets: DigitalWallet[];
     allowComments: boolean;

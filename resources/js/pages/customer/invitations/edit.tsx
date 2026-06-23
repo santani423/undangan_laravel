@@ -41,6 +41,7 @@ import {
     Upload,
     UserCheck,
     Users,
+    Video,
     Volume2,
     VolumeX,
     Wallet,
@@ -854,7 +855,19 @@ interface GalleryItem {
     isNew: boolean;
 }
 
-function GalleryTab({ items, setItems, maxUploads }: { items: GalleryItem[]; setItems: React.Dispatch<React.SetStateAction<GalleryItem[]>>; maxUploads: number | null }) {
+function GalleryTab({
+    items,
+    setItems,
+    maxUploads,
+    coupleVideoUrl,
+    onCoupleVideoUrlChange,
+}: {
+    items: GalleryItem[];
+    setItems: React.Dispatch<React.SetStateAction<GalleryItem[]>>;
+    maxUploads: number | null;
+    coupleVideoUrl: string;
+    onCoupleVideoUrlChange: (value: string) => void;
+}) {
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const files = Array.from(e.target.files ?? []);
         const remaining = maxUploads ? maxUploads - items.length : Infinity;
@@ -874,6 +887,26 @@ function GalleryTab({ items, setItems, maxUploads }: { items: GalleryItem[]; set
 
     return (
         <div className="flex flex-col gap-5">
+            <div className="rounded-2xl border border-border bg-card p-4">
+                <div className="mb-3 flex items-start gap-3">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Video className="size-4" />
+                    </div>
+                    <div>
+                        <p className="text-sm font-semibold text-foreground">Video Mempelai</p>
+                        <p className="text-xs text-muted-foreground">Tambahkan link video highlight, cinematic, YouTube, Vimeo, atau Google Drive.</p>
+                    </div>
+                </div>
+                <input
+                    type="url"
+                    value={coupleVideoUrl}
+                    onChange={(e) => onCoupleVideoUrlChange(e.target.value)}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                />
+                <p className="mt-2 text-[11px] text-muted-foreground">Video akan tampil pada section Video jika fitur Video aktif di Pengaturan.</p>
+            </div>
+
             {maxUploads && (
                 <p className="text-xs text-muted-foreground">
                     Maksimal <span className="font-medium text-foreground">{maxUploads} foto</span>. ({items.length}/{maxUploads} digunakan)
@@ -3260,7 +3293,15 @@ export default function InvitationsEdit({
             case 'acara':
                 return <AcaraTab events={acaraEvents} setEvents={setAcaraEvents} />;
             case 'gallery':
-                return <GalleryTab items={galleryItems} setItems={setGalleryItems} maxUploads={pkg.max_gallery_uploads} />;
+                return (
+                    <GalleryTab
+                        items={galleryItems}
+                        setItems={setGalleryItems}
+                        maxUploads={pkg.max_gallery_uploads}
+                        coupleVideoUrl={fieldValues.couple_video_url ?? ''}
+                        onCoupleVideoUrlChange={(value) => handleFieldChange('couple_video_url', value)}
+                    />
+                );
             case 'love_story':
                 return <LoveStoryTab entries={loveStoryEntries} setEntries={setLoveStoryEntries} />;
             case 'info':

@@ -167,6 +167,7 @@ class InvitationPublicController extends Controller
             'mainDateFormatted' => $mainDateFormatted,
             'events'            => $eventsJs,
             'gallery'           => $gallery,
+            'coupleVideoUrl'     => (string) $contents->get('couple_video_url', ''),
             'bankAccounts'      => $bankAccounts,
             'digitalWallets'    => $wallets,
             'allowComments'     => (bool) $invitation->allow_guest_comments,

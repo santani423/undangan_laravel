@@ -234,6 +234,23 @@ html { scroll-behavior: smooth; }
 .wb-gallery-item:hover .wb-gallery-overlay { opacity: 1; }
 .wb-gallery-item:hover .wb-gallery-thumb { transform: scale(1.05); }
 
+/* Video */
+.wb-video-frame {
+  max-width: 900px;
+  margin: 0 auto;
+  aspect-ratio: 16 / 9;
+  border: 3px solid var(--wb-gold-light);
+  background: var(--wb-green);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+  overflow: hidden;
+}
+.wb-video-frame iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
 /* ── Dress Code ─────────────────────────────────────────────────────────────── */
 .wb-dresscode-bg { background: var(--wb-green); }
 .wb-dresscode-note { color: var(--wb-gold-light); font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; text-align: center; max-width: 600px; margin: 0 auto 40px; font-style: italic; line-height: 1.8; }
