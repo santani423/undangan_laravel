@@ -23,7 +23,8 @@ class InvitationPublicController extends Controller
             'settings',
             'events'         => fn($q) => $q->orderBy('display_order')->orderBy('event_date'),
             'contents',
-            'galleryPhotos'  => fn($q) => $q->where('category', 'general')->orderBy('display_order'),
+            'galleryPhotos'  => fn($q) => $q->whereIn('category', ['general', 'love_story'])->orderBy('category')->orderBy('display_order'),
+            'stories'        => fn($q) => $q->where('story_type', 'love_story')->where('is_published', true)->orderBy('display_order'),
             'digitalWallets' => fn($q) => $q->wherePivot('is_displayed', true)->orderByPivot('display_order'),
         ])
             ->where('invitation_code', $code)
@@ -108,15 +109,29 @@ class InvitationPublicController extends Controller
         ])->all();
 
         $bankAccounts = json_decode($contents->get('bank_accounts', '[]'), true) ?? [];
-        $loveStory    = json_decode($contents->get('love_story', '[]'), true) ?? [];
         $lifeJourney  = json_decode($contents->get('life_journey', '[]'), true) ?? [];
 
         // Gallery — from GalleryPhoto model (general category)
-        $gallery = $invitation->galleryPhotos->map(fn($p) => [
+        $gallery = $invitation->galleryPhotos->where('category', 'general')->map(fn($p) => [
             'url'      => asset('storage/' . $p->file_path),
             'category' => $p->category ?? 'general',
             'label'    => $p->title ?? '',
         ])->values()->all();
+
+        $storyPhotos = $invitation->galleryPhotos
+            ->where('category', 'love_story')
+            ->keyBy('display_order');
+
+        $loveStory = $invitation->stories->map(function ($story) use ($storyPhotos) {
+            $photo = $storyPhotos->get($story->display_order);
+
+            return [
+                'title' => $story->title,
+                'desc'  => $story->content,
+                'date'  => $story->story_date?->format('Y') ?? '',
+                'photo' => $photo ? asset('storage/' . $photo->file_path) : '',
+            ];
+        })->values()->all();
 
         // Settings from invitation_settings table
         $settings      = $invitation->settings;

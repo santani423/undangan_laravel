@@ -211,7 +211,18 @@ html { scroll-behavior: smooth; }
 .wb-timeline-date  { font-family: 'Cormorant Garamond', serif; color: var(--wb-gold); font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
 .wb-timeline-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--wb-green); margin-bottom: 10px; }
 .wb-timeline-desc  { font-size: 0.9rem; color: #666; line-height: 1.7; }
-.wb-timeline-photo { width: 100%; height: 80px; border-radius: 4px; margin-bottom: 12px; background-size: cover; background-position: center; }
+.wb-timeline-photo {
+  width: 100%;
+  min-height: 220px;
+  aspect-ratio: 4 / 3;
+  border-radius: 4px;
+  margin-bottom: 18px;
+  background-color: var(--wb-ivory);
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: 1px solid var(--wb-gold-light);
+}
 
 /* ── Gallery ─────────────────────────────────────────────────────────────────── */
 .wb-gallery-bg { background: white; }
@@ -383,6 +394,7 @@ html { scroll-behavior: smooth; }
   .wb-timeline-content.left,
   .wb-timeline-content.right { grid-column: 1; text-align: left; }
   .wb-timeline-dot { position: absolute; left: 0; margin: 0; }
+  .wb-timeline-photo { min-height: 180px; }
   .wb-closing-frame{ padding: 50px 30px; }
   .wb-rsvp-form    { padding: 30px 20px; }
   .wb-overlay-frame{ padding: 40px 25px; }
