@@ -5,9 +5,13 @@ import {
     ArrowLeft,
     CheckSquare,
     Download,
+    ExternalLink,
+    Image,
+    Palette,
     Pencil,
     Plus,
     Search,
+    Sliders,
     Trash2,
     UserCheck,
     UserMinus,
@@ -23,6 +27,7 @@ interface InvitationInfo {
     id: number;
     slug: string;
     title: string;
+    max_gallery_uploads: number | null;
 }
 
 interface GuestRow {
@@ -69,7 +74,23 @@ interface Props {
     invitation: InvitationInfo;
     guests: PaginatedGuests;
     stats: Stats;
+    displaySettings: DisplaySettings;
+    sliderImages: SliderImage[];
     filters: Filters;
+}
+
+interface DisplaySettings {
+    background_image: string;
+    background_color: string;
+    overlay_color: string;
+    overlay_opacity: number;
+}
+
+interface SliderImage {
+    id?: number;
+    url: string;
+    preview?: string;
+    display_order?: number;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -198,6 +219,157 @@ function StatsBar({ stats }: { stats: Stats }) {
 }
 
 // ─── Add Guest Modal ──────────────────────────────────────────────────────────
+
+function fileToDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result ?? ''));
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+function DisplaySettingsPanel({
+    invitation,
+    initialSettings,
+    initialSliderImages,
+}: {
+    invitation: InvitationInfo;
+    initialSettings: DisplaySettings;
+    initialSliderImages: SliderImage[];
+}) {
+    const [sliderImages, setSliderImages] = useState<SliderImage[]>(initialSliderImages);
+    const [backgroundImage, setBackgroundImage] = useState(initialSettings.background_image);
+    const [backgroundColor, setBackgroundColor] = useState(initialSettings.background_color);
+    const [overlayColor, setOverlayColor] = useState(initialSettings.overlay_color);
+    const [overlayOpacity, setOverlayOpacity] = useState(initialSettings.overlay_opacity);
+    const [saving, setSaving] = useState(false);
+
+    const max = invitation.max_gallery_uploads;
+    const sliderLimit = max && max > 0 ? max : null;
+    const atLimit = sliderLimit !== null && sliderImages.length >= sliderLimit;
+
+    async function handleSliderFiles(files: FileList | null) {
+        if (!files) return;
+        const remaining = sliderLimit !== null ? sliderLimit - sliderImages.length : files.length;
+        const selected = Array.from(files).slice(0, Math.max(0, remaining));
+        const next = await Promise.all(selected.map(async (file) => ({
+            url: URL.createObjectURL(file),
+            preview: await fileToDataUrl(file),
+        })));
+        setSliderImages((prev) => [...prev, ...next]);
+    }
+
+    async function handleBackgroundFile(file: File | undefined) {
+        if (!file) return;
+        setBackgroundImage(await fileToDataUrl(file));
+    }
+
+    function handleSave() {
+        setSaving(true);
+        router.patch(`/customer/invitations/${invitation.slug}/guests/display-settings`, {
+            slider_images: sliderImages.map((image, index) => ({
+                ...(image.id ? { id: image.id } : {}),
+                preview: image.preview,
+                display_order: index,
+            })),
+            background_image: backgroundImage,
+            background_color: backgroundColor,
+            overlay_color: overlayColor,
+            overlay_opacity: overlayOpacity,
+        }, {
+            preserveScroll: true,
+            onFinish: () => setSaving(false),
+        });
+    }
+
+    return (
+        <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Sliders className="size-5" />
+                    </div>
+                    <div>
+                        <h2 className="text-sm font-semibold text-foreground">Pengaturan Tampilan Buku Tamu</h2>
+                        <p className="text-xs text-muted-foreground">Atur slider, background, overlay, dan opacity untuk halaman petugas.</p>
+                    </div>
+                </div>
+                <button type="button" onClick={handleSave} disabled={saving} className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60">
+                    {saving ? 'Menyimpan...' : 'Simpan Tampilan'}
+                </button>
+            </div>
+
+            <div className="grid gap-5 lg:grid-cols-[1.15fr_.85fr]">
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                        <div>
+                            <p className="text-sm font-medium text-foreground">Upload Slider Buku Tamu</p>
+                            <p className="text-xs text-muted-foreground">
+                                Maksimal {sliderLimit ?? 'tak terbatas'} gambar mengikuti batas galeri paket. ({sliderImages.length}{sliderLimit ? `/${sliderLimit}` : ''})
+                            </p>
+                        </div>
+                        {!atLimit && (
+                            <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border px-3 py-2 text-xs font-medium text-foreground hover:bg-muted">
+                                <Image className="size-4" /> Tambah
+                                <input type="file" accept="image/*" multiple className="sr-only" onChange={(e) => { void handleSliderFiles(e.target.files); e.target.value = ''; }} />
+                            </label>
+                        )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                        {sliderImages.map((image, index) => (
+                            <div key={`${image.id ?? 'new'}-${index}`} className="group relative overflow-hidden rounded-xl border border-border bg-muted">
+                                <img src={image.url} alt="" className="aspect-[4/3] w-full object-cover" />
+                                <button type="button" onClick={() => setSliderImages((prev) => prev.filter((_, i) => i !== index))} className="absolute right-1.5 top-1.5 flex size-6 items-center justify-center rounded-full bg-black/60 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
+                                    x
+                                </button>
+                            </div>
+                        ))}
+                        {!sliderImages.length && (
+                            <div className="col-span-full rounded-xl border border-dashed border-border py-8 text-center text-xs text-muted-foreground">
+                                Belum ada slider. Tambahkan gambar untuk layar petugas.
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="space-y-4">
+                    <div>
+                        <p className="mb-2 text-sm font-medium text-foreground">Background Buku Tamu</p>
+                        <div className="grid grid-cols-[1fr_auto] gap-2">
+                            <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-border px-3 py-2 text-xs font-medium text-foreground hover:bg-muted">
+                                <Image className="size-4" /> Upload Gambar
+                                <input type="file" accept="image/*" className="sr-only" onChange={(e) => { void handleBackgroundFile(e.target.files?.[0]); e.target.value = ''; }} />
+                            </label>
+                            <label className="flex items-center gap-2 rounded-xl border border-border px-3 py-2">
+                                <Palette className="size-4 text-muted-foreground" />
+                                <input type="color" value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} className="size-7 cursor-pointer bg-transparent" />
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className="relative min-h-36 overflow-hidden rounded-xl border border-border" style={{ backgroundColor, backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                        <div className="absolute inset-0" style={{ backgroundColor: overlayColor, opacity: overlayOpacity }} />
+                        <div className="relative z-10 flex min-h-36 items-center justify-center p-4 text-center text-sm font-semibold text-white">
+                            Preview Background Buku Tamu
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <label className="space-y-1">
+                            <span className="text-xs font-medium text-foreground">Warna Overlay</span>
+                            <input type="color" value={overlayColor} onChange={(e) => setOverlayColor(e.target.value)} className="h-10 w-full cursor-pointer rounded-xl border border-border bg-background p-1" />
+                        </label>
+                        <label className="space-y-1">
+                            <span className="text-xs font-medium text-foreground">Opacity Overlay: {Math.round(overlayOpacity * 100)}%</span>
+                            <input type="range" min="0" max="1" step="0.05" value={overlayOpacity} onChange={(e) => setOverlayOpacity(Number(e.target.value))} className="h-10 w-full" />
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+}
 
 function AddGuestModal({ slug: invSlug, onClose }: { slug: string; onClose: () => void }) {
     const [form, setForm] = useState({ name: '', slug: '', email: '', phone_number: '', gender: '', category: '', notes: '' });
@@ -466,7 +638,7 @@ function GuestTableRow({ guest, slug, onEdit }: { guest: GuestRow; slug: string;
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-export default function GuestBookIndex({ invitation, guests, stats, filters }: Props) {
+export default function GuestBookIndex({ invitation, guests, stats, displaySettings, sliderImages, filters }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/customer' },
         { title: 'Undangan', href: '/customer/invitations' },
@@ -477,6 +649,7 @@ export default function GuestBookIndex({ invitation, guests, stats, filters }: P
     const [search, setSearch] = useState(filters.search ?? '');
     const [showAddModal, setShowAddModal] = useState(false);
     const [editingGuest, setEditingGuest] = useState<GuestRow | null>(null);
+    const exportStatus = filters.checked_in === 'yes' ? 'checked_in' : (filters.checked_in === 'no' ? 'not_checked_in' : '');
 
     const applyFilter = (extra: Record<string, string>) => {
         router.get(
@@ -526,11 +699,30 @@ export default function GuestBookIndex({ invitation, guests, stats, filters }: P
                         </div>
                     </div>
                     <div className="flex gap-2">
+                        <Link
+                            href={`/customer/invitations/${invitation.slug}/guests/operator`}
+                            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition-colors"
+                        >
+                            <ExternalLink className="size-4" /> Akses Buku Tamu
+                        </Link>
                         <a
                             href={`/customer/invitations/${invitation.slug}/guests/export/csv`}
                             className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
                         >
                             <Download className="size-4" /> Export CSV
+                        </a>
+                        <a
+                            href={`/customer/invitations/${invitation.slug}/guests/export/excel?status=${exportStatus}`}
+                            className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                        >
+                            <Download className="size-4" /> Excel
+                        </a>
+                        <a
+                            href={`/customer/invitations/${invitation.slug}/guests/export/pdf?status=${exportStatus}`}
+                            target="_blank"
+                            className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                        >
+                            <Download className="size-4" /> PDF
                         </a>
                         <button
                             onClick={() => setShowAddModal(true)}
@@ -543,6 +735,8 @@ export default function GuestBookIndex({ invitation, guests, stats, filters }: P
 
                 {/* Stats */}
                 <StatsBar stats={stats} />
+
+                <DisplaySettingsPanel invitation={invitation} initialSettings={displaySettings} initialSliderImages={sliderImages} />
 
                 {/* Filters */}
                 <div className="flex flex-wrap items-center gap-3">

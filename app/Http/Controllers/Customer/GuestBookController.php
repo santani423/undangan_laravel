@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\Guest;
 use App\Models\Invitation;
+use App\Models\SliderPhoto;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -52,6 +54,7 @@ class GuestBookController extends Controller
                 'id'    => $invitation->id,
                 'slug'  => $invitation->slug,
                 'title' => $invitation->title,
+                'max_gallery_uploads' => $invitation->package?->max_gallery_uploads,
             ],
             'guests'  => $guests->through(fn ($g) => [
                 'id'               => $g->id,
@@ -69,7 +72,216 @@ class GuestBookController extends Controller
                 'notes'            => $g->notes,
             ]),
             'stats'   => $stats,
+            'displaySettings' => $this->displaySettings($invitation),
+            'sliderImages' => $invitation->sliderPhotos()
+                ->orderBy('display_order')
+                ->get()
+                ->map(fn (SliderPhoto $photo) => [
+                    'id' => $photo->id,
+                    'url' => $photo->file_path ? Storage::disk('public')->url($photo->file_path) : ($photo->thumbnail_url ?? ''),
+                    'display_order' => $photo->display_order,
+                ]),
             'filters' => $request->only(['search', 'rsvp_status', 'checked_in']),
+        ]);
+    }
+
+    public function updateDisplaySettings(Request $request, Invitation $invitation): RedirectResponse
+    {
+        abort_if($invitation->user_id !== auth()->id(), 403);
+
+        $data = $request->validate([
+            'slider_images' => 'nullable|array',
+            'slider_images.*.id' => 'nullable|integer',
+            'slider_images.*.preview' => 'nullable|string',
+            'background_image' => 'nullable|string',
+            'background_color' => 'nullable|string|max:20',
+            'overlay_color' => 'nullable|string|max:20',
+            'overlay_opacity' => 'nullable|numeric|min:0|max:1',
+        ]);
+
+        $max = $invitation->package?->max_gallery_uploads;
+        $submitted = collect($data['slider_images'] ?? [])->values();
+        if ($max !== null && $max > 0) {
+            $submitted = $submitted->take($max);
+        }
+
+        $existingIds = $submitted
+            ->pluck('id')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        $invitation->sliderPhotos()
+            ->when($existingIds, fn ($q) => $q->whereNotIn('id', $existingIds))
+            ->delete();
+
+        foreach ($submitted as $index => $item) {
+            if (! empty($item['id'])) {
+                $invitation->sliderPhotos()
+                    ->where('id', (int) $item['id'])
+                    ->update(['display_order' => $index, 'is_approved' => true, 'approved_at' => now()]);
+                continue;
+            }
+
+            $preview = (string) ($item['preview'] ?? '');
+            if (str_starts_with($preview, 'data:image/')) {
+                SliderPhoto::create([
+                    'invitation_id' => $invitation->id,
+                    'file_path' => $this->saveBase64Image($preview, "invitations/{$invitation->id}/guest-book/sliders"),
+                    'display_order' => $index,
+                    'is_approved' => true,
+                    'approved_at' => now(),
+                ]);
+            }
+        }
+
+        $backgroundImage = (string) ($data['background_image'] ?? '');
+        if (str_starts_with($backgroundImage, 'data:image/')) {
+            $backgroundImage = $this->saveBase64Image($backgroundImage, "invitations/{$invitation->id}/guest-book");
+        } elseif (str_starts_with($backgroundImage, '/storage/')) {
+            $backgroundImage = ltrim(str_replace('/storage/', '', $backgroundImage), '/');
+        }
+
+        $settings = [
+            'guestbook_background_image' => $backgroundImage,
+            'guestbook_background_color' => $data['background_color'] ?? '#f8fafc',
+            'guestbook_overlay_color' => $data['overlay_color'] ?? '#000000',
+            'guestbook_overlay_opacity' => (string) ($data['overlay_opacity'] ?? '0.35'),
+        ];
+
+        foreach ($settings as $key => $value) {
+            $invitation->contents()->updateOrCreate(
+                ['content_key' => $key],
+                ['content_value' => $value, 'content_type' => str_ends_with($key, '_image') ? 'path' : 'text'],
+            );
+        }
+
+        return back()->with('success', 'Pengaturan Buku Tamu berhasil disimpan.');
+    }
+
+    public function operator(Request $request, Invitation $invitation): InertiaResponse
+    {
+        abort_if($invitation->user_id !== auth()->id(), 403);
+
+        $status = $request->query('status', '');
+        $guests = $invitation->guests()
+            ->when($status === 'checked_in', fn ($q) => $q->whereNotNull('checked_in_at'))
+            ->when($status === 'not_checked_in', fn ($q) => $q->whereNull('checked_in_at'))
+            ->orderByRaw('checked_in_at IS NULL')
+            ->orderByDesc('checked_in_at')
+            ->orderBy('name')
+            ->get();
+
+        return Inertia::render('customer/invitations/guest-book/operator', [
+            'invitation' => [
+                'id' => $invitation->id,
+                'slug' => $invitation->slug,
+                'title' => $invitation->title,
+            ],
+            'stats' => $this->buildStats($invitation),
+            'dailyStats' => $this->dailyStats($invitation),
+            'guests' => $guests->map(fn (Guest $guest) => $this->guestPayload($guest)),
+            'recentScans' => $invitation->guests()
+                ->whereNotNull('checked_in_at')
+                ->latest('checked_in_at')
+                ->limit(10)
+                ->get()
+                ->map(fn (Guest $guest) => $this->guestPayload($guest)),
+            'displaySettings' => $this->displaySettings($invitation),
+            'sliderImages' => $invitation->sliderPhotos()
+                ->approved()
+                ->orderBy('display_order')
+                ->get()
+                ->map(fn (SliderPhoto $photo) => [
+                    'id' => $photo->id,
+                    'url' => $photo->file_path ? Storage::disk('public')->url($photo->file_path) : ($photo->thumbnail_url ?? ''),
+                ]),
+            'filters' => ['status' => $status],
+        ]);
+    }
+
+    public function search(Request $request, Invitation $invitation): JsonResponse
+    {
+        abort_if($invitation->user_id !== auth()->id(), 403);
+
+        $search = trim((string) $request->query('q', ''));
+
+        $guests = $invitation->guests()
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('phone_number', 'like', "%{$search}%")
+                        ->orWhere('slug', 'like', "%{$search}%")
+                        ->orWhere('qr_code_data', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('name')
+            ->limit(20)
+            ->get()
+            ->map(fn (Guest $guest) => $this->guestPayload($guest));
+
+        return response()->json(['guests' => $guests]);
+    }
+
+    public function scan(Request $request, Invitation $invitation): JsonResponse
+    {
+        abort_if($invitation->user_id !== auth()->id(), 403);
+
+        $data = $request->validate([
+            'code' => 'required|string|max:1000',
+        ]);
+
+        $code = trim($data['code']);
+        $guest = $this->findGuestByCode($invitation, $code);
+
+        if (! $guest) {
+            return response()->json(['status' => 'not_found', 'message' => 'QR Code tidak dikenali untuk undangan ini.'], 404);
+        }
+
+        if ($guest->checked_in_at) {
+            return response()->json([
+                'status' => 'already_checked_in',
+                'message' => 'Tamu ini sudah check-in sebelumnya.',
+                'guest' => $this->guestPayload($guest),
+            ], 409);
+        }
+
+        $guest->update([
+            'checked_in_at' => now(),
+            'rsvp_status' => $guest->rsvp_status === 'pending' ? 'attending' : $guest->rsvp_status,
+        ]);
+
+        return response()->json([
+            'status' => 'checked_in',
+            'message' => 'Check-in berhasil.',
+            'guest' => $this->guestPayload($guest->fresh()),
+            'stats' => $this->buildStats($invitation),
+        ]);
+    }
+
+    public function manualCheckIn(Invitation $invitation, Guest $guest): JsonResponse
+    {
+        abort_if($invitation->user_id !== auth()->id(), 403);
+        abort_if($guest->invitation_id !== $invitation->id, 404);
+
+        if ($guest->checked_in_at) {
+            return response()->json([
+                'status' => 'already_checked_in',
+                'message' => 'Tamu ini sudah check-in sebelumnya.',
+                'guest' => $this->guestPayload($guest),
+            ], 409);
+        }
+
+        $guest->update([
+            'checked_in_at' => now(),
+            'rsvp_status' => $guest->rsvp_status === 'pending' ? 'attending' : $guest->rsvp_status,
+        ]);
+
+        return response()->json([
+            'status' => 'checked_in',
+            'message' => 'Check-in manual berhasil.',
+            'guest' => $this->guestPayload($guest->fresh()),
+            'stats' => $this->buildStats($invitation),
         ]);
     }
 
@@ -186,11 +398,53 @@ class GuestBookController extends Controller
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
 
-        $guests = $invitation->guests()->orderBy('name')->get();
+        return $this->exportSpreadsheet($invitation, 'csv');
+    }
+
+    public function exportExcel(Request $request, Invitation $invitation): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        abort_if($invitation->user_id !== auth()->id(), 403);
+
+        return $this->exportSpreadsheet($invitation, 'xls', $request->query('status', ''));
+    }
+
+    public function exportPdf(Request $request, Invitation $invitation): \Illuminate\Http\Response
+    {
+        abort_if($invitation->user_id !== auth()->id(), 403);
+
+        $status = $request->query('status', '');
+        $guests = $this->attendanceQuery($invitation, $status)->orderBy('name')->get();
+
+        $rows = $guests->map(fn (Guest $guest, int $i) => sprintf(
+            '<tr><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+            $i + 1,
+            e($guest->name),
+            e($guest->phone_number ?? ''),
+            e($guest->slug ?? ''),
+            e((string) ($guest->rsvp_headcount ?? 1)),
+            e($guest->checked_in_at?->format('d/m/Y H:i') ?? 'Belum hadir'),
+        ))->implode('');
+
+        $html = '<!doctype html><html><head><meta charset="utf-8"><title>Laporan Buku Tamu</title>'
+            . '<style>body{font-family:Arial,sans-serif;color:#111827;padding:28px}h1{margin:0 0 6px;font-size:22px}p{margin:0 0 18px;color:#6b7280}table{width:100%;border-collapse:collapse;font-size:12px}th,td{border:1px solid #d1d5db;padding:8px;text-align:left}th{background:#f3f4f6}.print{margin-bottom:18px}@media print{.print{display:none}}</style>'
+            . '</head><body><button class="print" onclick="window.print()">Print / Save PDF</button>'
+            . '<h1>Laporan Buku Tamu</h1><p>' . e($invitation->title) . ' - ' . now()->format('d/m/Y H:i') . '</p>'
+            . '<table><thead><tr><th>No</th><th>Nama</th><th>WhatsApp</th><th>Kode</th><th>Jumlah</th><th>Check-in</th></tr></thead><tbody>'
+            . $rows
+            . '</tbody></table></body></html>';
+
+        return response($html, 200, [
+            'Content-Type' => 'text/html; charset=UTF-8',
+        ]);
+    }
+
+    private function exportSpreadsheet(Invitation $invitation, string $format, string $status = ''): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $guests = $this->attendanceQuery($invitation, $status)->orderBy('name')->get();
 
         $headers = [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => "attachment; filename=\"buku-tamu-{$invitation->slug}.csv\"",
+            'Content-Type'        => $format === 'xls' ? 'application/vnd.ms-excel; charset=UTF-8' : 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"buku-tamu-{$invitation->slug}.{$format}\"",
         ];
 
         $callback = function () use ($guests) {
@@ -229,6 +483,13 @@ class GuestBookController extends Controller
         return Response::stream($callback, 200, $headers);
     }
 
+    private function attendanceQuery(Invitation $invitation, string $status = '')
+    {
+        return $invitation->guests()
+            ->when($status === 'checked_in', fn ($q) => $q->whereNotNull('checked_in_at'))
+            ->when($status === 'not_checked_in', fn ($q) => $q->whereNull('checked_in_at'));
+    }
+
     private function buildStats(Invitation $invitation): array
     {
         $guests = $invitation->guests;
@@ -242,5 +503,85 @@ class GuestBookController extends Controller
         $totalHeads  = $guests->where('rsvp_status', 'attending')->sum('rsvp_headcount') ?: $attending;
 
         return compact('total', 'attending', 'notAttending', 'maybe', 'pending', 'checkedIn', 'totalHeads');
+    }
+
+    private function dailyStats(Invitation $invitation): array
+    {
+        return $invitation->guests()
+            ->whereNotNull('checked_in_at')
+            ->orderBy('checked_in_at')
+            ->get()
+            ->groupBy(fn (Guest $guest) => $guest->checked_in_at?->format('Y-m-d') ?? '-')
+            ->map(fn ($rows, $date) => [
+                'date' => $date,
+                'label' => $date === '-' ? '-' : \Carbon\Carbon::parse($date)->translatedFormat('d M Y'),
+                'count' => $rows->count(),
+                'heads' => $rows->sum(fn (Guest $guest) => $guest->rsvp_headcount ?? 1),
+            ])
+            ->values()
+            ->all();
+    }
+
+    private function guestPayload(Guest $guest): array
+    {
+        return [
+            'id' => $guest->id,
+            'name' => $guest->name,
+            'slug' => $guest->slug,
+            'phone_number' => $guest->phone_number,
+            'category' => $guest->category,
+            'rsvp_status' => $guest->rsvp_status,
+            'rsvp_headcount' => $guest->rsvp_headcount ?? 1,
+            'checked_in_at' => $guest->checked_in_at?->toDateTimeString(),
+            'qr_code_data' => $guest->qr_code_data,
+            'notes' => $guest->notes,
+        ];
+    }
+
+    private function displaySettings(Invitation $invitation): array
+    {
+        $contents = $invitation->contents()->whereIn('content_key', [
+            'guestbook_background_image',
+            'guestbook_background_color',
+            'guestbook_overlay_color',
+            'guestbook_overlay_opacity',
+        ])->get()->keyBy('content_key');
+
+        $background = $contents->get('guestbook_background_image')?->content_value ?? '';
+
+        return [
+            'background_image' => $background ? Storage::disk('public')->url($background) : '',
+            'background_color' => $contents->get('guestbook_background_color')?->content_value ?? '#f8fafc',
+            'overlay_color' => $contents->get('guestbook_overlay_color')?->content_value ?? '#000000',
+            'overlay_opacity' => (float) ($contents->get('guestbook_overlay_opacity')?->content_value ?? 0.35),
+        ];
+    }
+
+    private function findGuestByCode(Invitation $invitation, string $code): ?Guest
+    {
+        $parts = parse_url($code);
+        if (! empty($parts['path'])) {
+            $segments = array_values(array_filter(explode('/', $parts['path'])));
+            $code = end($segments) ?: $code;
+        }
+
+        return $invitation->guests()
+            ->where(function ($query) use ($code) {
+                $query->where('qr_code_data', $code)
+                    ->orWhere('slug', $code)
+                    ->orWhere('qr_code_url', $code);
+            })
+            ->first();
+    }
+
+    private function saveBase64Image(string $dataUrl, string $directory): string
+    {
+        $parts = explode(',', $dataUrl, 2);
+        $imageData = base64_decode($parts[1] ?? '');
+        $filename = Str::uuid() . '.jpg';
+        $path = "{$directory}/{$filename}";
+        Storage::disk('public')->put($path, $imageData);
+
+        return $path;
     }
 }

@@ -37,11 +37,18 @@ Route::prefix('customer')->name('customer.')->middleware(['auth'])->group(functi
         // ── Buku Tamu ─────────────────────────────────────────────────────────
         Route::prefix('{invitation}/guests')->name('guests.')->group(function () {
             Route::get('/',                  [GuestBookController::class, 'index'])->name('index');
+            Route::get('/operator',          [GuestBookController::class, 'operator'])->name('operator');
+            Route::patch('/display-settings',[GuestBookController::class, 'updateDisplaySettings'])->name('display-settings');
+            Route::get('/search',            [GuestBookController::class, 'search'])->name('search');
+            Route::post('/scan',             [GuestBookController::class, 'scan'])->name('scan');
             Route::post('/',                 [GuestBookController::class, 'store'])->name('store');
             Route::patch('/{guest}',         [GuestBookController::class, 'update'])->name('update');
             Route::patch('/{guest}/checkin', [GuestBookController::class, 'checkIn'])->name('checkin');
+            Route::post('/{guest}/manual-checkin', [GuestBookController::class, 'manualCheckIn'])->name('manual-checkin');
             Route::delete('/{guest}',        [GuestBookController::class, 'destroy'])->name('destroy');
             Route::get('/export/csv',        [GuestBookController::class, 'export'])->name('export');
+            Route::get('/export/excel',      [GuestBookController::class, 'exportExcel'])->name('export.excel');
+            Route::get('/export/pdf',        [GuestBookController::class, 'exportPdf'])->name('export.pdf');
             Route::get('/check-slug',        [GuestBookController::class, 'checkSlug'])->name('check-slug');
         });
 

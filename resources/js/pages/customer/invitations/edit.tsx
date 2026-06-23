@@ -1485,6 +1485,12 @@ function GuestsTab({
                     <option value="yes">Sudah Check-in</option>
                     <option value="no">Belum Check-in</option>
                 </select>
+                <Link
+                    href={`/customer/invitations/${slug}/guests/operator`}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition-colors"
+                >
+                    <ExternalLink className="size-4" /> Akses Buku Tamu
+                </Link>
                 <a
                     href={`/customer/invitations/${slug}/guests/export/csv`}
                     className="inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
