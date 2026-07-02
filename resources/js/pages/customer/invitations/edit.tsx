@@ -339,6 +339,36 @@ const EVENT_TYPE_TABS: Record<string, TabKey[]> = {
 
 const DEFAULT_TABS: TabKey[] = ['info', 'gallery'];
 
+const CHILD_ORDER_FIELD_KEYS = new Set(['groom_child_order', 'bride_child_order']);
+
+function isChildOrderFieldKey(fieldKey: string): boolean {
+    return CHILD_ORDER_FIELD_KEYS.has(fieldKey);
+}
+
+function getChildOrderInputValue(value: string): string {
+    return value.match(/\d+/)?.[0] ?? '';
+}
+
+function normalizeFieldValuesForSubmit(values: Record<string, string>): Record<string, string> {
+    const normalized = { ...values };
+
+    CHILD_ORDER_FIELD_KEYS.forEach((fieldKey) => {
+        const rawValue = normalized[fieldKey];
+        if (rawValue === undefined) return;
+
+        const inputValue = getChildOrderInputValue(rawValue);
+        const childOrder = inputValue ? Number.parseInt(inputValue, 10) : NaN;
+
+        if (Number.isInteger(childOrder) && childOrder >= 1 && childOrder <= 50) {
+            normalized[fieldKey] = String(childOrder);
+        } else {
+            delete normalized[fieldKey];
+        }
+    });
+
+    return normalized;
+}
+
 const WEDDING_TAB_FIELDS: Record<string, string[]> = {
     couple: [
         'groom_name', 'groom_nickname', 'groom_child_order', 'groom_photo', 'groom_father', 'groom_mother', 'groom_instagram',
@@ -644,6 +674,8 @@ function SummaryBar({ theme, pkg }: { theme: Theme; pkg: PackageItem }) {
 // ─── FieldInput ───────────────────────────────────────────────────────────────
 
 function FieldInput({ field, value, onChange }: { field: EventTypeField; value: string; onChange: (val: string) => void }) {
+    const isChildOrderField = isChildOrderFieldKey(field.field_key);
+    const inputValue = isChildOrderField ? getChildOrderInputValue(value) : value;
     const base = 'w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition';
 
     if (field.field_type === 'textarea') {
@@ -669,7 +701,20 @@ function FieldInput({ field, value, onChange }: { field: EventTypeField; value: 
             />
         );
     }
-    return <input type={field.field_type === 'date' ? 'date' : 'text'} placeholder={field.placeholder ?? ''} value={value} onChange={(e) => onChange(e.target.value)} className={base} />;
+    return (
+        <input
+            type={field.field_type === 'date' ? 'date' : (field.field_type === 'number' || isChildOrderField ? 'number' : 'text')}
+            placeholder={isChildOrderField ? 'Contoh: 1' : (field.placeholder ?? '')}
+            value={inputValue}
+            onChange={(e) => onChange(isChildOrderField ? getChildOrderInputValue(e.target.value) : e.target.value)}
+            min={isChildOrderField ? 1 : undefined}
+            max={isChildOrderField ? 50 : undefined}
+            step={isChildOrderField ? 1 : undefined}
+            inputMode={isChildOrderField ? 'numeric' : undefined}
+            pattern={isChildOrderField ? '[0-9]*' : undefined}
+            className={base}
+        />
+    );
 }
 
 function FieldGroup({ fields, values, onChange }: { fields: EventTypeField[]; values: Record<string, string>; onChange: (k: string, v: string) => void }) {
@@ -3268,7 +3313,7 @@ export default function InvitationsEdit({
         setSubmitting(true);
         router.patch(`/customer/invitations/${invitation.slug}`, {
             status,
-            field_values:  fieldValues,
+            field_values:  normalizeFieldValuesForSubmit(fieldValues),
             acara_events:  acaraEvents.map((ev) => ({
                 name:             ev.name,
                 date:             ev.date,

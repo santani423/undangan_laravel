@@ -2,10 +2,21 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
 
 class StoreInvitationRequest extends FormRequest
 {
+    protected function failedValidation(Validator $validator)
+    {
+        Log::error('StoreInvitationRequest validation failed', [
+            'errors' => $validator->errors()->toArray(),
+        ]);
+
+        parent::failedValidation($validator);
+    }
+
     protected $dontFlash = [
         'field_values',
         'gallery_items',

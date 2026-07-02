@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/xampp8-2/mysql/bin/**)",
+      "Read(//c/xampp8-2/mysql/**)",
+      "Bash(grep -n \"^max_execution_time\\\\|^max_input_time\\\\|^memory_limit\\\\|^post_max_size\\\\|^upload_max_filesize\\\\|^max_file_uploads\\\\|^;max_input_vars\\\\|^max_input_vars\\\\|^;max_multipart_body_parts\\\\|^max_multipart_body_parts\" \"/c/xampp8-2/php/php.ini\")",
+      "Read(//c/xampp8-2/php/**)",
+      "Bash(sed -i -e s/^max_execution_time=120/max_execution_time=300/ -e s/^max_input_time=60/max_input_time=300/ -e 's/^;max_input_vars = 1000/max_input_vars=10000/' -e 's/^;max_multipart_body_parts = 1500/max_multipart_body_parts=12000/' -e s/^memory_limit=256M/memory_limit=512M/ -e s/^post_max_size=64M/post_max_size=150M/ -e s/^upload_max_filesize=64M/upload_max_filesize=100M/ -e s/^max_file_uploads=20/max_file_uploads=50/ php.ini)",
+      "Bash(/c/xampp8-2/xampp_stop.exe)",
+      "Bash(/c/xampp8-2/apache_stop.bat)",
+      "Bash(/c/xampp8-2/apache_start.bat)",
+      "Bash(powershell -Command \"Get-Process httpd -ErrorAction SilentlyContinue | Select-Object Id,StartTime\")",
+      "Bash(powershell -Command \"Get-Process mysqld -ErrorAction SilentlyContinue | Select-Object Id,StartTime\")",
+      "Bash(tail -n 30 \"/c/xampp8-2/mysql/data/mysql_error.log\" 2>/dev/null)",
+      "Read(//c/xampp8-2/mysql/data/**)"
+    ],
+    "additionalDirectories": [
+      "C:\\xampp8-2\\mysql\\bin"
+    ]
+  }
+}
