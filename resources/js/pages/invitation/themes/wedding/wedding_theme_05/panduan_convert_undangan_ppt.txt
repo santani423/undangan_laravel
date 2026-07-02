@@ -1,0 +1,95 @@
+================================================================================
+PANDUAN & PROMPT: CONVERT TEMPLATE PPT UNDANGAN MENJADI WEBSITE UNDANGAN DIGITAL 3D
+================================================================================
+
+Dokumen ini berisi panduan teknis, langkah-langkah ekstraksi aset, dan instruksi 
+pemrograman untuk mereplikasi berkas PowerPoint (.pptx) undangan pernikahan portrait 
+menjadi website undangan digital interaktif dengan efek amplop surat 3D, musik latar, 
+dan fitur-fitur modern lainnya.
+
+--------------------------------------------------------------------------------
+LANGKAH 1: EKSTRAKSI ASET DARI TEMPLATE PPTX
+--------------------------------------------------------------------------------
+1. Ekstraksi Gambar & Audio:
+   - Ubah ekstensi berkas undangan dari `.pptx` menjadi `.zip`.
+   - Ekstrak berkas zip tersebut.
+   - Aset gambar (foto pasangan, ikon) dan musik latar terletak di folder:
+     `[ekstrak_folder]/ppt/media/`
+   - Salin file audio (biasanya bernama `media1.mp3`) dan foto-foto utama 
+     pasangan (seperti `image52.jpeg` dan `image55.jpeg`) ke folder `assets/` project.
+
+2. Ekstraksi Render Slide (Untuk Background & Denah Lokasi):
+   - Buka PowerPoint, klik "Save As" (Simpan Sebagai), pilih format "PNG", lalu 
+     pilih "All Slides" (Semua Slide).
+   - Slide beresolusi tinggi ini digunakan sebagai referensi visual utama atau 
+     diintegrasikan langsung (misal: slide denah lokasi pesta dapat dipasang sebagai 
+     gambar denah asli di halaman website).
+
+--------------------------------------------------------------------------------
+LANGKAH 2: IMPLEMENTASI DESAIN VISUAL & IDENTITAS TEMPLATE (CSS VARIABLES)
+--------------------------------------------------------------------------------
+Tentukan warna dan tipografi dasar pada file CSS sesuai template asli:
+- Background utama: Krem hangat / Off-White (`#FDFBF7`)
+- Warna brand utama: Hijau Zaitun / Forest Green (`#3B6B35` / `#223D1E`)
+- Warna aksen: Emas Klasik (`#C5A059`)
+- Font Google Web Fonts:
+  - Cursive Script (Nama Pengantin): 'Parisienne' atau 'Great Vibes'
+  - Serif (Judul / H1): 'Cinzel' atau 'Playfair Display'
+  - Sans-Serif (Teks Tubuh/Body): 'Montserrat' atau 'Inter'
+- Ornamen Khusus:
+  - Gunakan frame kartu bergaris emas tipis ganda.
+  - Pasang gambar daun botanical watercolor secara absolut di sudut-sudut kartu.
+  - Frame foto pengantin berbentuk oval vertikal (*vertical oval border-radius: 80px / 115px*).
+
+--------------------------------------------------------------------------------
+LANGKAH 3: STRUKTUR STRUKTUR HALAMAN WEBSITE (HTML & SECTION)
+--------------------------------------------------------------------------------
+Website harus terbagi menjadi komponen-komponen berikut:
+
+1. 3D Envelope Preloader (Layar Pembuka Pertama)
+   - Tampilan pembuka berbentuk amplop surat 3D realistis berlatar belakang gelap elegan.
+   - Menggunakan CSS 3D Transforms (`perspective`, `preserve-3d`).
+   - Wax Seal (Segel Lilin) emas berbentuk hati di bagian tengah sebagai tombol interaktif.
+   - Kartu surat di dalam amplop menampilkan nama tamu dinamis yang diambil dari parameter URL `?to=Nama+Tamu`.
+   - Efek Animasi: Ketika segel lilin/tombol "Buka Undangan" diklik:
+     * Flap penutup atas amplop melipat ke atas secara 3D (`transform: rotateX(180deg)`).
+     * Kartu undangan meluncur ke atas keluar dari amplop.
+     * Musik latar (`media1.mp3`) mulai berputar secara otomatis.
+     * Layar pembuka memudar dan bergeser ke atas untuk menampilkan isi undangan utama.
+
+2. Desktop Split-Screen Layout (Adaptasi Responsif Premium)
+   - Pada layar Desktop (min-width: 1025px):
+     * Layar dibagi 2 (Split screen).
+     * Sisi Kiri: Banner cover statis berlatar belakang foto pasangan penuh, judul nama, tanggal, dan partikel animasi daun yang berjatuhan secara lembut.
+     * Sisi Kanan: Panel gulir (*scroll container*) yang mensimulasikan rasio ponsel (mobile viewport) berisi isi undangan lengkap.
+   - Pada layar Mobile/Tablet:
+     * Menjadi satu halaman penuh yang digulirkan secara vertikal dari atas ke bawah untuk kenyamanan pengguna.
+
+3. Fitur Utama & Bagian Undangan (Right Panel):
+   - Hero Section: Cover utama, judul, foto oval pasangan, tanggal acara.
+   - Verse Section: Kutipan QS. Ar-Ruum: 21 atau ayat pernikahan lainnya.
+   - Couple Section: Profil lengkap mempelai pria dan wanita, nama orang tua, foto profil oval masing-masing mempelai.
+   - Event Section: Informasi Akad Nikah & Resepsi (hari, tanggal, jam, alamat lengkap) dalam bentuk kartu bergaris emas tipis.
+   - Alamat & Maps: Menampilkan gambar denah schematic asli dari PPT slide 6, peta interaktif Google Maps (iframe), dan tombol navigasi arah GPS ke lokasi.
+   - Love Story Timeline: Rangkaian sejarah hubungan pasangan menggunakan garis lurus emas vertikal dengan titik dot hijau, beranimasi saat digulir masuk ke layar (*animate on scroll*).
+   - Gallery Section: Galeri foto masonry responsif yang dapat dibuka dalam modal Lightbox (layar hitam penuh) saat diklik untuk memperbesar gambar.
+   - Dress Code Section: Rekomendasi warna pakaian tamu berupa lingkaran-lingkaran palet warna (Sage Green, Olive, Cream, Emerald) dengan petunjuk pakaian formal/batik.
+   - Digital Wallet (Kado): Kartu rekening Bank & E-Wallet beserta tombol "Salin Nomor Rekening/Nomor HP" satu-klik yang memberikan respons tulisan "Berhasil Disalin!".
+   - RSVP Form: Input nama tamu, nomor WhatsApp, jumlah rombongan, status kehadiran, dan doa restu. Menyerahkan formulir akan memicu pembuatan teks berformat khusus yang langsung dialihkan ke obrolan WhatsApp pengantin.
+   - Guest wishes (Buku Tamu): Formulir kirim ucapan instan. Ketika dikirim, ucapan langsung ditambahkan ke bagian atas daftar komentar secara langsung menggunakan `localStorage` tanpa perlu reload halaman.
+   - Penutup: Wassalamu'alaikum, ucapan terima kasih keluarga besar, dan footer hak cipta.
+
+--------------------------------------------------------------------------------
+LANGKAH 4: IMPLEMENTASI ANIMASI & EVENT HANDLER (JAVASCRIPT)
+--------------------------------------------------------------------------------
+1. Dynamic Name Reader:
+   Gunakan `URLSearchParams` untuk membaca parameter URL `to` dan memasukkannya ke elemen nama tamu di amplop.
+2. 3D Envelope Animation:
+   Tambahkan kelas `.open` ke pembungkus amplop ketika tombol/segel diklik. Atur penundaan waktu (*setTimeout*) 1.8 detik sebelum menyembunyikan kontainer amplop dan memulai musik latar belakang agar transisi 3D selesai bergulir sempurna.
+3. Floating Music Controller:
+   Sediakan tombol melayang berbentuk lingkaran di pojok kanan bawah dengan ikon pemutar musik yang berputar ketika musik aktif. Memungkinkan tamu mematikan/menghidupkan musik secara manual.
+4. Custom Animate-on-Scroll:
+   Gunakan deteksi `getBoundingClientRect().top` di event scroll untuk memberikan kelas `.animated` pada elemen-elemen yang memiliki kelas `.animate-on-scroll` saat masuk ke area pandang (viewport) agar muncul perlahan dari bawah ke atas.
+5. Copy Clipboard Utility:
+   Gunakan `navigator.clipboard.writeText` untuk menyalin nomor rekening dengan visual feedback instan (tombol berubah warna menjadi hijau dengan teks "Berhasil Disalin!" selama 2 detik).
+================================================================================

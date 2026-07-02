@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Undangan Pernikahan: Putri & Putra</title>
+  <!-- FontAwesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Core stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 3D Envelope Preloader Overlay -->
+  <div class="envelope-overlay">
+    <div class="envelope-wrapper">
+      <div class="envelope">
+        <div class="envelope-flap top"></div>
+        <div class="envelope-flap left"></div>
+        <div class="envelope-flap right"></div>
+        <div class="envelope-flap bottom"></div>
+        
+        <!-- Wax Seal (Click target to open) -->
+        <div class="wax-seal"></div>
+
+        <!-- Invitation Letter Card Inside -->
+        <div class="envelope-card">
+          <div>
+            <h3>Undangan Pernikahan</h3>
+            <h1>Putri &amp; Putra</h1>
+            <div class="to-text">Kepada Yth. Bapak/Ibu/Saudara/i:</div>
+            <div class="guest-name">Tamu Undangan</div>
+          </div>
+          <div>
+            <button class="btn-open" type="button">Buka Undangan</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Background Music Player -->
+  <div class="audio-controller">
+    <i class="fa-solid fa-music"></i>
+  </div>
+
+  <!-- Application Container (Desktop Split / Mobile Scroll) -->
+  <div class="app-container">
+
+    <!-- Left Panel: Cover Static (Desktop Only) -->
+    <div class="desktop-cover">
+      <div class="desktop-cover-content">
+        <p class="cursive" style="font-size: 1.8rem; color: var(--accent-gold);">The Wedding of</p>
+        <h1 class="serif">Putri &amp; Putra</h1>
+        <div class="date">Sabtu, 14 September 2019</div>
+        <p style="margin-top: 30px; font-size: 0.9rem; letter-spacing: 1px; color: rgba(255,255,255,0.7);">
+          Gunakan perangkat mobile atau scroll panel kanan untuk melihat isi undangan.
+        </p>
+      </div>
+    </div>
+
+    <!-- Right Panel: Scrollable Content (Mobile & Desktop View) -->
+    <div class="main-invitation">
+
+      <!-- 1. Hero Section -->
+      <section class="section hero-section" id="hero">
+        <div class="gold-card-frame">
+          <div class="leaf-decor top-left"></div>
+          <div class="leaf-decor top-right"></div>
+          <div class="leaf-decor bottom-left"></div>
+          <div class="leaf-decor bottom-right"></div>
+
+          <div class="hero-title-sub serif">Undangan Pernikahan</div>
+          <h1 class="hero-names cursive">Putri &amp; Putra</h1>
+          
+          <!-- Couple Portrait Image from PPT -->
+          <div class="hero-photo-frame">
+            <img src="assets/image55.jpeg" alt="Putri & Putra">
+          </div>
+
+          <div class="hero-date serif">Sabtu, 14 September 2019</div>
+        </div>
+      </section>
+
+      <!-- 2. Quran Verse Section -->
+      <section class="section verse-section animate-on-scroll">
+        <div class="section-inner">
+          <h3 class="cursive" style="font-size: 2rem;">QS. Ar-Ruum : 21</h3>
+          <p class="verse-text">
+            "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu isteri-isteri dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya, dan dijadikan-Nya diantaramu rasa kasih dan sayang. Sesungguhnya yang demikian itu benar-benar terdapat tanda-tanda bagi kaum yang berfikir."
+          </p>
+        </div>
+      </section>
+
+      <!-- 3. Couple Section -->
+      <section class="section couple-section" id="couple">
+        <div class="section-inner text-center">
+          
+          <div class="gold-card-frame animate-on-scroll">
+            <div class="leaf-decor top-left"></div>
+            <div class="leaf-decor bottom-right"></div>
+
+            <p style="font-size: 0.9rem; margin-bottom: 20px; font-weight: 500;">
+              Assalamu'alaikum Warahmatullahi Wabarakatuh
+            </p>
+            <p class="verse-text" style="font-size: 0.9rem; margin-bottom: 30px;">
+              Maha Suci Allah Azza Wa Jalla yang telah menciptakan makhluk-Nya berpasang-pasangan. Ya Allah, berkahilah pernikahan putra-putri kami:
+            </p>
+
+            <!-- Bride Profile -->
+            <div class="couple-profile">
+              <div class="couple-photo-frame">
+                <img src="assets/image52.jpeg" alt="Putri Aisyah">
+              </div>
+              <h2 class="couple-name serif">Putri Aisyah</h2>
+              <p class="couple-parents">
+                Putri dari<br>
+                <strong>Bapak Dody &amp; Ibu Aisyah</strong>
+              </p>
+            </div>
+
+            <div class="ampersand-divider cursive">&amp;</div>
+
+            <!-- Groom Profile -->
+            <div class="couple-profile">
+              <div class="couple-photo-frame">
+                <img src="assets/image55.jpeg" alt="Putra Sulung">
+              </div>
+              <h2 class="couple-name serif">Putra Sulung</h2>
+              <p class="couple-parents">
+                Putra Sulung dari<br>
+                <strong>Bapak Sugeng &amp; Ibu Susi</strong>
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 4. Event Section -->
+      <section class="section event-section" id="events">
+        <div class="section-inner text-center">
+          <h2 class="serif animate-on-scroll" style="margin-bottom: 30px; font-size: 1.8rem; color: var(--dark-green);">
+            Waktu &amp; Tempat Acara
+          </h2>
+
+          <p class="animate-on-scroll" style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px;">
+            Dengan memohon rahmat dan ridho Allah SWT, kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara pernikahan kami pada:
+          </p>
+
+          <!-- Akad Card -->
+          <div class="event-card animate-on-scroll">
+            <div class="event-icon">
+              <i class="fa-solid fa-ring"></i>
+            </div>
+            <h3 class="event-title serif">AKAD NIKAH</h3>
+            <ul class="event-details">
+              <li><strong>Sabtu, 14 September 2019</strong></li>
+              <li>Pukul 09.00 WIB s/d Selesai</li>
+              <li>Tempat: Kediaman Mempelai Wanita</li>
+              <li>Jl. Jendral Sudirman I, Petapahan, Kampar, Riau</li>
+            </ul>
+          </div>
+
+          <!-- Resepsi Card -->
+          <div class="event-card animate-on-scroll">
+            <div class="event-icon">
+              <i class="fa-solid fa-cake-candles"></i>
+            </div>
+            <h3 class="event-title serif">RESEPSI</h3>
+            <ul class="event-details">
+              <li><strong>Sabtu, 14 September 2019</strong></li>
+              <li>Pukul 11.00 WIB s/d Selesai</li>
+              <li>Tempat: Kediaman Mempelai Wanita</li>
+              <li>Jl. Jendral Sudirman I, Petapahan, Kampar, Riau</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Alamat & Maps Section -->
+      <section class="section map-section animate-on-scroll" id="location">
+        <div class="section-inner">
+          <h2 class="serif" style="margin-bottom: 10px; font-size: 1.8rem; color: var(--dark-green);">
+            Lokasi Acara
+          </h2>
+          <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 25px;">
+            Berikut adalah peta lokasi pernikahan kami (Jl. Jendral Sudirman I, Petapahan):
+          </p>
+
+          <!-- PPT Original Schematic Map Display -->
+          <h3 class="serif" style="font-size: 1rem; color: var(--accent-gold-dark); margin-bottom: 10px;">
+            Denah Lokasi (PPT Template)
+          </h3>
+          <img src="slide_images/slide6.png" alt="Denah Lokasi Pesta" class="schematic-map">
+
+          <!-- Interactive Google Map Embed -->
+          <div class="map-embed">
+            <iframe 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15958.826723223013!2d101.07727196653133!3d0.8261314981146747!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31d4f20dc2744747%3A0x6b24d777d07c0e5a!2sPetapahan%2C%20Kec.%20Tapung%2C%20Kabupaten%20Kampar%2C%20Riau!5e0!3m2!1sid!2sid!4v1700000000000!5m2!1sid!2sid" 
+              width="100%" 
+              height="100%" 
+              style="border:0;" 
+              allowfullscreen="" 
+              loading="lazy" 
+              referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+          </div>
+
+          <a href="https://maps.app.goo.gl/tH7zP5oU11bJ6u586" target="_blank" class="btn-gold">
+            <i class="fa-solid fa-map-location-dot"></i> Petunjuk Navigasi GPS
+          </a>
+        </div>
+      </section>
+
+      <!-- 5. Love Story Timeline Section -->
+      <section class="section timeline-section" id="story">
+        <div class="section-inner text-center">
+          <h2 class="serif animate-on-scroll" style="margin-bottom: 15px; font-size: 1.8rem; color: var(--dark-green);">
+            Kisah Cinta Kami
+          </h2>
+          <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 30px;">
+            Perjalanan cinta kami hingga menuju gerbang pernikahan:
+          </p>
+
+          <div class="timeline">
+            <!-- Timeline Item 1 -->
+            <div class="timeline-item animate-on-scroll">
+              <div class="timeline-dot"></div>
+              <div class="timeline-content">
+                <div class="timeline-date">10 Oktober 2017</div>
+                <h4 class="timeline-title serif">Awal Pertemuan</h4>
+                <p class="timeline-text">
+                  Pertama kali dipertemukan di bangku kuliah, berawal dari tugas kelompok yang akhirnya mempertemukan pandangan pertama kami.
+                </p>
+              </div>
+            </div>
+
+            <!-- Timeline Item 2 -->
+            <div class="timeline-item animate-on-scroll">
+              <div class="timeline-dot"></div>
+              <div class="timeline-content">
+                <div class="timeline-date">15 Juni 2018</div>
+                <h4 class="timeline-title serif">Menjalin Komitmen</h4>
+                <p class="timeline-text">
+                  Setelah setahun saling mengenal dan berbagi cerita, kami berkomitmen untuk melangkah bersama ke arah hubungan yang lebih serius.
+                </p>
+              </div>
+            </div>
+
+            <!-- Timeline Item 3 -->
+            <div class="timeline-item animate-on-scroll">
+              <div class="timeline-dot"></div>
+              <div class="timeline-content">
+                <div class="timeline-date">14 April 2019</div>
+                <h4 class="timeline-title serif">Pertunangan (Lamaran)</h4>
+                <p class="timeline-text">
+                  Keluarga besar kami saling bertemu secara resmi untuk merencanakan pernikahan. Cincin pertunangan disematkan sebagai janji suci kami.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. Gallery Section -->
+      <section class="section gallery-section" id="gallery">
+        <div class="section-inner text-center">
+          <h2 class="serif animate-on-scroll" style="margin-bottom: 15px; font-size: 1.8rem; color: var(--dark-green);">
+            Galeri Foto Kami
+          </h2>
+          <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 25px;">
+            Momen-momen indah kebersamaan kami:
+          </p>
+
+          <div class="gallery-grid animate-on-scroll">
+            <div class="gallery-item">
+              <img src="assets/image55.jpeg" alt="Couple Photoshoot 1">
+            </div>
+            <div class="gallery-item">
+              <img src="assets/image52.jpeg" alt="Couple Photoshoot 2">
+            </div>
+            <div class="gallery-item">
+              <img src="slide_images/slide1.png" alt="Cover Slide Design">
+            </div>
+            <div class="gallery-item">
+              <img src="slide_images/slide3.png" alt="Couple Profiles Slide Design">
+            </div>
+            <div class="gallery-item">
+              <img src="slide_images/slide4.png" alt="Event Slide Design">
+            </div>
+            <div class="gallery-item">
+              <img src="slide_images/slide5.png" alt="Wishes Slide Design">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Lightbox Modal popup -->
+      <div id="lightbox" class="lightbox-modal">
+        <div class="lightbox-content">
+          <button class="lightbox-close">&times;</button>
+          <img id="lightbox-img" src="" alt="Zoomed Photo">
+        </div>
+      </div>
+
+      <!-- 7. Dress Code Section -->
+      <section class="section dresscode-section animate-on-scroll" id="dresscode">
+        <div class="section-inner text-center">
+          <h2 class="serif" style="margin-bottom: 15px; font-size: 1.8rem; color: var(--dark-green);">
+            Dress Code Tamu
+          </h2>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">
+            Demi keselarasan acara dan keindahan dokumentasi, para tamu undangan direkomendasikan mengenakan pakaian dengan nuansa warna berikut:
+          </p>
+
+          <div class="dress-code-box">
+            <div class="dress-code-palette">
+              <div class="color-dot dot-sage" title="Sage Green"></div>
+              <div class="color-dot dot-olive" title="Olive Green"></div>
+              <div class="color-dot dot-cream" title="Cream / Gold"></div>
+              <div class="color-dot dot-emerald" title="Emerald Green"></div>
+            </div>
+            <p style="font-size: 0.85rem; font-weight: 600; color: var(--dark-green);">
+              Rekomendasi: Pakaian Batik atau Casual Formal Bernuansa Hijau/Emas/Krem.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8. Digital Wallet / Gift Section -->
+      <section class="section gift-section animate-on-scroll" id="gift">
+        <div class="section-inner text-center">
+          <h2 class="serif" style="margin-bottom: 15px; font-size: 1.8rem; color: var(--dark-green);">
+            Kado Digital / Amplop
+          </h2>
+          <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 25px;">
+            Bagi Bapak/Ibu/Saudara/i yang ingin mengirimkan kado digital atau tanda kasih, dapat mentransfer melalui rekening berikut:
+          </p>
+
+          <!-- Bank Account 1 -->
+          <div class="wallet-card">
+            <div class="wallet-bank-name">BANK MANDIRI</div>
+            <div class="wallet-number" id="acc-mandiri">1234567890</div>
+            <div class="wallet-holder">a.n. PUTRI AISYAH</div>
+            <button class="btn-copy" id="btn-copy-mandiri" onclick="copyToClipboard('btn-copy-mandiri', '1234567890')">
+              <i class="fa-regular fa-copy"></i> Salin Rekening
+            </button>
+          </div>
+
+          <!-- Bank Account 2 / E-Wallet -->
+          <div class="wallet-card">
+            <div class="wallet-bank-name">E-WALLET DANA / GOPAY</div>
+            <div class="wallet-number" id="acc-dana">081234567890</div>
+            <div class="wallet-holder">a.n. PUTRA SULUNG</div>
+            <button class="btn-copy" id="btn-copy-dana" onclick="copyToClipboard('btn-copy-dana', '081234567890')">
+              <i class="fa-regular fa-copy"></i> Salin Nomor E-Wallet
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9. RSVP Section -->
+      <section class="section rsvp-section" id="rsvp">
+        <div class="section-inner text-center">
+          
+          <div class="gold-card-frame animate-on-scroll">
+            <div class="leaf-decor top-left"></div>
+            <div class="leaf-decor bottom-right"></div>
+
+            <h2 class="serif" style="margin-bottom: 10px; font-size: 1.8rem; color: var(--dark-green);">
+              Konfirmasi Kehadiran
+            </h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 25px;">
+              Mohon konfirmasikan kehadiran Anda melalui form RSVP di bawah ini:
+            </p>
+
+            <form id="rsvp-form">
+              <div class="form-group">
+                <label for="rsvp-name">Nama Tamu</label>
+                <input type="text" id="rsvp-name" class="form-control" placeholder="Contoh: Budi Wijaya" required>
+              </div>
+
+              <div class="form-group">
+                <label for="rsvp-phone">Nomor WhatsApp</label>
+                <input type="tel" id="rsvp-phone" class="form-control" placeholder="Contoh: 0812XXXXXXXX" required>
+              </div>
+
+              <div class="form-group">
+                <label for="rsvp-guests">Jumlah Tamu</label>
+                <select id="rsvp-guests" class="form-control form-select">
+                  <option value="1">1 Orang</option>
+                  <option value="2">2 Orang</option>
+                  <option value="3">3 Orang</option>
+                  <option value="4">4 Orang</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="rsvp-attendance">Status Kehadiran</label>
+                <select id="rsvp-attendance" class="form-control form-select">
+                  <option value="Hadir">Hadir</option>
+                  <option value="Tidak Hadir">Tidak Hadir</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="rsvp-notes">Ucapan / Pesan Tambahan</label>
+                <textarea id="rsvp-notes" class="form-control" rows="3" placeholder="Tulis ucapan selamat Anda..."></textarea>
+              </div>
+
+              <button type="submit" class="btn-gold" style="width: 100%; justify-content: center;">
+                <i class="fa-brands fa-whatsapp"></i> Kirim Konfirmasi RSVP
+              </button>
+            </form>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 10. Comment / Wish Section -->
+      <section class="section wishes-section" id="wishes">
+        <div class="section-inner text-center">
+          <h2 class="serif animate-on-scroll" style="margin-bottom: 10px; font-size: 1.8rem; color: var(--dark-green);">
+            Doa &amp; Ucapan Tamu
+          </h2>
+          <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 25px;">
+            Kirimkan doa restu Anda kepada kedua mempelai:
+          </p>
+
+          <!-- Form Kirim Ucapan -->
+          <form id="wish-form" class="animate-on-scroll text-left">
+            <div class="form-group">
+              <label for="wish-name">Nama Pengirim</label>
+              <input type="text" id="wish-name" class="form-control" placeholder="Tulis nama Anda" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="wish-status">Konfirmasi Kehadiran</label>
+              <select id="wish-status" class="form-control form-select">
+                <option value="Hadir">Hadir</option>
+                <option value="Tidak Hadir">Tidak Hadir</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="wish-message">Pesan &amp; Doa Restu</label>
+              <textarea id="wish-message" class="form-control" rows="3" placeholder="Tuliskan ucapan dan doa terbaik Anda..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn-gold" style="width: 100%; justify-content: center;">
+              <i class="fa-regular fa-paper-plane"></i> Kirim Doa Restu
+            </button>
+          </form>
+
+          <!-- List Ucapan -->
+          <div class="wishes-container animate-on-scroll" id="wishes-container">
+            <!-- Wishes will be injected here dynamically by script.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 11. Penutup & Footer -->
+      <section class="section closing-section" id="closing">
+        <div class="section-inner">
+          <p class="cursive" style="font-size: 2rem; margin-bottom: 15px;">Wassalamu'alaikum Warahmatullahi Wabarakatuh</p>
+          <p>
+            Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan do'a restu kepada kedua mempelai.
+          </p>
+          <p style="margin-top: 15px;">
+            Atas kehadiran dan do'a restunya kami ucapkan terima kasih yang sebesar-besarnya.
+          </p>
+
+          <h2 class="closing-names cursive">Putri &amp; Putra</h2>
+
+          <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-top: 30px;">
+            Kami yang berbahagia,<br>
+            Kel. Bapak Dody &amp; Ibu Aisyah<br>
+            Kel. Bapak Sugeng &amp; Ibu Susi
+          </p>
+
+          <footer class="footer">
+            &copy; 2026 Putri &amp; Putra Wedding Invitation. All rights reserved. Created with Love.
+          </footer>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Main JavaScript File -->
+  <script src="script.js"></script>
+</body>
+</html>
