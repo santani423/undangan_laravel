@@ -8,6 +8,8 @@ import { Head } from '@inertiajs/react';
 import { useEffect } from 'react';
 import BirthdayStarryNight from './themes/birthday/BirthdayStarryNight';
 import WeddingBase from './themes/wedding/blossom-garden/WeddingBase';
+import WeddingTheme01 from './themes/wedding/wedding_theme_01/WeddingTheme01';
+import WeddingTheme02 from './themes/wedding/wedding_theme_02/WeddingTheme02';
 
 interface Props {
     invitation: InvitationData;
@@ -38,6 +40,24 @@ function resolveThemeComponent(
         case 'rustic-charm':
             return (
                 <WeddingBase
+                    invitation={invitation as WeddingInvitation}
+                    visitor={visitor}
+                    greeting={invitation.greeting}
+                />
+            );
+
+        case 'wedding_theme_01':
+            return (
+                <WeddingTheme01
+                    invitation={invitation as WeddingInvitation}
+                    visitor={visitor}
+                    greeting={invitation.greeting}
+                />
+            );
+
+        case 'wedding_theme_02':
+            return (
+                <WeddingTheme02
                     invitation={invitation as WeddingInvitation}
                     visitor={visitor}
                     greeting={invitation.greeting}
