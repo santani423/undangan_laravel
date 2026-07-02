@@ -93,6 +93,20 @@ class ThemeSeeder extends Seeder
                 'price'           => 0,
                 'usage_count'     => 0,
             ],
+            [
+                'name'            => 'Romantic Blush',
+                'slug'            => 'wedding_theme_03',
+                'description'     => 'Nuansa blush rose dan emas dengan gaya script romantis.',
+                'category'        => 'Romantis',
+                'event_type'      => 'wedding',
+                'color_primary'   => '#c47c6b',
+                'color_secondary' => '#faf6f0',
+                'tags'            => ['blush', 'rose', 'romantis'],
+                'is_premium'      => false,
+                'is_exclusive'    => false,
+                'price'           => 0,
+                'usage_count'     => 0,
+            ],
         ];
     }
 

@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>The Wedding of Putra & Ayu</title>
+    <meta
+      name="description"
+      content="Website undangan pernikahan digital Putra dan Ayu, direplikasi dari template PPT bernuansa floral teal dan gold."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Great+Vibes&family=Montserrat:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="invitationGate" class="gate" aria-label="Cover undangan">
+      <img class="gate-flower gate-flower-left" src="assets/ppt/image2.png" alt="" />
+      <img class="gate-flower gate-flower-right" src="assets/ppt/image29.png" alt="" />
+      <p class="eyebrow">The Wedding Of</p>
+      <h1>Putra & Ayu</h1>
+      <p class="gate-date">Sabtu, 03 Januari 2021</p>
+      <div class="gate-photo">
+        <img src="assets/photos/couple-dummy.png" alt="Foto dummy pasangan Putra dan Ayu" />
+      </div>
+      <p class="guest-label">Kepada Bapak/Ibu/Saudara/i</p>
+      <button id="openInvitation" class="btn btn-primary" type="button">Buka Undangan</button>
+    </div>
+
+    <audio id="weddingMusic" src="assets/ppt/media1.mp3" loop preload="metadata"></audio>
+    <button id="musicToggle" class="music-toggle" type="button" aria-label="Putar atau hentikan musik">♪</button>
+
+    <header class="site-nav" aria-label="Navigasi section">
+      <a href="#home">Home</a>
+      <a href="#couple">Couple</a>
+      <a href="#event">Acara</a>
+      <a href="#story">Story</a>
+      <a href="#gallery">Galeri</a>
+      <a href="#rsvp">RSVP</a>
+    </header>
+
+    <main>
+      <section id="home" class="section hero-section">
+        <img class="ornament top-left" src="assets/ppt/image1.png" alt="" />
+        <img class="ornament top-right" src="assets/ppt/image7.png" alt="" />
+        <div class="hero-inner reveal">
+          <p class="eyebrow">The Wedding Of</p>
+          <h2>Putra & Ayu</h2>
+          <div class="hero-frame">
+            <img src="assets/photos/couple-dummy.png" alt="Foto pasangan Putra dan Ayu" loading="eager" />
+          </div>
+          <p class="hero-date">Sabtu, 03 Januari 2021</p>
+          <div id="countdown" class="countdown" aria-label="Hitung mundur acara"></div>
+          <a class="btn btn-primary" href="#couple">Lihat Detail</a>
+        </div>
+      </section>
+
+      <section class="section greeting-section">
+        <div class="narrow reveal">
+          <p class="bismillah">Bismillahirrahmanirrahim</p>
+          <h2>Assalamu'alaikum Warahmatullahi Wabarakatuh</h2>
+          <p>
+            Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud mengundang
+            Bapak/Ibu/Saudara/i untuk menghadiri acara pernikahan putra-putri kami.
+          </p>
+        </div>
+      </section>
+
+      <section id="couple" class="section couple-section">
+        <img class="ornament section-leaf-left" src="assets/ppt/image25.png" alt="" />
+        <div class="section-heading reveal">
+          <p class="eyebrow">You're invited to</p>
+          <h2>Mempelai</h2>
+        </div>
+        <div id="coupleCards" class="couple-grid"></div>
+      </section>
+
+      <section id="event" class="section event-section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Save the Date</p>
+          <h2>Rangkaian Acara</h2>
+        </div>
+        <div id="eventCards" class="event-grid"></div>
+      </section>
+
+      <section id="address" class="section address-section">
+        <div class="address-wrap reveal">
+          <div>
+            <p class="eyebrow">Alamat Acara</p>
+            <h2>Kediaman Mempelai Pria</h2>
+            <p id="addressText"></p>
+            <a id="mapsButton" class="btn btn-secondary" target="_blank" rel="noreferrer">Navigasi Lokasi</a>
+          </div>
+          <div class="map-frame">
+            <iframe
+              id="mapEmbed"
+              title="Peta lokasi acara"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
+        </div>
+      </section>
+
+      <section id="story" class="section story-section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Our Journey</p>
+          <h2>Love Story</h2>
+        </div>
+        <div id="storyTimeline" class="timeline"></div>
+      </section>
+
+      <section id="gallery" class="section gallery-section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Moments</p>
+          <h2>Gallery</h2>
+        </div>
+        <div id="galleryGrid" class="gallery-grid"></div>
+      </section>
+
+      <section id="dress" class="section dress-section">
+        <div class="dress-wrap reveal">
+          <div>
+            <p class="eyebrow">Guest Attire</p>
+            <h2>Dress Code</h2>
+            <p>Kenakan busana terbaik dengan warna lembut yang selaras dengan nuansa acara.</p>
+          </div>
+          <div id="dressPalette" class="palette"></div>
+        </div>
+      </section>
+
+      <section id="gift" class="section gift-section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Wedding Gift</p>
+          <h2>Amplop Digital</h2>
+        </div>
+        <div id="giftCards" class="gift-grid"></div>
+      </section>
+
+      <section id="rsvp" class="section rsvp-section">
+        <div class="form-wrap reveal">
+          <div>
+            <p class="eyebrow">Konfirmasi</p>
+            <h2>RSVP</h2>
+            <p>Mohon isi konfirmasi kehadiran agar kami dapat menyiapkan penyambutan terbaik.</p>
+          </div>
+          <form id="rsvpForm" class="form-card">
+            <label>Nama Tamu<input name="name" required placeholder="Nama lengkap" /></label>
+            <label>Nomor WhatsApp<input name="whatsapp" inputmode="tel" placeholder="08xxxxxxxxxx" /></label>
+            <label>Jumlah Tamu<input name="guests" type="number" min="1" max="5" value="1" /></label>
+            <label>Status Kehadiran
+              <select name="attendance" required>
+                <option value="Hadir">Hadir</option>
+                <option value="Tidak Hadir">Tidak Hadir</option>
+              </select>
+            </label>
+            <label>Pesan Tambahan<textarea name="message" rows="4" placeholder="Tulis pesan singkat"></textarea></label>
+            <button class="btn btn-primary" type="submit">Kirim RSVP</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="wishes" class="section wishes-section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Wishes</p>
+          <h2>Ucapan & Doa</h2>
+        </div>
+        <div class="wish-layout reveal">
+          <form id="wishForm" class="form-card">
+            <label>Nama<input name="name" required placeholder="Nama Anda" /></label>
+            <label>Ucapan<textarea name="message" required rows="5" placeholder="Tulis ucapan dan doa"></textarea></label>
+            <button class="btn btn-primary" type="submit">Kirim Ucapan</button>
+          </form>
+          <div>
+            <div id="wishList" class="wish-list"></div>
+            <button id="loadMoreWishes" class="btn btn-secondary" type="button">Muat Lagi</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="section verse-section">
+        <div class="narrow reveal">
+          <p>
+            "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu
+            pasangan-pasangan dari jenismu sendiri, supaya kamu cenderung dan merasa
+            tenteram kepadanya."
+          </p>
+          <span>QS. Ar-Rum: 21</span>
+        </div>
+      </section>
+
+      <section id="closing" class="section closing-section">
+        <img class="ornament bottom-left" src="assets/ppt/image8.png" alt="" />
+        <img class="ornament bottom-right" src="assets/ppt/image32.png" alt="" />
+        <div class="narrow reveal">
+          <p>Atas kehadiran Bapak/Ibu/Saudara/i, kami ucapkan terima kasih.</p>
+          <h2>Putra & Ayu</h2>
+          <p class="hero-date">Sabtu, 03 Januari 2021</p>
+        </div>
+      </section>
+    </main>
+
+    <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Preview galeri">
+      <button id="closeLightbox" type="button" aria-label="Tutup preview">×</button>
+      <img id="lightboxImage" alt="" />
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

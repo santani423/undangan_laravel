@@ -1,15 +1,11 @@
-import type {
-    BirthdayInvitation,
-    Greeting,
-    InvitationData,
-    WeddingInvitation,
-} from '@/types/invitation';
+import type { BirthdayInvitation, InvitationData, WeddingInvitation } from '@/types/invitation';
 import { Head } from '@inertiajs/react';
 import { useEffect } from 'react';
 import BirthdayStarryNight from './themes/birthday/BirthdayStarryNight';
 import WeddingBase from './themes/wedding/blossom-garden/WeddingBase';
 import WeddingTheme01 from './themes/wedding/wedding_theme_01/WeddingTheme01';
 import WeddingTheme02 from './themes/wedding/wedding_theme_02/WeddingTheme02';
+import WeddingTheme03 from './themes/wedding/wedding_theme_03/WeddingTheme03';
 
 interface Props {
     invitation: InvitationData;
@@ -17,52 +13,27 @@ interface Props {
     visitor?: string;
 }
 
-function resolveThemeComponent(
-    themeSlug: string,
-    invitation: InvitationData,
-    visitor?: string,
-    greeting?: Greeting,
-): React.ReactNode {
+function resolveThemeComponent(themeSlug: string, invitation: InvitationData, visitor?: string): React.ReactNode {
     switch (themeSlug) {
         // Birthday themes
         case 'birthday':
         case 'starry-night':
-            return (
-                <BirthdayStarryNight
-                    invitation={invitation as BirthdayInvitation}
-                    visitor={visitor}
-                />
-            );
+            return <BirthdayStarryNight invitation={invitation as BirthdayInvitation} visitor={visitor} />;
 
         // Wedding themes
         case 'wedding':
         case 'blossom-garden':
         case 'rustic-charm':
-            return (
-                <WeddingBase
-                    invitation={invitation as WeddingInvitation}
-                    visitor={visitor}
-                    greeting={invitation.greeting}
-                />
-            );
+            return <WeddingBase invitation={invitation as WeddingInvitation} visitor={visitor} greeting={invitation.greeting} />;
 
         case 'wedding_theme_01':
-            return (
-                <WeddingTheme01
-                    invitation={invitation as WeddingInvitation}
-                    visitor={visitor}
-                    greeting={invitation.greeting}
-                />
-            );
+            return <WeddingTheme01 invitation={invitation as WeddingInvitation} visitor={visitor} greeting={invitation.greeting} />;
 
         case 'wedding_theme_02':
-            return (
-                <WeddingTheme02
-                    invitation={invitation as WeddingInvitation}
-                    visitor={visitor}
-                    greeting={invitation.greeting}
-                />
-            );
+            return <WeddingTheme02 invitation={invitation as WeddingInvitation} visitor={visitor} greeting={invitation.greeting} />;
+
+        case 'wedding_theme_03':
+            return <WeddingTheme03 invitation={invitation as WeddingInvitation} visitor={visitor} greeting={invitation.greeting} />;
 
         // Fallback
         default:
@@ -85,9 +56,7 @@ function resolveThemeComponent(
                         >
                             {invitation.title || 'Undangan Digital'}
                         </h1>
-                        <p style={{ color: '#666' }}>
-                            Tema "{themeSlug}" sedang dalam pengembangan.
-                        </p>
+                        <p style={{ color: '#666' }}>Tema "{themeSlug}" sedang dalam pengembangan.</p>
                     </div>
                 </div>
             );
@@ -105,11 +74,7 @@ function getFaviconUrl(invitation: InvitationData): string {
     return '';
 }
 
-export default function InvitationShow({
-    invitation,
-    themeSlug,
-    visitor,
-}: Props) {
+export default function InvitationShow({ invitation, themeSlug, visitor }: Props) {
     const faviconUrl = getFaviconUrl(invitation);
 
     useEffect(() => {
@@ -125,14 +90,8 @@ export default function InvitationShow({
 
     return (
         <>
-            <Head
-                title={
-                    invitation.pageTitle ||
-                    invitation.title ||
-                    'Undangan Digital'
-                }
-            />
-            {resolveThemeComponent(themeSlug, invitation, visitor, invitation.greeting)}
+            <Head title={invitation.pageTitle || invitation.title || 'Undangan Digital'} />
+            {resolveThemeComponent(themeSlug, invitation, visitor)}
         </>
     );
 }
