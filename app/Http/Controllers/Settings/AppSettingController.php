@@ -110,15 +110,11 @@ class AppSettingController extends Controller
         $file     = $request->file('file');
         $disk     = 'public';
         $dir      = "app-assets/{$type}";
-        $filename = $type . '_' . time() . '.' . $file->getClientOriginalExtension();
 
-        // Delete old file
         $oldPath = AppSetting::get("app_{$type}");
-        if ($oldPath && Storage::disk($disk)->exists($oldPath)) {
-            Storage::disk($disk)->delete($oldPath);
-        }
-
-        $path = $file->storeAs($dir, $filename, $disk);
+        $maxWidth = $type === 'favicon' ? 256 : 1200;
+        
+        $path = \App\Services\UploadService::uploadImage($file, $dir, $oldPath, $maxWidth);
 
         AppSetting::set("app_{$type}", $path, 'file', 'general');
         AppSetting::flushCache();
@@ -133,9 +129,7 @@ class AppSettingController extends Controller
     {
         $path = AppSetting::get("app_{$type}");
 
-        if ($path && Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->delete($path);
-        }
+        \App\Services\UploadService::deleteFile($path);
 
         AppSetting::set("app_{$type}", '', 'file', 'general');
         AppSetting::flushCache();

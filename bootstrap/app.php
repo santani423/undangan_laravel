@@ -23,6 +23,16 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->dontFlash([
+            'current_password',
+            'password',
+            'password_confirmation',
+            'field_values',
+            'gallery_items',
+            'love_story',
+            'acara_events',
+        ]);
+
         $exceptions->respond(function (Response $response, \Throwable $_, Request $request) {
             $status = $response->getStatusCode();
 

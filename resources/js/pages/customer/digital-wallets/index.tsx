@@ -197,7 +197,7 @@ function WalletCard({
     const [editing, setEditing] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
-    const handleUpdate = (data: Record<string, unknown>) => {
+    const handleUpdate = (data: any) => {
         setSubmitting(true);
         router.patch(`/customer/digital-wallets/${wallet.id}`, data, {
             onSuccess: () => setEditing(false),
@@ -248,7 +248,7 @@ function WalletCard({
                 <WalletForm
                     providers={providers}
                     initial={wallet}
-                    onSubmit={(data) => handleUpdate(data as Record<string, unknown>)}
+                    onSubmit={(data) => handleUpdate(data)}
                     onCancel={() => setEditing(false)}
                     submitting={submitting}
                 />
@@ -263,7 +263,7 @@ export default function DigitalWalletsIndex({ wallets, providers }: Props) {
     const [showCreate, setShowCreate] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
-    const handleCreate = (data: Record<string, unknown>, reset: () => void) => {
+    const handleCreate = (data: any, reset: () => void) => {
         setSubmitting(true);
         router.post('/customer/digital-wallets', data, {
             onSuccess: () => { setShowCreate(false); reset(); },

@@ -124,23 +124,8 @@ class InvitationController extends Controller
         return response()->json(['available' => !$exists]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(\App\Http\Requests\StoreInvitationRequest $request): RedirectResponse
     {
-        $request->validate([
-            'event_type_id'                   => 'required|exists:event_types,id',
-            'theme_id'                        => 'required|exists:themes,id',
-            'package_id'                      => 'required|exists:packages,id',
-            'invitation_code'                 => 'nullable|string|max:100',
-            'field_values'                    => 'nullable|array',
-            'field_values.*'                  => 'nullable|string',
-            'field_values.groom_child_order'  => 'nullable|string|max:100',
-            'field_values.bride_child_order'  => 'nullable|string|max:100',
-            'acara_events'                    => 'nullable|array',
-            'acara_events.*.name'             => 'required_with:acara_events|string|max:255',
-            'acara_events.*.date'             => 'required_with:acara_events|date',
-            'gallery_items'                   => 'nullable|array',
-            'love_story'                      => 'nullable|array',
-        ]);
 
         DB::transaction(function () use ($request) {
             // ── Derive title from couple names or fallback ────────────────
@@ -181,6 +166,8 @@ class InvitationController extends Controller
                 'title'            => $title,
                 'invitation_code'  => $invitationCode,
                 'status'           => 'draft',
+                'groom_child_order'=> $request->filled('field_values.groom_child_order') ? (int) $request->input('field_values.groom_child_order') : null,
+                'bride_child_order'=> $request->filled('field_values.bride_child_order') ? (int) $request->input('field_values.bride_child_order') : null,
             ]);
 
             // ── 2. Default settings ───────────────────────────────────────
@@ -195,7 +182,7 @@ class InvitationController extends Controller
                 $storedValue  = $value;
 
                 if (str_starts_with((string) $value, 'data:image/')) {
-                    $storedValue = $this->saveBase64Image($value, "invitations/{$invitation->id}/content");
+                    $storedValue = \App\Services\UploadService::uploadBase64Image($value, "invitations/{$invitation->id}/content");
                     $contentType = 'path';
                 }
 
@@ -242,7 +229,7 @@ class InvitationController extends Controller
                 if (empty($item['preview'])) {
                     continue;
                 }
-                $path = $this->saveBase64Image($item['preview'], "invitations/{$invitation->id}/gallery");
+                $path = \App\Services\UploadService::uploadBase64Image($item['preview'], "invitations/{$invitation->id}/gallery");
                 GalleryPhoto::create([
                     'invitation_id' => $invitation->id,
                     'file_path'     => $path,
@@ -278,7 +265,7 @@ class InvitationController extends Controller
                 ]);
 
                 if (!empty($entry['photo']) && str_starts_with($entry['photo'], 'data:image/')) {
-                    $photoPath = $this->saveBase64Image($entry['photo'], "invitations/{$invitation->id}/stories");
+                    $photoPath = \App\Services\UploadService::uploadBase64Image($entry['photo'], "invitations/{$invitation->id}/stories");
                     GalleryPhoto::create([
                         'invitation_id' => $invitation->id,
                         'file_path'     => $photoPath,
@@ -537,27 +524,22 @@ class InvitationController extends Controller
         ]);
     }
 
-    public function update(Request $request, Invitation $invitation): RedirectResponse
+    public function update(\App\Http\Requests\UpdateInvitationRequest $request, Invitation $invitation): RedirectResponse
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
-
-        $request->validate([
-            'status'                          => 'nullable|in:draft,active,archived',
-            'field_values'                    => 'nullable|array',
-            'field_values.*'                  => 'nullable|string',
-            'field_values.groom_child_order'  => 'nullable|string|max:100',
-            'field_values.bride_child_order'  => 'nullable|string|max:100',
-            'acara_events'                    => 'nullable|array',
-            'acara_events.*.name'             => 'required_with:acara_events|string|max:255',
-            'acara_events.*.date'             => 'required_with:acara_events|date',
-            'gallery_items'                   => 'nullable|array',
-            'love_story'                      => 'nullable|array',
-        ]);
 
         DB::transaction(function () use ($request, $invitation) {
             // ── Status ────────────────────────────────────────────────────
             if ($request->filled('status')) {
                 $invitation->update(['status' => $request->input('status')]);
+            }
+
+            if ($request->has('field_values.groom_child_order')) {
+                $invitation->update(['groom_child_order' => $request->filled('field_values.groom_child_order') ? (int) $request->input('field_values.groom_child_order') : null]);
+            }
+            
+            if ($request->has('field_values.bride_child_order')) {
+                $invitation->update(['bride_child_order' => $request->filled('field_values.bride_child_order') ? (int) $request->input('field_values.bride_child_order') : null]);
             }
 
             // ── Field values ──────────────────────────────────────────────
@@ -571,7 +553,8 @@ class InvitationController extends Controller
                 $storedValue = $value;
 
                 if (str_starts_with((string) $value, 'data:image/')) {
-                    $storedValue = $this->saveBase64Image($value, "invitations/{$invitation->id}/content");
+                    $oldContent = $invitation->contents()->where('content_key', $key)->value('content_value');
+                    $storedValue = \App\Services\UploadService::uploadBase64Image($value, "invitations/{$invitation->id}/content", $oldContent);
                     $contentType = 'path';
                 } elseif (str_starts_with((string) $value, '/storage/')) {
                     // Existing URL — strip prefix to get storage path
@@ -635,7 +618,7 @@ class InvitationController extends Controller
                     if ($maxGallery !== null && $newCount >= $maxGallery) {
                         continue;
                     }
-                    $path = $this->saveBase64Image($item['preview'], "invitations/{$invitation->id}/gallery");
+                    $path = \App\Services\UploadService::uploadBase64Image($item['preview'], "invitations/{$invitation->id}/gallery");
                     GalleryPhoto::create([
                         'invitation_id' => $invitation->id,
                         'file_path'     => $path,
@@ -676,7 +659,7 @@ class InvitationController extends Controller
 
                 $photoVal = $entry['photo'] ?? '';
                 if (!empty($photoVal) && str_starts_with($photoVal, 'data:image/')) {
-                    $photoPath = $this->saveBase64Image($photoVal, "invitations/{$invitation->id}/stories");
+                    $photoPath = \App\Services\UploadService::uploadBase64Image($photoVal, "invitations/{$invitation->id}/stories");
                     GalleryPhoto::create([
                         'invitation_id' => $invitation->id,
                         'file_path'     => $photoPath,
@@ -813,21 +796,11 @@ class InvitationController extends Controller
         ]);
 
         $file = $request->file('music_file');
-        $path = $file->store("invitations/{$invitation->id}/music", 'public');
+        $path = \App\Services\UploadService::uploadDocument($file, "invitations/{$invitation->id}/music");
 
         return response()->json([
             'url'    => Storage::disk('public')->url($path),
             'max_mb' => $maxMb,
         ]);
-    }
-
-    private function saveBase64Image(string $dataUrl, string $directory): string
-    {
-        $parts     = explode(',', $dataUrl, 2);
-        $imageData = base64_decode($parts[1] ?? '');
-        $filename  = Str::uuid() . '.jpg';
-        $path      = "{$directory}/{$filename}";
-        Storage::disk('public')->put($path, $imageData);
-        return $path;
     }
 }

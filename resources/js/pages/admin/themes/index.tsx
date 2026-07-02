@@ -211,6 +211,7 @@ function TemplateFormModal({
         ...defaultForm,
         id: 0, slug: '', usage_count: 0, created_at: '',
         name: form.name || 'Preview',
+        thumbnail: '',
         color_primary: form.color_primary,
         color_secondary: form.color_secondary,
         is_premium: form.is_premium,

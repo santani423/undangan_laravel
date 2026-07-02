@@ -32,6 +32,8 @@ class Invitation extends Model
         'allow_guest_comments',
         'allow_guest_plus_one',
         'max_guests_plus_one',
+        'groom_child_order',
+        'bride_child_order',
     ];
 
     protected $hidden = [
@@ -48,6 +50,8 @@ class Invitation extends Model
             'max_guests_plus_one' => 'integer',
             'activated_at'        => 'datetime',
             'expires_at'          => 'datetime',
+            'groom_child_order'   => 'integer',
+            'bride_child_order'   => 'integer',
         ];
     }
 

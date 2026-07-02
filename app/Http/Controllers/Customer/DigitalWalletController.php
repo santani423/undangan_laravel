@@ -41,12 +41,12 @@ class DigitalWalletController extends Controller
         $dir      = 'digital-wallets/' . auth()->id();
         $logoPath = null;
         if ($request->filled('logo') && str_starts_with($request->logo, 'data:image/')) {
-            $logoPath = $this->saveBase64Image($request->logo, $dir);
+            $logoPath = \App\Services\UploadService::uploadBase64Image($request->logo, $dir);
         }
 
         $qrisPath = null;
         if ($request->filled('qris_qr') && str_starts_with($request->qris_qr, 'data:image/')) {
-            $qrisPath = $this->saveBase64Image($request->qris_qr, $dir);
+            $qrisPath = \App\Services\UploadService::uploadBase64Image($request->qris_qr, $dir);
         }
 
         $wallet = DigitalWallet::create([
@@ -85,14 +85,10 @@ class DigitalWalletController extends Controller
 
         if ($request->filled('logo')) {
             if (str_starts_with($request->logo, 'data:image/')) {
-                // Delete old logo
-                if ($logoPath) {
-                    Storage::disk('public')->delete($logoPath);
-                }
-                $logoPath = $this->saveBase64Image($request->logo, 'digital-wallets/' . auth()->id());
+                $logoPath = \App\Services\UploadService::uploadBase64Image($request->logo, 'digital-wallets/' . auth()->id(), $logoPath);
             } elseif ($request->logo === 'remove') {
                 if ($logoPath) {
-                    Storage::disk('public')->delete($logoPath);
+                    \App\Services\UploadService::deleteFile($logoPath);
                 }
                 $logoPath = null;
             }
@@ -115,7 +111,7 @@ class DigitalWalletController extends Controller
         abort_if($digitalWallet->user_id !== auth()->id(), 403);
 
         if ($digitalWallet->logo_path) {
-            Storage::disk('public')->delete($digitalWallet->logo_path);
+            \App\Services\UploadService::deleteFile($digitalWallet->logo_path);
         }
 
         $digitalWallet->delete();
@@ -190,13 +186,4 @@ class DigitalWalletController extends Controller
         return back()->with('success', 'Pengaturan dompet digital undangan berhasil disimpan.');
     }
 
-    private function saveBase64Image(string $dataUrl, string $directory): string
-    {
-        $parts     = explode(',', $dataUrl, 2);
-        $imageData = base64_decode($parts[1] ?? '');
-        $filename  = Str::uuid() . '.jpg';
-        $path      = "{$directory}/{$filename}";
-        Storage::disk('public')->put($path, $imageData);
-        return $path;
-    }
 }

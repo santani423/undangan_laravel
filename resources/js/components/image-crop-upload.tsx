@@ -121,6 +121,18 @@ export default function ImageCropUpload({
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
         if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            alert('Format file tidak didukung. Harap upload gambar.');
+            e.target.value = '';
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Ukuran gambar terlalu besar. Maksimal 5MB.');
+            e.target.value = '';
+            return;
+        }
         const reader = new FileReader();
         reader.onload = () => {
             setRawSrc(reader.result as string);

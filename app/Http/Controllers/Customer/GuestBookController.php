@@ -128,7 +128,7 @@ class GuestBookController extends Controller
             if (str_starts_with($preview, 'data:image/')) {
                 SliderPhoto::create([
                     'invitation_id' => $invitation->id,
-                    'file_path' => $this->saveBase64Image($preview, "invitations/{$invitation->id}/guest-book/sliders"),
+                    'file_path' => \App\Services\UploadService::uploadBase64Image($preview, "invitations/{$invitation->id}/guest-book/sliders"),
                     'display_order' => $index,
                     'is_approved' => true,
                     'approved_at' => now(),
@@ -137,8 +137,9 @@ class GuestBookController extends Controller
         }
 
         $backgroundImage = (string) ($data['background_image'] ?? '');
+        $oldBackgroundImage = $invitation->contents()->where('content_key', 'guestbook_background_image')->value('content_value');
         if (str_starts_with($backgroundImage, 'data:image/')) {
-            $backgroundImage = $this->saveBase64Image($backgroundImage, "invitations/{$invitation->id}/guest-book");
+            $backgroundImage = \App\Services\UploadService::uploadBase64Image($backgroundImage, "invitations/{$invitation->id}/guest-book", $oldBackgroundImage);
         } elseif (str_starts_with($backgroundImage, '/storage/')) {
             $backgroundImage = ltrim(str_replace('/storage/', '', $backgroundImage), '/');
         }
@@ -591,14 +592,5 @@ class GuestBookController extends Controller
             ->first();
     }
 
-    private function saveBase64Image(string $dataUrl, string $directory): string
-    {
-        $parts = explode(',', $dataUrl, 2);
-        $imageData = base64_decode($parts[1] ?? '');
-        $filename = Str::uuid() . '.jpg';
-        $path = "{$directory}/{$filename}";
-        Storage::disk('public')->put($path, $imageData);
 
-        return $path;
-    }
 }
