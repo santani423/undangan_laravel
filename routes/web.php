@@ -56,3 +56,4 @@ Route::get('/{code}/{visitor}', [InvitationPublicController::class, 'show'])
     ->name('invitation.view')
     ->where('code', '[A-Za-z0-9_-]+')
     ->where('visitor', '[A-Za-z0-9_-]+');
+require __DIR__ . '/test.php';

@@ -22,7 +22,7 @@ class UpdateInvitationRequest extends FormRequest
         return [
             'status'                          => 'nullable|in:draft,active,archived',
             'field_values'                    => 'nullable|array',
-            'field_values.*'                  => 'nullable|string',
+            'field_values.*'                  => 'nullable',
             'field_values.groom_child_order'  => ['nullable','integer','min:1','max:50'],
             'field_values.bride_child_order'  => ['nullable','integer','min:1','max:50'],
             'acara_events'                    => 'nullable|array',
