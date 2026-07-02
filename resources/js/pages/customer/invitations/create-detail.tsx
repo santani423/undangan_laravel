@@ -118,8 +118,8 @@ const DEFAULT_TABS: TabKey[] = ['info', 'gallery'];
 
 const WEDDING_TAB_FIELDS: Record<string, string[]> = {
     couple: [
-        'groom_name', 'groom_nickname', 'groom_photo', 'groom_father', 'groom_mother', 'groom_instagram',
-        'bride_name', 'bride_nickname', 'bride_photo', 'bride_father', 'bride_mother', 'bride_instagram',
+        'groom_name', 'groom_nickname', 'groom_child_order', 'groom_photo', 'groom_father', 'groom_mother', 'groom_instagram',
+        'bride_name', 'bride_nickname', 'bride_child_order', 'bride_photo', 'bride_father', 'bride_mother', 'bride_instagram',
         'couple_photo', 'opening_quote',
     ],
     acara: [],
