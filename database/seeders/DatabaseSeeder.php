@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
             EventTypeSeeder::class,
             PackageSeeder::class,
             ThemeSeeder::class,
+            AdditionalThemeSeeder::class,
 
             // 2. EAV field definitions (depends on event_types, packages)
             EventTypeFieldSeeder::class,

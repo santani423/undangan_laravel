@@ -3,6 +3,8 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import {
     ArrowLeft,
+    AlertCircle,
+    CheckCircle2,
     CheckSquare,
     Download,
     ExternalLink,
@@ -246,6 +248,7 @@ function DisplaySettingsPanel({
     const [overlayOpacity, setOverlayOpacity] = useState(initialSettings.overlay_opacity);
     const [sliderEnabled, setSliderEnabled] = useState(initialSettings.slider_enabled);
     const [saving, setSaving] = useState(false);
+    const [saveAlert, setSaveAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
     const max = invitation.max_gallery_uploads;
     const sliderLimit = max && max > 0 ? max : null;
@@ -267,8 +270,15 @@ function DisplaySettingsPanel({
         setBackgroundImage(await fileToDataUrl(file));
     }
 
+    useEffect(() => {
+        if (!saveAlert) return;
+        const id = window.setTimeout(() => setSaveAlert(null), 6000);
+        return () => window.clearTimeout(id);
+    }, [saveAlert]);
+
     function handleSave() {
         setSaving(true);
+        setSaveAlert(null);
         router.patch(`/customer/invitations/${invitation.slug}/guests/display-settings`, {
             slider_images: sliderImages.map((image, index) => ({
                 ...(image.id ? { id: image.id } : {}),
@@ -282,6 +292,12 @@ function DisplaySettingsPanel({
             slider_enabled: sliderEnabled,
         }, {
             preserveScroll: true,
+            onSuccess: () => {
+                setSaveAlert({ type: 'success', message: 'Tampilan Buku Tamu berhasil disimpan. Mode Petugas akan memakai pengaturan terbaru.' });
+            },
+            onError: () => {
+                setSaveAlert({ type: 'error', message: 'Tampilan Buku Tamu gagal disimpan. Periksa ukuran/format gambar dan coba lagi.' });
+            },
             onFinish: () => setSaving(false),
         });
     }
@@ -302,6 +318,16 @@ function DisplaySettingsPanel({
                     {saving ? 'Menyimpan...' : 'Simpan Tampilan'}
                 </button>
             </div>
+
+            {saveAlert && (
+                <div className={`mb-5 flex items-start gap-3 rounded-xl border px-4 py-3 text-sm ${saveAlert.type === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'}`}>
+                    {saveAlert.type === 'success' ? <CheckCircle2 className="mt-0.5 size-4 shrink-0" /> : <AlertCircle className="mt-0.5 size-4 shrink-0" />}
+                    <p className="flex-1">{saveAlert.message}</p>
+                    <button type="button" onClick={() => setSaveAlert(null)} className="rounded-lg p-1 hover:bg-black/5">
+                        <X className="size-3.5" />
+                    </button>
+                </div>
+            )}
 
             <div className="grid gap-5 lg:grid-cols-[1.15fr_.85fr]">
                 <div className="space-y-3">
