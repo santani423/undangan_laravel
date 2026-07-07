@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\InvitationPublicController;
+use App\Http\Controllers\WeddingThemePreviewController;
 use App\Models\Theme;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -36,6 +37,25 @@ Route::get('themes', function () {
         'themes' => $themes,
     ]);
 })->name('themes.index');
+
+Route::prefix('preview/themes/wedding')->group(function () {
+    Route::get('/{theme}', function (string $theme) {
+        $queryString = request()->getQueryString();
+
+        return redirect()->to('/preview/themes/wedding/' . $theme . '/index.html' . ($queryString ? '?' . $queryString : ''));
+    })->where('theme', '[A-Za-z0-9_-]+')->name('preview.wedding.redirect');
+
+    Route::get('/{theme}/index.html', [WeddingThemePreviewController::class, 'show'])
+        ->where('theme', '[A-Za-z0-9_-]+')
+        ->name('preview.wedding.show');
+
+    Route::get('/{theme}/assets/{path}', [WeddingThemePreviewController::class, 'asset'])
+        ->where([
+            'theme' => '[A-Za-z0-9_-]+',
+            'path'  => '.*',
+        ])
+        ->name('preview.wedding.asset');
+});
 
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', function () {

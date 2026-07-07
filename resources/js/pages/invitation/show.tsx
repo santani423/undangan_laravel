@@ -27,6 +27,7 @@ function resolveThemeComponent(themeSlug: string, invitation: InvitationData, vi
         case 'rustic-charm':
             return <WeddingBase invitation={invitation as WeddingInvitation} visitor={visitor} greeting={invitation.greeting} />;
 
+        case 'them1':
         case 'wedding_theme_01':
             return <WeddingTheme01 invitation={invitation as WeddingInvitation} visitor={visitor} greeting={invitation.greeting} />;
 
