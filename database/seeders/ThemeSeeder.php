@@ -109,6 +109,22 @@ class ThemeSeeder extends Seeder
                 'price'           => 0,
                 'usage_count'     => 0,
             ],
+            [
+                'name'              => 'Royal Maroon',
+                'slug'              => 'wedding_theme_06',
+                'description'       => 'Tema pernikahan klasik dengan palet cream, gold, dan maroon yang mewah.',
+                'category'          => 'Klasik',
+                'event_type'        => 'wedding',
+                'color_primary'     => '#7a0c2e',
+                'color_secondary'   => '#f4efea',
+                'tags'              => ['maroon', 'gold', 'klasik'],
+                'thumbnail_url'     => '/preview/themes/wedding/wedding_theme_06/assets/photos/hero-couple.jpg',
+                'preview_image_url' => '/preview/themes/wedding/wedding_theme_06/assets/photos/hero-couple.jpg',
+                'is_premium'        => false,
+                'is_exclusive'      => false,
+                'price'             => 0,
+                'usage_count'       => 0,
+            ],
         ];
     }
 
