@@ -765,7 +765,7 @@ class InvitationController extends Controller
 
         // Sesuaikan usage_count
         if ($oldThemeId && $oldThemeId !== $theme->id) {
-            Theme::where('id', $oldThemeId)->decrement('usage_count');
+            Theme::where('id', $oldThemeId)->where('usage_count', '>', 0)->decrement('usage_count');
         }
         if ($oldThemeId !== $theme->id) {
             Theme::where('id', $theme->id)->increment('usage_count');

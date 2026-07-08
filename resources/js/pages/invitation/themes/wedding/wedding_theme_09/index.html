@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Undangan Pernikahan: Johan & Joana</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Undangan Pernikahan Online Johan & Joana. Minggu, 01 September 2026. Temukan info lokasi, rsvp, dress code, love story, galeri foto dan kirim doa restu Anda.">
+  <meta name="author" content="Johan & Joana">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Custom CSS stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Background Music Audio Tag -->
+  <audio id="bg-music" src="assets/music/bg-music.mp3" loop></audio>
+
+  <!-- Floating Audio Control Button -->
+  <button id="music-control" class="music-control-btn hide" aria-label="Kontrol Musik Latar">
+    <i class="fa-solid fa-volume-high"></i>
+  </button>
+
+  <!-- Toast Notification System -->
+  <div id="toast" class="toast-msg">Nomor rekening berhasil disalin!</div>
+
+  <!-- Welcome / Cover Overlay -->
+  <div id="welcome-overlay" class="welcome-overlay">
+    <div class="welcome-card">
+      <div class="flower-corner-tr"></div>
+      <div class="flower-corner-bl"></div>
+      
+      <p class="intro-text">The Wedding Of</p>
+      
+      <!-- Display original PPT slide cover design -->
+      <div style="width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 20px; border: 2px solid var(--accent-gold);">
+        <img src="assets/images/image1.jpg" alt="Johan & Joana Cover" style="width: 100%; height: auto;">
+      </div>
+      
+      <p class="guest-title">Kepada Yth. Bapak/Ibu/Saudara/i:</p>
+      <div class="guest-name">Tamu Undangan</div>
+      
+      <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.4;">
+        *Mohon maaf apabila ada kesalahan penulisan nama/gelar
+      </p>
+      
+      <button id="btn-open" class="btn-open">
+        <i class="fa-solid fa-envelope-open"></i> Buka Undangan
+      </button>
+    </div>
+  </div>
+
+  <!-- Main App Split Layout -->
+  <div class="app-container">
+
+    <!-- Left Panel - Fixed Cover (Only shown on Desktop >= 1024px) -->
+    <div class="left-panel">
+      <div class="brand-wedding">The Wedding Of</div>
+      
+      <div class="main-heading">
+        <h1>Johan & Joana</h1>
+        <p>01 . 09 . 2026</p>
+        
+        <div class="countdown-container">
+          <div class="countdown-box">
+            <div id="days" class="countdown-num">00</div>
+            <div class="countdown-label">Hari</div>
+          </div>
+          <div class="countdown-box">
+            <div id="hours" class="countdown-num">00</div>
+            <div class="countdown-label">Jam</div>
+          </div>
+          <div class="countdown-box">
+            <div id="minutes" class="countdown-num">00</div>
+            <div class="countdown-label">Menit</div>
+          </div>
+          <div class="countdown-box">
+            <div id="seconds" class="countdown-num">00</div>
+            <div class="countdown-label">Detik</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="left-footer">
+        <p style="font-size: 0.8rem; font-weight: 500; letter-spacing: 1px; color: var(--accent-gold-warm);">
+          #JohanJoanaWedding
+        </p>
+      </div>
+    </div>
+
+    <!-- Right Panel - Scrollable Contents (Shown on both Mobile & Desktop) -->
+    <div class="right-panel">
+
+      <!-- Navigation spy menu -->
+      <nav class="navigation-bar" aria-label="Menu Undangan">
+        <a href="#home" class="nav-item active" aria-label="Home">
+          <i class="fa-solid fa-house"></i>
+          <span>Home</span>
+        </a>
+        <a href="#couple" class="nav-item" aria-label="Mempelai">
+          <i class="fa-solid fa-heart"></i>
+          <span>Mempelai</span>
+        </a>
+        <a href="#event" class="nav-item" aria-label="Acara">
+          <i class="fa-solid fa-calendar-days"></i>
+          <span>Acara</span>
+        </a>
+        <a href="#story" class="nav-item" aria-label="Cerita">
+          <i class="fa-solid fa-book-open"></i>
+          <span>Cerita</span>
+        </a>
+        <a href="#gallery" class="nav-item" aria-label="Galeri">
+          <i class="fa-solid fa-images"></i>
+          <span>Galeri</span>
+        </a>
+        <a href="#rsvp" class="nav-item" aria-label="RSVP">
+          <i class="fa-solid fa-pen-to-square"></i>
+          <span>RSVP</span>
+        </a>
+      </nav>
+
+      <!-- 1. Hero Section -->
+      <section id="home" class="hero-section">
+        <div class="ornament-corner-tr"></div>
+        <div class="ornament-corner-bl"></div>
+        <div class="ornament-side-l"></div>
+        <div class="ornament-side-r"></div>
+        
+        <div class="hero-content reveal">
+          <!-- Bismillah calligraphy from slide 3/opening -->
+          <img src="assets/images/image11.png" alt="Bismillah" class="bismillah-img">
+          
+          <div class="wedding-logo">The Wedding Of</div>
+          <div class="wedding-names">Johan & Joana</div>
+          
+          <!-- Round portrait of couple -->
+          <div class="wedding-frame">
+            <img src="assets/images/couple-walk.png" alt="Johan & Joana">
+          </div>
+          
+          <div class="wedding-date">Minggu, 01 September 2026</div>
+          <p style="font-size: 0.8rem; color: var(--text-muted); letter-spacing: 1px;">KOTA JAKARTA, INDONESIA</p>
+          
+          <!-- Mobile-only Countdown -->
+          <div class="mobile-countdown">
+            <div class="countdown-box">
+              <div id="mob-days" class="countdown-num">00</div>
+              <div class="countdown-label">Hari</div>
+            </div>
+            <div class="countdown-box">
+              <div id="mob-hours" class="countdown-num">00</div>
+              <div class="countdown-label">Jam</div>
+            </div>
+            <div class="countdown-box">
+              <div id="mob-minutes" class="countdown-num">00</div>
+              <div class="countdown-label">Menit</div>
+            </div>
+            <div class="countdown-box">
+              <div id="mob-seconds" class="countdown-num">00</div>
+              <div class="countdown-label">Detik</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Quote & Greetings Section -->
+      <section id="quote" class="quote-section">
+        <div class="ornament-corner-tr"></div>
+        <div class="ornament-corner-bl"></div>
+        
+        <div class="reveal">
+          <div class="quote-text">
+            "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu isteri-isteri dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya, dan dijadikan-Nya diantaramu rasa kasih dan sayang. Sesungguhnya pada yang demikian itu benar-benar terdapat tanda-tanda bagi kaum yang berfikir."
+            <div class="quote-author">(QS. Ar-Ruum: 21)</div>
+          </div>
+          
+          <div class="greeting-card">
+            <p style="font-weight: 600; font-size: 1.1rem; color: var(--primary-teal-dark); margin-bottom: 15px;">
+              Assalamualaikum Warahmatullahi Wabarakatuh
+            </p>
+            <p>
+              Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud menyelenggarakan resepsi pernikahan putra-putri kami yang tercinta:
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Couple Section -->
+      <section id="couple" class="couple-section">
+        <div class="ornament-side-l"></div>
+        <div class="ornament-side-r"></div>
+        
+        <div class="section-header reveal">
+          <p class="subtitle">Mempelai Pasangan</p>
+          <h2 class="title">Profil Kami</h2>
+          <div class="divider">
+            <span></span>
+            <i class="fa-solid fa-heart"></i>
+            <span></span>
+          </div>
+        </div>
+        
+        <div class="couples-grid">
+          
+          <!-- Mempelai Pria -->
+          <div class="couple-profile reveal">
+            <div class="couple-photo-container">
+              <div class="couple-photo-frame">
+                <img src="assets/images/groom.png" alt="Mempelai Pria: Johan">
+              </div>
+            </div>
+            <h3>Johan bin Johan</h3>
+            <p class="fullname">Johan Prasetyo, S.T.</p>
+            <p class="parents">
+              Putra sulung dari:<br>
+              Bapak <strong>Fulan</strong> & Ibu <strong>Fulanah</strong>
+            </p>
+            <p class="bio">
+              Lahir dan besar di Jakarta. Seorang insinyur perangkat lunak yang berdedikasi, menyukai kopi, dan petualangan di alam bebas.
+            </p>
+          </div>
+          
+          <div class="couple-divider reveal">&amp;</div>
+          
+          <!-- Mempelai Wanita -->
+          <div class="couple-profile reveal">
+            <div class="couple-photo-container">
+              <div class="couple-photo-frame">
+                <img src="assets/images/bride.png" alt="Mempelai Wanita: Joan">
+              </div>
+            </div>
+            <h3>Joan binti Joan</h3>
+            <p class="fullname">Joana Lestari, S.Ds.</p>
+            <p class="parents">
+              Putri bungsu dari:<br>
+              Bapak <strong>Fulan</strong> & Ibu <strong>Fulanah</strong>
+            </p>
+            <p class="bio">
+              Desainer grafis kreatif yang menyukai seni ilustrasi, tanaman hias, dan bercerita lewat sketsa goresan warna.
+            </p>
+          </div>
+          
+        </div>
+      </section>
+
+      <!-- 4. Event Section -->
+      <section id="event" class="event-section bg-dark">
+        <div class="ornament-corner-tr" style="opacity: 0.25;"></div>
+        <div class="ornament-corner-bl" style="opacity: 0.25;"></div>
+        
+        <div class="section-header reveal">
+          <p class="subtitle" style="color: var(--accent-gold-warm);">Waktu &amp; Tempat</p>
+          <h2 class="title" style="color: white;">Agenda Acara</h2>
+          <div class="divider">
+            <span style="background-color: var(--accent-gold-warm);"></span>
+            <i class="fa-solid fa-calendar-check" style="color: var(--accent-gold-warm);"></i>
+            <span style="background-color: var(--accent-gold-warm);"></span>
+          </div>
+        </div>
+        
+        <div class="events-list">
+          
+          <!-- Akad Nikah Box -->
+          <div class="event-box reveal">
+            <div class="event-icon">
+              <i class="fa-solid fa-ring"></i>
+            </div>
+            <h3>Akad Nikah</h3>
+            <ul class="event-details">
+              <li>
+                <i class="fa-regular fa-calendar"></i>
+                <strong>Rabu, 29 Agustus 2026</strong>
+              </li>
+              <li>
+                <i class="fa-regular fa-clock"></i>
+                <strong>Pukul 08.00 WIB s/d Selesai</strong>
+              </li>
+              <li>
+                <i class="fa-solid fa-location-dot"></i>
+                <strong>Masjid Raya Baiturrahman</strong>
+                <span>Jl. Utama Raya No. 12, Kebayoran Baru, Jakarta Selatan</span>
+              </li>
+            </ul>
+          </div>
+          
+          <!-- Resepsi Box -->
+          <div class="event-box reveal">
+            <div class="event-icon">
+              <i class="fa-solid fa-wine-glass"></i>
+            </div>
+            <h3>Resepsi Pernikahan</h3>
+            <ul class="event-details">
+              <li>
+                <i class="fa-regular fa-calendar"></i>
+                <strong>Minggu, 01 September 2026</strong>
+              </li>
+              <li>
+                <i class="fa-regular fa-clock"></i>
+                <strong>Pukul 11.00 WIB s/d Selesai</strong>
+              </li>
+              <li>
+                <i class="fa-solid fa-location-dot"></i>
+                <strong>Gedung Pertemuan Ballroom Harmoni</strong>
+                <span>Kavling Bunga Indah No. 45, Kebayoran Baru, Jakarta Selatan</span>
+              </li>
+            </ul>
+          </div>
+          
+        </div>
+      </section>
+
+      <!-- 5. Alamat Acara Section -->
+      <section id="address" class="address-section">
+        <div class="ornament-side-l"></div>
+        <div class="ornament-side-r"></div>
+        
+        <div class="section-header reveal">
+          <p class="subtitle">Peta Lokasi</p>
+          <h2 class="title">Alamat &amp; Navigasi</h2>
+          <div class="divider">
+            <span></span>
+            <i class="fa-solid fa-map-location-dot"></i>
+            <span></span>
+          </div>
+        </div>
+        
+        <div class="address-card reveal">
+          <div class="address-info">
+            <i class="fa-solid fa-map-pin"></i>
+            <h4>Gedung Pertemuan Ballroom Harmoni</h4>
+            <p>Jl. Kavling Bunga Indah No. 45, Kebayoran Baru, Jakarta Selatan (Sebelah Bank BCA Kebayoran)</p>
+            <a href="https://maps.google.com/?q=Ballroom+Harmoni+Kebayoran+Baru" target="_blank" rel="noopener noreferrer" class="btn-nav">
+              <i class="fa-solid fa-diamond-turn-right"></i> Petunjuk Arah Google Maps
+            </a>
+          </div>
+          
+          <div class="map-wrapper">
+            <!-- Google Maps Embed Iframe (Responsive) -->
+            <iframe 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.2736186835017!2d106.8016462744799!3d-6.227622993760456!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f1503cb35d21%3A0x6bde34316d3f231e!2sSudirman+Central+Business+District!5e0!3m2!1sid!2sid!4v1710000000000!5m2!1sid!2sid" 
+              allowfullscreen="" 
+              loading="lazy" 
+              referrerpolicy="no-referrer-when-downgrade"
+              title="Peta Lokasi Pernikahan Johan & Joana">
+            </iframe>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. Love Story Section -->
+      <section id="story" class="story-section bg-mauve">
+        <div class="ornament-corner-tr" style="opacity: 0.25;"></div>
+        <div class="ornament-corner-bl" style="opacity: 0.25;"></div>
+        
+        <div class="section-header reveal">
+          <p class="subtitle" style="color: var(--accent-gold-warm);">Perjalanan Kami</p>
+          <h2 class="title" style="color: white;">Love Story</h2>
+          <div class="divider">
+            <span style="background-color: var(--accent-gold-warm);"></span>
+            <i class="fa-solid fa-heart-pulse" style="color: var(--accent-gold-warm);"></i>
+            <span style="background-color: var(--accent-gold-warm);"></span>
+          </div>
+        </div>
+        
+        <div class="timeline">
+          
+          <!-- Timeline Item 1 -->
+          <div class="timeline-item reveal">
+            <div class="timeline-badge"></div>
+            <div class="timeline-content">
+              <div class="timeline-date">Maret 2023</div>
+              <h4>Awal Pertemuan Pertama</h4>
+              <p>
+                Kami pertama kali bertemu secara tidak sengaja dalam sebuah seminar pameran desain industri kreatif di Jakarta Barat. Sebuah obrolan santai tentang karya seni visual menjadi awal mula ketertarikan kami satu sama lain.
+              </p>
+              <div class="timeline-img">
+                <img src="assets/images/image8.png" alt="Awal Pertemuan">
+              </div>
+            </div>
+          </div>
+          
+          <!-- Timeline Item 2 -->
+          <div class="timeline-item reveal">
+            <div class="timeline-badge"></div>
+            <div class="timeline-content">
+              <div class="timeline-date">Desember 2024</div>
+              <h4>Momen Lamaran (Proposal)</h4>
+              <p>
+                Setelah hampir dua tahun saling mengenal dan memantapkan komitmen bersama, Johan melamar Joan di hadapan keluarga dekat dalam sebuah perayaan hangat sederhana. Cincin pertunangan tersemat indah sebagai pengikat janji suci kami.
+              </p>
+              <div class="timeline-img">
+                <img src="assets/images/proposal.png" alt="Pertunangan">
+              </div>
+            </div>
+          </div>
+          
+          <!-- Timeline Item 3 -->
+          <div class="timeline-item reveal">
+            <div class="timeline-badge"></div>
+            <div class="timeline-content">
+              <div class="timeline-date">September 2026</div>
+              <h4>Pernikahan Suci Kami</h4>
+              <p>
+                Hari yang kami tunggu-tunggu akhirnya tiba. Bersama restu kedua orang tua dan doa tulus sahabat sekalian, kami mengikat janji sehidup semati dalam akad nikah suci dan resepsi pernikahan indah ini.
+              </p>
+              <div class="timeline-img">
+                <img src="assets/images/couple-walk.png" alt="Pernikahan">
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </section>
+
+      <!-- 7. Gallery Section -->
+      <section id="gallery" class="gallery-section">
+        <div class="ornament-corner-tr"></div>
+        <div class="ornament-corner-bl"></div>
+        
+        <div class="section-header reveal">
+          <p class="subtitle">Galeri Momen</p>
+          <h2 class="title">Album Foto</h2>
+          <div class="divider">
+            <span></span>
+            <i class="fa-solid fa-images"></i>
+            <span></span>
+          </div>
+        </div>
+        
+        <!-- Grid layout gallery -->
+        <div class="gallery-grid reveal">
+          <div class="gallery-item" data-src="assets/images/image8.png">
+            <img src="assets/images/image8.png" alt="Galeri Foto 1">
+            <div class="gallery-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+          </div>
+          <div class="gallery-item" data-src="assets/images/couple-walk.png">
+            <img src="assets/images/couple-walk.png" alt="Galeri Foto 2">
+            <div class="gallery-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+          </div>
+          <div class="gallery-item" data-src="assets/images/proposal.png">
+            <img src="assets/images/proposal.png" alt="Galeri Foto 3">
+            <div class="gallery-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+          </div>
+          <div class="gallery-item" data-src="assets/images/groom.png">
+            <img src="assets/images/groom.png" alt="Galeri Foto 4">
+            <div class="gallery-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+          </div>
+          <div class="gallery-item" data-src="assets/images/bride.png">
+            <img src="assets/images/bride.png" alt="Galeri Foto 5">
+            <div class="gallery-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+          </div>
+          <div class="gallery-item" data-src="assets/images/image1.jpg">
+            <img src="assets/images/image1.jpg" alt="Galeri Foto 6">
+            <div class="gallery-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+          </div>
+        </div>
+
+        <!-- Lightbox Pop-up -->
+        <div id="lightbox" class="lightbox">
+          <div class="lightbox-content">
+            <button class="lightbox-close" aria-label="Tutup Galeri"><i class="fa-solid fa-xmark"></i></button>
+            <button class="lightbox-nav lightbox-prev" aria-label="Sebelumnya"><i class="fa-solid fa-chevron-left"></i></button>
+            <img src="" alt="Perbesar Gambar">
+            <button class="lightbox-nav lightbox-next" aria-label="Berikutnya"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8. Dress Code Section -->
+      <section id="dresscode" class="dresscode-section bg-mauve">
+        <div class="ornament-corner-tr" style="opacity: 0.25;"></div>
+        <div class="ornament-corner-bl" style="opacity: 0.25;"></div>
+        
+        <div class="section-header reveal">
+          <p class="subtitle" style="color: var(--accent-gold-warm);">Panduan Tamu</p>
+          <h2 class="title" style="color: white;">Dress Code</h2>
+          <div class="divider">
+            <span style="background-color: var(--accent-gold-warm);"></span>
+            <i class="fa-solid fa-shirt" style="color: var(--accent-gold-warm);"></i>
+            <span style="background-color: var(--accent-gold-warm);"></span>
+          </div>
+        </div>
+        
+        <div class="dresscode-card reveal">
+          <div class="dresscode-icons">
+            <div class="dress-item">
+              <i class="fa-solid fa-user-tie"></i>
+              <span>Pria: Batik / Jas Formal</span>
+            </div>
+            <div class="dress-item">
+              <i class="fa-solid fa-person-dress"></i>
+              <span>Wanita: Gaun / Kebaya</span>
+            </div>
+          </div>
+          
+          <p class="dresscode-desc">
+            Tanpa mengurangi rasa hormat, tamu undangan disarankan mengenakan pakaian formal, sopan, dan rapi demi menyelaraskan keserasian acara pernikahan kami.
+          </p>
+          
+          <p style="font-size: 0.8rem; font-weight: 600; color: var(--primary-teal-dark);">Rekomendasi Tema Palet Warna:</p>
+          
+          <div class="dresscode-colors">
+            <div class="color-dot" style="background-color: #4E7B82;" data-label="Teal"></div>
+            <div class="color-dot" style="background-color: #C7AC4C;" data-label="Gold"></div>
+            <div class="color-dot" style="background-color: #E6DCAC; color: #333;" data-label="Cream"></div>
+            <div class="color-dot" style="background-color: #FFFFFF; border: 3px solid #ddd; color: #333;" data-label="White"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9. Digital Wallet Section -->
+      <section id="gift" class="gift-section">
+        <div class="ornament-side-l"></div>
+        <div class="ornament-side-r"></div>
+        
+        <div class="section-header reveal">
+          <p class="subtitle">Kirim Kado</p>
+          <h2 class="title">Amplop Digital</h2>
+          <div class="divider">
+            <span></span>
+            <i class="fa-solid fa-gift"></i>
+            <span></span>
+          </div>
+        </div>
+        
+        <p class="gift-intro reveal">
+          Bagi Bapak/Ibu/Saudara/i yang ingin memberikan tanda kasih atau ucapan restu secara cashless, dapat mengirimkan kado digital melalui rekening/e-wallet berikut:
+        </p>
+        
+        <div class="wallets-container">
+          
+          <!-- Bank BCA Card -->
+          <div class="wallet-card reveal">
+            <div class="bank-logo">BCA</div>
+            <div class="wallet-number">1245 879 908</div>
+            <div class="wallet-owner">a.n. JOHAN PRASETYO</div>
+            <button class="btn-copy" data-num="1245879908">
+              <i class="fa-regular fa-copy"></i> Salin No. Rekening
+            </button>
+          </div>
+          
+          <!-- Bank Mandiri Card -->
+          <div class="wallet-card reveal">
+            <div class="bank-logo mandiri">Mandiri</div>
+            <div class="wallet-number">133-00-567890-1</div>
+            <div class="wallet-owner">a.n. JOANA LESTARI</div>
+            <button class="btn-copy" data-num="133005678901">
+              <i class="fa-regular fa-copy"></i> Salin No. Rekening
+            </button>
+          </div>
+          
+          <!-- E-Wallet Dana Card -->
+          <div class="wallet-card reveal">
+            <div class="bank-logo gopay" style="color: #118ee9;">DANA</div>
+            <div class="wallet-number">0812 3456 7890</div>
+            <div class="wallet-owner">a.n. JOHAN PRASETYO</div>
+            <button class="btn-copy" data-num="081234567890">
+              <i class="fa-regular fa-copy"></i> Salin Nomor E-Wallet
+            </button>
+          </div>
+          
+        </div>
+      </section>
+
+      <!-- 10. RSVP Section -->
+      <section id="rsvp" class="rsvp-section bg-dark">
+        <div class="ornament-corner-tr" style="opacity: 0.25;"></div>
+        <div class="ornament-corner-bl" style="opacity: 0.25;"></div>
+        
+        <div class="section-header reveal">
+          <p class="subtitle" style="color: var(--accent-gold-warm);">Konfirmasi Kehadiran</p>
+          <h2 class="title" style="color: white;">RSVP</h2>
+          <div class="divider">
+            <span style="background-color: var(--accent-gold-warm);"></span>
+            <i class="fa-solid fa-pen-clip" style="color: var(--accent-gold-warm);"></i>
+            <span style="background-color: var(--accent-gold-warm);"></span>
+          </div>
+        </div>
+        
+        <div class="rsvp-card reveal">
+          <form id="rsvp-form" class="rsvp-form">
+            <div class="form-group">
+              <label for="rsvp-name">Nama Tamu *</label>
+              <input type="text" id="rsvp-name" placeholder="Contoh: Bapak Budi Santoso" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="rsvp-phone">Nomor WhatsApp *</label>
+              <input type="tel" id="rsvp-phone" placeholder="Contoh: 08123456789" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="rsvp-guests">Jumlah Tamu Kehadiran</label>
+              <select id="rsvp-guests">
+                <option value="1">1 Orang</option>
+                <option value="2">2 Orang</option>
+                <option value="3">3 Orang</option>
+                <option value="4">4 Orang</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label>Status Kehadiran *</label>
+              <div class="form-radio-group">
+                <label class="form-radio-option">
+                  <input type="radio" name="rsvp-status" value="hadir" checked>
+                  <span>Hadir</span>
+                </label>
+                <label class="form-radio-option">
+                  <input type="radio" name="rsvp-status" value="absen">
+                  <span>Absen (Berhalangan)</span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="rsvp-message">Pesan / Ucapan Tambahan</label>
+              <textarea id="rsvp-message" rows="3" placeholder="Tuliskan ucapan selamat atau catatan di sini..."></textarea>
+            </div>
+            
+            <button type="submit" class="btn-submit">
+              <i class="fa-solid fa-paper-plane"></i> Kirim Konfirmasi Kehadiran
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- 11. Comment / Wish Section -->
+      <section id="wishes" class="wishes-section">
+        <div class="ornament-side-l"></div>
+        <div class="ornament-side-r"></div>
+        
+        <div class="section-header reveal">
+          <p class="subtitle">Buku Tamu</p>
+          <h2 class="title">Ucapan &amp; Doa Restu</h2>
+          <div class="divider">
+            <span></span>
+            <i class="fa-solid fa-message"></i>
+            <span></span>
+          </div>
+        </div>
+        
+        <div class="wishes-card reveal">
+          <form id="wish-form" class="rsvp-form">
+            <div class="form-group">
+              <label for="wish-name">Nama Pengirim</label>
+              <input type="text" id="wish-name" placeholder="Tuliskan nama Anda..." required>
+            </div>
+            
+            <div class="form-group">
+              <label for="wish-status">Rencana Kehadiran</label>
+              <select id="wish-status">
+                <option value="hadir">Hadir</option>
+                <option value="absen">Berhalangan</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="wish-message">Ucapan / Doa Restu</label>
+              <textarea id="wish-message" rows="3" placeholder="Tulis ucapan doa restu Anda untuk kedua mempelai..." required></textarea>
+            </div>
+            
+            <button type="submit" class="btn-submit">
+              <i class="fa-solid fa-message"></i> Kirim Ucapan Doa Restu
+            </button>
+          </form>
+          
+          <!-- Comments List Feed -->
+          <div class="wishes-list" id="wishes-list">
+            <!-- Appended via JavaScript -->
+          </div>
+          
+          <!-- Pagination Buttons -->
+          <div class="wish-pagination" id="wish-pagination">
+            <!-- Appended via JavaScript -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 12. Penutup (Closing Section) -->
+      <section id="closing" class="closing-section bg-dark">
+        <div class="ornament-corner-tr" style="opacity: 0.25;"></div>
+        <div class="ornament-corner-bl" style="opacity: 0.25;"></div>
+        
+        <div class="closing-content reveal">
+          <p class="closing-msg">
+            Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu kepada kedua mempelai.
+          </p>
+          <p style="font-size: 0.95rem; font-weight: 500; color: var(--accent-gold-warm); margin-bottom: 30px;">
+            Wassalamualaikum Warahmatullahi Wabarakatuh
+          </p>
+          <p style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.6);">Kami yang berbahagia</p>
+          <div class="closing-names">Johan &amp; Joana</div>
+          <div class="closing-date">01 September 2026</div>
+        </div>
+      </section>
+
+      <!-- Footer copyright -->
+      <footer>
+        <p>&copy; 2026 Johan &amp; Joana. All Rights Reserved.</p>
+        <p>Didesain dengan <i class="fa-solid fa-heart" style="color: #e53e3e;"></i> untuk Replikasi PPT Template.</p>
+      </footer>
+
+    </div>
+  </div>
+
+  <!-- Custom JavaScript application script -->
+  <script src="app.js"></script>
+</body>
+</html>

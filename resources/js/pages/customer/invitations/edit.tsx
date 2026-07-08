@@ -1195,6 +1195,11 @@ function ThemeTab({
     slug: string;
 }) {
     const [pendingId,   setPendingId]   = useState<number>(currentTheme.id);
+
+    useEffect(() => {
+        setPendingId(currentTheme.id);
+    }, [currentTheme.id]);
+
     const [categoryFilter, setCategory] = useState('');
     const [search,      setSearch]      = useState('');
     const [saving,      setSaving]      = useState(false);
