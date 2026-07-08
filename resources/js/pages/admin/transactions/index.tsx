@@ -64,7 +64,7 @@ interface TransactionData {
     payment_url: string | null;
     user: { id: number; name: string; email: string } | null;
     invitation: { id: number; slug: string; title: string; status: string } | null;
-    package: { id: number; label: string; description: string | null; duration_days: number } | null;
+    package: { id: number; label: string; description: string | null; duration_days: number; invitation_type: string | null } | null;
     payments: PaymentRecord[];
 }
 
@@ -77,11 +77,33 @@ interface SummaryData {
     revenue: number;
 }
 
+interface FilterOption {
+    value: string;
+    label: string;
+}
+
+interface TransactionFilters {
+    status: string;
+    invitation_type: string;
+    customer: string;
+    date_from: string;
+    date_to: string;
+}
+
+interface FilterOptions {
+    statuses: FilterOption[];
+    types: FilterOption[];
+    customers: FilterOption[];
+}
+
 interface PageProps {
     transactions: TransactionData[];
     pendingTransactions: TransactionData[];
     summary: SummaryData;
     selectedTransactionId: number | null;
+    selectedTransaction: TransactionData | null;
+    filters: TransactionFilters;
+    filterOptions: FilterOptions;
     flash: { success?: string | null; error?: string | null };
     [key: string]: unknown;
 }
@@ -131,6 +153,20 @@ function formatDate(value: string | null): string {
         month: 'long',
         year: 'numeric',
     });
+}
+
+function serializeFilters(filters: TransactionFilters): string {
+    const params = new URLSearchParams();
+
+    (Object.entries(filters) as Array<[keyof TransactionFilters, string]>).forEach(([key, value]) => {
+        const trimmed = value.trim();
+
+        if (trimmed) {
+            params.set(key, trimmed);
+        }
+    });
+
+    return params.toString();
 }
 
 function FlashBanner() {
@@ -241,12 +277,12 @@ function DetailRow({
     );
 }
 
-function TransactionRow({ tx, selected }: { tx: TransactionData; selected: boolean }) {
+function TransactionRow({ tx, selected, detailHref }: { tx: TransactionData; selected: boolean; detailHref: string }) {
     const latestPayment = tx.latest_payment;
 
     return (
         <Link
-            href={`/admin/transactions/${tx.id}`}
+            href={detailHref}
             preserveScroll
             className={`group block rounded-2xl border p-4 transition-all ${
                 selected
@@ -320,7 +356,7 @@ function TransactionRow({ tx, selected }: { tx: TransactionData; selected: boole
     );
 }
 
-function PendingPaymentCard({ tx }: { tx: TransactionData }) {
+function PendingPaymentCard({ tx, detailHref }: { tx: TransactionData; detailHref: string }) {
     return (
         <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4 shadow-sm dark:border-amber-900/30 dark:bg-amber-950/20">
             <div className="flex items-start justify-between gap-4">
@@ -352,7 +388,7 @@ function PendingPaymentCard({ tx }: { tx: TransactionData }) {
 
             <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                 <Link
-                    href={`/admin/transactions/${tx.id}`}
+                    href={detailHref}
                     className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-200 bg-white px-3 py-2 text-xs font-medium text-amber-900 transition-colors hover:bg-amber-100 dark:border-amber-900/40 dark:bg-background dark:text-amber-200 dark:hover:bg-amber-950/40"
                 >
                     Detail <ArrowRight className="size-3.5" />
@@ -377,19 +413,154 @@ function PendingPaymentCard({ tx }: { tx: TransactionData }) {
     );
 }
 
+function TransactionFiltersCard({
+    filters,
+    filterOptions,
+    activeFilterCount,
+    onSubmit,
+    onReset,
+}: {
+    filters: TransactionFilters;
+    filterOptions: FilterOptions;
+    activeFilterCount: number;
+    onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+    onReset: () => void;
+}) {
+    const fieldClass =
+        'w-full rounded-xl border border-border/60 bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10';
+
+    return (
+        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Filter</p>
+                    <h2 className="mt-2 text-base font-semibold text-foreground">Filter Transaksi</h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        Saring data berdasarkan status pembayaran, tipe undangan, customer, dan rentang tanggal transaksi.
+                    </p>
+                </div>
+
+                {activeFilterCount > 0 ? (
+                    <Badge variant="outline" className="border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary">
+                        {activeFilterCount} filter aktif
+                    </Badge>
+                ) : (
+                    <Badge variant="outline" className="border-border/60 bg-muted/40 px-3 py-1 text-xs font-medium text-muted-foreground">
+                        Semua data
+                    </Badge>
+                )}
+            </div>
+
+            <form className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-5" onSubmit={onSubmit}>
+                <label className="space-y-2">
+                    <span className="text-xs font-medium text-muted-foreground">Status Pembayaran</span>
+                    <select name="status" defaultValue={filters.status} className={fieldClass}>
+                        <option value="">Semua status</option>
+                        {filterOptions.statuses.map((option) => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+
+                <label className="space-y-2">
+                    <span className="text-xs font-medium text-muted-foreground">Tipe Undangan</span>
+                    <select name="invitation_type" defaultValue={filters.invitation_type} className={fieldClass}>
+                        <option value="">Semua tipe</option>
+                        {filterOptions.types.map((option) => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+
+                <label className="space-y-2">
+                    <span className="text-xs font-medium text-muted-foreground">Customer</span>
+                    <select name="customer" defaultValue={filters.customer} className={fieldClass}>
+                        <option value="">Semua customer</option>
+                        {filterOptions.customers.map((option) => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+
+                <label className="space-y-2">
+                    <span className="text-xs font-medium text-muted-foreground">Dari Tanggal</span>
+                    <input type="date" name="date_from" defaultValue={filters.date_from} className={fieldClass} />
+                </label>
+
+                <label className="space-y-2">
+                    <span className="text-xs font-medium text-muted-foreground">Sampai Tanggal</span>
+                    <input type="date" name="date_to" defaultValue={filters.date_to} className={fieldClass} />
+                </label>
+
+                <div className="flex flex-col gap-2 md:col-span-2 xl:col-span-5 sm:flex-row sm:justify-end">
+                    <Button type="button" variant="outline" onClick={onReset} className="rounded-xl">
+                        Reset
+                    </Button>
+                    <Button type="submit" className="rounded-xl">
+                        Terapkan Filter
+                    </Button>
+                </div>
+            </form>
+        </div>
+    );
+}
+
 export default function AdminTransactionsIndex() {
-    const { transactions, pendingTransactions, summary, selectedTransactionId } = usePage<PageProps>().props;
+    const { transactions, pendingTransactions, summary, selectedTransactionId, selectedTransaction, filters, filterOptions } =
+        usePage<PageProps>().props;
     const [actioning, setActioning] = useState<'approve' | 'reject' | null>(null);
 
+    const filterQuery = serializeFilters(filters);
+    const activeFilterCount = Object.values(filters).filter((value) => value.trim() !== '').length;
+    const hasActiveFilters = activeFilterCount > 0;
+
     const activeTransactionId = selectedTransactionId ?? transactions[0]?.id ?? null;
-    const activeTransaction = transactions.find((transaction) => transaction.id === activeTransactionId) ?? null;
+    const activeTransaction =
+        selectedTransaction ?? transactions.find((transaction) => transaction.id === activeTransactionId) ?? null;
+
+    function buildDetailHref(transactionId: number) {
+        return filterQuery ? `/admin/transactions/${transactionId}?${filterQuery}` : `/admin/transactions/${transactionId}`;
+    }
+
+    function handleSubmitFilters(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+
+        const formData = new FormData(event.currentTarget);
+        const nextFilters: Record<string, string> = {};
+
+        formData.forEach((value, key) => {
+            if (typeof value === 'string' && value.trim() !== '') {
+                nextFilters[key] = value.trim();
+            }
+        });
+
+        router.get('/admin/transactions', nextFilters, {
+            preserveScroll: true,
+            replace: true,
+        });
+    }
+
+    function handleResetFilters() {
+        router.get('/admin/transactions', {}, {
+            preserveScroll: true,
+            replace: true,
+        });
+    }
 
     function handleApprove() {
         if (!activeTransaction) return;
 
         setActioning('approve');
         router.patch(
-            `/admin/transactions/${activeTransaction.id}/approve`,
+            filterQuery
+                ? `/admin/transactions/${activeTransaction.id}/approve?${filterQuery}`
+                : `/admin/transactions/${activeTransaction.id}/approve`,
             {},
             {
                 preserveScroll: true,
@@ -403,7 +574,9 @@ export default function AdminTransactionsIndex() {
 
         setActioning('reject');
         router.patch(
-            `/admin/transactions/${activeTransaction.id}/reject`,
+            filterQuery
+                ? `/admin/transactions/${activeTransaction.id}/reject?${filterQuery}`
+                : `/admin/transactions/${activeTransaction.id}/reject`,
             {},
             {
                 preserveScroll: true,
@@ -431,6 +604,15 @@ export default function AdminTransactionsIndex() {
                 </div>
 
                 <FlashBanner />
+
+                <TransactionFiltersCard
+                    key={filterQuery || 'all'}
+                    filters={filters}
+                    filterOptions={filterOptions}
+                    activeFilterCount={activeFilterCount}
+                    onSubmit={handleSubmitFilters}
+                    onReset={handleResetFilters}
+                />
 
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
                     <SummaryCard
@@ -486,7 +668,7 @@ export default function AdminTransactionsIndex() {
 
                         <div className="mt-4 grid gap-3 lg:grid-cols-2 2xl:grid-cols-3">
                             {pendingTransactions.map((transaction) => (
-                                <PendingPaymentCard key={transaction.id} tx={transaction} />
+                                <PendingPaymentCard key={transaction.id} tx={transaction} detailHref={buildDetailHref(transaction.id)} />
                             ))}
                         </div>
                     </div>
@@ -497,9 +679,7 @@ export default function AdminTransactionsIndex() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <h2 className="text-base font-semibold text-foreground">Daftar Transaksi</h2>
-                                <p className="text-sm text-muted-foreground">
-                                    Klik salah satu transaksi untuk membuka detail di panel kanan.
-                                </p>
+                                <p className="text-sm text-muted-foreground">Klik salah satu transaksi untuk membuka detail di panel kanan.</p>
                             </div>
                             <Badge variant="outline" className="border-border/60 bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
                                 {transactions.length.toLocaleString('id-ID')} data
@@ -509,9 +689,13 @@ export default function AdminTransactionsIndex() {
                         {transactions.length === 0 ? (
                             <div className="rounded-2xl border border-dashed border-border/60 bg-card px-6 py-14 text-center shadow-sm">
                                 <CreditCard className="mx-auto size-10 text-muted-foreground/40" />
-                                <h3 className="mt-4 text-sm font-semibold text-foreground">Belum ada transaksi</h3>
+                                <h3 className="mt-4 text-sm font-semibold text-foreground">
+                                    {hasActiveFilters ? 'Tidak ada transaksi yang cocok' : 'Belum ada transaksi'}
+                                </h3>
                                 <p className="mt-1 text-sm text-muted-foreground">
-                                    Semua transaksi pesanan undangan akan muncul di sini setelah ada pembayaran.
+                                    {hasActiveFilters
+                                        ? 'Coba ubah atau hapus filter agar data transaksi lain muncul.'
+                                        : 'Semua transaksi pesanan undangan akan muncul di sini setelah ada pembayaran.'}
                                 </p>
                             </div>
                         ) : (
@@ -521,6 +705,7 @@ export default function AdminTransactionsIndex() {
                                         key={transaction.id}
                                         tx={transaction}
                                         selected={transaction.id === activeTransactionId}
+                                        detailHref={buildDetailHref(transaction.id)}
                                     />
                                 ))}
                             </div>

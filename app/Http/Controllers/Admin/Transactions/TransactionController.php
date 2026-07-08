@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Admin\Transactions;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
+use App\Models\User;
 use App\Models\Transaction;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -13,26 +17,43 @@ use Inertia\Response;
 
 class TransactionController extends Controller
 {
-    public function index(): Response
+    private const STATUS_LABELS = [
+        'pending' => 'Menunggu Pembayaran',
+        'paid' => 'Lunas',
+        'failed' => 'Gagal',
+        'cancelled' => 'Dibatalkan',
+        'expired' => 'Kadaluarsa',
+    ];
+
+    private const TYPE_LABELS = [
+        'pernikahan' => 'Pernikahan',
+        'ulang_tahun' => 'Ulang Tahun',
+        'khitanan' => 'Khitanan',
+        'aqiqah' => 'Aqiqah',
+        'gender_reveal' => 'Gender Reveal',
+        'syukuran' => 'Syukuran',
+    ];
+
+    public function index(Request $request): Response
     {
-        return $this->renderIndex();
+        return $this->renderIndex($request);
     }
 
-    public function payments(): Response
+    public function payments(Request $request): Response
     {
-        return $this->renderPayments();
+        return $this->renderPayments($request);
     }
 
-    public function show(Transaction $transaction): Response
+    public function show(Transaction $transaction, Request $request): Response
     {
-        return $this->renderIndex($transaction->id);
+        return $this->renderIndex($request, $transaction->id);
     }
 
-    public function approve(Transaction $transaction): RedirectResponse
+    public function approve(Transaction $transaction, Request $request): RedirectResponse
     {
         if ($transaction->status !== 'pending') {
             return redirect()
-                ->route('admin.transactions.show', $transaction)
+                ->route('admin.transactions.show', array_merge(['transaction' => $transaction], $request->query()))
                 ->with('error', 'Hanya transaksi pending yang bisa dikonfirmasi.');
         }
 
@@ -53,15 +74,15 @@ class TransactionController extends Controller
         });
 
         return redirect()
-            ->route('admin.transactions.show', $transaction)
+            ->route('admin.transactions.show', array_merge(['transaction' => $transaction], $request->query()))
             ->with('success', "Transaksi {$transaction->invoice_number} berhasil dikonfirmasi.");
     }
 
-    public function reject(Transaction $transaction): RedirectResponse
+    public function reject(Transaction $transaction, Request $request): RedirectResponse
     {
         if ($transaction->status !== 'pending') {
             return redirect()
-                ->route('admin.transactions.show', $transaction)
+                ->route('admin.transactions.show', array_merge(['transaction' => $transaction], $request->query()))
                 ->with('error', 'Hanya transaksi pending yang bisa ditolak.');
         }
 
@@ -82,52 +103,168 @@ class TransactionController extends Controller
         });
 
         return redirect()
-            ->route('admin.transactions.show', $transaction)
+            ->route('admin.transactions.show', array_merge(['transaction' => $transaction], $request->query()))
             ->with('success', "Transaksi {$transaction->invoice_number} ditolak secara manual.");
     }
 
-    private function renderIndex(?int $selectedTransactionId = null): Response
+    private function renderIndex(Request $request, ?int $selectedTransactionId = null): Response
     {
-        $payload = $this->buildPayload($selectedTransactionId);
+        $payload = $this->buildPayload($request, $selectedTransactionId, true);
 
         return Inertia::render('admin/transactions/index', $payload);
     }
 
-    private function renderPayments(): Response
+    private function renderPayments(Request $request): Response
     {
-        $payload = $this->buildPayload();
+        $payload = $this->buildPayload($request, null, false);
 
         return Inertia::render('admin/transactions/payments', $payload);
     }
 
-    private function buildPayload(?int $selectedTransactionId = null): array
+    private function buildPayload(Request $request, ?int $selectedTransactionId = null, bool $applyFilters = true): array
     {
-        $transactions = Transaction::with([
+        $filters = $applyFilters ? $this->extractFilters($request) : $this->emptyFilters();
+
+        $query = Transaction::with([
             'user:id,name,email',
             'invitation:id,slug,title,status',
-            'package:id,label,description,duration_days',
+            'package:id,label,description,duration_days,invitation_type',
             'payments' => fn ($query) => $query->orderByDesc('created_at'),
-        ])
-            ->latest()
+        ]);
+
+        if ($applyFilters) {
+            $this->applyFilters($query, $filters);
+        }
+
+        $summaryTransactions = (clone $query)->get();
+        $transactions = (clone $query)
+            ->orderByDesc('created_at')
             ->get();
 
         $transactionsData = $transactions->map(fn (Transaction $transaction) => $this->mapTransaction($transaction))->values();
         $pendingTransactions = $transactionsData->where('status', 'pending')->values();
+        $selectedTransaction = null;
 
         $selectedTransactionId ??= data_get($pendingTransactions->first() ?? $transactionsData->first(), 'id');
 
+        if ($selectedTransactionId) {
+            $selectedTransaction = $transactions->firstWhere('id', $selectedTransactionId);
+
+            if (! $selectedTransaction) {
+                $selectedTransaction = Transaction::with([
+                    'user:id,name,email',
+                    'invitation:id,slug,title,status',
+                    'package:id,label,description,duration_days,invitation_type',
+                    'payments' => fn ($query) => $query->orderByDesc('created_at'),
+                ])->find($selectedTransactionId);
+            }
+        }
+
         return [
-            'transactions'          => $transactionsData,
-            'pendingTransactions'   => $pendingTransactions,
-            'summary'               => [
-                'total'          => $transactions->count(),
-                'pending'        => $transactions->where('status', 'pending')->count(),
-                'pending_amount' => (float) $transactions->where('status', 'pending')->sum('invoice_amount'),
-                'paid'           => $transactions->where('status', 'paid')->count(),
-                'rejected'       => $transactions->whereIn('status', ['failed', 'cancelled', 'expired'])->count(),
-                'revenue'        => (float) Transaction::where('status', 'paid')->sum('invoice_amount'),
+            'transactions'        => $transactionsData,
+            'pendingTransactions' => $pendingTransactions,
+            'summary'             => [
+                'total'          => $summaryTransactions->count(),
+                'pending'        => $summaryTransactions->where('status', 'pending')->count(),
+                'pending_amount' => (float) $summaryTransactions->where('status', 'pending')->sum('invoice_amount'),
+                'paid'           => $summaryTransactions->where('status', 'paid')->count(),
+                'rejected'       => $summaryTransactions->whereIn('status', ['failed', 'cancelled', 'expired'])->count(),
+                'revenue'        => (float) $summaryTransactions->where('status', 'paid')->sum('invoice_amount'),
             ],
             'selectedTransactionId' => $selectedTransactionId ? (int) $selectedTransactionId : null,
+            'selectedTransaction'   => $selectedTransaction ? $this->mapTransaction($selectedTransaction) : null,
+            'filters'               => $filters,
+            'filterOptions'         => $this->buildFilterOptions(),
+        ];
+    }
+
+    private function emptyFilters(): array
+    {
+        return [
+            'status'           => '',
+            'invitation_type'   => '',
+            'customer'         => '',
+            'date_from'        => '',
+            'date_to'          => '',
+        ];
+    }
+
+    private function extractFilters(Request $request): array
+    {
+        return [
+            'status' => $this->normalizeFilterValue($request->query('status')),
+            'invitation_type' => $this->normalizeFilterValue($request->query('invitation_type')),
+            'customer' => $this->normalizeFilterValue($request->query('customer')),
+            'date_from' => $this->normalizeFilterValue($request->query('date_from')),
+            'date_to' => $this->normalizeFilterValue($request->query('date_to')),
+        ];
+    }
+
+    private function normalizeFilterValue(mixed $value): string
+    {
+        return is_string($value) ? trim($value) : '';
+    }
+
+    private function applyFilters(Builder $query, array $filters): void
+    {
+        if ($filters['status'] !== '' && isset(self::STATUS_LABELS[$filters['status']])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if ($filters['invitation_type'] !== '' && isset(self::TYPE_LABELS[$filters['invitation_type']])) {
+            $query->whereHas('package', function (Builder $packageQuery) use ($filters): void {
+                $packageQuery->where('invitation_type', $filters['invitation_type']);
+            });
+        }
+
+        if ($filters['customer'] !== '' && ctype_digit($filters['customer'])) {
+            $query->where('user_id', (int) $filters['customer']);
+        }
+
+        if ($dateFrom = $this->parseFilterDate($filters['date_from'])) {
+            $query->where('created_at', '>=', $dateFrom->copy()->startOfDay());
+        }
+
+        if ($dateTo = $this->parseFilterDate($filters['date_to'])) {
+            $query->where('created_at', '<=', $dateTo->copy()->endOfDay());
+        }
+    }
+
+    private function parseFilterDate(string $value): ?Carbon
+    {
+        if ($value === '') {
+            return null;
+        }
+
+        try {
+            return Carbon::createFromFormat('Y-m-d', $value);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function buildFilterOptions(): array
+    {
+        return [
+            'statuses' => collect(self::STATUS_LABELS)->map(fn (string $label, string $value) => [
+                'value' => $value,
+                'label' => $label,
+            ])->values()->all(),
+            'types' => collect(self::TYPE_LABELS)->map(fn (string $label, string $value) => [
+                'value' => $value,
+                'label' => $label,
+            ])->values()->all(),
+            'customers' => User::query()
+                ->select(['id', 'name', 'email'])
+                ->whereHas('transactions')
+                ->orderBy('name')
+                ->get()
+                ->map(fn (User $user) => [
+                    'value' => (string) $user->id,
+                    'label' => "{$user->name} ({$user->email})",
+                ])
+                ->values()
+                ->all(),
         ];
     }
 
@@ -179,6 +316,7 @@ class TransactionController extends Controller
                 'label'         => $transaction->package->label,
                 'description'   => $transaction->package->description,
                 'duration_days' => $transaction->package->duration_days,
+                'invitation_type' => $transaction->package->invitation_type,
             ] : null,
             'payments'         => $payments,
         ];

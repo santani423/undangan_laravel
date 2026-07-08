@@ -205,9 +205,7 @@ class TransactionSeeder extends Seeder
         string $currency,
         Carbon $seededAt,
     ): array {
-        $checkoutUrl = $status === 'cancelled'
-            ? null
-            : 'https://checkout.demo.undesia.test/invoices/' . $invoiceNumber;
+        $checkoutUrl = null;
 
         return match ($status) {
             'paid' => [
