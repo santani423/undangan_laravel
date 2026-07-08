@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\Settings\PackageController;
+use App\Http\Controllers\Admin\Transactions\TransactionController;
 use App\Http\Controllers\Admin\Themes\ThemeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -47,9 +48,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
 
     // ─── Keuangan & Transaksi ─────────────────────────────────────────────────
     Route::prefix('transactions')->name('transactions.')->group(function () {
-        Route::get('/', fn () => Inertia::render('admin/transactions/index'))->name('index');
-        Route::get('/payments', fn () => Inertia::render('admin/transactions/payments'))->name('payments');
+        Route::get('/', [TransactionController::class, 'index'])->name('index');
+        Route::get('/payments', [TransactionController::class, 'payments'])->name('payments');
         Route::get('/refunds', fn () => Inertia::render('admin/transactions/refunds'))->name('refunds');
+        Route::get('/{transaction}', [TransactionController::class, 'show'])->name('show');
+        Route::patch('/{transaction}/approve', [TransactionController::class, 'approve'])->name('approve');
+        Route::patch('/{transaction}/reject', [TransactionController::class, 'reject'])->name('reject');
     });
 
     // ─── Konten & Komunitas ───────────────────────────────────────────────────
