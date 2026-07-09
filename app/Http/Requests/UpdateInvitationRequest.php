@@ -7,6 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class UpdateInvitationRequest extends FormRequest
 {
     protected $dontFlash = [
+        'slug',
         'field_values',
         'gallery_items',
         'love_story',
@@ -21,6 +22,7 @@ class UpdateInvitationRequest extends FormRequest
     {
         return [
             'status'                          => 'nullable|in:draft,active,archived',
+            'slug'                            => 'nullable|string|max:255',
             'field_values'                    => 'nullable|array',
             'field_values.*'                  => 'nullable',
             'field_values.groom_child_order'  => ['nullable','integer','min:1','max:50'],

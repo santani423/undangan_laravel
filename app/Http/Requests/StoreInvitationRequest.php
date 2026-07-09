@@ -18,6 +18,7 @@ class StoreInvitationRequest extends FormRequest
     }
 
     protected $dontFlash = [
+        'slug',
         'field_values',
         'gallery_items',
         'love_story',
@@ -35,6 +36,7 @@ class StoreInvitationRequest extends FormRequest
             'theme_id'                        => 'required|exists:themes,id',
             'package_id'                      => 'required|exists:packages,id',
             'invitation_code'                 => 'nullable|string|max:100',
+            'slug'                            => 'nullable|string|max:255',
             'field_values'                    => 'nullable|array',
             'field_values.*'                  => 'nullable',
             'field_values.groom_child_order'  => ['nullable','integer','min:1','max:50'],

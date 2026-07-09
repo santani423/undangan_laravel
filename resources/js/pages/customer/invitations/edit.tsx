@@ -1,5 +1,7 @@
 import ImageCropUpload, { compressImage } from '@/components/image-crop-upload';
+import SlugField from '@/components/invitations/slug-field';
 import CustomerLayout from '@/layouts/customer-layout';
+import { normalizeInvitationSlug, resolveInvitationSlugBase, resolveInvitationSlugSourceLabel } from '@/lib/invitation-slug';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
@@ -1976,12 +1978,18 @@ function ToggleSwitch({ enabled, onChange }: { enabled: boolean; onChange: (v: b
 // ─── Settings Tab ─────────────────────────────────────────────────────────────
 
 function SettingsTab({
-    slug,
+    initialSlug,
+    invitationId,
+    eventTypeName,
+    fieldValues,
     initSettings,
     availableMusic,
     maxMusicMb,
 }: {
-    slug: string;
+    initialSlug: string;
+    invitationId: number;
+    eventTypeName: string;
+    fieldValues: Record<string, string>;
     initSettings: InvitationSettingsData | null;
     availableMusic: MusicTrack[];
     maxMusicMb: number;
@@ -1993,11 +2001,13 @@ function SettingsTab({
     const [greetingMessage,    setGreetingMessage]    = useState(initSettings?.greeting_message    ?? 'Dengan hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di acara kami.');
     const [greetingGuestLabel, setGreetingGuestLabel] = useState(initSettings?.greeting_guest_label ?? 'Tamu Undangan');
     const [greetingButtonText, setGreetingButtonText] = useState(initSettings?.greeting_button_text ?? 'Buka Undangan');
+    const [slug, setSlug] = useState(initialSlug);
+    const [slugError, setSlugError] = useState('');
 
     // ── Invitation code ───────────────────────────────────────────────────────
-    const [code,          setCode]          = useState(initSettings?.invitation_code ?? slug);
+    const [code,          setCode]          = useState(initSettings?.invitation_code ?? initialSlug);
     const [codeEditing,   setCodeEditing]   = useState(false);
-    const [codeDraft,     setCodeDraft]     = useState(initSettings?.invitation_code ?? slug);
+    const [codeDraft,     setCodeDraft]     = useState(initSettings?.invitation_code ?? initialSlug);
     const [codeCopied,    setCodeCopied]    = useState(false);
 
     // ── Music ─────────────────────────────────────────────────────────────────
@@ -2077,7 +2087,7 @@ function SettingsTab({
         setMusicUploading(true);
         const rawCookie = document.cookie.split('; ').find((c) => c.startsWith('XSRF-TOKEN='))?.split('=').slice(1).join('=') ?? '';
         const xsrfToken = rawCookie ? decodeURIComponent(rawCookie) : (document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '');
-        fetch(`/customer/invitations/${slug}/upload-music`, {
+        fetch(`/customer/invitations/${initialSlug}/upload-music`, {
             method: 'POST',
             headers: {
                 'X-XSRF-TOKEN': xsrfToken,
@@ -2101,12 +2111,14 @@ function SettingsTab({
 
     function handleSave() {
         setSaving(true);
-        router.patch(`/customer/invitations/${slug}/settings`, {
+        const normalizedSlug = normalizeInvitationSlug(slug);
+        router.patch(`/customer/invitations/${initialSlug}/settings`, {
             greeting_title:       greetingTitle,
             greeting_message:     greetingMessage,
             greeting_guest_label: greetingGuestLabel,
             greeting_button_text: greetingButtonText,
             invitation_code:      code,
+            slug:                 normalizedSlug,
             music_enabled:        musicEnabled,
             music_autoplay:       musicAutoplay,
             music_loop:           musicLoop,
@@ -2115,13 +2127,20 @@ function SettingsTab({
             music_url:            musicUploadUrl,
             features,
         }, {
+            onError: (errors) => {
+                if (errors.slug) {
+                    setSlugError(String(errors.slug));
+                }
+            },
             onSuccess: () => { setSaveSuccess(true); setTimeout(() => setSaveSuccess(false), 3000); },
             onFinish:  () => setSaving(false),
         });
     }
 
     const selectedLibraryTrack = musicLibrary.find((t) => t.id === musicLibraryId);
-    const previewUrl = `${window.location.origin}/${code}`;
+    const previewUrl = typeof window !== 'undefined'
+        ? `${window.location.origin}/${code}`
+        : `/${code}`;
 
     return (
         <div className="flex flex-col gap-6">
@@ -2228,6 +2247,21 @@ function SettingsTab({
                 </div>
             </section>
 
+            <SlugField
+                value={slug}
+                onChange={(next) => {
+                    setSlugError('');
+                    setSlug(next);
+                }}
+                autoValue={resolveInvitationSlugBase(eventTypeName, fieldValues)}
+                autoSourceLabel={resolveInvitationSlugSourceLabel(eventTypeName)}
+                checkUrl="/customer/invitations/check-slug"
+                excludeId={invitationId}
+                startInAutoMode={false}
+                disabled={saving}
+                serverError={slugError}
+            />
+
             {/* ── 2. Kode Undangan ──────────────────────────────────────────── */}
             <section className="rounded-2xl border border-border bg-card p-5 flex flex-col gap-4">
                 <div className="flex items-center gap-2">
@@ -2235,8 +2269,8 @@ function SettingsTab({
                         <Key className="size-4" />
                     </div>
                     <div>
-                        <h3 className="font-semibold text-foreground text-sm">Kode Undangan</h3>
-                        <p className="text-xs text-muted-foreground">Kode unik yang digunakan sebagai alamat URL undangan</p>
+                        <h3 className="font-semibold text-foreground text-sm">Kode Akses</h3>
+                        <p className="text-xs text-muted-foreground">Kode internal untuk akses dan endpoint RSVP / wishes</p>
                     </div>
                 </div>
 
@@ -3381,7 +3415,17 @@ export default function InvitationsEdit({
             case 'digital_envelope':
                 return <DigitalEnvelopeTab invitationSlug={invitation.slug} initWallets={digitalWallets} />;
             case 'settings':
-                return <SettingsTab slug={invitation.slug} initSettings={invitationSettings} availableMusic={availableMusic ?? []} maxMusicMb={pkg.max_music_upload_mb ?? 10} />;
+                return (
+                    <SettingsTab
+                        initialSlug={invitation.slug}
+                        invitationId={invitation.id}
+                        eventTypeName={eventType.name}
+                        fieldValues={fieldValues}
+                        initSettings={invitationSettings}
+                        availableMusic={availableMusic ?? []}
+                        maxMusicMb={pkg.max_music_upload_mb ?? 10}
+                    />
+                );
             default:
                 return null;
         }

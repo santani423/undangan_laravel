@@ -21,6 +21,8 @@ Route::prefix('customer')->name('customer.')->middleware(['auth'])->group(functi
         Route::get('/create/theme',           [InvitationController::class, 'selectTheme'])->name('create.theme');
         Route::get('/create/detail',          [InvitationController::class, 'createDetail'])->name('create.detail');
         Route::get('/check-code',             [InvitationController::class, 'checkCode'])->name('check-code');
+        Route::get('/check-slug',             [InvitationController::class, 'checkSlug'])->name('check-slug');
+        Route::get('/slug-recommendations',   [InvitationController::class, 'slugRecommendations'])->name('slug.recommendations');
         Route::post('/',                      [InvitationController::class, 'store'])->name('store');
         Route::get('/{invitation}',           fn () => Inertia::render('customer/invitations/show'))->name('show');
         Route::get('/{invitation}/payment',    [PaymentController::class, 'show'])->name('payment');

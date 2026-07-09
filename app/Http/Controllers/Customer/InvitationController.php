@@ -12,11 +12,13 @@ use App\Models\InvitationSetting;
 use App\Models\Package;
 use App\Models\Story;
 use App\Models\Theme;
+use App\Services\InvitationSlugService;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -119,15 +121,48 @@ class InvitationController extends Controller
     public function checkCode(Request $request): \Illuminate\Http\JsonResponse
     {
         $code   = trim((string) $request->query('code', ''));
-        $exists = $code !== '' && Invitation::where('invitation_code', $code)->exists();
+        $exists = $code !== '' && Invitation::withTrashed()->where('invitation_code', $code)->exists();
 
         return response()->json(['available' => !$exists]);
     }
 
+    public function checkSlug(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $slug = $this->slugService()->normalize((string) $request->query('slug', ''));
+        $ignoreInvitationId = $request->integer('exclude_id') ?: null;
+
+        if ($slug === '') {
+            return response()->json([
+                'slug'        => '',
+                'available'   => false,
+                'suggestions' => [],
+            ]);
+        }
+
+        $available = $this->slugService()->isAvailable($slug, $ignoreInvitationId);
+
+        return response()->json([
+            'slug'        => $slug,
+            'available'   => $available,
+            'suggestions' => $available ? [] : $this->slugService()->suggestions($slug, $ignoreInvitationId),
+        ]);
+    }
+
+    public function slugRecommendations(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $slug = $this->slugService()->normalize((string) $request->query('slug', ''));
+        $ignoreInvitationId = $request->integer('exclude_id') ?: null;
+
+        return response()->json([
+            'slug'        => $slug,
+            'suggestions' => $this->slugService()->suggestions($slug, $ignoreInvitationId),
+        ]);
+    }
+
     public function store(\App\Http\Requests\StoreInvitationRequest $request): RedirectResponse
     {
-
-        DB::transaction(function () use ($request) {
+        try {
+            DB::transaction(function () use ($request) {
             // ── Derive title from couple names or fallback ────────────────
             $fields    = $request->input('field_values', []);
             $groomName = $fields['groom_name'] ?? '';
@@ -140,13 +175,14 @@ class InvitationController extends Controller
             };
 
             // ── Generate unique slug ──────────────────────────────────────
-            $base = Str::slug($title) ?: 'undangan';
-            $slug = $base;
-            $n    = 1;
-            while (Invitation::where('slug', $slug)->exists()) {
-                $slug = "{$base}-{$n}";
-                $n++;
-            }
+            $eventType = EventType::findOrFail($request->input('event_type_id'));
+            $slug = $this->resolveSlugForInvitation(
+                $request->input('slug'),
+                $eventType->name,
+                $fields,
+                $title
+            );
+            $this->ensureSlugIsAvailable($slug);
 
             // ── 1. Create Invitation ──────────────────────────────────────
             $rawCode        = $request->input('invitation_code', '');
@@ -283,7 +319,22 @@ class InvitationController extends Controller
                     ]);
                 }
             }
-        });
+            });
+        } catch (QueryException $e) {
+            if ($this->isSlugUniqueConstraintViolation($e)) {
+                throw ValidationException::withMessages([
+                    'slug' => 'Slug sudah digunakan oleh undangan lain. Silakan gunakan slug yang berbeda.',
+                ]);
+            }
+
+            if ($this->isInvitationCodeUniqueConstraintViolation($e)) {
+                throw ValidationException::withMessages([
+                    'invitation_code' => 'Kode undangan sudah digunakan oleh undangan lain. Silakan gunakan kode yang berbeda.',
+                ]);
+            }
+
+            throw $e;
+        }
 
         return redirect()->route('customer.invitations.index')
             ->with('success', 'Undangan berhasil dibuat!');
@@ -709,6 +760,7 @@ class InvitationController extends Controller
             'greeting_guest_label' => 'nullable|string|max:100',
             'greeting_button_text' => 'nullable|string|max:100',
             'invitation_code'      => 'nullable|string|max:100|unique:invitations,invitation_code,' . $invitation->id,
+            'slug'                 => 'nullable|string|max:255',
             'music_enabled'        => 'boolean',
             'music_autoplay'       => 'boolean',
             'music_loop'           => 'boolean',
@@ -718,30 +770,64 @@ class InvitationController extends Controller
             'features'             => 'nullable|array',
         ]);
 
-        // Update invitation_code on invitations table
-        if ($request->filled('invitation_code')) {
-            $invitation->update(['invitation_code' => $request->input('invitation_code')]);
+        try {
+            DB::transaction(function () use ($request, $invitation) {
+                $newSlug = $this->resolveSlugForInvitation(
+                    $request->input('slug', $invitation->slug),
+                    $invitation->eventType?->name ?? 'undangan',
+                    $request->input('field_values', []),
+                    $invitation->title
+                );
+
+                if ($newSlug !== $invitation->slug) {
+                    $this->ensureSlugIsAvailable($newSlug, $invitation->id);
+                    $invitation->slug = $newSlug;
+                }
+
+                // Update invitation_code on invitations table
+                if ($request->filled('invitation_code')) {
+                    $invitation->invitation_code = $request->input('invitation_code');
+                }
+
+                $invitation->save();
+
+                // Update or create invitation settings
+                $invitation->settings()->updateOrCreate(
+                    ['invitation_id' => $invitation->id],
+                    [
+                        'greeting_title'       => $request->input('greeting_title', 'Kepada Yth.'),
+                        'greeting_message'     => $request->input('greeting_message'),
+                        'greeting_guest_label' => $request->input('greeting_guest_label', 'Tamu Undangan'),
+                        'greeting_button_text' => $request->input('greeting_button_text', 'Buka Undangan'),
+                        'music_enabled'        => $request->boolean('music_enabled'),
+                        'music_autoplay'       => $request->boolean('music_autoplay'),
+                        'music_loop'           => $request->boolean('music_loop'),
+                        'music_source'         => $request->input('music_source') ?: null,
+                        'music_library_id'     => $request->input('music_library_id') ?: null,
+                        'music_url'            => $request->input('music_url') ?: null,
+                        'features'             => $request->input('features') ?: null,
+                    ]
+                );
+            });
+        } catch (QueryException $e) {
+            if ($this->isSlugUniqueConstraintViolation($e)) {
+                throw ValidationException::withMessages([
+                    'slug' => 'Slug sudah digunakan oleh undangan lain. Silakan gunakan slug yang berbeda.',
+                ]);
+            }
+
+            if ($this->isInvitationCodeUniqueConstraintViolation($e)) {
+                throw ValidationException::withMessages([
+                    'invitation_code' => 'Kode undangan sudah digunakan oleh undangan lain. Silakan gunakan kode yang berbeda.',
+                ]);
+            }
+
+            throw $e;
         }
 
-        // Update or create invitation settings
-        $invitation->settings()->updateOrCreate(
-            ['invitation_id' => $invitation->id],
-            [
-                'greeting_title'       => $request->input('greeting_title', 'Kepada Yth.'),
-                'greeting_message'     => $request->input('greeting_message'),
-                'greeting_guest_label' => $request->input('greeting_guest_label', 'Tamu Undangan'),
-                'greeting_button_text' => $request->input('greeting_button_text', 'Buka Undangan'),
-                'music_enabled'        => $request->boolean('music_enabled'),
-                'music_autoplay'       => $request->boolean('music_autoplay'),
-                'music_loop'           => $request->boolean('music_loop'),
-                'music_source'         => $request->input('music_source') ?: null,
-                'music_library_id'     => $request->input('music_library_id') ?: null,
-                'music_url'            => $request->input('music_url') ?: null,
-                'features'             => $request->input('features') ?: null,
-            ]
-        );
-
-        return back()->with('success', 'Pengaturan berhasil disimpan.');
+        return redirect()
+            ->route('customer.invitations.settings', $invitation->slug)
+            ->with('success', 'Pengaturan berhasil disimpan.');
     }
 
     public function updateTheme(Request $request, Invitation $invitation): RedirectResponse
@@ -775,6 +861,43 @@ class InvitationController extends Controller
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private function slugService(): InvitationSlugService
+    {
+        return app(InvitationSlugService::class);
+    }
+
+    private function resolveSlugForInvitation(?string $requestedSlug, string $eventTypeName, array $fields = [], ?string $title = null): string
+    {
+        return $this->slugService()->resolveCandidate($requestedSlug, $eventTypeName, $fields, $title);
+    }
+
+    private function ensureSlugIsAvailable(string $slug, ?int $ignoreInvitationId = null): void
+    {
+        if (! $this->slugService()->isAvailable($slug, $ignoreInvitationId)) {
+            throw ValidationException::withMessages([
+                'slug' => 'Slug sudah digunakan oleh undangan lain. Silakan gunakan slug yang berbeda.',
+            ]);
+        }
+    }
+
+    private function isSlugUniqueConstraintViolation(QueryException $exception): bool
+    {
+        $message = $exception->getMessage();
+
+        return str_contains($message, 'invitations.slug')
+            || str_contains($message, 'slug_unique')
+            || (str_contains($message, 'UNIQUE constraint failed') && str_contains($message, 'slug'));
+    }
+
+    private function isInvitationCodeUniqueConstraintViolation(QueryException $exception): bool
+    {
+        $message = $exception->getMessage();
+
+        return str_contains($message, 'invitations.invitation_code')
+            || str_contains($message, 'invitation_code_unique')
+            || (str_contains($message, 'UNIQUE constraint failed') && str_contains($message, 'invitation_code'));
+    }
 
     public function uploadMusic(Request $request, string $slug): \Illuminate\Http\JsonResponse
     {

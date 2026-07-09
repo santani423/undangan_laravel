@@ -11,7 +11,7 @@ use Inertia\Response;
 
 class InvitationPublicController extends Controller
 {
-    public function show(Request $request, string $code, string $visitor = null): Response
+    public function show(Request $request, string $code, ?string $visitor = null): Response
     {
         $visitor = $visitor
         ? urldecode($visitor)
@@ -27,9 +27,22 @@ class InvitationPublicController extends Controller
             'stories'        => fn($q) => $q->where('story_type', 'love_story')->where('is_published', true)->orderBy('display_order'),
             'digitalWallets' => fn($q) => $q->wherePivot('is_displayed', true)->orderByPivot('display_order'),
         ])
-            ->where('invitation_code', $code)
+            ->where('slug', $code)
+            ->first();
 
-            ->firstOrFail();
+        if (! $invitation) {
+            $invitation = Invitation::with([
+                'theme',
+                'settings',
+                'events'         => fn($q) => $q->orderBy('display_order')->orderBy('event_date'),
+                'contents',
+                'galleryPhotos'  => fn($q) => $q->whereIn('category', ['general', 'love_story'])->orderBy('category')->orderBy('display_order'),
+                'stories'        => fn($q) => $q->where('story_type', 'love_story')->where('is_published', true)->orderBy('display_order'),
+                'digitalWallets' => fn($q) => $q->wherePivot('is_displayed', true)->orderByPivot('display_order'),
+            ])
+                ->where('invitation_code', $code)
+                ->firstOrFail();
+        }
         // $invitation = Invitation::where('invitation_code', $code)
  
         // ->first();
@@ -172,7 +185,7 @@ class InvitationPublicController extends Controller
 
         $base = [
             'type'              => $eventType,
-            'code'              => $invitation->invitation_code,
+            'code'              => $invitation->invitation_code ?: $invitation->slug,
             'slug'              => $invitation->slug,
             'title'             => $invitation->title ?? '',
             'guestName'         => $guestName,
@@ -188,8 +201,8 @@ class InvitationPublicController extends Controller
             'allowComments'     => (bool) $invitation->allow_guest_comments,
             'greeting'          => $greeting,
             'featureToggles'    => $featureToggles,
-            'rsvpEndpoint'      => url("/api/inv/{$invitation->invitation_code}/rsvp"),
-            'wishesEndpoint'    => url("/api/inv/{$invitation->invitation_code}/wishes"),
+            'rsvpEndpoint'      => url("/api/inv/" . ($invitation->invitation_code ?: $invitation->slug) . "/rsvp"),
+            'wishesEndpoint'    => url("/api/inv/" . ($invitation->invitation_code ?: $invitation->slug) . "/wishes"),
         ];
 
         if ($features !== null) {

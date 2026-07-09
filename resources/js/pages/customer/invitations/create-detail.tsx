@@ -1,5 +1,7 @@
 import ImageCropUpload, { compressImage } from '@/components/image-crop-upload';
+import SlugField from '@/components/invitations/slug-field';
 import CustomerLayout from '@/layouts/customer-layout';
+import { normalizeInvitationSlug, resolveInvitationSlugBase, resolveInvitationSlugSourceLabel } from '@/lib/invitation-slug';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import {
@@ -1620,6 +1622,8 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
     const [galleryItems,      setGalleryItems]      = useState<GalleryItem[]>([]);
     const [loveStoryEntries,  setLoveStoryEntries]  = useState<LoveStoryEntry[]>([]);
     const [invitationCode,    setInvitationCode]    = useState('');
+    const [slug,              setSlug]              = useState(() => resolveInvitationSlugBase(eventType.name, {}));
+    const [slugError,         setSlugError]         = useState('');
     const [submitting,        setSubmitting]        = useState(false);
 
     function handleFieldChange(key: string, val: string) {
@@ -1628,11 +1632,13 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
 
     function handleSubmit() {
         setSubmitting(true);
+        const normalizedSlug = normalizeInvitationSlug(slug);
         router.post('/customer/invitations', {
             event_type_id:    eventType.id,
             theme_id:         theme.id,
             package_id:       pkg.id,
             invitation_code:  invitationCode || null,
+            slug:             normalizedSlug,
             field_values:     normalizeFieldValuesForSubmit(fieldValues),
             acara_events:  acaraEvents
                 .filter((ev) => ev.name.trim() && ev.date.trim())
@@ -1659,6 +1665,11 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                 photo: entry.photo,
             })),
         }, {
+            onError: (errors) => {
+                if (errors.slug) {
+                    setSlugError(String(errors.slug));
+                }
+            },
             onFinish: () => setSubmitting(false),
         });
     }
@@ -1764,6 +1775,19 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                 <div className="min-h-[300px]">
                     {renderTabContent()}
                 </div>
+
+                <SlugField
+                    value={slug}
+                    onChange={(next) => {
+                        setSlugError('');
+                        setSlug(next);
+                    }}
+                    autoValue={resolveInvitationSlugBase(eventType.name, fieldValues)}
+                    autoSourceLabel={resolveInvitationSlugSourceLabel(eventType.name)}
+                    checkUrl="/customer/invitations/check-slug"
+                    disabled={submitting}
+                    serverError={slugError}
+                />
 
                 {/* Actions */}
                 <div className="flex items-center justify-between border-t border-border/60 pt-4">
