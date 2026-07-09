@@ -9,6 +9,7 @@ import WeddingTheme03 from './themes/wedding/wedding_theme_03/WeddingTheme03';
 import WeddingTheme04 from './themes/wedding/wedding_theme_04/WeddingTheme04';
 import WeddingTheme05 from './themes/wedding/wedding_theme_05/WeddingTheme05';
 import WeddingTheme06 from './themes/wedding/wedding_theme_06/WeddingTheme06';
+import WeddingTheme07 from './themes/wedding/wedding_theme_07/WeddingTheme07';
 
 interface Props {
     invitation: InvitationData;
@@ -49,6 +50,12 @@ function resolveThemeComponent(themeSlug: string, invitation: InvitationData, vi
         case 'wedding_theme_06':
         case 'wedding-theme-06':
             return <WeddingTheme06 invitation={invitation as WeddingInvitation} visitor={visitor} greeting={invitation.greeting} />;
+
+        case 'ambra-tika':
+        case 'undangan-ambra-tika':
+        case 'wedding_theme_07':
+        case 'wedding-theme-07':
+            return <WeddingTheme07 invitation={invitation as WeddingInvitation} visitor={visitor} greeting={invitation.greeting} />;
 
         // Fallback
         default:

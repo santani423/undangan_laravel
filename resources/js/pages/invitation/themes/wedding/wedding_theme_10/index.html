@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Safitri &amp; Saputra — The Wedding Of</title>
+<meta name="description" content="Undangan pernikahan Safitri Dwi Putri &amp; Saputra Nicolas">
+
+<link rel="stylesheet" href="assets/css/fonts.css">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- COVER / OPENING SCREEN                                        -->
+<!-- ============================================================ -->
+<div id="cover" class="cover">
+  <div class="cover__ornament cover__ornament--top" aria-hidden="true"></div>
+  <div class="cover__ornament cover__ornament--bottom" aria-hidden="true"></div>
+
+  <div class="cover__content">
+    <p class="eyebrow cover__eyebrow">The Wedding Of</p>
+    <h1 class="cover__names">
+      <span id="coverGroomName">Saputra</span>
+      <span class="amp">&amp;</span>
+      <span id="coverBrideName">Safitri</span>
+    </h1>
+    <p class="cover__guest-label">Kepada Yth. Bapak/Ibu/Saudara/i</p>
+    <p class="cover__guest-name" id="guestName">Tamu Undangan</p>
+
+    <button id="openInvitationBtn" class="btn btn--gold cover__open-btn">
+      <span class="btn__icon" aria-hidden="true">✉</span>
+      Buka Undangan
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- FLOATING CONTROLS (music + nav) - visible after cover opens   -->
+<!-- ============================================================ -->
+<audio id="bgMusic" loop preload="none">
+  <source src="assets/audio/bg-music.mp3" type="audio/mpeg">
+</audio>
+<button id="musicToggle" class="floating-btn floating-btn--music" aria-label="Putar musik" title="Putar / jeda musik">
+  <span class="music-icon" aria-hidden="true">
+    <span></span><span></span><span></span>
+  </span>
+</button>
+
+<nav id="dotNav" class="dot-nav" aria-label="Navigasi bagian">
+  <a href="#hero" data-label="Home"></a>
+  <a href="#couple" data-label="Mempelai"></a>
+  <a href="#event" data-label="Acara"></a>
+  <a href="#lovestory" data-label="Kisah"></a>
+  <a href="#gallery" data-label="Galeri"></a>
+  <a href="#gift" data-label="Amplop"></a>
+  <a href="#rsvp" data-label="RSVP"></a>
+  <a href="#wishes" data-label="Ucapan"></a>
+</nav>
+
+<main id="mainContent" class="main-content" aria-hidden="true">
+
+  <!-- ============================================================ -->
+  <!-- 1. HERO SECTION                                               -->
+  <!-- ============================================================ -->
+  <section id="hero" class="section hero">
+    <div class="hero__bg-wash" aria-hidden="true"></div>
+    <img class="leaf-deco leaf-deco--hero-tl" src="assets/img/leaf-branch-gold.png" alt="" aria-hidden="true">
+    <img class="leaf-deco leaf-deco--hero-br" src="assets/img/leaf-branch-long.png" alt="" aria-hidden="true">
+    <div class="gold-deco gold-deco--hero-1" aria-hidden="true"></div>
+
+    <div class="hero__inner reveal">
+      <p class="eyebrow">You Are Invited To The Wedding Of</p>
+      <div class="hero__photo-frame">
+        <img src="assets/img/couple-photo-1.jpg" alt="Foto pasangan Saputra dan Safitri">
+      </div>
+      <h1 class="hero__title">
+        <span id="heroGroomName">Saputra</span>
+        <span class="hero__and">and</span>
+        <span id="heroBrideName">Safitri</span>
+      </h1>
+      <p class="hero__date" id="heroDate">08 Januari 2027</p>
+
+      <div class="countdown" id="countdown" aria-label="Hitung mundur hari pernikahan">
+        <div class="countdown__box"><span class="countdown__num" id="cd-days">00</span><span class="countdown__label">Hari</span></div>
+        <div class="countdown__box"><span class="countdown__num" id="cd-hours">00</span><span class="countdown__label">Jam</span></div>
+        <div class="countdown__box"><span class="countdown__num" id="cd-mins">00</span><span class="countdown__label">Menit</span></div>
+        <div class="countdown__box"><span class="countdown__num" id="cd-secs">00</span><span class="countdown__label">Detik</span></div>
+      </div>
+
+      <a href="#couple" class="scroll-hint" aria-label="Gulir ke bawah">
+        <span></span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- Opening Greeting (Bismillah + verse quote)                     -->
+  <!-- ============================================================ -->
+  <section class="section greeting">
+    <img class="leaf-deco leaf-deco--greeting" src="assets/img/leaf-branch-small.png" alt="" aria-hidden="true">
+    <div class="greeting__inner reveal">
+      <img class="greeting__bismillah" src="assets/img/bismillah.png" alt="Bismillahirrahmanirrahim">
+      <p class="greeting__arabic" id="arabicGreeting">Assalamu'alaikum warahmatullahi wabarakatuh</p>
+      <p class="greeting__text" id="openingText">
+        Dengan memohon Rahmat dan Ridho Allah SWT, kami bermaksud menyelenggarakan Resepsi pernikahan putra-putri kami.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 2. COUPLE SECTION                                             -->
+  <!-- ============================================================ -->
+  <section id="couple" class="section couple">
+    <img class="gold-deco gold-deco--couple-1" src="assets/img/gold-splatter-1.png" alt="" aria-hidden="true">
+    <img class="gold-deco gold-deco--couple-2" src="assets/img/gold-splatter-2.png" alt="" aria-hidden="true">
+
+    <div class="section-heading reveal">
+      <p class="eyebrow">Kedua Mempelai</p>
+      <h2 class="section-title">Dengan Penuh Syukur</h2>
+    </div>
+
+    <div class="couple__grid">
+      <article class="couple__card reveal">
+        <div class="couple__photo">
+          <img src="assets/img/couple-photo-1.jpg" alt="Foto Saputra Nicolas">
+        </div>
+        <p class="couple__order" id="groomOrder">Putra pertama</p>
+        <h3 class="couple__name" id="groomFullName">Saputra Nicolas</h3>
+        <p class="couple__parents" id="groomParents">Putra dari Bapak Nicolas &amp; Ibu Wahyuningsih</p>
+        <p class="couple__desc" id="groomDesc"></p>
+        <a class="couple__ig" id="groomIg" href="#" target="_blank" rel="noopener">@saputra.nicolas</a>
+      </article>
+
+      <div class="couple__amp reveal" aria-hidden="true">&amp;</div>
+
+      <article class="couple__card reveal">
+        <div class="couple__photo">
+          <img src="assets/img/couple-photo-2.jpg" alt="Foto Safitri Dwi Putri">
+        </div>
+        <p class="couple__order" id="brideOrder">Putri kedua</p>
+        <h3 class="couple__name" id="brideFullName">Safitri Dwi Putri</h3>
+        <p class="couple__parents" id="brideParents">Putri dari Bapak Stephant &amp; Ibu Nur Hidayah</p>
+        <p class="couple__desc" id="brideDesc"></p>
+        <a class="couple__ig" id="brideIg" href="#" target="_blank" rel="noopener">@safitri.dp</a>
+      </article>
+    </div>
+
+    <blockquote class="couple__quote reveal">
+      <p id="quoteText"></p>
+      <cite id="quoteSource"></cite>
+    </blockquote>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 3. EVENT SECTION                                              -->
+  <!-- ============================================================ -->
+  <section id="event" class="section event">
+    <img class="leaf-deco leaf-deco--event" src="assets/img/leaf-branch-long.png" alt="" aria-hidden="true">
+    <div class="section-heading reveal">
+      <p class="eyebrow">Save The Date</p>
+      <h2 class="section-title">Waktu &amp; Tempat Acara</h2>
+    </div>
+
+    <div class="event__calendar reveal">
+      <div class="event__cal-header">
+        <span id="calMonthYear">Januari 2027</span>
+      </div>
+      <div class="event__cal-grid" id="calendarGrid"></div>
+    </div>
+
+    <div class="event__grid" id="eventCards"></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 4. ALAMAT ACARA                                               -->
+  <!-- ============================================================ -->
+  <section id="venue" class="section venue">
+    <div class="section-heading reveal">
+      <p class="eyebrow">Lokasi</p>
+      <h2 class="section-title">Alamat Acara</h2>
+    </div>
+
+    <div class="venue__wrap reveal">
+      <div class="venue__info">
+        <h3 id="venueName">Graha Sudirman</h3>
+        <p id="venueAddress"></p>
+        <p class="venue__notes" id="venueNotes"></p>
+        <a id="venueDirectionBtn" class="btn btn--outline" href="#" target="_blank" rel="noopener">
+          Buka di Google Maps
+        </a>
+      </div>
+      <div class="venue__map">
+        <iframe id="venueMapEmbed" src="" width="100%" height="100%" style="border:0;" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Lokasi acara"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 5. LOVE STORY SECTION                                         -->
+  <!-- ============================================================ -->
+  <section id="lovestory" class="section lovestory">
+    <img class="leaf-deco leaf-deco--lovestory" src="assets/img/leaf-branch-small.png" alt="" aria-hidden="true">
+    <div class="section-heading reveal">
+      <p class="eyebrow">Perjalanan Kami</p>
+      <h2 class="section-title">Love Story</h2>
+    </div>
+
+    <div class="timeline" id="timelineList"></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 6. GALLERY SECTION                                            -->
+  <!-- ============================================================ -->
+  <section id="gallery" class="section gallery">
+    <div class="section-heading reveal">
+      <p class="eyebrow">Momen Kami</p>
+      <h2 class="section-title">Gallery</h2>
+    </div>
+    <div class="gallery__grid" id="galleryGrid"></div>
+  </section>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox" aria-hidden="true">
+    <button class="lightbox__close" id="lightboxClose" aria-label="Tutup">&times;</button>
+    <button class="lightbox__nav lightbox__prev" id="lightboxPrev" aria-label="Sebelumnya">&#10094;</button>
+    <img id="lightboxImg" src="" alt="">
+    <button class="lightbox__nav lightbox__next" id="lightboxNext" aria-label="Berikutnya">&#10095;</button>
+    <p class="lightbox__caption" id="lightboxCaption"></p>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 7. DRESS CODE SECTION                                         -->
+  <!-- ============================================================ -->
+  <section id="dresscode" class="section dresscode">
+    <img class="gold-deco gold-deco--dc" src="assets/img/gold-splatter-3.png" alt="" aria-hidden="true">
+    <div class="section-heading reveal">
+      <p class="eyebrow">Guest Attire</p>
+      <h2 class="section-title">Dress Code</h2>
+    </div>
+    <p class="dresscode__desc reveal" id="dresscodeDesc"></p>
+    <div class="dresscode__swatches" id="dresscodeSwatches"></div>
+    <p class="dresscode__note reveal" id="dresscodeNote"></p>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 8. DIGITAL WALLET / AMPLOP DIGITAL                            -->
+  <!-- ============================================================ -->
+  <section id="gift" class="section gift">
+    <img class="leaf-deco leaf-deco--gift" src="assets/img/leaf-branch-gold.png" alt="" aria-hidden="true">
+    <div class="section-heading reveal">
+      <p class="eyebrow">Wedding Gift</p>
+      <h2 class="section-title">Amplop Digital</h2>
+      <p class="gift__intro">Doa restu Bapak/Ibu/Saudara/i adalah karunia terindah. Namun jika ingin memberi tanda kasih, kami sediakan pilihan berikut.</p>
+    </div>
+
+    <div class="gift__tabs reveal">
+      <button class="gift__tab is-active" data-tab="bank">Transfer Bank</button>
+      <button class="gift__tab" data-tab="ewallet">E-Wallet</button>
+    </div>
+
+    <div class="gift__panel is-active" id="panel-bank">
+      <div class="gift__cards" id="bankCards"></div>
+    </div>
+    <div class="gift__panel" id="panel-ewallet">
+      <div class="gift__cards" id="ewalletCards"></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 9. RSVP SECTION                                               -->
+  <!-- ============================================================ -->
+  <section id="rsvp" class="section rsvp">
+    <div class="section-heading reveal">
+      <p class="eyebrow">Konfirmasi Kehadiran</p>
+      <h2 class="section-title">RSVP</h2>
+    </div>
+
+    <form id="rsvpForm" class="form reveal">
+      <div class="form__row">
+        <label for="rsvpName">Nama Lengkap</label>
+        <input type="text" id="rsvpName" name="name" placeholder="Nama Anda" required>
+      </div>
+      <div class="form__row">
+        <label for="rsvpPhone">Nomor WhatsApp</label>
+        <input type="tel" id="rsvpPhone" name="phone" placeholder="08xxxxxxxxxx" required>
+      </div>
+      <div class="form__row form__row--split">
+        <div>
+          <label for="rsvpGuests">Jumlah Tamu</label>
+          <select id="rsvpGuests" name="guests"></select>
+        </div>
+        <div>
+          <label for="rsvpAttendance">Konfirmasi Kehadiran</label>
+          <select id="rsvpAttendance" name="attendance"></select>
+        </div>
+      </div>
+      <div class="form__row">
+        <label for="rsvpMessage">Pesan Tambahan (opsional)</label>
+        <textarea id="rsvpMessage" name="message" rows="3" placeholder="Tuliskan pesan untuk mempelai..."></textarea>
+      </div>
+      <button type="submit" class="btn btn--gold form__submit">Kirim Konfirmasi</button>
+      <p class="form__status" id="rsvpStatus" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 10. COMMENT / WISH SECTION                                    -->
+  <!-- ============================================================ -->
+  <section id="wishes" class="section wishes">
+    <img class="leaf-deco leaf-deco--wishes" src="assets/img/leaf-branch-long.png" alt="" aria-hidden="true">
+    <div class="section-heading reveal">
+      <p class="eyebrow">Doa &amp; Ucapan</p>
+      <h2 class="section-title">Kirim Ucapan</h2>
+    </div>
+
+    <form id="wishForm" class="form form--wish reveal">
+      <div class="form__row form__row--split">
+        <div>
+          <label for="wishName">Nama</label>
+          <input type="text" id="wishName" name="name" placeholder="Nama Anda" required>
+        </div>
+        <div>
+          <label for="wishAttendance">Kehadiran</label>
+          <select id="wishAttendance" name="attendance"></select>
+        </div>
+      </div>
+      <div class="form__row">
+        <label for="wishMessage">Ucapan &amp; Doa</label>
+        <textarea id="wishMessage" name="message" rows="3" placeholder="Tuliskan ucapan dan doa terbaik..." required></textarea>
+      </div>
+      <button type="submit" class="btn btn--outline form__submit">Kirim Ucapan</button>
+    </form>
+
+    <div class="wishes__list" id="wishesList"></div>
+    <button class="btn btn--text" id="loadMoreWishes">Muat Ucapan Lainnya</button>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 11. PENUTUP / FOOTER                                          -->
+  <!-- ============================================================ -->
+  <section id="closing" class="section closing">
+    <div class="closing__bg-wash" aria-hidden="true"></div>
+    <img class="leaf-deco leaf-deco--closing" src="assets/img/leaf-branch-gold.png" alt="" aria-hidden="true">
+    <div class="closing__inner reveal">
+      <p class="eyebrow">Terima Kasih</p>
+      <p class="closing__text" id="closingText"></p>
+      <h2 class="closing__names">Saputra <span class="amp">&amp;</span> Safitri</h2>
+      <p class="closing__hashtag" id="closingHashtag"></p>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>Dibuat dengan cinta &middot; <span id="footerYear"></span></p>
+  </footer>
+
+</main>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
