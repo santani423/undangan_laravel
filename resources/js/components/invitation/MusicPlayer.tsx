@@ -9,7 +9,14 @@ interface MusicPlayerProps {
     buttonClassName?: string;
 }
 
-export default function MusicPlayer({ url, autoplay = false, loop = true, triggerPlay = false, buttonStyle, buttonClassName = '' }: MusicPlayerProps) {
+export default function MusicPlayer({
+    url,
+    autoplay = false,
+    loop = true,
+    triggerPlay = false,
+    buttonStyle,
+    buttonClassName = '',
+}: MusicPlayerProps) {
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const [playing, setPlaying] = useState(false);
     const [volume] = useState(0.35);
@@ -20,6 +27,7 @@ export default function MusicPlayer({ url, autoplay = false, loop = true, trigge
         audio.loop = loop;
         audio.volume = volume;
         audioRef.current = audio;
+        setPlaying(false);
 
         return () => {
             audio.pause();
@@ -27,11 +35,10 @@ export default function MusicPlayer({ url, autoplay = false, loop = true, trigge
         };
     }, [url]);
 
-    // Autoplay dipicu saat triggerPlay menjadi true (setelah user gesture)
     useEffect(() => {
         if (!triggerPlay || !autoplay || !audioRef.current) return;
         audioRef.current.play().then(() => setPlaying(true)).catch(() => {});
-    }, [triggerPlay]);
+    }, [triggerPlay, autoplay]);
 
     useEffect(() => {
         if (audioRef.current) audioRef.current.loop = loop;
@@ -53,8 +60,10 @@ export default function MusicPlayer({ url, autoplay = false, loop = true, trigge
     return (
         <button
             onClick={toggle}
-            className={buttonClassName}
-            title={playing ? 'Pause musik' : 'Play musik'}
+            className={`${buttonClassName}${playing ? ' playing' : ''}`.trim()}
+            title={playing ? 'Pause musik' : 'Putar musik'}
+            aria-pressed={playing}
+            type="button"
             style={{
                 position: 'fixed',
                 bottom: '25px',

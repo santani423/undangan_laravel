@@ -24,6 +24,8 @@ function resolveThemeComponent(themeSlug: string, invitation: InvitationData, vi
         // Birthday themes
         case 'birthday':
         case 'starry-night':
+        case 'birthday_theme_01':
+        case 'birthday-theme-01':
             return <BirthdayStarryNight invitation={invitation as BirthdayInvitation} visitor={visitor} />;
 
         // Wedding themes
