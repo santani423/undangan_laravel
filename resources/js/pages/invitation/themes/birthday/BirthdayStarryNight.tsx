@@ -67,6 +67,8 @@ const SECTION_ORDER: NavItem[] = [
     { id: 'calendar-section', label: 'Calendar', icon: '📅' },
 ];
 
+const NAV_SECTION_IDS: SectionId[] = ['profile', 'event', 'timeline', 'gallery', 'gift'];
+
 const ROYAL_DIVIDER_ICON = (
     <svg viewBox="0 0 24 24" className="sn-royal-divider-icon" aria-hidden="true">
         <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
@@ -529,34 +531,21 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
     const mainMapsUrl = mainEvent ? buildMapsUrl(mainEvent) : '';
 
     const visibleNavItems = SECTION_ORDER.filter((item) => {
+        if (!NAV_SECTION_IDS.includes(item.id)) {
+            return false;
+        }
+
         switch (item.id) {
-            case 'hero':
-                return isEnabled('greeting');
             case 'profile':
                 return isEnabled('couple_profile');
-            case 'countdown':
-                return isEnabled('countdown');
             case 'event':
                 return isEnabled('event_detail');
             case 'timeline':
                 return isEnabled('love_story');
             case 'gallery':
                 return isEnabled('gallery');
-            case 'video-section':
-                return isEnabled('video');
-            case 'maps':
-                return isEnabled('location');
-            case 'rsvp':
-                return isEnabled('rsvp');
-            case 'wishes':
-                return isEnabled('wishes');
             case 'gift':
                 return isEnabled('digital_envelope');
-            case 'wishlist':
-            case 'goals':
-                return isEnabled('gift_wishlist');
-            case 'calendar-section':
-                return isEnabled('add_to_calendar');
             default:
                 return true;
         }

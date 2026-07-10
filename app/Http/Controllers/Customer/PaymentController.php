@@ -126,7 +126,7 @@ class PaymentController extends Controller
 
         // ── Step 1: Call Xendit API FIRST — no DB writes yet ─────────────
         try {
-            $invoiceNumber = $this->generateInvoiceNumber(auth()->id());
+            $invoiceNumber = $transaction?->invoice_number ?? $this->generateInvoiceNumber(auth()->id());
             $amount        = (float) $package->price;
             $user          = auth()->user();
             $dueDate       = Carbon::now()->addDays(1);

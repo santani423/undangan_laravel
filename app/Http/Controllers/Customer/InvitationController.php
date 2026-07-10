@@ -10,6 +10,7 @@ use App\Models\InvitationContent;
 use App\Models\InvitationEvent;
 use App\Models\InvitationSetting;
 use App\Models\Package;
+use App\Models\Transaction;
 use App\Models\Story;
 use App\Models\Theme;
 use App\Services\InvitationSlugService;
@@ -19,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -163,6 +165,7 @@ class InvitationController extends Controller
     {
         try {
             DB::transaction(function () use ($request) {
+                $pkg = Package::find($request->input('package_id'));
             // ── Derive title from couple names or fallback ────────────────
             $fields    = $request->input('field_values', []);
             $groomName = $fields['groom_name'] ?? '';
@@ -208,6 +211,18 @@ class InvitationController extends Controller
 
             // ── 2. Default settings ───────────────────────────────────────
             InvitationSetting::create(['invitation_id' => $invitation->id]);
+            if ($pkg && (float) $pkg->price > 0) {
+                Transaction::create([
+                    'user_id'          => auth()->id(),
+                    'invitation_id'    => $invitation->id,
+                    'package_id'       => $pkg->id,
+                    'invoice_number'   => $this->generateInvoiceNumber(auth()->id()),
+                    'invoice_amount'   => (float) $pkg->price,
+                    'invoice_currency' => $pkg->currency ?? 'IDR',
+                    'status'           => 'pending',
+                    'due_date'         => now()->addDay(),
+                ]);
+            }
 
             // ── 3. Field values → InvitationContent ──────────────────────
             foreach ($fields as $key => $value) {
@@ -255,7 +270,6 @@ class InvitationController extends Controller
             }
 
             // ── 5. Gallery ────────────────────────────────────────────────
-            $pkg         = Package::find($request->input('package_id'));
             $maxGallery  = $pkg?->max_gallery_uploads;
             $galleryItems = $request->input('gallery_items', []);
             if ($maxGallery !== null) {
@@ -897,6 +911,11 @@ class InvitationController extends Controller
         return str_contains($message, 'invitations.invitation_code')
             || str_contains($message, 'invitation_code_unique')
             || (str_contains($message, 'UNIQUE constraint failed') && str_contains($message, 'invitation_code'));
+    }
+
+    private function generateInvoiceNumber(int $userId): string
+    {
+        return 'INV-' . now()->format('Ymd') . '-' . $userId . '-' . strtoupper(Str::random(6));
     }
 
     public function uploadMusic(Request $request, string $slug): \Illuminate\Http\JsonResponse
