@@ -332,7 +332,7 @@ const MANAGEMENT_TABS: TabKey[] = ['theme', 'guests', 'comments', 'digital_envel
 
 const EVENT_TYPE_TABS: Record<string, TabKey[]> = {
     wedding:       ['couple', 'acara', 'gallery', 'love_story'],
-    birthday:      ['info', 'gallery'],
+    birthday:      ['info', 'acara', 'gallery'],
     khitanan:      ['info', 'gallery'],
     aqiqah:        ['info', 'gallery'],
     gender_reveal: ['info', 'gallery'],
@@ -3320,6 +3320,18 @@ export default function InvitationsEdit({
         if (!hasCountdown && evs.length > 0) evs[0].is_countdown = true;
         return evs;
     });
+
+    // Default acara date to the birthday date until the user manually overrides it
+    const lastSyncedAcaraDateRef = useRef(initFieldValues?.['birthday_date'] ?? '');
+    const birthdayDateValue = fieldValues['birthday_date'];
+    useEffect(() => {
+        if (eventType.name !== 'birthday' || !birthdayDateValue) return;
+        if (birthdayDateValue === lastSyncedAcaraDateRef.current) return;
+        setAcaraEvents((prev) => prev.map((ev) => (
+            !ev.date || ev.date === lastSyncedAcaraDateRef.current ? { ...ev, date: birthdayDateValue } : ev
+        )));
+        lastSyncedAcaraDateRef.current = birthdayDateValue;
+    }, [birthdayDateValue, eventType.name]);
 
     // Gallery items
     const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(() =>

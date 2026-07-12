@@ -109,7 +109,7 @@ const TAB_DEFINITIONS: Record<TabKey, TabDef> = {
 
 const EVENT_TYPE_TABS: Record<string, TabKey[]> = {
     wedding:       ['couple', 'acara', 'gallery', 'love_story'],
-    birthday:      ['info', 'gallery'],
+    birthday:      ['info', 'acara', 'gallery'],
     khitanan:      ['info', 'gallery'],
     aqiqah:        ['info', 'gallery'],
     gender_reveal: ['info', 'gallery'],
@@ -1624,6 +1624,17 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
     const [invitationCode,    setInvitationCode]    = useState('');
     const [slug,              setSlug]              = useState(() => resolveInvitationSlugBase(eventType.name, {}));
     const [slugError,         setSlugError]         = useState('');
+
+    // Default acara date to the birthday date until the user manually overrides it
+    const lastSyncedAcaraDateRef = useRef('');
+    const birthdayDateValue = fieldValues['birthday_date'];
+    useEffect(() => {
+        if (eventType.name !== 'birthday' || !birthdayDateValue) return;
+        setAcaraEvents((prev) => prev.map((ev) => (
+            !ev.date || ev.date === lastSyncedAcaraDateRef.current ? { ...ev, date: birthdayDateValue } : ev
+        )));
+        lastSyncedAcaraDateRef.current = birthdayDateValue;
+    }, [birthdayDateValue, eventType.name]);
     const [submitting,        setSubmitting]        = useState(false);
 
     function handleFieldChange(key: string, val: string) {
