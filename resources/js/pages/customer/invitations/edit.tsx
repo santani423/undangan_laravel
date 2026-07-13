@@ -332,12 +332,22 @@ const MANAGEMENT_TABS: TabKey[] = ['theme', 'guests', 'comments', 'digital_envel
 
 const EVENT_TYPE_TABS: Record<string, TabKey[]> = {
     wedding:       ['couple', 'acara', 'gallery', 'love_story'],
-    birthday:      ['info', 'acara', 'gallery'],
+    birthday:      ['info', 'acara', 'gallery', 'love_story'],
     khitanan:      ['info', 'gallery'],
     aqiqah:        ['info', 'gallery'],
     gender_reveal: ['info', 'gallery'],
     syukuran:      ['host', 'info', 'gallery'],
 };
+
+// Per-event-type override for the shared "love_story" tab's display label —
+// it backs the same Story model for every event type, just framed differently.
+const TAB_LABEL_OVERRIDES: Partial<Record<string, Partial<Record<TabKey, string>>>> = {
+    birthday: { love_story: 'Story' },
+};
+
+function resolveTabLabel(key: TabKey, eventTypeName: string): string {
+    return TAB_LABEL_OVERRIDES[eventTypeName]?.[key] ?? TAB_DEFINITIONS[key].label;
+}
 
 const DEFAULT_TABS: TabKey[] = ['info', 'gallery'];
 
@@ -3506,7 +3516,7 @@ export default function InvitationsEdit({
                                         activeTab === key ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
-                                    {tab.icon} {tab.label}
+                                    {tab.icon} {resolveTabLabel(key, eventType.name)}
                                     {/* Badge untuk jumlah */}
                                     {key === 'guests' && guestStats.total > 0 && (
                                         <span className="ml-1 inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full bg-primary/10 text-primary text-[10px] font-semibold">
@@ -3534,12 +3544,12 @@ export default function InvitationsEdit({
                     <div className="flex gap-2">
                         {currentTabIndex > 0 && (
                             <button type="button" onClick={() => setActiveTab(tabKeys[currentTabIndex - 1])} className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
-                                <ChevronLeft className="size-4" /> {TAB_DEFINITIONS[tabKeys[currentTabIndex - 1]].label}
+                                <ChevronLeft className="size-4" /> {resolveTabLabel(tabKeys[currentTabIndex - 1], eventType.name)}
                             </button>
                         )}
                         {currentTabIndex < tabKeys.length - 1 && (
                             <button type="button" onClick={() => setActiveTab(tabKeys[currentTabIndex + 1])} className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
-                                {TAB_DEFINITIONS[tabKeys[currentTabIndex + 1]].label} <ChevronRight className="size-4" />
+                                {resolveTabLabel(tabKeys[currentTabIndex + 1], eventType.name)} <ChevronRight className="size-4" />
                             </button>
                         )}
                     </div>

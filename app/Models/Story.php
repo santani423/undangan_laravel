@@ -13,6 +13,7 @@ class Story extends Model
         'content',
         'story_type',
         'story_date',
+        'story_period',
         'display_order',
         'is_published',
     ];

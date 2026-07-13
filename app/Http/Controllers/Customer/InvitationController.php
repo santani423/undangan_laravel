@@ -289,13 +289,7 @@ class InvitationController extends Controller
                     continue;
                 }
 
-                $storyDate = null;
-                if (!empty($entry['year'])) {
-                    $year = preg_replace('/\D/', '', (string) $entry['year']);
-                    if (strlen($year) === 4) {
-                        $storyDate = "{$year}-01-01";
-                    }
-                }
+                [$storyDate, $storyPeriod] = $this->resolveStoryDateAndPeriod($entry['year'] ?? '');
 
                 $story = Story::create([
                     'invitation_id' => $invitation->id,
@@ -303,6 +297,7 @@ class InvitationController extends Controller
                     'content'       => $entry['story'] ?? '',
                     'story_type'    => 'love_story',
                     'story_date'    => $storyDate,
+                    'story_period'  => $storyPeriod,
                     'display_order' => $i,
                 ]);
 
@@ -407,7 +402,7 @@ class InvitationController extends Controller
 
         $loveStory = $invitation->stories->map(fn ($story) => [
             'dbId'  => $story->id,
-            'year'  => $story->story_date?->format('Y') ?? '',
+            'year'  => $story->story_period ?: ($story->story_date?->format('Y') ?? ''),
             'title' => $story->title,
             'story' => $story->content,
             'photo' => isset($storyPhotos[$story->display_order])
@@ -709,19 +704,14 @@ class InvitationController extends Controller
                 if (empty($entry['title']) && empty($entry['story'])) {
                     continue;
                 }
-                $storyDate = null;
-                if (!empty($entry['year'])) {
-                    $year = preg_replace('/\D/', '', (string) $entry['year']);
-                    if (strlen($year) === 4) {
-                        $storyDate = "{$year}-01-01";
-                    }
-                }
+                [$storyDate, $storyPeriod] = $this->resolveStoryDateAndPeriod($entry['year'] ?? '');
                 $story = Story::create([
                     'invitation_id' => $invitation->id,
                     'title'         => $entry['title'] ?? '',
                     'content'       => $entry['story'] ?? '',
                     'story_type'    => 'love_story',
                     'story_date'    => $storyDate,
+                    'story_period'  => $storyPeriod,
                     'display_order' => $i,
                 ]);
 
@@ -914,6 +904,26 @@ class InvitationController extends Controller
         return str_contains($message, 'invitations.invitation_code')
             || str_contains($message, 'invitation_code_unique')
             || (str_contains($message, 'UNIQUE constraint failed') && str_contains($message, 'invitation_code'));
+    }
+
+    /**
+     * The "Tahun / Periode" field accepts free text (e.g. "2020 - Usia 2 Tahun"),
+     * not just a bare year, so it's kept verbatim in story_period. story_date is
+     * best-effort, derived from the first 4-digit run, purely for chronological sorting.
+     */
+    private function resolveStoryDateAndPeriod(string $rawPeriod): array
+    {
+        $period = trim($rawPeriod);
+        if ($period === '') {
+            return [null, null];
+        }
+
+        $storyDate = null;
+        if (preg_match('/\d{4}/', $period, $matches)) {
+            $storyDate = "{$matches[0]}-01-01";
+        }
+
+        return [$storyDate, mb_substr($period, 0, 100)];
     }
 
     private function generateInvoiceNumber(int $userId): string

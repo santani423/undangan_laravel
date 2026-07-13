@@ -122,7 +122,6 @@ class InvitationPublicController extends Controller
         ])->all();
 
         $bankAccounts = json_decode($contents->get('bank_accounts', '[]'), true) ?? [];
-        $lifeJourney  = json_decode($contents->get('life_journey', '[]'), true) ?? [];
 
         // Gallery — from GalleryPhoto model (general category)
         $gallery = $invitation->galleryPhotos->where('category', 'general')->map(fn($p) => [
@@ -141,7 +140,7 @@ class InvitationPublicController extends Controller
             return [
                 'title' => $story->title,
                 'desc'  => $story->content,
-                'date'  => $story->story_date?->format('Y') ?? '',
+                'date'  => $story->story_period ?: ($story->story_date?->format('Y') ?? ''),
                 'photo' => $photo ? asset('storage/' . $photo->file_path) : '',
             ];
         })->values()->all();
@@ -262,7 +261,7 @@ class InvitationPublicController extends Controller
                 'celebrantBio'      => $contents->get('opening_message', ''),
                 'celebrantPhoto'    => $this->resolveContentUrl($invitation, 'child_photo'),
                 'parentName'        => trim(implode(' & ', array_filter([$fatherName, $motherName]))),
-                'lifeJourney'       => $lifeJourney,
+                'lifeJourney'       => $loveStory,
             ]);
         }
 

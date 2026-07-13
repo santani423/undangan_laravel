@@ -109,12 +109,22 @@ const TAB_DEFINITIONS: Record<TabKey, TabDef> = {
 
 const EVENT_TYPE_TABS: Record<string, TabKey[]> = {
     wedding:       ['couple', 'acara', 'gallery', 'love_story'],
-    birthday:      ['info', 'acara', 'gallery'],
+    birthday:      ['info', 'acara', 'gallery', 'love_story'],
     khitanan:      ['info', 'gallery'],
     aqiqah:        ['info', 'gallery'],
     gender_reveal: ['info', 'gallery'],
     syukuran:      ['host', 'info', 'gallery'],
 };
+
+// Per-event-type override for the shared "love_story" tab's display label —
+// it backs the same Story model for every event type, just framed differently.
+const TAB_LABEL_OVERRIDES: Partial<Record<string, Partial<Record<TabKey, string>>>> = {
+    birthday: { love_story: 'Story' },
+};
+
+function resolveTabLabel(key: TabKey, eventTypeName: string): string {
+    return TAB_LABEL_OVERRIDES[eventTypeName]?.[key] ?? TAB_DEFINITIONS[key].label;
+}
 
 const DEFAULT_TABS: TabKey[] = ['info', 'gallery'];
 
@@ -1808,7 +1818,7 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                                 }`}
                             >
                                 {tab.icon}
-                                {tab.label}
+                                {resolveTabLabel(key, eventType.name)}
                             </button>
                         );
                     })}
@@ -1856,7 +1866,7 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                             className="inline-flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
                         >
                             <ChevronLeft className="size-4" />
-                            {TAB_DEFINITIONS[tabKeys[currentTabIndex - 1]].label}
+                            {resolveTabLabel(tabKeys[currentTabIndex - 1], eventType.name)}
                         </button>
                     )}
 
@@ -1879,7 +1889,7 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                             onClick={goToNextTab}
                             className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
                         >
-                            {TAB_DEFINITIONS[tabKeys[currentTabIndex + 1]].label}
+                            {resolveTabLabel(tabKeys[currentTabIndex + 1], eventType.name)}
                             <ChevronRight className="size-4" />
                         </button>
                     )}
