@@ -349,6 +349,17 @@ function resolveTabLabel(key: TabKey, eventTypeName: string): string {
     return TAB_LABEL_OVERRIDES[eventTypeName]?.[key] ?? TAB_DEFINITIONS[key].label;
 }
 
+// The video URL (stored under the shared "couple_video_url" field key) is displayed
+// on every theme's Video section, so its label is framed per event type.
+const VIDEO_FIELD_LABELS: Partial<Record<string, string>> = {
+    wedding:  'Video Mempelai',
+    birthday: 'Video Ulang Tahun',
+};
+
+function resolveVideoFieldLabel(eventTypeName: string): string {
+    return VIDEO_FIELD_LABELS[eventTypeName] ?? 'Video Acara';
+}
+
 const DEFAULT_TABS: TabKey[] = ['info', 'gallery'];
 
 const CHILD_ORDER_FIELD_KEYS = new Set(['groom_child_order', 'bride_child_order']);
@@ -918,12 +929,14 @@ function GalleryTab({
     maxUploads,
     coupleVideoUrl,
     onCoupleVideoUrlChange,
+    videoFieldLabel,
 }: {
     items: GalleryItem[];
     setItems: React.Dispatch<React.SetStateAction<GalleryItem[]>>;
     maxUploads: number | null;
     coupleVideoUrl: string;
     onCoupleVideoUrlChange: (value: string) => void;
+    videoFieldLabel: string;
 }) {
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const files = Array.from(e.target.files ?? []);
@@ -950,7 +963,7 @@ function GalleryTab({
                         <Video className="size-4" />
                     </div>
                     <div>
-                        <p className="text-sm font-semibold text-foreground">Video Mempelai</p>
+                        <p className="text-sm font-semibold text-foreground">{videoFieldLabel}</p>
                         <p className="text-xs text-muted-foreground">Tambahkan link video highlight, cinematic, YouTube, Vimeo, atau Google Drive.</p>
                     </div>
                 </div>
@@ -3420,6 +3433,7 @@ export default function InvitationsEdit({
                         maxUploads={pkg.max_gallery_uploads}
                         coupleVideoUrl={fieldValues.couple_video_url ?? ''}
                         onCoupleVideoUrlChange={(value) => handleFieldChange('couple_video_url', value)}
+                        videoFieldLabel={resolveVideoFieldLabel(eventType.name)}
                     />
                 );
             case 'love_story':

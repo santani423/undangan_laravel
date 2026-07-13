@@ -165,6 +165,35 @@ function createHeroDecor() {
     ];
 }
 
+function getVideoEmbedUrl(url: string): string {
+    if (!url) return '';
+
+    try {
+        const parsed = new URL(url);
+        const host = parsed.hostname.replace(/^www\./, '');
+
+        if (host === 'youtu.be') {
+            return `https://www.youtube.com/embed/${parsed.pathname.replace('/', '')}`;
+        }
+
+        if (host === 'youtube.com' || host === 'm.youtube.com') {
+            if (parsed.pathname.startsWith('/embed/')) return url;
+            if (parsed.pathname.startsWith('/shorts/')) return `https://www.youtube.com/embed/${parsed.pathname.split('/')[2] ?? ''}`;
+            const videoId = parsed.searchParams.get('v');
+            if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+        }
+
+        if (host === 'vimeo.com') {
+            const videoId = parsed.pathname.split('/').filter(Boolean)[0];
+            if (videoId) return `https://player.vimeo.com/video/${videoId}`;
+        }
+
+        return url;
+    } catch {
+        return '';
+    }
+}
+
 function slugify(text: string) {
     return text
         .toLowerCase()
@@ -529,6 +558,7 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
     const heroTagline = data.greeting?.message || '"Every princess deserves a magical birthday"';
     const calendarTitle = `${celebrantName} Birthday Celebration`;
     const mainMapsUrl = mainEvent ? buildMapsUrl(mainEvent) : '';
+    const videoEmbedUrl = getVideoEmbedUrl(data.coupleVideoUrl ?? '');
 
     const visibleNavItems = SECTION_ORDER.filter((item) => {
         if (!NAV_SECTION_IDS.includes(item.id)) {
@@ -1014,15 +1044,16 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
                             />
                             <div className="sn-video-frame sn-fade-up">
                                 {data.coupleVideoUrl ? (
-                                    /youtube|youtu\.be|vimeo|embed/i.test(data.coupleVideoUrl) ? (
+                                    /\.(mp4|webm|ogg)(\?.*)?$/i.test(data.coupleVideoUrl) ? (
+                                        <video controls src={data.coupleVideoUrl} />
+                                    ) : /youtube|youtu\.be|vimeo|embed/i.test(data.coupleVideoUrl) && videoEmbedUrl ? (
                                         <iframe
-                                            src={data.coupleVideoUrl}
+                                            src={videoEmbedUrl}
                                             title="Birthday Video"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                             allowFullScreen
                                             loading="lazy"
                                         />
-                                    ) : /\.(mp4|webm|ogg)(\?.*)?$/i.test(data.coupleVideoUrl) ? (
-                                        <video controls src={data.coupleVideoUrl} />
                                     ) : (
                                         <div className="sn-video-placeholder">
                                             <div className="sn-video-placeholder-icon">🎥</div>

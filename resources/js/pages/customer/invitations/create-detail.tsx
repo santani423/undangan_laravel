@@ -21,6 +21,7 @@ import {
     Search,
     Upload,
     Users,
+    Video,
     X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -124,6 +125,17 @@ const TAB_LABEL_OVERRIDES: Partial<Record<string, Partial<Record<TabKey, string>
 
 function resolveTabLabel(key: TabKey, eventTypeName: string): string {
     return TAB_LABEL_OVERRIDES[eventTypeName]?.[key] ?? TAB_DEFINITIONS[key].label;
+}
+
+// The video URL (stored under the shared "couple_video_url" field key) is displayed
+// on every theme's Video section, so its label is framed per event type.
+const VIDEO_FIELD_LABELS: Partial<Record<string, string>> = {
+    wedding:  'Video Mempelai',
+    birthday: 'Video Ulang Tahun',
+};
+
+function resolveVideoFieldLabel(eventTypeName: string): string {
+    return VIDEO_FIELD_LABELS[eventTypeName] ?? 'Video Acara';
 }
 
 const DEFAULT_TABS: TabKey[] = ['info', 'gallery'];
@@ -1228,10 +1240,13 @@ interface GalleryItem {
     caption: string;
 }
 
-function GalleryTab({ items, setItems, maxUploads }: {
+function GalleryTab({ items, setItems, maxUploads, videoUrl, onVideoUrlChange, videoFieldLabel }: {
     items: GalleryItem[];
     setItems: React.Dispatch<React.SetStateAction<GalleryItem[]>>;
     maxUploads: number | null;
+    videoUrl: string;
+    onVideoUrlChange: (value: string) => void;
+    videoFieldLabel: string;
 }) {
     const [dragOver, setDragOver] = useState(false);
     const [dragId,   setDragId]   = useState<number | null>(null);
@@ -1298,6 +1313,27 @@ function GalleryTab({ items, setItems, maxUploads }: {
 
     return (
         <div className="flex flex-col gap-6">
+            {/* Video */}
+            <div className="rounded-2xl border border-border bg-card p-4">
+                <div className="mb-3 flex items-start gap-3">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Video className="size-4" />
+                    </div>
+                    <div>
+                        <p className="text-sm font-semibold text-foreground">{videoFieldLabel}</p>
+                        <p className="text-xs text-muted-foreground">Tambahkan link video highlight, cinematic, YouTube, Vimeo, atau Google Drive.</p>
+                    </div>
+                </div>
+                <input
+                    type="url"
+                    value={videoUrl}
+                    onChange={(e) => onVideoUrlChange(e.target.value)}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                />
+                <p className="mt-2 text-[11px] text-muted-foreground">Video akan tampil pada section Video jika fitur Video aktif di Pengaturan.</p>
+            </div>
+
             {/* Counter + progress */}
             <div className="flex items-center justify-between">
                 <div>
@@ -1742,7 +1778,16 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
             case 'acara':
                 return <AcaraTab events={acaraEvents} setEvents={setAcaraEvents} />;
             case 'gallery':
-                return <GalleryTab items={galleryItems} setItems={setGalleryItems} maxUploads={pkg.max_gallery_uploads} />;
+                return (
+                    <GalleryTab
+                        items={galleryItems}
+                        setItems={setGalleryItems}
+                        maxUploads={pkg.max_gallery_uploads}
+                        videoUrl={fieldValues.couple_video_url ?? ''}
+                        onVideoUrlChange={(value) => handleFieldChange('couple_video_url', value)}
+                        videoFieldLabel={resolveVideoFieldLabel(eventType.name)}
+                    />
+                );
             case 'love_story':
                 return <LoveStoryTab entries={loveStoryEntries} setEntries={setLoveStoryEntries} />;
             case 'info':
