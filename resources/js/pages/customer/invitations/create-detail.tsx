@@ -118,6 +118,17 @@ const EVENT_TYPE_TABS: Record<string, TabKey[]> = {
 
 const DEFAULT_TABS: TabKey[] = ['info', 'gallery'];
 
+// Field keys whose values become the invitation title — must mirror
+// InvitationSlugService::TITLE_FIELD_MAP on the backend.
+const TITLE_FIELD_KEYS: Record<string, string[]> = {
+    wedding:       ['groom_name', 'bride_name'],
+    birthday:      ['child_name'],
+    khitanan:      ['child_name'],
+    aqiqah:        ['baby_name'],
+    gender_reveal: ['father_name', 'mother_name'],
+    syukuran:      ['host_name'],
+};
+
 const CHILD_ORDER_FIELD_KEYS = new Set(['groom_child_order', 'bride_child_order']);
 
 function isChildOrderFieldKey(fieldKey: string): boolean {
@@ -1624,6 +1635,7 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
     const [invitationCode,    setInvitationCode]    = useState('');
     const [slug,              setSlug]              = useState(() => resolveInvitationSlugBase(eventType.name, {}));
     const [slugError,         setSlugError]         = useState('');
+    const [formError,         setFormError]         = useState('');
 
     // Default acara date to the birthday date until the user manually overrides it
     const lastSyncedAcaraDateRef = useRef('');
@@ -1641,7 +1653,22 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
         setFieldValues((prev) => ({ ...prev, [key]: val }));
     }
 
+    function missingTitleFieldLabels(): string[] {
+        const requiredKeys = TITLE_FIELD_KEYS[eventType.name] ?? [];
+        return requiredKeys
+            .filter((key) => !(fieldValues[key] ?? '').trim())
+            .map((key) => eventType.fields.find((f) => f.field_key === key)?.field_label ?? key);
+    }
+
     function handleSubmit() {
+        const missing = missingTitleFieldLabels();
+        if (missing.length > 0) {
+            setFormError(`Mohon lengkapi terlebih dahulu: ${missing.join(', ')}.`);
+            setActiveTab(tabKeys[0]);
+            return;
+        }
+
+        setFormError('');
         setSubmitting(true);
         const normalizedSlug = normalizeInvitationSlug(slug);
         router.post('/customer/invitations', {
@@ -1679,6 +1706,11 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
             onError: (errors) => {
                 if (errors.slug) {
                     setSlugError(String(errors.slug));
+                }
+                const fieldErrors = Object.entries(errors).filter(([key]) => key.startsWith('field_values.'));
+                if (fieldErrors.length > 0) {
+                    setFormError(String(fieldErrors[0][1]));
+                    setActiveTab(tabKeys[0]);
                 }
             },
             onFinish: () => setSubmitting(false),
@@ -1781,6 +1813,12 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                         );
                     })}
                 </div>
+
+                {formError && (
+                    <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+                        {formError}
+                    </div>
+                )}
 
                 {/* Tab content */}
                 <div className="min-h-[300px]">

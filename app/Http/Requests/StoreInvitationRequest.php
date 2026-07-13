@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\EventType;
+use App\Services\InvitationSlugService;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Log;
@@ -31,7 +33,7 @@ class StoreInvitationRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        $rules = [
             'event_type_id'                   => 'required|exists:event_types,id',
             'theme_id'                        => 'required|exists:themes,id',
             'package_id'                      => 'required|exists:packages,id',
@@ -47,5 +49,26 @@ class StoreInvitationRequest extends FormRequest
             'gallery_items'                   => 'nullable|array',
             'love_story'                      => 'nullable|array',
         ];
+
+        foreach ($this->titleFieldKeys() as $key) {
+            $rules["field_values.{$key}"] = 'required|string|max:255';
+        }
+
+        return $rules;
+    }
+
+    /**
+     * Field keys (per the invitation's event type) whose values feed the invitation title,
+     * so they must be filled in — otherwise every invitation would fall back to a generic title.
+     */
+    private function titleFieldKeys(): array
+    {
+        $eventType = EventType::find($this->input('event_type_id'));
+
+        if (! $eventType) {
+            return [];
+        }
+
+        return app(InvitationSlugService::class)->titleFieldKeys($eventType->name);
     }
 }

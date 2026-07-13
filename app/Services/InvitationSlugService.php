@@ -7,9 +7,36 @@ use Illuminate\Support\Str;
 
 class InvitationSlugService
 {
+    private const TITLE_FIELD_MAP = [
+        'wedding'       => ['groom_name', 'bride_name'],
+        'birthday'      => ['child_name'],
+        'khitanan'      => ['child_name'],
+        'aqiqah'        => ['baby_name'],
+        'gender_reveal' => ['father_name', 'mother_name'],
+        'syukuran'      => ['host_name'],
+    ];
+
     public function normalize(?string $value): string
     {
         return Str::slug((string) $value) ?: '';
+    }
+
+    /**
+     * Field keys whose values are combined to build the invitation title for a given event type.
+     */
+    public function titleFieldKeys(string $eventTypeName): array
+    {
+        return self::TITLE_FIELD_MAP[$eventTypeName] ?? [];
+    }
+
+    public function resolveTitle(string $eventTypeName, array $fields, string $fallback = 'Undangan'): string
+    {
+        $parts = array_values(array_filter(array_map(
+            fn (string $key) => trim((string) ($fields[$key] ?? '')),
+            $this->titleFieldKeys($eventTypeName)
+        )));
+
+        return $parts !== [] ? implode(' & ', $parts) : $fallback;
     }
 
     public function resolveBase(string $eventTypeName, array $fields = [], ?string $title = null): string

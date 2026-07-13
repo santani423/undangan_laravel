@@ -119,7 +119,6 @@ export default function InvitationShow({ invitation, themeSlug, visitor }: Props
         document.querySelectorAll('link[rel~="icon"]').forEach((el) => el.remove());
         const link = document.createElement('link');
         link.rel = 'icon';
-        link.type = 'image/jpeg';
         link.href = faviconUrl;
         document.head.appendChild(link);
     }, [faviconUrl]);

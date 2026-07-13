@@ -614,6 +614,27 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
     useEffect(() => {
         if (!opened) return;
 
+        const revealTargets = document.querySelectorAll('.sn-fade-up, .sn-fade-left, .sn-fade-right');
+        if (revealTargets.length === 0) return;
+
+        const revealObserver = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('sn-visible');
+                    revealObserver.unobserve(entry.target);
+                });
+            },
+            { threshold: 0.15 },
+        );
+
+        revealTargets.forEach((el) => revealObserver.observe(el));
+        return () => revealObserver.disconnect();
+    }, [opened]);
+
+    useEffect(() => {
+        if (!opened) return;
+
         const ids = visibleNavItems.map((item) => item.id);
         const elements = ids.map((id) => document.getElementById(id)).filter(Boolean) as HTMLElement[];
         if (elements.length === 0) return;

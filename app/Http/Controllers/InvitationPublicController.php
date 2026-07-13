@@ -249,17 +249,19 @@ class InvitationPublicController extends Controller
         }
 
         if ($eventType === 'birthday') {
-            $celebrantName = $contents->get('celebrant_name', '');
-            $celebrantNick = $contents->get('celebrant_nickname', $celebrantName);
+            $celebrantName = $contents->get('child_name', '');
+            $celebrantNick = $contents->get('child_nickname', $celebrantName);
+            $fatherName    = $contents->get('father_name', '');
+            $motherName    = $contents->get('mother_name', '');
 
             return array_merge($base, [
                 'pageTitle'         => $invitation->title ?: "Birthday Invitation - {$celebrantName}",
                 'celebrantName'     => $celebrantName,
                 'celebrantNickname' => $celebrantNick,
-                'celebrantAge'      => $contents->get('celebrant_age', ''),
-                'celebrantBio'      => $contents->get('celebrant_bio', ''),
-                'celebrantPhoto'    => $this->resolveContentUrl($invitation, 'celebrant_photo'),
-                'parentName'        => $contents->get('parent_name', ''),
+                'celebrantAge'      => $contents->get('child_age', ''),
+                'celebrantBio'      => $contents->get('opening_message', ''),
+                'celebrantPhoto'    => $this->resolveContentUrl($invitation, 'child_photo'),
+                'parentName'        => trim(implode(' & ', array_filter([$fatherName, $motherName]))),
                 'lifeJourney'       => $lifeJourney,
             ]);
         }

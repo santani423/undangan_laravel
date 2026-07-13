@@ -166,19 +166,11 @@ class InvitationController extends Controller
         try {
             DB::transaction(function () use ($request) {
                 $pkg = Package::find($request->input('package_id'));
-            // ── Derive title from couple names or fallback ────────────────
-            $fields    = $request->input('field_values', []);
-            $groomName = $fields['groom_name'] ?? '';
-            $brideName = $fields['bride_name'] ?? '';
-            $hostName  = $fields['host_name']  ?? '';
-            $title = match (true) {
-                $groomName && $brideName => "{$groomName} & {$brideName}",
-                $hostName !== ''         => $hostName,
-                default                  => 'Undangan',
-            };
+            $fields = $request->input('field_values', []);
 
-            // ── Generate unique slug ──────────────────────────────────────
+            // ── Generate unique slug & derive title from event-type fields ─
             $eventType = EventType::findOrFail($request->input('event_type_id'));
+            $title = $this->slugService()->resolveTitle($eventType->name, $fields);
             $slug = $this->resolveSlugForInvitation(
                 $request->input('slug'),
                 $eventType->name,
@@ -631,6 +623,17 @@ class InvitationController extends Controller
                     ['content_key'   => $key],
                     ['content_value' => $storedValue, 'content_type' => $contentType],
                 );
+            }
+
+            if ($request->has('field_values')) {
+                $title = $this->slugService()->resolveTitle(
+                    $invitation->eventType?->name ?? '',
+                    $request->input('field_values', []),
+                    $invitation->title
+                );
+                if ($title !== $invitation->title) {
+                    $invitation->update(['title' => $title]);
+                }
             }
 
             // ── Acara events — replace all ────────────────────────────────
