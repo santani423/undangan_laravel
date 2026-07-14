@@ -550,8 +550,11 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
     const galleryCategories = Array.from(new Set(galleryItems.map((item) => item.category).filter(Boolean)));
     const filteredGallery = galleryFilter === 'all' ? galleryItems : galleryItems.filter((item) => item.category === galleryFilter);
     const timelineItems = data.lifeJourney?.length > 0 ? data.lifeJourney : DEMO_TIMELINE;
-    const bankAccounts = data.bankAccounts.length > 0 ? data.bankAccounts : DEMO_INVITATION.bankAccounts;
-    const digitalWallets = data.digitalWallets.length > 0 ? data.digitalWallets : DEMO_INVITATION.digitalWallets;
+    // Bank/e-wallet accounts carry real payment details, so — unlike the placeholder
+    // gallery/timeline content — a real invitation must never fall back to demo accounts
+    // just because the couple hasn't linked any yet.
+    const bankAccounts = invitation ? data.bankAccounts : DEMO_INVITATION.bankAccounts;
+    const digitalWallets = invitation ? data.digitalWallets : DEMO_INVITATION.digitalWallets;
     const qrisPayload = data.guestQrData || data.guestSlug || `${data.code}-${guestLabel}`;
     const coverButtonText = data.greeting?.buttonText || 'Open Royal Invitation';
     const coverSubtitle = data.greeting?.title || 'You are cordially invited to a magical birthday celebration';
