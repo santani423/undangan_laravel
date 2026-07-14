@@ -540,7 +540,7 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
 
     const features = data.features ?? {};
     const isEnabled = (key: keyof FeatureFlags) => features[key] !== false;
-    const guestLabel = visitor?.trim() || data.guestName || data.greeting?.guestLabel || 'Royal Guest';
+    const guestLabel = visitor?.trim() || data.guestName || data.greeting?.guestLabel || 'Tamu Undangan';
     const celebrantName = data.celebrantNickname || data.celebrantName || 'Birthday Star';
 
     const events = data.events.length > 0 ? data.events : DEMO_INVITATION.events;
