@@ -1,4 +1,5 @@
 import ImageCropUpload, { compressImage } from '@/components/image-crop-upload';
+import { validateImageFile } from '@/lib/image-upload';
 import SlugField from '@/components/invitations/slug-field';
 import CustomerLayout from '@/layouts/customer-layout';
 import { normalizeInvitationSlug, resolveInvitationSlugBase, resolveInvitationSlugSourceLabel } from '@/lib/invitation-slug';
@@ -1258,7 +1259,21 @@ function GalleryTab({ items, setItems, maxUploads, videoUrl, onVideoUrlChange, v
 
     async function processFiles(files: File[]) {
         const slots = remaining !== null ? remaining : files.length;
-        const batch = files.filter((f) => f.type.startsWith('image/')).slice(0, slots);
+        const candidates = files.slice(0, slots);
+        const rejected: string[] = [];
+        const batch = candidates.filter((f) => {
+            const error = validateImageFile(f);
+            if (error) {
+                rejected.push(`${f.name}: ${error}`);
+                return false;
+            }
+            return true;
+        });
+
+        if (rejected.length > 0) {
+            alert(rejected.join('\n'));
+        }
+
         for (const file of batch) {
             await new Promise<void>((resolve) => {
                 const reader = new FileReader();
@@ -1616,6 +1631,12 @@ function LoveStoryTab({ entries, setEntries }: {
                                                     onChange={async (e) => {
                                                         const file = e.target.files?.[0];
                                                         if (!file) return;
+                                                        const error = validateImageFile(file);
+                                                        if (error) {
+                                                            alert(error);
+                                                            e.target.value = '';
+                                                            return;
+                                                        }
                                                         const reader = new FileReader();
                                                         reader.onload = async (ev) => {
                                                             const compressed = await compressImage(ev.target?.result as string);

@@ -113,8 +113,12 @@ class AppSettingController extends Controller
 
         $oldPath = AppSetting::get("app_{$type}");
         $maxWidth = $type === 'favicon' ? 256 : 1200;
-        
-        $path = \App\Services\UploadService::uploadImage($file, $dir, $oldPath, $maxWidth);
+
+        try {
+            $path = \App\Services\UploadService::uploadImage($file, $dir, $oldPath, $maxWidth);
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
 
         AppSetting::set("app_{$type}", $path, 'file', 'general');
         AppSetting::flushCache();

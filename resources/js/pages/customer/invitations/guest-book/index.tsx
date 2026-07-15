@@ -1,4 +1,5 @@
 import CustomerLayout from '@/layouts/customer-layout';
+import { validateImageFile } from '@/lib/image-upload';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import {
@@ -258,7 +259,19 @@ function DisplaySettingsPanel({
         if (!files) return;
         const remaining = sliderLimit !== null ? sliderLimit - sliderImages.length : files.length;
         const selected = Array.from(files).slice(0, Math.max(0, remaining));
-        const next = await Promise.all(selected.map(async (file) => ({
+        const rejected: string[] = [];
+        const valid = selected.filter((file) => {
+            const error = validateImageFile(file);
+            if (error) {
+                rejected.push(`${file.name}: ${error}`);
+                return false;
+            }
+            return true;
+        });
+        if (rejected.length > 0) {
+            setSaveAlert({ type: 'error', message: rejected.join(' ') });
+        }
+        const next = await Promise.all(valid.map(async (file) => ({
             url: URL.createObjectURL(file),
             preview: await fileToDataUrl(file),
         })));
@@ -267,6 +280,11 @@ function DisplaySettingsPanel({
 
     async function handleBackgroundFile(file: File | undefined) {
         if (!file) return;
+        const error = validateImageFile(file);
+        if (error) {
+            setSaveAlert({ type: 'error', message: error });
+            return;
+        }
         setBackgroundImage(await fileToDataUrl(file));
     }
 

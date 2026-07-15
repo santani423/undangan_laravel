@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Customer;
 
+use App\Rules\Base64Image;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreDigitalWalletRequest extends FormRequest
@@ -18,8 +19,8 @@ class StoreDigitalWalletRequest extends FormRequest
             'provider_label' => 'required|string|max:100',
             'account_number' => 'required|string|max:50',
             'account_name'   => 'required|string|max:150',
-            'logo'           => 'nullable|string',
-            'qris_qr'        => 'nullable|string', // base64 image
+            'logo'           => ['nullable', 'string', new Base64Image(maxKb: 2048, allowRemove: true)],
+            'qris_qr'        => ['nullable', 'string', new Base64Image(maxKb: 2048)], // base64 image
             'is_active'      => 'boolean',
         ];
     }

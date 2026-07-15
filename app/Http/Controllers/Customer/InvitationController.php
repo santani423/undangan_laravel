@@ -276,7 +276,7 @@ class InvitationController extends Controller
                     'invitation_id' => $invitation->id,
                     'file_path'     => $path,
                     'media_type'    => 'photo',
-                    'mime_type'     => 'image/jpeg',
+                    'mime_type'     => \App\Services\UploadService::mimeTypeForPath($path),
                     'title'         => $item['caption'] ?? null,
                     'category'      => 'general',
                     'display_order' => $i,
@@ -307,7 +307,7 @@ class InvitationController extends Controller
                         'invitation_id' => $invitation->id,
                         'file_path'     => $photoPath,
                         'media_type'    => 'photo',
-                        'mime_type'     => 'image/jpeg',
+                        'mime_type'     => \App\Services\UploadService::mimeTypeForPath($photoPath),
                         'category'      => 'love_story',
                         'display_order' => $i,
                     ]);
@@ -335,6 +335,10 @@ class InvitationController extends Controller
             }
 
             throw $e;
+        } catch (\RuntimeException $e) {
+            throw ValidationException::withMessages([
+                'field_values' => $e->getMessage(),
+            ]);
         }
 
         return redirect()->route('customer.invitations.index')
@@ -580,7 +584,8 @@ class InvitationController extends Controller
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
 
-        DB::transaction(function () use ($request, $invitation) {
+        try {
+            DB::transaction(function () use ($request, $invitation) {
             // ── Status ────────────────────────────────────────────────────
             if ($request->filled('status')) {
                 $invitation->update(['status' => $request->input('status')]);
@@ -686,7 +691,7 @@ class InvitationController extends Controller
                         'invitation_id' => $invitation->id,
                         'file_path'     => $path,
                         'media_type'    => 'photo',
-                        'mime_type'     => 'image/jpeg',
+                        'mime_type'     => \App\Services\UploadService::mimeTypeForPath($path),
                         'title'         => $item['caption'] ?? null,
                         'category'      => 'general',
                         'display_order' => $i,
@@ -722,7 +727,7 @@ class InvitationController extends Controller
                         'invitation_id' => $invitation->id,
                         'file_path'     => $photoPath,
                         'media_type'    => 'photo',
-                        'mime_type'     => 'image/jpeg',
+                        'mime_type'     => \App\Services\UploadService::mimeTypeForPath($photoPath),
                         'category'      => 'love_story',
                         'display_order' => $i,
                     ]);
@@ -739,7 +744,7 @@ class InvitationController extends Controller
                         'invitation_id' => $invitation->id,
                         'file_path'     => $storedPath,
                         'media_type'    => 'photo',
-                        'mime_type'     => 'image/jpeg',
+                        'mime_type'     => \App\Services\UploadService::mimeTypeForPath($storedPath),
                         'category'      => 'love_story',
                         'display_order' => $i,
                     ]);
@@ -751,7 +756,12 @@ class InvitationController extends Controller
                     ]);
                 }
             }
-        });
+            });
+        } catch (\RuntimeException $e) {
+            throw ValidationException::withMessages([
+                'field_values' => $e->getMessage(),
+            ]);
+        }
 
         return back()->with('success', 'Undangan berhasil diperbarui!');
     }

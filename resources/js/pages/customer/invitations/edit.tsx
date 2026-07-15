@@ -1,4 +1,5 @@
 import ImageCropUpload, { compressImage } from '@/components/image-crop-upload';
+import { validateImageFile } from '@/lib/image-upload';
 import SlugField from '@/components/invitations/slug-field';
 import CustomerLayout from '@/layouts/customer-layout';
 import { normalizeInvitationSlug, resolveInvitationSlugBase, resolveInvitationSlugSourceLabel } from '@/lib/invitation-slug';
@@ -941,7 +942,13 @@ function GalleryTab({
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const files = Array.from(e.target.files ?? []);
         const remaining = maxUploads ? maxUploads - items.length : Infinity;
+        const rejected: string[] = [];
         files.slice(0, remaining).forEach((file) => {
+            const error = validateImageFile(file);
+            if (error) {
+                rejected.push(`${file.name}: ${error}`);
+                return;
+            }
             const reader = new FileReader();
             reader.onload = async (ev) => {
                 const compressed = await compressImage(ev.target?.result as string);
@@ -949,6 +956,9 @@ function GalleryTab({
             };
             reader.readAsDataURL(file);
         });
+        if (rejected.length > 0) {
+            alert(rejected.join('\n'));
+        }
         e.target.value = '';
     }
     function removeItem(id: number) { setItems((prev) => prev.filter((i) => i.id !== id)); }
@@ -1057,6 +1067,8 @@ function LoveStoryTab({ entries, setEntries }: { entries: LoveStoryEntry[]; setE
                                                         <Upload className="size-3.5" />
                                                         <input type="file" accept="image/*" className="sr-only" onChange={async (e) => {
                                                             const file = e.target.files?.[0]; if (!file) return;
+                                                            const error = validateImageFile(file);
+                                                            if (error) { alert(error); e.target.value = ''; return; }
                                                             const reader = new FileReader();
                                                             reader.onload = async (ev) => { const c = await compressImage(ev.target?.result as string); updateEntry(entry.id, 'photo', c); };
                                                             reader.readAsDataURL(file); e.target.value = '';
