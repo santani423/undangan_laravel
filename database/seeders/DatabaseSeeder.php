@@ -52,8 +52,11 @@ class DatabaseSeeder extends Seeder
             // 7. Payment gateway configs
             PaymentGatewayConfigSeeder::class,
 
-            // 7. Application settings (defaults)
+            // 8. Application settings (defaults)
             AppSettingSeeder::class,
+
+            // 9. Starter testimonials for the public landing page
+            TestimonialSeeder::class,
         ]);
 
         $this->command->info('');
@@ -72,6 +75,7 @@ class DatabaseSeeder extends Seeder
         $this->command->info('  ✓ invitations (5 customers × 6 types = 30 undangan)');
         $this->command->info('  ✓ payment_gateway_configs');
         $this->command->info('  ✓ app_settings (defaults)');
+        $this->command->info('  ✓ testimonials (4 starter/demo entries)');
         $this->command->info('');
         $this->command->info('Test accounts:');
         $this->command->info('  superadmin@undesia.id / SuperAdmin@2026!');

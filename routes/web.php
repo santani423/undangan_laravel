@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvitationPublicController;
 use App\Models\Theme;
 use Illuminate\Support\Facades\Route;
@@ -8,9 +9,7 @@ use Inertia\Inertia;
 Route::get('/tess', function () {
     return view('tess');
 });
-Route::get('/', function () {
-    return Inertia::render('welcome');
-})->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('themes', function () {
     $themes = Theme::where('is_active', true)

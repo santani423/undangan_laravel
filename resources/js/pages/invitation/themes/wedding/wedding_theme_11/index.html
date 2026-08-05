@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Rama & Shinta — The Wedding Invitation</title>
+<meta name="description" content="Undangan pernikahan digital Rama & Shinta">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ============ AMBIENT DECOR (fixed, behind everything) ============ -->
+<div class="petals" aria-hidden="true" id="petals"></div>
+
+<!-- ============ COVER / GATE ============ -->
+<section class="cover" id="cover">
+  <div class="cover__bg" style="background-image:url('assets/img/hero-couple.jpg')"></div>
+  <div class="cover__scrim"></div>
+  <img class="cover__corner cover__corner--tl" src="assets/img/floral-corner-2.png" alt="" aria-hidden="true">
+  <img class="cover__corner cover__corner--br" src="assets/img/floral-corner.png" alt="" aria-hidden="true">
+
+  <div class="cover__content">
+    <p class="eyebrow cover__eyebrow">Undangan Pernikahan</p>
+    <h1 class="script-names cover__names">Rama <span class="amp">&amp;</span> Shinta</h1>
+    <p class="cover__date" id="coverDate">12 Desember 2026</p>
+
+    <div class="cover__guest">
+      <span>Kepada Bapak/Ibu/Saudara/i</span>
+      <strong id="guestName">Tamu Undangan</strong>
+    </div>
+
+    <button class="btn btn--open" id="openInvitation" type="button">
+      <span class="btn__ring"></span>
+      <span class="btn__label">Buka Undangan</span>
+    </button>
+  </div>
+</section>
+
+<!-- ============ SITE (revealed after opening) ============ -->
+<div class="site" id="site">
+
+  <!-- NAV -->
+  <nav class="nav" id="mainNav">
+    <a href="#hero" class="nav__brand script-names">R&amp;S</a>
+    <button class="nav__toggle" id="navToggle" aria-label="Buka menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav__list" id="navList">
+      <li><a href="#couple" data-nav>Mempelai</a></li>
+      <li><a href="#event" data-nav>Acara</a></li>
+      <li><a href="#love-story" data-nav>Love Story</a></li>
+      <li><a href="#gallery" data-nav>Galeri</a></li>
+      <li><a href="#gift" data-nav>Amplop Digital</a></li>
+      <li><a href="#rsvp" data-nav>RSVP</a></li>
+      <li><a href="#wishes" data-nav>Ucapan</a></li>
+    </ul>
+  </nav>
+
+  <!-- 1. HERO -->
+  <header class="hero" id="hero">
+    <div class="hero__bg" style="background-image:url('assets/img/hero-couple.jpg')"></div>
+    <div class="hero__scrim"></div>
+    <div class="hero__content">
+      <p class="eyebrow reveal" data-anim="fade-up">You're Invited to</p>
+      <p class="eyebrow eyebrow--lg reveal" data-anim="fade-up" data-delay="1">The Wedding Of</p>
+      <h2 class="script-names hero__names reveal" data-anim="fade-in" data-delay="2">Shinta <span class="amp">&amp;</span> Rama</h2>
+      <p class="hero__date reveal" data-anim="fade-up" data-delay="3" id="heroDate">Sabtu, 12 Desember 2026</p>
+
+      <div class="countdown reveal" data-anim="fade-up" data-delay="4" id="countdown">
+        <div class="countdown__box"><span id="cdDays">00</span><small>Hari</small></div>
+        <div class="countdown__box"><span id="cdHours">00</span><small>Jam</small></div>
+        <div class="countdown__box"><span id="cdMinutes">00</span><small>Menit</small></div>
+        <div class="countdown__box"><span id="cdSeconds">00</span><small>Detik</small></div>
+      </div>
+    </div>
+    <div class="hero__scroll-cue" aria-hidden="true"><span></span></div>
+  </header>
+
+  <!-- INTRO / OPENING VERSE -->
+  <section class="section section--intro">
+    <img class="deco deco--corner-left" src="assets/img/floral-corner-2.png" alt="" aria-hidden="true">
+    <div class="container container--narrow">
+      <p class="intro__arabic reveal" data-anim="fade-up">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+      <p class="intro__salam reveal" data-anim="fade-up" data-delay="1">Assalamu'alaikum Warahmatullahi Wabarakatuh</p>
+      <p class="intro__text serif reveal" data-anim="fade-up" data-delay="2">
+        Dengan memohon rahmat dan ridho Allah Subhanahu Wa Ta'ala, kami bermaksud
+        mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara pernikahan putra–putri kami.
+        Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i
+        berkenan hadir untuk memberikan doa restu kepada kedua mempelai.
+      </p>
+    </div>
+  </section>
+
+  <!-- 2. COUPLE -->
+  <section class="section section--alt" id="couple">
+    <img class="deco deco--corner-right" src="assets/img/floral-corner.png" alt="" aria-hidden="true">
+    <div class="container">
+      <p class="eyebrow center reveal" data-anim="fade-up">Kedua Mempelai</p>
+      <h2 class="heading center reveal" data-anim="fade-up" data-delay="1">Mempelai</h2>
+
+      <div class="couple-grid">
+        <article class="couple-card reveal" data-anim="fade-right">
+          <div class="couple-card__frame">
+            <img src="assets/img/profile-groom.jpg" alt="Foto Mempelai Pria" loading="lazy">
+          </div>
+          <h3 class="script-names couple-card__name" id="groomName">Rama Putra Wijaya</h3>
+          <p class="couple-card__order" id="groomOrder">Putra pertama</p>
+          <p class="couple-card__parents" id="groomParents">Putra dari Bapak Ahmad Wijaya &amp; Ibu Sri Lestari</p>
+          <p class="couple-card__bio" id="groomBio"></p>
+          <a class="couple-card__ig" id="groomIg" href="#" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2c2.7 0 3 .01 4.1.06 1.1.05 1.8.22 2.4.46.7.27 1.2.63 1.7 1.13.5.5.86 1 1.13 1.7.24.6.4 1.3.46 2.4.05 1.1.06 1.4.06 4.1s-.01 3-.06 4.1c-.05 1.1-.22 1.8-.46 2.4-.27.7-.63 1.2-1.13 1.7-.5.5-1 .86-1.7 1.13-.6.24-1.3.4-2.4.46-1.1.05-1.4.06-4.1.06s-3-.01-4.1-.06c-1.1-.05-1.8-.22-2.4-.46a4.9 4.9 0 0 1-1.7-1.13 4.9 4.9 0 0 1-1.13-1.7c-.24-.6-.4-1.3-.46-2.4C2.01 15 2 14.7 2 12s.01-3 .06-4.1c.05-1.1.22-1.8.46-2.4.27-.7.63-1.2 1.13-1.7.5-.5 1-.86 1.7-1.13.6-.24 1.3-.4 2.4-.46C9 2.01 9.3 2 12 2Zm0 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4ZM17.3 6a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2Z"/></svg>
+            <span id="groomIgText">@rama.putra</span>
+          </a>
+        </article>
+
+        <div class="couple-amp reveal" data-anim="fade-in" data-delay="1">&amp;</div>
+
+        <article class="couple-card reveal" data-anim="fade-left">
+          <div class="couple-card__frame">
+            <img src="assets/img/profile-bride.jpg" alt="Foto Mempelai Wanita" loading="lazy">
+          </div>
+          <h3 class="script-names couple-card__name" id="brideName">Shinta Putri Anjani</h3>
+          <p class="couple-card__order" id="brideOrder">Putri kedua</p>
+          <p class="couple-card__parents" id="brideParents">Putri dari Bapak Bambang Santoso &amp; Ibu Dewi Kusuma</p>
+          <p class="couple-card__bio" id="brideBio"></p>
+          <a class="couple-card__ig" id="brideIg" href="#" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2c2.7 0 3 .01 4.1.06 1.1.05 1.8.22 2.4.46.7.27 1.2.63 1.7 1.13.5.5.86 1 1.13 1.7.24.6.4 1.3.46 2.4.05 1.1.06 1.4.06 4.1s-.01 3-.06 4.1c-.05 1.1-.22 1.8-.46 2.4-.27.7-.63 1.2-1.13 1.7-.5.5-1 .86-1.7 1.13-.6.24-1.3.4-2.4.46-1.1.05-1.4.06-4.1.06s-3-.01-4.1-.06c-1.1-.05-1.8-.22-2.4-.46a4.9 4.9 0 0 1-1.7-1.13 4.9 4.9 0 0 1-1.13-1.7c-.24-.6-.4-1.3-.46-2.4C2.01 15 2 14.7 2 12s.01-3 .06-4.1c.05-1.1.22-1.8.46-2.4.27-.7.63-1.2 1.13-1.7.5-.5 1-.86 1.7-1.13.6-.24 1.3-.4 2.4-.46C9 2.01 9.3 2 12 2Zm0 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4ZM17.3 6a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2Z"/></svg>
+            <span id="brideIgText">@shinta.putri</span>
+          </a>
+        </article>
+      </div>
+
+      <blockquote class="quote reveal" data-anim="fade-up">
+        <p class="serif" id="quoteText"></p>
+        <cite id="quoteSource"></cite>
+      </blockquote>
+    </div>
+  </section>
+
+  <!-- 3. EVENT -->
+  <section class="section" id="event">
+    <img class="deco deco--corner-left" src="assets/img/floral-corner-2.png" alt="" aria-hidden="true">
+    <div class="container">
+      <p class="eyebrow center reveal" data-anim="fade-up">Save The Date</p>
+      <h2 class="heading center reveal" data-anim="fade-up" data-delay="1">Rangkaian Acara</h2>
+
+      <div class="event-grid" id="eventGrid"><!-- populated by JS --></div>
+    </div>
+  </section>
+
+  <!-- 4. ALAMAT / MAPS -->
+  <section class="section section--alt" id="address">
+    <div class="container">
+      <p class="eyebrow center reveal" data-anim="fade-up">Lokasi Acara</p>
+      <h2 class="heading center reveal" data-anim="fade-up" data-delay="1" id="venueName">Kediaman Keluarga Mempelai Wanita</h2>
+
+      <div class="address-grid">
+        <div class="address-card reveal" data-anim="fade-right">
+          <h3>Alamat Lengkap</h3>
+          <p id="venueAddress"></p>
+          <p class="address-card__note" id="venueNote"></p>
+          <div class="address-card__actions">
+            <a href="#" id="btnMaps" class="btn btn--accent" target="_blank" rel="noopener">Buka di Google Maps</a>
+            <a href="#" id="btnDirections" class="btn btn--outline" target="_blank" rel="noopener">Petunjuk Arah</a>
+          </div>
+        </div>
+        <div class="address-map reveal" data-anim="fade-left">
+          <iframe id="mapEmbed" src="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Lokasi Acara"></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. LOVE STORY -->
+  <section class="section" id="love-story">
+    <img class="deco deco--corner-right" src="assets/img/floral-corner.png" alt="" aria-hidden="true">
+    <div class="container">
+      <p class="eyebrow center reveal" data-anim="fade-up">Our Journey</p>
+      <h2 class="heading center reveal" data-anim="fade-up" data-delay="1">Love Story</h2>
+
+      <div class="timeline" id="timeline"><!-- populated by JS --></div>
+    </div>
+  </section>
+
+  <!-- 6. GALLERY -->
+  <section class="section section--alt" id="gallery">
+    <div class="container">
+      <p class="eyebrow center reveal" data-anim="fade-up">Moments</p>
+      <h2 class="heading center reveal" data-anim="fade-up" data-delay="1">Galeri Foto</h2>
+
+      <div class="gallery-grid" id="galleryGrid"><!-- populated by JS --></div>
+    </div>
+  </section>
+
+  <!-- 7. DRESS CODE -->
+  <section class="section" id="dresscode">
+    <img class="deco deco--corner-left" src="assets/img/floral-corner-2.png" alt="" aria-hidden="true">
+    <div class="container container--narrow">
+      <p class="eyebrow center reveal" data-anim="fade-up">Dress Code</p>
+      <h2 class="heading center reveal" data-anim="fade-up" data-delay="1">Tema Busana</h2>
+      <p class="section-intro center reveal" data-anim="fade-up" data-delay="2" id="dressIntro"></p>
+
+      <div class="palette" id="palette"><!-- populated by JS --></div>
+
+      <div class="dress-lists">
+        <div class="dress-list dress-list--do reveal" data-anim="fade-right">
+          <h3>Disarankan</h3>
+          <ul id="dressDo"></ul>
+        </div>
+        <div class="dress-list dress-list--dont reveal" data-anim="fade-left">
+          <h3>Dihindari</h3>
+          <ul id="dressDont"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. DIGITAL GIFT -->
+  <section class="section section--alt" id="gift">
+    <div class="container container--narrow">
+      <p class="eyebrow center reveal" data-anim="fade-up">Wedding Gift</p>
+      <h2 class="heading center reveal" data-anim="fade-up" data-delay="1">Amplop Digital</h2>
+      <p class="section-intro center reveal" data-anim="fade-up" data-delay="2" id="giftIntro"></p>
+
+      <div class="gift-tabs reveal" data-anim="fade-up" data-delay="3">
+        <button class="gift-tab is-active" data-tab="bank" type="button">Transfer Bank</button>
+        <button class="gift-tab" data-tab="ewallet" type="button">E-Wallet</button>
+      </div>
+
+      <div class="gift-panel is-active" data-panel="bank" id="bankPanel"></div>
+      <div class="gift-panel" data-panel="ewallet" id="ewalletPanel"></div>
+    </div>
+  </section>
+
+  <!-- 9. RSVP -->
+  <section class="section" id="rsvp">
+    <img class="deco deco--corner-right" src="assets/img/floral-corner.png" alt="" aria-hidden="true">
+    <div class="container container--narrow">
+      <p class="eyebrow center reveal" data-anim="fade-up">Kehadiran Anda</p>
+      <h2 class="heading center reveal" data-anim="fade-up" data-delay="1">RSVP</h2>
+      <p class="section-intro center reveal" data-anim="fade-up" data-delay="2">Mohon konfirmasi kehadiran Anda sebelum tanggal acara agar kami dapat mempersiapkan penyambutan dengan lebih baik.</p>
+
+      <form class="form reveal" data-anim="fade-up" data-delay="3" id="rsvpForm">
+        <div class="form__row">
+          <label for="rsvpName">Nama Lengkap</label>
+          <input type="text" id="rsvpName" name="name" placeholder="Tulis nama Anda" required>
+        </div>
+        <div class="form__row">
+          <label for="rsvpPhone">Nomor WhatsApp</label>
+          <input type="tel" id="rsvpPhone" name="phone" placeholder="08xx-xxxx-xxxx" required>
+        </div>
+        <div class="form__row form__row--split">
+          <div>
+            <label for="rsvpGuests">Jumlah Tamu</label>
+            <select id="rsvpGuests" name="guests">
+              <option value="1">1 Orang</option>
+              <option value="2">2 Orang</option>
+              <option value="3">3 Orang</option>
+              <option value="4">4 Orang</option>
+            </select>
+          </div>
+          <div>
+            <label>Status Kehadiran</label>
+            <div class="radio-group">
+              <label class="radio-chip"><input type="radio" name="attendance" value="hadir" checked><span>Hadir</span></label>
+              <label class="radio-chip"><input type="radio" name="attendance" value="tidak_hadir"><span>Tidak Hadir</span></label>
+              <label class="radio-chip"><input type="radio" name="attendance" value="ragu"><span>Masih Ragu</span></label>
+            </div>
+          </div>
+        </div>
+        <div class="form__row">
+          <label for="rsvpMessage">Pesan Tambahan (opsional)</label>
+          <textarea id="rsvpMessage" name="message" rows="3" placeholder="Tulis pesan atau catatan tambahan..."></textarea>
+        </div>
+        <button type="submit" class="btn btn--accent btn--block">Kirim Konfirmasi</button>
+        <p class="form__note" id="rsvpNote"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- 10. WISHES / COMMENTS -->
+  <section class="section section--alt" id="wishes">
+    <div class="container container--narrow">
+      <p class="eyebrow center reveal" data-anim="fade-up">Ucapan &amp; Doa</p>
+      <h2 class="heading center reveal" data-anim="fade-up" data-delay="1">Kirim Ucapan</h2>
+
+      <form class="form form--inline reveal" data-anim="fade-up" data-delay="2" id="wishForm">
+        <div class="form__row">
+          <label for="wishName">Nama</label>
+          <input type="text" id="wishName" placeholder="Nama Anda" required>
+        </div>
+        <div class="form__row">
+          <label for="wishMessage">Ucapan &amp; Doa</label>
+          <textarea id="wishMessage" rows="3" placeholder="Tulis ucapan dan doa terbaik Anda..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn--accent">Kirim Ucapan</button>
+      </form>
+
+      <div class="wishes-meta">
+        <span id="wishesCount">0 ucapan</span>
+      </div>
+      <div class="wishes-list" id="wishesList"><!-- populated by JS --></div>
+      <button class="btn btn--outline btn--block" id="loadMoreWishes" type="button">Muat Lebih Banyak</button>
+    </div>
+  </section>
+
+  <!-- 11. PENUTUP / FOOTER -->
+  <footer class="closing" id="closing">
+    <img class="deco deco--corner-left closing__corner" src="assets/img/floral-corner-2.png" alt="" aria-hidden="true">
+    <img class="deco deco--corner-right closing__corner" src="assets/img/floral-corner.png" alt="" aria-hidden="true">
+    <div class="container container--narrow">
+      <p class="eyebrow center reveal" data-anim="fade-up">Terima Kasih</p>
+      <p class="closing__text serif reveal" data-anim="fade-up" data-delay="1">
+        Atas doa dan restu yang Bapak/Ibu/Saudara/i berikan, kami mengucapkan terima kasih
+        yang sebesar-besarnya. Sampai jumpa di hari bahagia kami.
+      </p>
+      <h2 class="script-names closing__names reveal" data-anim="fade-in" data-delay="2">Rama <span class="amp">&amp;</span> Shinta</h2>
+      <p class="closing__wassalam reveal" data-anim="fade-up" data-delay="3">Wassalamu'alaikum Warahmatullahi Wabarakatuh</p>
+
+      <div class="closing__footer">
+        <p>Dibuat dengan ❤ &mdash; <span id="closingHashtag">#RamaAndShinta2025</span></p>
+        <button class="back-to-top" id="backToTop" type="button" aria-label="Kembali ke atas">↑</button>
+      </div>
+    </div>
+  </footer>
+
+</div><!-- /.site -->
+
+<!-- ============ MUSIC TOGGLE ============ -->
+<button class="music-toggle" id="musicToggle" type="button" aria-label="Putar/hentikan musik">
+  <span class="music-toggle__bars"><i></i><i></i><i></i></span>
+</button>
+<audio id="bgMusic" loop preload="none">
+  <source src="assets/audio/music.mp3" type="audio/mpeg">
+</audio>
+
+<!-- ============ LIGHTBOX ============ -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox__close" id="lightboxClose" aria-label="Tutup">&times;</button>
+  <button class="lightbox__nav lightbox__nav--prev" id="lightboxPrev" aria-label="Sebelumnya">&#8249;</button>
+  <img class="lightbox__img" id="lightboxImg" src="" alt="">
+  <button class="lightbox__nav lightbox__nav--next" id="lightboxNext" aria-label="Berikutnya">&#8250;</button>
+  <p class="lightbox__caption" id="lightboxCaption"></p>
+</div>
+
+<!-- ============ TOAST ============ -->
+<div class="toast" id="toast"></div>
+
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

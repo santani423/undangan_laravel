@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Admin\Settings\PackageController;
 use App\Http\Controllers\Admin\Themes\ThemeController;
+use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -12,10 +14,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
 
     // ─── Manajemen Pengguna ───────────────────────────────────────────────────
     Route::prefix('users')->name('users.')->group(function () {
-        Route::get('/', fn () => Inertia::render('admin/users/index'))->name('index');
+        Route::get('/', [AdminUserController::class, 'index'])->name('index');
         Route::get('/admins', fn () => Inertia::render('admin/users/admins'))->name('admins');
         Route::get('/roles', fn () => Inertia::render('admin/users/roles'))->name('roles');
         Route::get('/permissions', fn () => Inertia::render('admin/users/permissions'))->name('permissions');
+        Route::get('/{user}', [AdminUserController::class, 'show'])->name('show')->withTrashed();
     });
 
     // ─── Manajemen Undangan ───────────────────────────────────────────────────
@@ -47,9 +50,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
 
     // ─── Keuangan & Transaksi ─────────────────────────────────────────────────
     Route::prefix('transactions')->name('transactions.')->group(function () {
-        Route::get('/', fn () => Inertia::render('admin/transactions/index'))->name('index');
+        Route::get('/', [AdminTransactionController::class, 'index'])->name('index');
         Route::get('/payments', fn () => Inertia::render('admin/transactions/payments'))->name('payments');
         Route::get('/refunds', fn () => Inertia::render('admin/transactions/refunds'))->name('refunds');
+        Route::patch('/{transaction}/approve', [AdminTransactionController::class, 'approve'])->name('approve');
     });
 
     // ─── Konten & Komunitas ───────────────────────────────────────────────────
