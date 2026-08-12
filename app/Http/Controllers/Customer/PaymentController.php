@@ -50,6 +50,18 @@ class PaymentController extends Controller
                 return redirect()->route('customer.transactions.show', $transaction->id)
                     ->with('info', 'Undangan ini sudah dibayar.');
             }
+        } else {
+            // Pre-generate an invoice record so a code is visible as soon as the
+            // payment page is opened, before the customer initiates any payment.
+            $transaction = Transaction::create([
+                'user_id'          => auth()->id(),
+                'invitation_id'    => $invitation->id,
+                'package_id'       => $package->id,
+                'invoice_number'   => $this->generateInvoiceNumber(auth()->id()),
+                'invoice_amount'   => $package->price,
+                'invoice_currency' => $package->currency ?? 'IDR',
+                'status'           => 'pending',
+            ]);
         }
 
         $packageFeatures = $package->features->map(fn ($f) => [
@@ -126,7 +138,11 @@ class PaymentController extends Controller
 
         // ── Step 1: Call Xendit API FIRST — no DB writes yet ─────────────
         try {
-            $invoiceNumber = $this->generateInvoiceNumber(auth()->id());
+            // Reuse the invoice number already shown on the payment page if this
+            // is the first payment attempt; generate a fresh one for retries.
+            $invoiceNumber = ($transaction && ! $transaction->payments()->exists())
+                ? $transaction->invoice_number
+                : $this->generateInvoiceNumber(auth()->id());
             $amount        = (float) $package->price;
             $user          = auth()->user();
             $dueDate       = Carbon::now()->addDays(1);

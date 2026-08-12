@@ -289,7 +289,7 @@ export default function InvitationPayment({ invitation, package: pkg, transactio
                                 </span>
                             </div>
 
-                            {(!transaction || ['failed', 'expired', 'cancelled'].includes(transaction.status)) && (
+                            {!transaction?.payment_url && (
                                 <button
                                     type="button"
                                     onClick={handlePay}
@@ -297,18 +297,6 @@ export default function InvitationPayment({ invitation, package: pkg, transactio
                                     className="w-full rounded-xl bg-primary text-primary-foreground px-4 py-3 text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                                 >
                                     {loading ? 'Memproses...' : 'Bayar Sekarang'}
-                                </button>
-                            )}
-
-                            {/* Pending transaction but Xendit invoice failed — allow retry */}
-                        {transaction?.status === 'pending' && !transaction.payment_url && (
-                                <button
-                                    type="button"
-                                    onClick={handlePay}
-                                    disabled={loading}
-                                    className="w-full rounded-xl bg-primary text-primary-foreground px-4 py-3 text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                                >
-                                    {loading ? 'Memproses...' : 'Coba Lagi'}
                                 </button>
                             )}
 

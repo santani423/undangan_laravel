@@ -1,16 +1,18 @@
 import Countdown from '@/components/invitation/Countdown';
+import DigitalWalletSection from '@/components/invitation/DigitalWalletSection';
 import GuestQrCode from '@/components/invitation/GuestQrCode';
 import MusicPlayer from '@/components/invitation/MusicPlayer';
 import RSVPForm from '@/components/invitation/RSVPForm';
 import Toast, { useToast } from '@/components/invitation/Toast';
 import WishesSection from '@/components/invitation/WishesSection';
-import type { BirthdayInvitation, GalleryItem } from '@/types/invitation';
+import type { BirthdayInvitation, GalleryItem, Greeting } from '@/types/invitation';
 import { useEffect, useRef, useState } from 'react';
 import './starry-night.css';
 
 interface Props {
     invitation: BirthdayInvitation;
     visitor?: string;
+    greeting?: Greeting;
 }
 
 const ROYAL_DIVIDER_ICON = (
@@ -27,22 +29,41 @@ function addToCalendar(ev: BirthdayInvitation['events'][0]) {
     window.open(url, '_blank');
 }
 
-function copyText(text: string, label: string, onToast: (msg: string) => void) {
-    navigator.clipboard
-        .writeText(text)
-        .then(() => onToast(`✓ ${label} disalin!`))
-        .catch(() => onToast(`✓ ${label} disalin!`));
+function getVideoEmbedUrl(url: string): string {
+    if (!url) return '';
+    try {
+        const parsed = new URL(url);
+        const host = parsed.hostname.replace(/^www\./, '');
+
+        if (host === 'youtu.be') {
+            return `https://www.youtube.com/embed/${parsed.pathname.replace('/', '')}`;
+        }
+        if (host === 'youtube.com' || host === 'm.youtube.com') {
+            if (parsed.pathname.startsWith('/embed/')) return url;
+            if (parsed.pathname.startsWith('/shorts/')) return `https://www.youtube.com/embed/${parsed.pathname.split('/')[2] ?? ''}`;
+            const videoId = parsed.searchParams.get('v');
+            if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+        }
+        if (host === 'vimeo.com') {
+            const videoId = parsed.pathname.split('/').filter(Boolean)[0];
+            if (videoId) return `https://player.vimeo.com/video/${videoId}`;
+        }
+        return url;
+    } catch {
+        return '';
+    }
 }
 
-export default function BirthdayStarryNight({ invitation, visitor }: Props) {
-    const [opened, setOpened] = useState(false);
+export default function BirthdayStarryNight({ invitation, visitor, greeting }: Props) {
+    const features = invitation.features ?? {};
+    const isEnabled = (key: keyof typeof features) => features[key] !== false;
+    const coverEnabled = isEnabled('cover');
+
+    const [opened, setOpened] = useState(!coverEnabled);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [galleryFilter, setGalleryFilter] = useState('all');
     const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
     const { toast, showToast, clearToast } = useToast();
-
-    const features = invitation.features ?? {};
-    const isEnabled = (key: keyof typeof features) => features[key] !== false;
 
     // Particle animation on canvas
     useEffect(() => {
@@ -122,6 +143,9 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
     const age = invitation.celebrantAge ?? '';
     const celebrantPhoto = invitation.celebrantPhoto;
     const mainEvent = invitation.events?.[0];
+    const guestName = invitation.guestName || visitor || '';
+    const coverGuestName = guestName || greeting?.guestLabel || '';
+    const videoEmbedUrl = getVideoEmbedUrl(invitation.coupleVideoUrl ?? '');
 
     return (
         <div className="sn-root">
@@ -129,7 +153,8 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
             <canvas ref={canvasRef} className="sn-particles-canvas" />
 
             {/* ── Cover Overlay ─────────────────────────────────────────────────── */}
-            <div id="cover" className={`sn-cover${opened ? 'hidden' : ''}`}>
+            {coverEnabled && (
+                <div id="cover" className={`sn-cover${opened ? ' hidden' : ''}`}>
                 <div className="sn-stars-bg" id="stars-bg">
                     {Array.from({ length: 80 }).map((_, i) => {
                         const sz = 1 + Math.random() * 2;
@@ -155,15 +180,13 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
                     <div className="sn-cover-name">{invitation.celebrantNickname || invitation.celebrantName}</div>
                     {age && <p className="sn-cover-age">🎂 Turning {age} 🎂</p>}
                     {mainEvent && <p className="sn-cover-date">📅 {mainEvent.dateFormatted}</p>}
-                    {invitation.guestName && (
+                    {isEnabled('greeting') && coverGuestName && (
                         <p className="sn-cover-guest">
-                            Dear <span>{invitation.guestName}</span>
+                            {greeting?.title ?? 'Kepada Yth.'} <span>{coverGuestName}</span>
                         </p>
                     )}
-                    {visitor && (
-                        <p className="sn-cover-guest">
-                            Kepada Yth. <span>{visitor}</span>
-                        </p>
+                    {isEnabled('greeting') && greeting?.message && (
+                        <p className="sn-cover-message">{greeting.message}</p>
                     )}
                     {invitation.guestQrData && (
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '12px 0' }}>
@@ -178,10 +201,11 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
                         </div>
                     )}
                     <button className="sn-btn-open" onClick={() => setOpened(true)}>
-                        <span>🎉 Open Invitation 🎉</span>
+                        <span>🎉 {greeting?.buttonText ?? 'Open Invitation'} 🎉</span>
                     </button>
                 </div>
-            </div>
+                </div>
+            )}
 
             {/* ── Main Content ────────────────────────────────────────────────────── */}
             <main className="sn-main" style={{ display: opened ? 'block' : 'none' }}>
@@ -212,6 +236,7 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
                 </section>
 
                 {/* PROFILE */}
+                {isEnabled('couple_profile') && (
                 <section className="sn-section sn-profile">
                     <div className="sn-container">
                         <div className="sn-text-center sn-fade-up">
@@ -278,9 +303,10 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
                         </div>
                     </div>
                 </section>
+                )}
 
                 {/* EVENTS */}
-                {invitation.events.length > 0 && (
+                {isEnabled('event_detail') && invitation.events.length > 0 && (
                     <section className="sn-section sn-event">
                         <div className="sn-container">
                             <div className="sn-text-center sn-fade-up">
@@ -328,7 +354,7 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
                 )}
 
                 {/* LIFE JOURNEY TIMELINE */}
-                {isEnabled('timeline') && invitation.lifeJourney?.length > 0 && (
+                {isEnabled('love_story') && invitation.lifeJourney?.length > 0 && (
                     <section className="sn-section sn-timeline">
                         <div className="sn-container">
                             <div className="sn-text-center sn-fade-up">
@@ -371,7 +397,7 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
                             {galleryCategories.length > 0 && (
                                 <div className="sn-gallery-tabs">
                                     <button
-                                        className={`sn-gallery-tab${galleryFilter === 'all' ? 'active' : ''}`}
+                                        className={`sn-gallery-tab${galleryFilter === 'all' ? ' active' : ''}`}
                                         onClick={() => setGalleryFilter('all')}
                                     >
                                         All
@@ -379,7 +405,7 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
                                     {galleryCategories.map((cat) => (
                                         <button
                                             key={cat}
-                                            className={`sn-gallery-tab${galleryFilter === cat ? 'active' : ''}`}
+                                            className={`sn-gallery-tab${galleryFilter === cat ? ' active' : ''}`}
                                             onClick={() => setGalleryFilter(cat)}
                                         >
                                             {cat}
@@ -398,6 +424,28 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
                                         <div className="sn-gallery-item-overlay">🔍</div>
                                     </div>
                                 ))}
+                            </div>
+                        </div>
+                    </section>
+                )}
+
+                {/* VIDEO */}
+                {isEnabled('video') && videoEmbedUrl && (
+                    <section className="sn-section sn-video">
+                        <div className="sn-container">
+                            <div className="sn-text-center sn-fade-up">
+                                <span className="sn-section-badge">🎬 Memories</span>
+                                <h2 className="sn-section-title">Video Kenangan</h2>
+                                <div className="sn-royal-divider">{ROYAL_DIVIDER_ICON}</div>
+                            </div>
+                            <div className="sn-video-wrap sn-fade-up">
+                                <iframe
+                                    src={videoEmbedUrl}
+                                    title="Video Kenangan"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowFullScreen
+                                    loading="lazy"
+                                />
                             </div>
                         </div>
                     </section>
@@ -471,6 +519,8 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
                             </div>
                             <RSVPForm
                                 rsvpEndpoint={invitation.rsvpEndpoint}
+                                guestName={invitation.guestName || undefined}
+                                guestSlug={invitation.guestSlug}
                                 onToast={showToast}
                                 styles={{
                                     form: 'sn-rsvp-form sn-glass-card',
@@ -531,7 +581,7 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
                 )}
 
                 {/* DIGITAL WALLET / GIFT */}
-                {isEnabled('digitalWallet') && (invitation.bankAccounts?.length > 0 || invitation.digitalWallets?.length > 0) && (
+                {isEnabled('digital_envelope') && (invitation.bankAccounts?.length > 0 || invitation.digitalWallets?.length > 0) && (
                     <section className="sn-section sn-gift">
                         <div className="sn-container">
                             <div className="sn-text-center sn-fade-up">
@@ -549,56 +599,42 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
                                     Your presence is the greatest gift, but if you'd like to share some love
                                 </p>
                             </div>
-                            <div className="sn-gift-grid sn-fade-up">
-                                {invitation.bankAccounts?.map((b, i) => (
-                                    <div key={i} className="sn-gift-card">
-                                        <div className="sn-gift-card-logo">🏦</div>
-                                        <div className="sn-gift-card-name">{b.bankName}</div>
-                                        <div className="sn-gift-card-number">{b.accountNumber}</div>
-                                        <div className="sn-gift-card-owner">a.n. {b.accountName}</div>
-                                        <button
-                                            className="sn-gift-copy-btn"
-                                            onClick={() => copyText(b.accountNumber, `No. Rekening ${b.bankName}`, showToast)}
-                                        >
-                                            📋 Copy
-                                        </button>
-                                    </div>
-                                ))}
-                                {invitation.digitalWallets?.map((w, i) => (
-                                    <div key={i} className="sn-gift-card">
-                                        {w.logoUrl ? (
-                                            <img
-                                                src={w.logoUrl}
-                                                alt={w.label}
-                                                style={{ height: '36px', objectFit: 'contain', marginBottom: '8px' }}
-                                            />
-                                        ) : (
-                                            <div className="sn-gift-card-logo">💳</div>
-                                        )}
-                                        <div className="sn-gift-card-name">{w.label || w.provider}</div>
-                                        <div className="sn-gift-card-number">{w.accountNumber}</div>
-                                        <div className="sn-gift-card-owner">{w.accountName}</div>
-                                        <button
-                                            className="sn-gift-copy-btn"
-                                            onClick={() => copyText(w.accountNumber, w.label || w.provider, showToast)}
-                                        >
-                                            📋 Copy
-                                        </button>
-                                    </div>
-                                ))}
+                            <div className="sn-fade-up">
+                                <DigitalWalletSection
+                                    bankAccounts={invitation.bankAccounts ?? []}
+                                    digitalWallets={invitation.digitalWallets ?? []}
+                                    onToast={showToast}
+                                    styles={{
+                                        bankGrid: 'sn-gift-grid',
+                                        bankCard: 'sn-gift-card',
+                                        bankLogo: 'sn-gift-card-logo',
+                                        bankType: 'sn-gift-card-type',
+                                        bankNumber: 'sn-gift-card-number',
+                                        bankName: 'sn-gift-card-owner',
+                                        copyBankBtn: 'sn-gift-copy-btn',
+                                        ewalletGrid: 'sn-gift-grid',
+                                        ewalletCard: 'sn-gift-card',
+                                        ewalletName: 'sn-gift-card-name',
+                                        ewalletPhone: 'sn-gift-card-number',
+                                        copyEwalletBtn: 'sn-gift-copy-btn',
+                                        ewalletTitle: 'sn-gift-ewallet-title',
+                                    }}
+                                />
                             </div>
                         </div>
                     </section>
                 )}
 
                 {/* FOOTER */}
-                <footer className="sn-footer">
-                    <span className="sn-footer-name">{invitation.celebrantNickname || invitation.celebrantName}</span>
-                    {age && <p className="sn-footer-age">{age}th Birthday Celebration</p>}
-                    {mainEvent && <p className="sn-footer-date">{mainEvent.dateFormatted}</p>}
-                    <div className="sn-footer-hearts">💜 🌸 👑 🌸 💜</div>
-                    <p className="sn-footer-credit">Created with love ✦ Undesia Digital Invitation ✨</p>
-                </footer>
+                {isEnabled('footer') && (
+                    <footer className="sn-footer">
+                        <span className="sn-footer-name">{invitation.celebrantNickname || invitation.celebrantName}</span>
+                        {age && <p className="sn-footer-age">{age}th Birthday Celebration</p>}
+                        {mainEvent && <p className="sn-footer-date">{mainEvent.dateFormatted}</p>}
+                        <div className="sn-footer-hearts">💜 🌸 👑 🌸 💜</div>
+                        <p className="sn-footer-credit">Created with love ✦ Undesia Digital Invitation ✨</p>
+                    </footer>
+                )}
             </main>
 
             {/* Music */}
@@ -607,6 +643,7 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
                     url={invitation.music.url}
                     autoplay={invitation.music.autoplay}
                     loop={invitation.music.loop}
+                    triggerPlay={opened}
                     buttonClassName="sn-music-btn"
                 />
             )}

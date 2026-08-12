@@ -55,8 +55,9 @@ html { scroll-behavior: smooth; }
 .sn-cover-name { font-family: 'Great Vibes', cursive; font-size: clamp(3.5rem, 10vw, 6rem); color: var(--sn-gold); line-height: 1; text-shadow: 0 0 40px rgba(251,191,36,.5); animation: snFadeUp .8s .4s both; }
 .sn-cover-age { font-family: 'Playfair Display', serif; font-size: clamp(1rem, 3vw, 1.4rem); color: var(--sn-pink); letter-spacing: .15em; margin: .5rem 0; animation: snFadeUp .8s .5s both; }
 .sn-cover-date { color: var(--sn-sky); font-size: .9rem; letter-spacing: .1em; margin-bottom: .3rem; animation: snFadeUp .8s .55s both; }
-.sn-cover-guest { color: rgba(255,255,255,.75); font-size: .85rem; margin-bottom: 2rem; animation: snFadeUp .8s .6s both; }
+.sn-cover-guest { color: rgba(255,255,255,.75); font-size: .85rem; margin-bottom: .5rem; animation: snFadeUp .8s .6s both; }
 .sn-cover-guest span { color: var(--sn-pink); font-weight: 600; }
+.sn-cover-message { color: rgba(255,255,255,.65); font-size: .8rem; max-width: 320px; margin: 0 auto 1.5rem; line-height: 1.6; animation: snFadeUp .8s .65s both; }
 .sn-btn-open {
   position: relative; padding: .9rem 2.5rem;
   background: linear-gradient(135deg, var(--sn-gold), var(--sn-gold-deep));
@@ -193,6 +194,11 @@ html { scroll-behavior: smooth; }
 .sn-gallery-item-overlay { position: absolute; inset: 0; background: rgba(139,92,246,.5); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .3s; font-size: 1.5rem; }
 .sn-gallery-item:hover .sn-gallery-item-overlay { opacity: 1; }
 
+/* ── Video ─────────────────────────────────────────────────────────────────────── */
+.sn-video { background: linear-gradient(160deg, #ede9fe, #fce7f3); }
+.sn-video-wrap { border-radius: var(--sn-radius); overflow: hidden; margin: 2rem 0; border: 2px solid rgba(139,92,246,.2); box-shadow: 0 8px 32px rgba(139,92,246,.15); aspect-ratio: 16/9; }
+.sn-video-wrap iframe { width: 100%; height: 100%; border: 0; display: block; }
+
 /* ── Maps ─────────────────────────────────────────────────────────────────────── */
 .sn-maps { background: linear-gradient(135deg, #1a0533, #2d1b69); }
 .sn-map-wrap { border-radius: var(--sn-radius); overflow: hidden; margin: 2rem 0; border: 2px solid rgba(255,255,255,.2); }
@@ -256,10 +262,12 @@ html { scroll-behavior: smooth; }
 .sn-gift-card { padding: 1.5rem; border-radius: var(--sn-radius); background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); text-align: center; }
 .sn-gift-card-logo { font-size: 1.5rem; margin-bottom: .5rem; }
 .sn-gift-card-name { color: white; font-weight: 600; margin-bottom: .5rem; }
+.sn-gift-card-type { color: rgba(255,255,255,.5); font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; margin-bottom: .5rem; }
 .sn-gift-card-number { color: rgba(255,255,255,.8); font-size: .9rem; margin-bottom: 1rem; font-family: monospace; }
 .sn-gift-card-owner { color: rgba(255,255,255,.6); font-size: .8rem; margin-bottom: .75rem; }
 .sn-gift-copy-btn { padding: .5rem 1.5rem; border-radius: 50px; font-size: .8rem; cursor: pointer; border: 1px solid rgba(251,191,36,.5); color: var(--sn-gold); background: rgba(251,191,36,.1); transition: all .3s; }
 .sn-gift-copy-btn:hover { background: rgba(251,191,36,.2); }
+.sn-gift-ewallet-title { color: var(--sn-gold); font-family: 'Playfair Display', serif; font-size: 1.1rem; text-align: center; margin: 2rem 0 1rem; }
 
 /* ── Footer ─────────────────────────────────────────────────────────────────── */
 .sn-footer { background: linear-gradient(135deg, #1a0533, #2d1b69); text-align: center; padding: 4rem 1.5rem; }

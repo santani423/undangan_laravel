@@ -14,6 +14,7 @@ import AqiqahTheme01 from './themes/aqiqah/aqiqah_theme_01/AqiqahTheme01';
 import AqiqahTheme02 from './themes/aqiqah/aqiqah_theme_02/AqiqahTheme02';
 // Birthday 
 import BirthdayStarryNight from './themes/birthday/birthday_theme_01/BirthdayStarryNight';
+import BirthdayTheme01 from './themes/birthday/birthday_theme_01/BirthdayStarryNight';
 import BirthdayTheme02 from './themes/birthday/birthday_theme_02/BirthdayTheme02';
 // Gender reveal
 import GenderRevealTheme01 from './themes/gender_reveal/gender_reveal_theme_01/GenderRevealTheme01';
@@ -46,11 +47,15 @@ interface Props {
 }
 
 function resolveThemeComponent(themeSlug: string, invitation: InvitationData, visitor?: string): React.ReactNode {
+    console.log('Resolving theme component for slug:', themeSlug);
     switch (themeSlug) {
         // Birthday themes
         case 'birthday':
         case 'starry-night':
-            return <BirthdayStarryNight invitation={invitation as BirthdayInvitation} visitor={visitor} />;
+            return <BirthdayStarryNight invitation={invitation as BirthdayInvitation} visitor={visitor} greeting={invitation.greeting} />;
+
+        case 'birthday_theme_01':
+            return <BirthdayTheme01 invitation={invitation as BirthdayInvitation} visitor={visitor} greeting={invitation.greeting} />;
 
         case 'birthday_theme_02':
         case 'confetti-pop':
