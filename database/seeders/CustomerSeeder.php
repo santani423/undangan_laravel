@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use Database\Seeders\Data\DevAccounts;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -14,43 +15,7 @@ class CustomerSeeder extends Seeder
     {
         $spatieAvailable = class_exists(\Spatie\Permission\Models\Role::class);
 
-        $customers = [
-            [
-                'name'            => 'Budi Santoso',
-                'email'           => 'budi@example.com',
-                'password'        => Hash::make('Customer@2026!'),
-                'phone_number'    => '+6281200000001',
-                'wa_notification' => true,
-            ],
-            [
-                'name'            => 'Siti Rahayu',
-                'email'           => 'siti@example.com',
-                'password'        => Hash::make('Customer@2026!'),
-                'phone_number'    => '+6281200000002',
-                'wa_notification' => true,
-            ],
-            [
-                'name'            => 'Ahmad Fauzi',
-                'email'           => 'ahmad@example.com',
-                'password'        => Hash::make('Customer@2026!'),
-                'phone_number'    => '+6281200000003',
-                'wa_notification' => false,
-            ],
-            [
-                'name'            => 'Dewi Kusuma',
-                'email'           => 'dewi@example.com',
-                'password'        => Hash::make('Customer@2026!'),
-                'phone_number'    => '+6281200000004',
-                'wa_notification' => true,
-            ],
-            [
-                'name'            => 'Rizky Pratama',
-                'email'           => 'rizky@example.com',
-                'password'        => Hash::make('Customer@2026!'),
-                'phone_number'    => '+6281200000005',
-                'wa_notification' => false,
-            ],
-        ];
+        $customers = DevAccounts::customers();
 
         foreach ($customers as $data) {
             if (DB::table('users')->where('email', $data['email'])->exists()) {
@@ -67,7 +32,7 @@ class CustomerSeeder extends Seeder
             $userId = DB::table('users')->insertGetId([
                 'name'              => $data['name'],
                 'email'             => $data['email'],
-                'password'          => $data['password'],
+                'password'          => Hash::make($data['password']),
                 'phone_number'      => $data['phone_number'],
                 'is_active'         => true,
                 'email_verified_at' => now(),
@@ -98,9 +63,9 @@ class CustomerSeeder extends Seeder
         }
 
         $this->command->info('');
-        $this->command->info('Customer test accounts (password: Customer@2026!):');
+        $this->command->info('Customer test accounts:');
         foreach ($customers as $c) {
-            $this->command->info("  {$c['email']}");
+            $this->command->info("  {$c['email']} / {$c['password']}");
         }
     }
 }

@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
@@ -16,18 +16,41 @@ interface LoginForm {
     remember: boolean;
 }
 
+interface DevAccount {
+    label: string;
+    email: string;
+    password: string;
+}
+
 interface LoginProps {
     status?: string;
     canResetPassword: boolean;
+    devAccounts?: DevAccount[];
 }
 
-export default function Login({ status, canResetPassword }: LoginProps) {
+export default function Login({ status, canResetPassword, devAccounts = [] }: LoginProps) {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
         remember: false,
     });
     const [showPassword, setShowPassword] = useState(false);
+    const [devLoggingIn, setDevLoggingIn] = useState<string | null>(null);
+
+    const loginAsDevAccount = (account: DevAccount) => {
+        setData({ ...data, email: account.email, password: account.password });
+        setDevLoggingIn(account.email);
+        router.post(
+            route('login'),
+            { email: account.email, password: account.password, remember: false },
+            {
+                onFinish: () => {
+                    setDevLoggingIn(null);
+                    reset('password');
+                },
+            },
+        );
+    };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -42,6 +65,30 @@ export default function Login({ status, canResetPassword }: LoginProps) {
 
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
+                    {devAccounts.length > 0 && (
+                        <div className="grid gap-2 rounded-md border border-dashed border-amber-500/50 bg-amber-500/5 p-3">
+                            <Label>Quick login (debug mode)</Label>
+                            <div className="grid gap-1.5">
+                                {devAccounts.map((account) => (
+                                    <Button
+                                        key={account.email}
+                                        type="button"
+                                        variant="outline"
+                                        className="h-auto w-full justify-between gap-2 py-2 text-left"
+                                        disabled={processing || devLoggingIn !== null}
+                                        onClick={() => loginAsDevAccount(account)}
+                                    >
+                                        <span className="flex flex-col items-start">
+                                            <span className="text-sm font-medium">{account.label}</span>
+                                            <span className="text-muted-foreground text-xs">{account.email}</span>
+                                        </span>
+                                        {devLoggingIn === account.email && <LoaderCircle className="size-4 shrink-0 animate-spin" />}
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     <div className="grid gap-2">
                         <Label htmlFor="email">Email address</Label>
                         <Input
@@ -97,7 +144,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         <Label htmlFor="remember">Remember me</Label>
                     </div>
 
-                    <Button type="submit" className="mt-4 w-full" tabIndex={4} disabled={processing}>
+                    <Button type="submit" className="mt-4 w-full" tabIndex={4} disabled={processing || devLoggingIn !== null}>
                         {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                         Log in
                     </Button>

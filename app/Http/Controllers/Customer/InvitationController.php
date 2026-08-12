@@ -30,14 +30,15 @@ class InvitationController extends Controller
             ->latest()
             ->get()
             ->map(fn ($inv) => [
-                'id'            => $inv->id,
-                'slug'          => $inv->slug,
-                'title'         => $inv->title,
-                'status'        => $inv->status,
-                'is_public'     => $inv->is_public,
-                'created_at'    => $inv->created_at->toDateString(),
-                'expires_at'    => $inv->expires_at?->toDateString(),
-                'guests_count'  => $inv->guests_count,
+                'id'              => $inv->id,
+                'slug'            => $inv->slug,
+                'invitation_code' => $inv->invitation_code,
+                'title'           => $inv->title,
+                'status'          => $inv->status,
+                'is_public'       => $inv->is_public,
+                'created_at'      => $inv->created_at->toDateString(),
+                'expires_at'      => $inv->expires_at?->toDateString(),
+                'guests_count'    => $inv->guests_count,
                 'theme' => $inv->theme ? [
                     'name'            => $inv->theme->name,
                     'thumbnail_url'   => $inv->theme->thumbnail_url,

@@ -14,14 +14,12 @@ import {
     Images,
     MapPin,
     MessageCircleHeart,
-    Music2,
     PenLine,
     Search,
     Send,
     Sparkles,
     Volume2,
     VolumeX,
-    WalletCards,
     X,
     type LucideIcon,
 } from 'lucide-react';
@@ -288,6 +286,7 @@ const DEFAULT_THEME_DATA: WeddingInvitation = {
     groomMother: 'Ibu Fulanah',
     groomBio: 'Lahir dan besar di Jakarta. Seorang insinyur perangkat lunak yang berdedikasi, menyukai kopi, dan petualangan di alam bebas.',
     groomPhoto: ASSETS.groom,
+    groomInstagram: '',
     brideFullName: 'Joana Lestari, S.Ds.',
     brideNickname: 'Joana',
     brideInitials: 'J',
@@ -296,6 +295,7 @@ const DEFAULT_THEME_DATA: WeddingInvitation = {
     brideMother: 'Ibu Fulanah',
     brideBio: 'Desainer grafis kreatif yang menyukai seni ilustrasi, tanaman hias, dan bercerita lewat sketsa goresan warna.',
     bridePhoto: ASSETS.bride,
+    brideInstagram: '',
     couplePhoto: ASSETS.hero,
     loveStory: DEFAULT_LOVE_STORY,
     dressCodes: DEFAULT_DRESS_CODES,
@@ -749,7 +749,6 @@ export default function WeddingTheme09({ invitation, visitor, greeting }: Theme0
 
     const heroPhoto = normalizeText(data.couplePhoto, normalizeText(data.groomPhoto, normalizeText(data.bridePhoto, ASSETS.hero)));
     const coverPhoto = ASSETS.cover;
-    const coverGuest = guestName || data.greeting?.guestLabel || 'Tamu Undangan';
     const firstEvent = data.events[0];
     const addressEvent = data.events[1] ?? data.events[0];
     const countdownTarget = normalizeText(data.countdownDate, firstEvent ? `${firstEvent.date}T${normalizeText(firstEvent.time, '08:00')}:00+07:00` : DEFAULT_THEME_DATA.countdownDate);

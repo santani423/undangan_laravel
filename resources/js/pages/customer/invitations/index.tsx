@@ -34,6 +34,7 @@ interface InvitationPackage {
 interface Invitation {
     id: number;
     slug: string;
+    invitation_code: string | null;
     title: string;
     status: 'draft' | 'active' | 'expired' | 'archived';
     is_public: boolean;
@@ -66,6 +67,10 @@ const STATUS_CLASS: Record<string, string> = {
     archived: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-500',
 };
 
+function displayCode(invitation: Invitation): string {
+    return invitation.invitation_code ?? invitation.slug;
+}
+
 function formatDate(dateStr: string | null): string {
     if (!dateStr) return '—';
     return new Date(dateStr).toLocaleDateString('id-ID', {
@@ -82,7 +87,7 @@ function CardMenu({ invitation }: { invitation: Invitation }) {
     const ref = useRef<HTMLDivElement>(null);
 
     function handleDelete() {
-        if (!confirm(`Hapus undangan "${invitation.title}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+        if (!confirm(`Hapus undangan "${displayCode(invitation)}"? Tindakan ini tidak dapat dibatalkan.`)) return;
         router.delete(`/customer/invitations/${invitation.id}`);
     }
 
@@ -109,7 +114,7 @@ function CardMenu({ invitation }: { invitation: Invitation }) {
                             Edit Undangan
                         </Link>
                         <a
-                            href={`/${invitation.slug}`}
+                            href={`/${displayCode(invitation)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-foreground hover:bg-muted flex items-center gap-2.5 px-3.5 py-2.5 text-sm transition-colors"
@@ -189,7 +194,7 @@ function InvitationCard({ invitation }: { invitation: Invitation }) {
                 {/* Title row */}
                 <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                        <h3 className="text-foreground line-clamp-1 text-base leading-tight font-semibold">{invitation.title}</h3>
+                        <h3 className="text-foreground line-clamp-1 text-base leading-tight font-semibold">{displayCode(invitation)}</h3>
                         <p className="text-muted-foreground mt-0.5 text-xs">
                             {invitation.event_type?.label ?? '—'}
                             {invitation.package && (
@@ -233,7 +238,7 @@ function InvitationCard({ invitation }: { invitation: Invitation }) {
                         </Link>
                     )}
                     <a
-                        href={`/${invitation.slug}`}
+                        href={`/${displayCode(invitation)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1 rounded-xl px-3 py-2 text-center text-xs font-medium transition-colors"

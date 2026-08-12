@@ -63,7 +63,7 @@ export interface Greeting {
 // ─── Base invitation data (common to all event types) ─────────────────────────
 
 interface InvitationBase {
-    type: 'wedding' | 'birthday' | 'khitan' | 'aqiqah' | 'selamatan' | 'event';
+    type: 'wedding' | 'birthday' | 'khitanan' | 'aqiqah' | 'gender_reveal' | 'syukuran' | 'event';
     code: string;
     slug: string;
     title: string;
@@ -122,6 +122,7 @@ export interface WeddingInvitation extends InvitationBase {
     groomMother: string;
     groomBio: string;
     groomPhoto: string;
+    groomInstagram: string;
     brideFullName: string;
     brideNickname: string;
     brideInitials: string;
@@ -130,6 +131,7 @@ export interface WeddingInvitation extends InvitationBase {
     brideMother: string;
     brideBio: string;
     bridePhoto: string;
+    brideInstagram: string;
     couplePhoto: string;
     loveStory: LoveStoryItem[];
     dressCodes: DressCode[];
@@ -148,4 +150,52 @@ export interface BirthdayInvitation extends InvitationBase {
     lifeJourney: LoveStoryItem[];
 }
 
-export type InvitationData = WeddingInvitation | BirthdayInvitation | InvitationBase;
+export interface KhitananInvitation extends InvitationBase {
+    type: 'khitanan';
+    childName: string;
+    childPhoto: string;
+    childAge: string;
+    fatherName: string;
+    motherName: string;
+    openingMessage: string;
+}
+
+export interface AqiqahInvitation extends InvitationBase {
+    type: 'aqiqah';
+    babyName: string;
+    babyPhoto: string;
+    babyGender: string; // 'Laki-laki' | 'Perempuan'
+    birthDateFormatted: string;
+    fatherName: string;
+    motherName: string;
+    openingMessage: string;
+}
+
+export interface GenderRevealInvitation extends InvitationBase {
+    type: 'gender_reveal';
+    motherName: string;
+    fatherName: string;
+    parentsPhoto: string;
+    dueDateFormatted: string;
+    teamAName: string;
+    teamBName: string;
+    revealDateFormatted: string;
+    openingMessage: string;
+}
+
+export interface SyukuranInvitation extends InvitationBase {
+    type: 'syukuran';
+    hostName: string;
+    hostPhoto: string;
+    occasion: string;
+    openingMessage: string;
+}
+
+export type InvitationData =
+    | WeddingInvitation
+    | BirthdayInvitation
+    | KhitananInvitation
+    | AqiqahInvitation
+    | GenderRevealInvitation
+    | SyukuranInvitation
+    | InvitationBase;

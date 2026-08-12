@@ -44,7 +44,7 @@ class InvitationSeeder extends Seeder
     {
         return [
             'eventTypes' => DB::table('event_types')->pluck('id', 'name'),
-            'packages'   => DB::table('packages')->pluck('id', 'name'),
+            'packages'   => DB::table('packages')->get(['id', 'name', 'invitation_type', 'price', 'duration_days'])->keyBy('name'),
             'themes'     => DB::table('themes')->pluck('id', 'slug'),
         ];
     }
@@ -78,44 +78,104 @@ class InvitationSeeder extends Seeder
             return 'skipped';
         }
 
-        $packageId = $this->resolvePackageId($typeSlug, $config['package_name'], $lookup['packages']);
-        $themeId   = $lookup['themes'][$config['theme_slug']] ?? null;
+        $package = $this->resolvePackage($typeSlug, $config['package_name'], $lookup['packages']);
+        $themeId = $lookup['themes'][$config['theme_slug']] ?? null;
 
-        $invitationId = $this->insertInvitation($userId, $eventTypeId, $packageId, $themeId, $slug, $config['title']);
+        // One demo invitation per customer (syukuran) is left unpaid so the
+        // "menunggu konfirmasi" admin views have something real to show.
+        $isPaid = $typeSlug !== 'syukuran';
+
+        $invitationId = $this->insertInvitation($userId, $eventTypeId, $package, $themeId, $slug, $config['title'], $isPaid);
         $this->insertSettings($invitationId);
         $this->insertEvents($invitationId, $config['events']);
+        $transactionId = $this->insertTransaction($userId, $invitationId, $package, $isPaid);
+        $this->insertPayment($transactionId, $package, $isPaid);
 
         return 'created';
     }
 
-    private function resolvePackageId(string $typeSlug, string $packageName, $packages): ?int
+    private function resolvePackage(string $typeSlug, string $packageName, $packages): ?object
     {
         if ($packages->has($packageName)) {
             return $packages[$packageName];
         }
 
-        return DB::table('packages')->where('invitation_type', $typeSlug)->value('id')
+        return DB::table('packages')->where('invitation_type', $typeSlug)->first()
             ?? $packages->first();
     }
 
-    private function insertInvitation(int $userId, int $eventTypeId, ?int $packageId, ?int $themeId, string $slug, string $title): int
+    private function insertInvitation(int $userId, int $eventTypeId, ?object $package, ?int $themeId, string $slug, string $title, bool $isPaid): int
     {
+        $now          = now();
+        $durationDays = $package->duration_days ?? 90;
+
         return DB::table('invitations')->insertGetId([
             'user_id'              => $userId,
             'event_type_id'        => $eventTypeId,
-            'package_id'           => $packageId,
+            'package_id'           => $package->id ?? null,
             'theme_id'             => $themeId,
             'slug'                 => $slug,
             'invitation_code'      => strtoupper(Str::random(8)),
             'title'                => $title,
-            'status'               => 'draft',
+            'status'               => $isPaid ? 'active' : 'draft',
             'is_public'            => false,
             'requires_password'    => false,
             'allow_guest_comments' => true,
             'allow_guest_plus_one' => true,
             'max_guests_plus_one'  => 1,
-            'created_at'           => now(),
-            'updated_at'           => now(),
+            'activated_at'         => $isPaid ? $now : null,
+            'expires_at'           => $isPaid ? $now->copy()->addDays($durationDays) : null,
+            'created_at'           => $now,
+            'updated_at'           => $now,
+        ]);
+    }
+
+    /**
+     * Paid invitations become 'active' via the same transaction+payment pair
+     * that Admin/TransactionController and Customer/PaymentController use to
+     * activate one for real. Unpaid ones stay 'pending' so the admin
+     * "menunggu konfirmasi" views have real data instead of an empty state.
+     */
+    private function insertTransaction(int $userId, int $invitationId, ?object $package, bool $isPaid): int
+    {
+        $now = now();
+
+        return DB::table('transactions')->insertGetId([
+            'user_id'          => $userId,
+            'invitation_id'    => $invitationId,
+            'package_id'       => $package->id ?? null,
+            'invoice_number'   => 'INV-'.$now->format('Ymd').'-'.$userId.'-'.strtoupper(Str::random(6)),
+            'invoice_amount'   => $package->price ?? 0,
+            'invoice_currency' => 'IDR',
+            'status'           => $isPaid ? 'paid' : 'pending',
+            'due_date'         => $isPaid ? $now->toDateString() : $now->copy()->addDay()->toDateString(),
+            'paid_at'          => $isPaid ? $now : null,
+            'created_at'       => $now,
+            'updated_at'       => $now,
+        ]);
+    }
+
+    /**
+     * Matching gateway payment for the transaction above, so the admin
+     * "Pembayaran Masuk" page has real rows instead of an empty state.
+     */
+    private function insertPayment(int $transactionId, ?object $package, bool $isPaid): void
+    {
+        $now = now();
+
+        DB::table('payments')->insert([
+            'transaction_id'       => $transactionId,
+            'payment_gateway'      => 'xendit',
+            'gateway_reference_id' => 'xnd-'.Str::uuid(),
+            'gateway_order_id'     => $isPaid ? null : 'https://checkout.xendit.co/web/demo-'.Str::lower(Str::random(10)),
+            'amount'               => $package->price ?? 0,
+            'fee'                  => 0,
+            'currency'             => 'IDR',
+            'status'               => $isPaid ? 'success' : 'pending',
+            'webhook_received_at'  => $isPaid ? $now : null,
+            'webhook_verified_at'  => $isPaid ? $now : null,
+            'created_at'           => $now,
+            'updated_at'           => $now,
         ]);
     }
 

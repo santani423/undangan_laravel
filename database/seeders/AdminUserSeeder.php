@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use Database\Seeders\Data\DevAccounts;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -17,32 +18,7 @@ class AdminUserSeeder extends Seeder
             $this->command->warn('Spatie Permission tidak tersedia — user dibuat tanpa role assignment.');
         }
 
-        $users = [
-            [
-                'name'              => 'Super Admin UNDESIA',
-                'email'             => 'admin@gmail.com',
-                'password'          => Hash::make('12345678'),
-                'phone_number'      => '+6281234567890',
-                'role'              => 'super_admin',
-                'wa_notification'   => true,
-            ],
-            [
-                'name'              => 'Admin UNDESIA',
-                'email'             => 'admin@undesia.id',
-                'password'          => Hash::make('Admin@2026!'),
-                'phone_number'      => '+6281234567891',
-                'role'              => 'admin',
-                'wa_notification'   => false,
-            ],
-            [
-                'name'              => 'Demo Customer',
-                'email'             => 'demo@undesia.id',
-                'password'          => Hash::make('Demo@2026!'),
-                'phone_number'      => '+6281234567892',
-                'role'              => 'customer',
-                'wa_notification'   => true,
-            ],
-        ];
+        $users = DevAccounts::admins();
 
         foreach ($users as $data) {
             // Idempotent: skip insert jika email sudah ada, tapi tetap sync role
@@ -61,7 +37,7 @@ class AdminUserSeeder extends Seeder
             $userId = DB::table('users')->insertGetId([
                 'name'              => $data['name'],
                 'email'             => $data['email'],
-                'password'          => $data['password'],
+                'password'          => Hash::make($data['password']),
                 'phone_number'      => $data['phone_number'],
                 'is_active'         => true,
                 'email_verified_at' => now(),
@@ -94,8 +70,8 @@ class AdminUserSeeder extends Seeder
 
         $this->command->info('');
         $this->command->info('Akun test:');
-        $this->command->info('  superadmin@undesia.id / SuperAdmin@2026!');
-        $this->command->info('  admin@undesia.id      / Admin@2026!');
-        $this->command->info('  demo@undesia.id       / Demo@2026!');
+        foreach ($users as $u) {
+            $this->command->info("  {$u['email']} / {$u['password']}");
+        }
     }
 }

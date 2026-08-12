@@ -116,6 +116,21 @@ const EVENT_TYPE_TABS: Record<string, TabKey[]> = {
 
 const DEFAULT_TABS: TabKey[] = ['info', 'gallery'];
 
+// Field whose value seeds the auto-generated invitation code (slug) for
+// event types that don't have a dedicated couple/host name step.
+const AUTO_CODE_SOURCE_FIELD_KEY: Record<string, string> = {
+    birthday: 'child_name',
+};
+
+function slugifyForCode(value: string): string {
+    return value
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+}
+
 const CHILD_ORDER_FIELD_KEYS = new Set(['groom_child_order', 'bride_child_order']);
 
 function isChildOrderFieldKey(fieldKey: string): boolean {
@@ -799,9 +814,10 @@ function FieldGroup({ fields, values, onChange }: {
 
 type CodeStatus = 'idle' | 'checking' | 'available' | 'taken' | 'empty';
 
-function InvitationCodeInput({ value, onChange }: {
+function InvitationCodeInput({ value, onChange, placeholder = 'contoh: periska-dei' }: {
     value: string;
     onChange: (val: string) => void;
+    placeholder?: string;
 }) {
     const [status, setStatus]         = useState<CodeStatus>('idle');
     const debounceRef                 = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -847,7 +863,7 @@ function InvitationCodeInput({ value, onChange }: {
                     type="text"
                     value={value}
                     onChange={handleChange}
-                    placeholder="contoh: periska-dei"
+                    placeholder={placeholder}
                     className={`${base}${borderCls}`}
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sm">
@@ -1594,6 +1610,56 @@ function GenericFieldTab({ fields, values, onChange }: {
     return <FieldGroup fields={fields} values={values} onChange={onChange} />;
 }
 
+// ─── Info Tab (non-wedding event types) ───────────────────────────────────────
+
+function InfoTab({ eventType, fields, values, invitationCode, onFieldChange, onCodeChange }: {
+    eventType: EventType;
+    fields: EventTypeField[];
+    values: Record<string, string>;
+    invitationCode: string;
+    onFieldChange: (key: string, val: string) => void;
+    onCodeChange: (val: string) => void;
+}) {
+    const autoCodeFieldKey = AUTO_CODE_SOURCE_FIELD_KEY[eventType.name];
+    const hasAutoCodeField = !!autoCodeFieldKey && fields.some((f) => f.field_key === autoCodeFieldKey);
+    const sourceValue = autoCodeFieldKey ? (values[autoCodeFieldKey] ?? '') : '';
+
+    // Auto-generate code from the primary name field (e.g. child_name), but
+    // stop touching it once the user has edited it away from the auto value.
+    const prevAutoRef = useRef('');
+    useEffect(() => {
+        if (!hasAutoCodeField) return;
+        const auto = slugifyForCode(sourceValue);
+        if (auto && (invitationCode === prevAutoRef.current || invitationCode === '')) {
+            onCodeChange(auto);
+        }
+        prevAutoRef.current = auto;
+    }, [hasAutoCodeField, sourceValue]);
+
+    return (
+        <div className="flex flex-col gap-8">
+            <FieldGroup fields={fields} values={values} onChange={onFieldChange} />
+
+            {hasAutoCodeField && (
+                <>
+                    <div className="border-t border-border" />
+                    <section>
+                        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                            <Link2 className="size-4 text-primary" />
+                            Kode Undangan
+                        </h3>
+                        <InvitationCodeInput
+                            value={invitationCode}
+                            onChange={onCodeChange}
+                            placeholder="contoh: keanu-ulang-tahun-ke-5"
+                        />
+                    </section>
+                </>
+            )}
+        </div>
+    );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function CreateDetail({ eventType, theme, package: pkg }: Props) {
@@ -1682,7 +1748,16 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
             case 'love_story':
                 return <LoveStoryTab entries={loveStoryEntries} setEntries={setLoveStoryEntries} />;
             case 'info':
-                return <GenericFieldTab fields={eventType.fields} values={fieldValues} onChange={handleFieldChange} />;
+                return (
+                    <InfoTab
+                        eventType={eventType}
+                        fields={eventType.fields}
+                        values={fieldValues}
+                        invitationCode={invitationCode}
+                        onFieldChange={handleFieldChange}
+                        onCodeChange={setInvitationCode}
+                    />
+                );
             case 'host':
                 return (
                     <GenericFieldTab

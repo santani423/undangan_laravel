@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Admin\Settings\PackageController;
 use App\Http\Controllers\Admin\Themes\ThemeController;
 use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
@@ -51,7 +52,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     // ─── Keuangan & Transaksi ─────────────────────────────────────────────────
     Route::prefix('transactions')->name('transactions.')->group(function () {
         Route::get('/', [AdminTransactionController::class, 'index'])->name('index');
-        Route::get('/payments', fn () => Inertia::render('admin/transactions/payments'))->name('payments');
+        Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments');
+        Route::patch('/payments/{payment}/confirm', [AdminPaymentController::class, 'confirm'])->name('payments.confirm');
         Route::get('/refunds', fn () => Inertia::render('admin/transactions/refunds'))->name('refunds');
         Route::patch('/{transaction}/approve', [AdminTransactionController::class, 'approve'])->name('approve');
     });

@@ -78,8 +78,8 @@ class DatabaseSeeder extends Seeder
         $this->command->info('  ✓ testimonials (4 starter/demo entries)');
         $this->command->info('');
         $this->command->info('Test accounts:');
-        $this->command->info('  superadmin@undesia.id / SuperAdmin@2026!');
-        $this->command->info('  admin@undesia.id / Admin@2026!');
-        $this->command->info('  demo@undesia.id / Demo@2026!');
+        foreach (\Database\Seeders\Data\DevAccounts::admins() as $a) {
+            $this->command->info("  {$a['email']} / {$a['password']}");
+        }
     }
 }

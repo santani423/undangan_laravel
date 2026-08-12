@@ -37,6 +37,7 @@ class InvitationPublicController extends Controller
         abort_if($invitation->isExpired(), 410, 'Undangan ini sudah tidak aktif.');
 
         $theme = $invitation->theme;
+        // dd($invitation->theme);
         abort_if(! $theme, 404, 'Tema undangan tidak tersedia.');
 
         $guest = Guest::where('invitation_id', $invitation->id)
@@ -219,6 +220,7 @@ class InvitationPublicController extends Controller
                 'groomMother'      => $contents->get('groom_mother', ''),
                 'groomBio'         => $contents->get('groom_bio', ''),
                 'groomPhoto'       => $this->resolveContentUrl($invitation, 'groom_photo'),
+                'groomInstagram'   => $contents->get('groom_instagram', ''),
                 'couplePhoto'      => $this->resolveContentUrl($invitation, 'couple_photo'),
                 'brideFullName'    => $brideFull,
                 'brideNickname'    => $brideNick,
@@ -228,6 +230,7 @@ class InvitationPublicController extends Controller
                 'brideMother'      => $contents->get('bride_mother', ''),
                 'brideBio'         => $contents->get('bride_bio', ''),
                 'bridePhoto'       => $this->resolveContentUrl($invitation, 'bride_photo'),
+                'brideInstagram'   => $contents->get('bride_instagram', ''),
                 'loveStory'        => $loveStory,
                 'dressCodes'       => json_decode($contents->get('dress_code_colors', '[]'), true) ?? [],
                 'rsvpDeadline'     => $contents->get('rsvp_deadline', ''),
@@ -248,6 +251,67 @@ class InvitationPublicController extends Controller
                 'celebrantPhoto'    => $this->resolveContentUrl($invitation, 'celebrant_photo'),
                 'parentName'        => $contents->get('parent_name', ''),
                 'lifeJourney'       => $lifeJourney,
+            ]);
+        }
+
+        if ($eventType === 'khitanan') {
+            $childName = $contents->get('child_name', '');
+
+            return array_merge($base, [
+                'pageTitle'      => $invitation->title ?: "Undangan Khitanan {$childName}",
+                'childName'      => $childName,
+                'childPhoto'     => $this->resolveContentUrl($invitation, 'child_photo'),
+                'childAge'       => $contents->get('child_age', ''),
+                'fatherName'     => $contents->get('father_name', ''),
+                'motherName'     => $contents->get('mother_name', ''),
+                'openingMessage' => $contents->get('opening_message', ''),
+            ]);
+        }
+
+        if ($eventType === 'aqiqah') {
+            $babyName = $contents->get('baby_name', '');
+            $birthDate = $contents->get('birth_date', '');
+
+            return array_merge($base, [
+                'pageTitle'          => $invitation->title ?: "Aqiqah {$babyName}",
+                'babyName'           => $babyName,
+                'babyPhoto'          => $this->resolveContentUrl($invitation, 'baby_photo'),
+                'babyGender'         => $contents->get('baby_gender', ''),
+                'birthDateFormatted' => $birthDate ? $this->formatDateId(Carbon::parse($birthDate)) : '',
+                'fatherName'         => $contents->get('father_name', ''),
+                'motherName'         => $contents->get('mother_name', ''),
+                'openingMessage'     => $contents->get('opening_message', ''),
+            ]);
+        }
+
+        if ($eventType === 'gender_reveal') {
+            $motherName = $contents->get('mother_name', '');
+            $fatherName = $contents->get('father_name', '');
+            $dueDate    = $contents->get('due_date', '');
+            $revealDate = $contents->get('reveal_scheduled_at', '');
+
+            return array_merge($base, [
+                'pageTitle'           => $invitation->title ?: "Gender Reveal {$fatherName} & {$motherName}",
+                'motherName'          => $motherName,
+                'fatherName'          => $fatherName,
+                'parentsPhoto'        => $this->resolveContentUrl($invitation, 'parents_photo'),
+                'dueDateFormatted'    => $dueDate ? $this->formatDateId(Carbon::parse($dueDate)) : '',
+                'teamAName'           => $contents->get('team_a_name', ''),
+                'teamBName'           => $contents->get('team_b_name', ''),
+                'revealDateFormatted' => $revealDate ? $this->formatDateId(Carbon::parse($revealDate)) : '',
+                'openingMessage'      => $contents->get('opening_message', ''),
+            ]);
+        }
+
+        if ($eventType === 'syukuran') {
+            $hostName = $contents->get('host_name', '');
+
+            return array_merge($base, [
+                'pageTitle'      => $invitation->title ?: "Syukuran {$hostName}",
+                'hostName'       => $hostName,
+                'hostPhoto'      => $this->resolveContentUrl($invitation, 'host_photo'),
+                'occasion'       => $contents->get('occasion', ''),
+                'openingMessage' => $contents->get('opening_message', ''),
             ]);
         }
 
