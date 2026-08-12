@@ -51,7 +51,6 @@ class InvitationPublicController extends Controller
             }
             $data['guestSlug'] = $guest->slug;
         }
-    // dd($theme);
         return Inertia::render('invitation/show', [
             'invitation' => $data,
             'themeSlug'  => $theme->slug,

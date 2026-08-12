@@ -9,25 +9,35 @@ import type {
 } from '@/types/invitation';
 import { Head } from '@inertiajs/react';
 import { useEffect } from 'react';
+// aqiqah
 import AqiqahTheme01 from './themes/aqiqah/aqiqah_theme_01/AqiqahTheme01';
 import AqiqahTheme02 from './themes/aqiqah/aqiqah_theme_02/AqiqahTheme02';
+// Birthday 
 import BirthdayStarryNight from './themes/birthday/birthday_theme_01/BirthdayStarryNight';
 import BirthdayTheme02 from './themes/birthday/birthday_theme_02/BirthdayTheme02';
+// Gender reveal
 import GenderRevealTheme01 from './themes/gender_reveal/gender_reveal_theme_01/GenderRevealTheme01';
 import GenderRevealTheme02 from './themes/gender_reveal/gender_reveal_theme_02/GenderRevealTheme02';
+// khitanan
 import KhitananTheme01 from './themes/khitanan/khitanan_theme_01/KhitananTheme01';
 import KhitananTheme02 from './themes/khitanan/khitanan_theme_02/KhitananTheme02';
+// syukuran
 import SyukuranTheme01 from './themes/syukuran/syukuran_theme_01/SyukuranTheme01';
 import SyukuranTheme02 from './themes/syukuran/syukuran_theme_02/SyukuranTheme02';
+// Wedding
 import WeddingBase from './themes/wedding/blossom-garden/WeddingBase';
 import WeddingTheme01 from './themes/wedding/wedding_theme_01/WeddingTheme01';
 import WeddingTheme02 from './themes/wedding/wedding_theme_02/WeddingTheme02';
 import WeddingTheme03 from './themes/wedding/wedding_theme_03/WeddingTheme03';
 import WeddingTheme04 from './themes/wedding/wedding_theme_04/WeddingTheme04';
+import WeddingTheme05 from './themes/wedding/wedding_theme_05/WeddingTheme05';
 import WeddingTheme06 from './themes/wedding/wedding_theme_06/WeddingTheme06';
 import WeddingTheme07 from './themes/wedding/wedding_theme_07/WeddingTheme07';
+import WeddingTheme08 from './themes/wedding/wedding_theme_08/WeddingTheme08';
 import WeddingTheme09 from './themes/wedding/wedding_theme_09/WeddingTheme09';
 import WeddingTheme10 from './themes/wedding/wedding_theme_10/WeddingTheme10';
+import WeddingTheme11 from './themes/wedding/wedding_theme_11/WeddingTheme11';
+import WeddingTheme12 from './themes/wedding/wedding_theme_12/WeddingTheme12';
 
 interface Props {
     invitation: InvitationData;
@@ -64,17 +74,29 @@ function resolveThemeComponent(themeSlug: string, invitation: InvitationData, vi
         case 'wedding_theme_04':
             return <WeddingTheme04 invitation={invitation as WeddingInvitation} visitor={visitor} greeting={invitation.greeting} />;
 
+        case 'wedding_theme_05':
+            return <WeddingTheme05 invitation={invitation as WeddingInvitation} visitor={visitor} greeting={invitation.greeting} />;
+
         case 'wedding_theme_06':
             return <WeddingTheme06 invitation={invitation as WeddingInvitation} visitor={visitor} greeting={invitation.greeting} />;
 
         case 'wedding_theme_07':
             return <WeddingTheme07 invitation={invitation as WeddingInvitation} visitor={visitor} greeting={invitation.greeting} />;
 
+        case 'wedding_theme_08':
+            return <WeddingTheme08 invitation={invitation as WeddingInvitation} visitor={visitor} greeting={invitation.greeting} />;
+
         case 'wedding_theme_09':
             return <WeddingTheme09 invitation={invitation as WeddingInvitation} visitor={visitor} greeting={invitation.greeting} />;
 
         case 'wedding_theme_10':
             return <WeddingTheme10 invitation={invitation as WeddingInvitation} visitor={visitor} greeting={invitation.greeting} />;
+
+        case 'wedding_theme_11':
+            return <WeddingTheme11 invitation={invitation as WeddingInvitation} visitor={visitor} greeting={invitation.greeting} />;
+
+        case 'wedding_theme_12':
+            return <WeddingTheme12 invitation={invitation as WeddingInvitation} visitor={visitor} greeting={invitation.greeting} />;
 
         // Khitanan themes
         case 'khitanan':

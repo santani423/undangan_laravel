@@ -15,6 +15,13 @@ class AdditionalThemeSeeder extends Seeder
                 $index = str_pad($i, 2, '0', STR_PAD_LEFT);
                 $slug = "{$type}_theme_{$index}";
                 $name = ucwords(str_replace('_', ' ', $slug));
+
+                // Skip slugs already seeded with curated data (e.g. by ThemeSeeder) —
+                // this seeder only fills in placeholder rows for slugs nothing else defines.
+                if (DB::table('themes')->where('slug', $slug)->exists()) {
+                    continue;
+                }
+
                 DB::table('themes')->updateOrInsert(
                     ['slug' => $slug],
                     [
