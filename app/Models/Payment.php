@@ -21,16 +21,19 @@ class Payment extends Model
         'webhook_received_at',
         'webhook_verified_at',
         'webhook_payload',
+        'proof_file_path',
+        'proof_uploaded_at',
     ];
 
     protected function casts(): array
     {
         return [
-            'amount'               => 'decimal:2',
-            'fee'                  => 'decimal:2',
-            'webhook_received_at'  => 'datetime',
-            'webhook_verified_at'  => 'datetime',
-            'webhook_payload'      => 'array',
+            'amount' => 'decimal:2',
+            'fee' => 'decimal:2',
+            'webhook_received_at' => 'datetime',
+            'webhook_verified_at' => 'datetime',
+            'webhook_payload' => 'array',
+            'proof_uploaded_at' => 'datetime',
         ];
     }
 

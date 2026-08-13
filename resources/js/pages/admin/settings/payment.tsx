@@ -2,17 +2,15 @@ import { SettingsTabNav, type SettingsTab } from '@/components/settings/settings
 import AdminLayout from '@/layouts/admin-layout';
 import SettingsLayout from '@/layouts/settings-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import {
-    Activity,
     AlertCircle,
-    ArrowRight,
     Banknote,
     CheckCircle2,
     ChevronDown,
     ChevronUp,
+    Copy,
     CreditCard,
-    ExternalLink,
     Eye,
     EyeOff,
     FileText,
@@ -22,14 +20,12 @@ import {
     Save,
     Shield,
     Smartphone,
-    ToggleLeft,
-    ToggleRight,
     Wallet,
     Wifi,
     WifiOff,
     Zap,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard Admin', href: '/admin' },
@@ -44,93 +40,114 @@ const tabs: SettingsTab[] = [
     { id: 'logs',     label: 'Log Integrasi',         icon: FileText    },
 ];
 
-// ── Shared types & data ───────────────────────────────────────────────────────
+// ── Shared types ─────────────────────────────────────────────────────────────
 
-type GatewayStatus = 'connected' | 'disconnected' | 'sandbox' | 'error';
 type Env = 'sandbox' | 'production';
+type GatewayId = 'midtrans' | 'xendit' | 'tripay' | 'manual';
 
-interface PaymentMethod { id: string; label: string; icon: React.ElementType; enabled: boolean; }
-interface GatewayConfig {
-    id: string; name: string; logo: string; description: string;
-    status: GatewayStatus; env: Env; enabled: boolean; lastSync?: string;
-    fields: { key: string; label: string; placeholder: string; secret?: boolean }[];
-    methods: PaymentMethod[];
+interface GatewayFieldMeta { key: string; label: string; placeholder: string; secret?: boolean; }
+interface GatewayMethodMeta { id: string; label: string; }
+interface GatewayMeta {
+    name: string; logo: string; description: string;
+    fields: GatewayFieldMeta[];
+    methods: GatewayMethodMeta[];
 }
 
-const gateways: GatewayConfig[] = [
-    {
-        id: 'midtrans', name: 'Midtrans', logo: 'MT',
+interface GatewayData {
+    id: GatewayId;
+    enabled: boolean;
+    environment: Env;
+    fieldValues: Record<string, string>;
+    secretsSet: Record<string, boolean>;
+    enabledMethods: string[];
+    lastVerifiedAt: string | null;
+    configuredAt: string | null;
+}
+
+interface PageProps {
+    gateways: GatewayData[];
+    enabledMethods: string[];
+    webhook: { successRedirectUrl: string; failedRedirectUrl: string; pendingRedirectUrl: string };
+    flash: { success?: string | null; error?: string | null };
+    [key: string]: unknown;
+}
+
+const GATEWAY_ORDER: GatewayId[] = ['midtrans', 'xendit', 'tripay', 'manual'];
+
+const GATEWAY_META: Record<GatewayId, GatewayMeta> = {
+    midtrans: {
+        name: 'Midtrans', logo: 'MT',
         description: 'Payment gateway lokal terpercaya. Mendukung VA, QRIS, e-wallet, kartu kredit.',
-        status: 'sandbox', env: 'sandbox', enabled: true, lastSync: '10 Jun 2026, 08:42',
         fields: [
-            { key: 'merchant_id', label: 'Merchant ID',           placeholder: 'G123456789'                },
-            { key: 'client_key',  label: 'Client Key',            placeholder: 'SB-Mid-client-xxxxxxxxxxxx' },
-            { key: 'server_key',  label: 'Server Key',            placeholder: 'SB-Mid-server-xxxxxxxxxxxx', secret: true },
-            { key: 'webhook_url', label: 'Notification URL',      placeholder: 'https://undesia.com/webhook/midtrans' },
+            { key: 'merchant_id', label: 'Merchant ID',      placeholder: 'G123456789'                },
+            { key: 'client_key',  label: 'Client Key',       placeholder: 'SB-Mid-client-xxxxxxxxxxxx' },
+            { key: 'server_key',  label: 'Server Key',       placeholder: 'SB-Mid-server-xxxxxxxxxxxx', secret: true },
+            { key: 'webhook_url', label: 'Notification URL', placeholder: 'https://undesia.com/webhook/midtrans' },
         ],
         methods: [
-            { id: 'va',      label: 'Virtual Account',           icon: Banknote,  enabled: true  },
-            { id: 'qris',    label: 'QRIS',                      icon: Smartphone,enabled: true  },
-            { id: 'ewallet', label: 'E-Wallet (GoPay, OVO, Dana)',icon: Wallet,    enabled: true  },
-            { id: 'cc',      label: 'Kartu Kredit / Debit',      icon: CreditCard,enabled: false },
+            { id: 'va',      label: 'Virtual Account' },
+            { id: 'qris',    label: 'QRIS' },
+            { id: 'ewallet', label: 'E-Wallet (GoPay, OVO, Dana)' },
+            { id: 'cc',      label: 'Kartu Kredit / Debit' },
         ],
     },
-    {
-        id: 'xendit', name: 'Xendit', logo: 'XD',
+    xendit: {
+        name: 'Xendit', logo: 'XD',
         description: 'Platform pembayaran dengan coverage terluas. Transfer bank, QRIS, e-wallet.',
-        status: 'disconnected', env: 'sandbox', enabled: false,
         fields: [
-            { key: 'api_key',       label: 'API Key (Secret Key)',            placeholder: 'xnd_development_xxxxxxxxxxxx', secret: true },
-            { key: 'public_key',    label: 'Public Key',                      placeholder: 'xnd_public_development_xxxxxxxxxxxx' },
-            { key: 'webhook_token', label: 'Webhook Verification Token',      placeholder: 'your-webhook-token', secret: true },
-            { key: 'callback_url',  label: 'Callback URL',                    placeholder: 'https://undesia.com/webhook/xendit' },
+            { key: 'api_key',       label: 'API Key (Secret Key)',        placeholder: 'xnd_development_xxxxxxxxxxxx', secret: true },
+            { key: 'public_key',    label: 'Public Key',                  placeholder: 'xnd_public_development_xxxxxxxxxxxx' },
+            { key: 'webhook_token', label: 'Webhook Verification Token',  placeholder: 'your-webhook-token', secret: true },
+            { key: 'callback_url',  label: 'Callback URL',                placeholder: 'https://undesia.com/webhook/xendit' },
         ],
         methods: [
-            { id: 'va',       label: 'Virtual Account',                    icon: Banknote,  enabled: false },
-            { id: 'qris',     label: 'QRIS',                               icon: Smartphone,enabled: false },
-            { id: 'ewallet',  label: 'E-Wallet (OVO, Dana, ShopeePay)',    icon: Wallet,    enabled: false },
-            { id: 'transfer', label: 'Transfer Bank Manual',               icon: ArrowRight,enabled: false },
+            { id: 'va',       label: 'Virtual Account' },
+            { id: 'qris',     label: 'QRIS' },
+            { id: 'ewallet',  label: 'E-Wallet (OVO, Dana, ShopeePay)' },
+            { id: 'transfer', label: 'Transfer Bank Manual' },
         ],
     },
-    {
-        id: 'tripay', name: 'Tripay', logo: 'TP',
+    tripay: {
+        name: 'Tripay', logo: 'TP',
         description: 'Gateway lokal dengan biaya rendah. Cocok untuk transaksi volume tinggi.',
-        status: 'disconnected', env: 'sandbox', enabled: false,
         fields: [
-            { key: 'api_key',       label: 'API Key',         placeholder: 'DEV-xxxxxxxxxxxxxxxx' },
-            { key: 'private_key',   label: 'Private Key',     placeholder: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', secret: true },
-            { key: 'merchant_code', label: 'Merchant Code',   placeholder: 'T1234' },
-            { key: 'callback_url',  label: 'Callback URL',    placeholder: 'https://undesia.com/webhook/tripay' },
+            { key: 'api_key',       label: 'API Key',       placeholder: 'DEV-xxxxxxxxxxxxxxxx' },
+            { key: 'private_key',   label: 'Private Key',   placeholder: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', secret: true },
+            { key: 'merchant_code', label: 'Merchant Code', placeholder: 'T1234' },
+            { key: 'callback_url',  label: 'Callback URL',  placeholder: 'https://undesia.com/webhook/tripay' },
         ],
         methods: [
-            { id: 'va',       label: 'Virtual Account (BCA, BNI, BRI, Mandiri)', icon: Banknote,  enabled: false },
-            { id: 'qris',     label: 'QRIS',                                      icon: Smartphone,enabled: false },
-            { id: 'alfamart', label: 'Minimarket (Alfamart, Indomaret)',           icon: Wallet,    enabled: false },
+            { id: 'va',       label: 'Virtual Account (BCA, BNI, BRI, Mandiri)' },
+            { id: 'qris',     label: 'QRIS' },
+            { id: 'alfamart', label: 'Minimarket (Alfamart, Indomaret)' },
         ],
     },
-    {
-        id: 'manual', name: 'Transfer Manual', logo: 'TF',
+    manual: {
+        name: 'Transfer Manual', logo: 'TF',
         description: 'Konfirmasi pembayaran manual via transfer bank. Admin verifikasi secara manual.',
-        status: 'connected', env: 'production', enabled: true, lastSync: 'N/A',
         fields: [
-            { key: 'bank_name',   label: 'Nama Bank',       placeholder: 'BCA / BNI / BRI / Mandiri' },
-            { key: 'account_no',  label: 'Nomor Rekening',  placeholder: '1234567890' },
-            { key: 'account_name',label: 'Atas Nama',       placeholder: 'PT. Undesia Digital Indonesia' },
-            { key: 'conf_email',  label: 'Email Konfirmasi',placeholder: 'finance@undesia.com' },
+            { key: 'bank_name',    label: 'Nama Bank',        placeholder: 'BCA / BNI / BRI / Mandiri' },
+            { key: 'account_no',   label: 'Nomor Rekening',   placeholder: '1234567890' },
+            { key: 'account_name', label: 'Atas Nama',        placeholder: 'PT. Undesia Digital Indonesia' },
+            { key: 'conf_email',   label: 'Email Konfirmasi', placeholder: 'finance@undesia.com' },
         ],
-        methods: [{ id: 'transfer', label: 'Transfer Bank', icon: Banknote, enabled: true }],
+        methods: [{ id: 'transfer', label: 'Transfer Bank' }],
     },
-];
+};
+
+const METHOD_ICONS: Record<string, React.ElementType> = {
+    va: Banknote, transfer: Banknote, qris: Smartphone, ewallet: Wallet, alfamart: Wallet, cc: CreditCard,
+};
 
 // ── Primitives ────────────────────────────────────────────────────────────────
 
-function StatusBadge({ status }: { status: GatewayStatus }) {
-    const map: Record<GatewayStatus, { label: string; cls: string; Icon: React.ElementType }> = {
-        connected:    { label: 'Terhubung',        cls: 'bg-emerald-100 text-emerald-700', Icon: Wifi         },
-        disconnected: { label: 'Tidak Terhubung',  cls: 'bg-muted text-muted-foreground',  Icon: WifiOff      },
-        sandbox:      { label: 'Sandbox',          cls: 'bg-amber-100 text-amber-700',     Icon: Zap          },
-        error:        { label: 'Error',            cls: 'bg-red-100 text-red-700',         Icon: AlertCircle  },
-    };
+function StatusBadge({ enabled, env }: { enabled: boolean; env: Env }) {
+    const status: 'connected' | 'disconnected' | 'sandbox' = !enabled ? 'disconnected' : env === 'sandbox' ? 'sandbox' : 'connected';
+    const map = {
+        connected:    { label: 'Terhubung',       cls: 'bg-emerald-100 text-emerald-700', Icon: Wifi    },
+        disconnected: { label: 'Tidak Terhubung', cls: 'bg-muted text-muted-foreground',  Icon: WifiOff },
+        sandbox:      { label: 'Sandbox',         cls: 'bg-amber-100 text-amber-700',     Icon: Zap     },
+    } as const;
     const { label, cls, Icon } = map[status];
     return (
         <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium shrink-0 ${cls}`}>
@@ -139,74 +156,143 @@ function StatusBadge({ status }: { status: GatewayStatus }) {
     );
 }
 
-function SecretField({ placeholder }: { placeholder: string }) {
+function SecretField({ value, onChange, placeholder, isSet }: { value: string; onChange: (v: string) => void; placeholder: string; isSet?: boolean }) {
     const [show, setShow] = useState(false);
     return (
-        <div className="relative flex items-center">
-            <input type={show ? 'text' : 'password'} placeholder={placeholder}
-                className="w-full rounded-lg border border-border/60 bg-background px-3 py-2 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all font-mono" />
-            <button type="button" onClick={() => setShow(!show)} className="absolute right-2.5 text-muted-foreground hover:text-foreground transition-colors">
-                {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-            </button>
+        <div>
+            <div className="relative flex items-center">
+                <input type={show ? 'text' : 'password'} value={value} onChange={(e) => onChange(e.target.value)}
+                    placeholder={isSet ? '•••••••• (kosongkan jika tidak diubah)' : placeholder}
+                    className="w-full rounded-lg border border-border/60 bg-background px-3 py-2 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all font-mono" />
+                <button type="button" onClick={() => setShow(!show)} className="absolute right-2.5 text-muted-foreground hover:text-foreground transition-colors">
+                    {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+            </div>
+            {isSet && <p className="mt-1 text-[11px] text-emerald-600">Sudah tersimpan terenkripsi.</p>}
         </div>
     );
 }
 
-function MethodToggle({ method }: { method: PaymentMethod }) {
-    const [on, setOn] = useState(method.enabled);
-    const Icon = method.icon;
+function MethodToggle({ label, icon: Icon, checked, onToggle }: { label: string; icon: React.ElementType; checked: boolean; onToggle: () => void }) {
     return (
         <div className="flex items-center justify-between py-2.5 border-b border-border/30 last:border-0">
             <div className="flex items-center gap-2.5">
                 <Icon className="size-4 text-muted-foreground shrink-0" />
-                <span className="text-sm text-foreground">{method.label}</span>
+                <span className="text-sm text-foreground">{label}</span>
             </div>
-            <button role="switch" aria-checked={on} onClick={() => setOn(!on)}
-                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors focus:outline-none ${on ? 'bg-primary' : 'bg-border'}`}>
-                <span className={`pointer-events-none inline-block size-4 rounded-full bg-white shadow-sm transition-transform mt-0.5 ${on ? 'translate-x-4' : 'translate-x-0.5'}`} />
+            <button role="switch" aria-checked={checked} onClick={onToggle}
+                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors focus:outline-none ${checked ? 'bg-primary' : 'bg-border'}`}>
+                <span className={`pointer-events-none inline-block size-4 rounded-full bg-white shadow-sm transition-transform mt-0.5 ${checked ? 'translate-x-4' : 'translate-x-0.5'}`} />
             </button>
         </div>
     );
 }
 
-function SaveBar({ note }: { note?: string }) {
+function SaveBar({ note, onSave, onReset, saving }: { note?: string; onSave: () => void; onReset: () => void; saving: boolean }) {
     return (
         <div className="flex items-center justify-between rounded-2xl border border-border/60 bg-card px-6 py-4 shadow-sm">
             <p className="text-sm text-muted-foreground">{note ?? 'Perubahan berlaku setelah disimpan.'}</p>
             <div className="flex items-center gap-2">
-                <button className="rounded-lg border border-border/60 px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors">Reset</button>
-                <button className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm">
-                    <Save className="size-3.5" />Simpan
+                <button onClick={onReset} type="button" className="rounded-lg border border-border/60 px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors">Reset</button>
+                <button onClick={onSave} disabled={saving} type="button"
+                    className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-60">
+                    <Save className="size-3.5" />{saving ? 'Menyimpan...' : 'Simpan'}
                 </button>
             </div>
         </div>
     );
 }
 
+function FlashBanner() {
+    const { flash } = usePage<PageProps>().props;
+    const msg = flash?.success || flash?.error || null;
+    const isSuccess = !!flash?.success;
+    const [visible, setVisible] = useState(false);
+    const lastMsg = useRef<string | null>(null);
+
+    useEffect(() => {
+        if (msg && msg !== lastMsg.current) {
+            lastMsg.current = msg;
+            setVisible(true);
+            const t = setTimeout(() => setVisible(false), 4500);
+            return () => clearTimeout(t);
+        }
+    }, [msg]);
+
+    if (!visible || !msg) return null;
+    return (
+        <div className={`mb-5 flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm font-medium ${
+            isSuccess ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'
+        }`}>
+            <span className="flex items-center gap-2">
+                {isSuccess ? <CheckCircle2 className="size-4 shrink-0" /> : <AlertCircle className="size-4 shrink-0" />}
+                {msg}
+            </span>
+        </div>
+    );
+}
+
 // ── Tab: Payment Gateway ──────────────────────────────────────────────────────
 
-function GatewayCard({ gateway }: { gateway: GatewayConfig }) {
-    const [expanded, setExpanded] = useState(gateway.enabled);
-    const [enabled, setEnabled] = useState(gateway.enabled);
-    const [env, setEnv] = useState<Env>(gateway.env);
+function GatewayCard({ id, meta, data }: { id: GatewayId; meta: GatewayMeta; data: GatewayData }) {
+    const [expanded, setExpanded] = useState(data.enabled);
+    const [enabled, setEnabled] = useState(data.enabled);
+    const [env, setEnv] = useState<Env>(data.environment);
+    const [fieldValues, setFieldValues] = useState<Record<string, string>>(() => ({ ...data.fieldValues }));
+    const [enabledMethods, setEnabledMethods] = useState<Set<string>>(() => new Set(data.enabledMethods));
+    const [saving, setSaving] = useState(false);
+
+    function resetToServerState() {
+        setEnabled(data.enabled);
+        setEnv(data.environment);
+        setFieldValues({ ...data.fieldValues });
+        setEnabledMethods(new Set(data.enabledMethods));
+    }
+
+    function toggleMethod(methodId: string) {
+        setEnabledMethods((prev) => {
+            const next = new Set(prev);
+            if (next.has(methodId)) next.delete(methodId); else next.add(methodId);
+            return next;
+        });
+    }
+
+    function handleSave() {
+        setSaving(true);
+        router.patch(route('admin.settings.payment.gateway.update', { gateway: id }), {
+            is_active: enabled,
+            environment: env,
+            fields: fieldValues,
+            enabled_methods: Array.from(enabledMethods),
+        }, {
+            preserveScroll: true,
+            onSuccess: () => setFieldValues((prev) => {
+                // Clear secret inputs after a successful save — server never echoes secrets back.
+                const next = { ...prev };
+                meta.fields.forEach((f) => { if (f.secret) next[f.key] = ''; });
+                return next;
+            }),
+            onFinish: () => setSaving(false),
+        });
+    }
 
     return (
         <div className={`rounded-2xl border bg-card shadow-sm overflow-hidden transition-all ${enabled ? 'border-border/60' : 'border-border/30 opacity-70'}`}>
             {/* Header */}
             <div className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-muted/20 transition-colors" onClick={() => setExpanded(!expanded)}>
-                <div className={`flex size-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold ${gateway.status === 'connected' || gateway.status === 'sandbox' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                    {gateway.logo}
+                <div className={`flex size-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold ${enabled ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                    {meta.logo}
                 </div>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-sm font-semibold text-foreground">{gateway.name}</h3>
-                        <StatusBadge status={gateway.status} />
+                        <h3 className="text-sm font-semibold text-foreground">{meta.name}</h3>
+                        <StatusBadge enabled={enabled} env={env} />
                         {enabled && env === 'sandbox' && <span className="text-[10px] text-amber-600 font-medium">Mode Testing</span>}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5 truncate">{gateway.description}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">{meta.description}</p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0" onClick={(e) => e.stopPropagation()}>
-                    {gateway.lastSync && <span className="text-[10px] text-muted-foreground hidden lg:block">Sync: {gateway.lastSync}</span>}
+                    {data.lastVerifiedAt && <span className="text-[10px] text-muted-foreground hidden lg:block">Sync: {data.lastVerifiedAt}</span>}
                     <button role="switch" aria-checked={enabled} onClick={() => setEnabled(!enabled)}
                         className={`relative inline-flex h-5 w-9 cursor-pointer rounded-full transition-colors focus:outline-none ${enabled ? 'bg-primary' : 'bg-border'}`}>
                         <span className={`pointer-events-none inline-block size-4 rounded-full bg-white shadow-sm transition-transform mt-0.5 ${enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
@@ -228,11 +314,20 @@ function GatewayCard({ gateway }: { gateway: GatewayConfig }) {
                                 </span>
                             </div>
                             <div className="space-y-3">
-                                {gateway.fields.map((f) => (
+                                {meta.fields.map((f) => (
                                     <div key={f.key}>
                                         <label className="block text-xs font-medium text-foreground mb-1">{f.label}</label>
-                                        {f.secret ? <SecretField placeholder={f.placeholder} /> : (
-                                            <input type="text" placeholder={f.placeholder}
+                                        {f.secret ? (
+                                            <SecretField
+                                                value={fieldValues[f.key] ?? ''}
+                                                onChange={(v) => setFieldValues((prev) => ({ ...prev, [f.key]: v }))}
+                                                placeholder={f.placeholder}
+                                                isSet={data.secretsSet[f.key]}
+                                            />
+                                        ) : (
+                                            <input type="text" value={fieldValues[f.key] ?? ''}
+                                                onChange={(e) => setFieldValues((prev) => ({ ...prev, [f.key]: e.target.value }))}
+                                                placeholder={f.placeholder}
                                                 className="w-full rounded-lg border border-border/60 bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all" />
                                         )}
                                     </div>
@@ -261,7 +356,10 @@ function GatewayCard({ gateway }: { gateway: GatewayConfig }) {
                         <div className="flex flex-col">
                             <div className="px-5 py-4 border-b border-border/40 flex-1">
                                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Metode Pembayaran</p>
-                                {gateway.methods.map((m) => <MethodToggle key={m.id} method={m} />)}
+                                {meta.methods.map((m) => (
+                                    <MethodToggle key={m.id} label={m.label} icon={METHOD_ICONS[m.id] ?? Wallet}
+                                        checked={enabledMethods.has(m.id)} onToggle={() => toggleMethod(m.id)} />
+                                ))}
                             </div>
                             <div className="px-5 py-4">
                                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Monitoring</p>
@@ -269,26 +367,18 @@ function GatewayCard({ gateway }: { gateway: GatewayConfig }) {
                                     <div className="rounded-lg bg-muted/40 px-3 py-2">
                                         <p className="text-[10px] text-muted-foreground">Status</p>
                                         <div className="flex items-center gap-1 mt-0.5">
-                                            {gateway.status === 'connected' || gateway.status === 'sandbox'
+                                            {enabled
                                                 ? <CheckCircle2 className="size-3 text-emerald-600" />
                                                 : <AlertCircle className="size-3 text-muted-foreground" />}
                                             <p className="text-xs font-semibold text-foreground">
-                                                {gateway.status === 'sandbox' ? 'Sandbox OK' : gateway.status === 'connected' ? 'Live OK' : 'Offline'}
+                                                {!enabled ? 'Nonaktif' : env === 'sandbox' ? 'Sandbox OK' : 'Live OK'}
                                             </p>
                                         </div>
                                     </div>
                                     <div className="rounded-lg bg-muted/40 px-3 py-2">
-                                        <p className="text-[10px] text-muted-foreground">Last Sync</p>
-                                        <p className="text-xs font-semibold text-foreground mt-0.5">{gateway.lastSync ?? '—'}</p>
+                                        <p className="text-[10px] text-muted-foreground">Terakhir Disimpan</p>
+                                        <p className="text-xs font-semibold text-foreground mt-0.5">{data.configuredAt ?? '—'}</p>
                                     </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <button className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-border/60 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors">
-                                        <Activity className="size-3.5" />Log
-                                    </button>
-                                    <button className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary/10 py-1.5 text-xs font-medium text-primary hover:bg-primary/20 transition-colors">
-                                        <RefreshCw className="size-3.5" />Test
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -296,11 +386,12 @@ function GatewayCard({ gateway }: { gateway: GatewayConfig }) {
                     <div className="px-5 py-3 border-t border-border/40 bg-muted/10 flex items-center justify-between">
                         <p className="text-[11px] text-muted-foreground">Kredensial disimpan terenkripsi.</p>
                         <div className="flex items-center gap-2">
-                            <button className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                                <ExternalLink className="size-3" />Dokumentasi
+                            <button onClick={resetToServerState} type="button" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                                Reset
                             </button>
-                            <button className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
-                                Simpan
+                            <button onClick={handleSave} disabled={saving} type="button"
+                                className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60">
+                                {saving ? 'Menyimpan...' : 'Simpan'}
                             </button>
                         </div>
                     </div>
@@ -310,17 +401,20 @@ function GatewayCard({ gateway }: { gateway: GatewayConfig }) {
     );
 }
 
-function TabGateway() {
+function TabGateway({ gateways }: { gateways: GatewayData[] }) {
     const activeCount = gateways.filter((g) => g.enabled).length;
+    const productionCount = gateways.filter((g) => g.enabled && g.environment === 'production').length;
+    const byId = new Map(gateways.map((g) => [g.id, g]));
+
     return (
         <div className="space-y-6">
             {/* Stats */}
             <div className="grid grid-cols-4 gap-4">
                 {[
-                    { label: 'Total Gateway',    value: gateways.length.toString(),  sub: 'terdaftar'   },
-                    { label: 'Gateway Aktif',    value: activeCount.toString(),       sub: 'terhubung'   },
-                    { label: 'Mode Production',  value: '1',                          sub: 'gateway live' },
-                    { label: 'Enkripsi',         value: 'AES-256',                   sub: 'semua kunci'  },
+                    { label: 'Total Gateway',   value: gateways.length.toString(), sub: 'terdaftar'    },
+                    { label: 'Gateway Aktif',   value: activeCount.toString(),     sub: 'terhubung'    },
+                    { label: 'Mode Production', value: productionCount.toString(), sub: 'gateway live' },
+                    { label: 'Enkripsi',        value: 'AES-256',                  sub: 'semua kunci'  },
                 ].map((s) => (
                     <div key={s.label} className="rounded-xl border border-border/60 bg-card px-4 py-3 shadow-sm">
                         <p className="text-xs text-muted-foreground">{s.label}</p>
@@ -337,7 +431,11 @@ function TabGateway() {
                 </p>
             </div>
             <div className="space-y-4">
-                {gateways.map((g) => <GatewayCard key={g.id} gateway={g} />)}
+                {GATEWAY_ORDER.map((id) => {
+                    const data = byId.get(id);
+                    if (!data) return null;
+                    return <GatewayCard key={id} id={id} meta={GATEWAY_META[id]} data={data} />;
+                })}
             </div>
         </div>
     );
@@ -345,28 +443,49 @@ function TabGateway() {
 
 // ── Tab: Metode Pembayaran ────────────────────────────────────────────────────
 
-const allMethods = [
-    { id: 'va_bca',        label: 'Virtual Account BCA',          icon: Banknote,   category: 'Virtual Account', gateways: ['Midtrans','Xendit','Tripay'], enabled: true  },
-    { id: 'va_bni',        label: 'Virtual Account BNI',          icon: Banknote,   category: 'Virtual Account', gateways: ['Midtrans','Xendit','Tripay'], enabled: true  },
-    { id: 'va_bri',        label: 'Virtual Account BRI',          icon: Banknote,   category: 'Virtual Account', gateways: ['Midtrans','Tripay'],          enabled: true  },
-    { id: 'va_mandiri',    label: 'Virtual Account Mandiri',      icon: Banknote,   category: 'Virtual Account', gateways: ['Midtrans','Tripay'],          enabled: true  },
-    { id: 'qris',          label: 'QRIS',                         icon: Smartphone, category: 'QRIS',            gateways: ['Midtrans','Xendit','Tripay'], enabled: true  },
-    { id: 'gopay',         label: 'GoPay',                        icon: Wallet,     category: 'E-Wallet',        gateways: ['Midtrans'],                  enabled: true  },
-    { id: 'ovo',           label: 'OVO',                          icon: Wallet,     category: 'E-Wallet',        gateways: ['Xendit'],                    enabled: false },
-    { id: 'dana',          label: 'DANA',                         icon: Wallet,     category: 'E-Wallet',        gateways: ['Xendit'],                    enabled: false },
-    { id: 'shopeepay',     label: 'ShopeePay',                    icon: Wallet,     category: 'E-Wallet',        gateways: ['Xendit'],                    enabled: false },
-    { id: 'cc',            label: 'Kartu Kredit / Debit',         icon: CreditCard, category: 'Kartu',           gateways: ['Midtrans'],                  enabled: false },
-    { id: 'alfamart',      label: 'Alfamart',                     icon: Wallet,     category: 'Minimarket',      gateways: ['Tripay'],                    enabled: false },
-    { id: 'indomaret',     label: 'Indomaret',                    icon: Wallet,     category: 'Minimarket',      gateways: ['Tripay'],                    enabled: false },
-    { id: 'transfer_bank', label: 'Transfer Bank Manual',         icon: Banknote,   category: 'Manual',          gateways: ['Manual'],                    enabled: true  },
-];
+const ALL_METHODS = [
+    { id: 'va_bca',        label: 'Virtual Account BCA',      icon: Banknote,   category: 'Virtual Account', gateways: ['Midtrans', 'Xendit', 'Tripay'] },
+    { id: 'va_bni',        label: 'Virtual Account BNI',      icon: Banknote,   category: 'Virtual Account', gateways: ['Midtrans', 'Xendit', 'Tripay'] },
+    { id: 'va_bri',        label: 'Virtual Account BRI',      icon: Banknote,   category: 'Virtual Account', gateways: ['Midtrans', 'Tripay'] },
+    { id: 'va_mandiri',    label: 'Virtual Account Mandiri',  icon: Banknote,   category: 'Virtual Account', gateways: ['Midtrans', 'Tripay'] },
+    { id: 'qris',          label: 'QRIS',                     icon: Smartphone, category: 'QRIS',            gateways: ['Midtrans', 'Xendit', 'Tripay'] },
+    { id: 'gopay',         label: 'GoPay',                    icon: Wallet,     category: 'E-Wallet',        gateways: ['Midtrans'] },
+    { id: 'ovo',           label: 'OVO',                      icon: Wallet,     category: 'E-Wallet',        gateways: ['Xendit'] },
+    { id: 'dana',          label: 'DANA',                     icon: Wallet,     category: 'E-Wallet',        gateways: ['Xendit'] },
+    { id: 'shopeepay',     label: 'ShopeePay',                icon: Wallet,     category: 'E-Wallet',        gateways: ['Xendit'] },
+    { id: 'cc',            label: 'Kartu Kredit / Debit',     icon: CreditCard, category: 'Kartu',           gateways: ['Midtrans'] },
+    { id: 'alfamart',      label: 'Alfamart',                 icon: Wallet,     category: 'Minimarket',      gateways: ['Tripay'] },
+    { id: 'indomaret',     label: 'Indomaret',                icon: Wallet,     category: 'Minimarket',      gateways: ['Tripay'] },
+    { id: 'transfer_bank', label: 'Transfer Bank Manual',     icon: Banknote,   category: 'Manual',          gateways: ['Manual'] },
+] as const;
 
-function TabMethods() {
-    const categories = [...new Set(allMethods.map((m) => m.category))];
+function TabMethods({ enabledMethods }: { enabledMethods: string[] }) {
+    const [enabled, setEnabled] = useState<Set<string>>(() => new Set(enabledMethods));
+    const [saving, setSaving] = useState(false);
+    const categories = [...new Set(ALL_METHODS.map((m) => m.category))];
+
+    function toggle(id: string) {
+        setEnabled((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id); else next.add(id);
+            return next;
+        });
+    }
+
+    function handleSave() {
+        setSaving(true);
+        router.patch(route('admin.settings.payment.methods.update'), {
+            enabled_methods: Array.from(enabled),
+        }, {
+            preserveScroll: true,
+            onFinish: () => setSaving(false),
+        });
+    }
+
     return (
         <div className="space-y-6">
             {categories.map((cat) => {
-                const items = allMethods.filter((m) => m.category === cat);
+                const items = ALL_METHODS.filter((m) => m.category === cat);
                 return (
                     <div key={cat} className="rounded-2xl border border-border/60 bg-card shadow-sm overflow-hidden">
                         <div className="px-5 py-3 border-b border-border/40 bg-muted/20">
@@ -374,7 +493,7 @@ function TabMethods() {
                         </div>
                         <div className="divide-y divide-border/30">
                             {items.map((m) => {
-                                const [on, setOn] = useState(m.enabled);
+                                const on = enabled.has(m.id);
                                 const Icon = m.icon;
                                 return (
                                     <div key={m.id} className="flex items-center justify-between px-5 py-3 hover:bg-muted/20 transition-colors">
@@ -389,7 +508,7 @@ function TabMethods() {
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <span className={`text-xs font-medium ${on ? 'text-emerald-600' : 'text-muted-foreground'}`}>{on ? 'Aktif' : 'Nonaktif'}</span>
-                                            <button role="switch" aria-checked={on} onClick={() => setOn(!on)}
+                                            <button role="switch" aria-checked={on} onClick={() => toggle(m.id)}
                                                 className={`relative inline-flex h-5 w-9 cursor-pointer rounded-full transition-colors ${on ? 'bg-primary' : 'bg-border'}`}>
                                                 <span className={`pointer-events-none inline-block size-4 rounded-full bg-white shadow-sm transition-transform mt-0.5 ${on ? 'translate-x-4' : 'translate-x-0.5'}`} />
                                             </button>
@@ -401,20 +520,45 @@ function TabMethods() {
                     </div>
                 );
             })}
-            <SaveBar />
+            <SaveBar saving={saving} onSave={handleSave} onReset={() => setEnabled(new Set(enabledMethods))} />
         </div>
     );
 }
 
 // ── Tab: Webhook ──────────────────────────────────────────────────────────────
 
-function TabWebhook() {
-    const webhooks = [
-        { gateway: 'Midtrans',       url: 'https://undesia.com/webhook/midtrans',  status: 'active' as const,  lastHit: '2 menit lalu'  },
-        { gateway: 'Xendit',         url: 'https://undesia.com/webhook/xendit',    status: 'inactive' as const, lastHit: '—'             },
-        { gateway: 'Tripay',         url: 'https://undesia.com/webhook/tripay',    status: 'inactive' as const, lastHit: '—'             },
-        { gateway: 'Transfer Manual',url: 'https://undesia.com/webhook/manual',    status: 'active' as const,  lastHit: '1 jam lalu'    },
-    ];
+const WEBHOOK_ENDPOINTS = [
+    { gateway: 'Xendit',          path: '/api/webhooks/xendit', implemented: true  },
+    { gateway: 'Midtrans',        path: null,                   implemented: false },
+    { gateway: 'Tripay',          path: null,                   implemented: false },
+    { gateway: 'Transfer Manual', path: null,                   implemented: false },
+];
+
+function TabWebhook({ webhook }: { webhook: PageProps['webhook'] }) {
+    const [successUrl, setSuccessUrl] = useState(webhook.successRedirectUrl);
+    const [failedUrl, setFailedUrl] = useState(webhook.failedRedirectUrl);
+    const [pendingUrl, setPendingUrl] = useState(webhook.pendingRedirectUrl);
+    const [saving, setSaving] = useState(false);
+    const [copied, setCopied] = useState<string | null>(null);
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+
+    function copy(url: string) {
+        navigator.clipboard?.writeText(url);
+        setCopied(url);
+        setTimeout(() => setCopied(null), 1500);
+    }
+
+    function handleSave() {
+        setSaving(true);
+        router.patch(route('admin.settings.payment.webhook.update'), {
+            success_redirect_url: successUrl,
+            failed_redirect_url: failedUrl,
+            pending_redirect_url: pendingUrl,
+        }, {
+            preserveScroll: true,
+            onFinish: () => setSaving(false),
+        });
+    }
 
     return (
         <div className="space-y-6">
@@ -428,29 +572,34 @@ function TabWebhook() {
                     <table className="w-full">
                         <thead>
                             <tr className="border-b border-border/40 bg-muted/10">
-                                {['Gateway','Webhook URL','Status','Last Hit','Aksi'].map((h) => (
+                                {['Gateway', 'Webhook URL', 'Status', 'Aksi'].map((h) => (
                                     <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground">{h}</th>
                                 ))}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/30">
-                            {webhooks.map((w) => (
-                                <tr key={w.gateway} className="hover:bg-muted/20 transition-colors">
-                                    <td className="px-4 py-3 text-sm font-medium text-foreground">{w.gateway}</td>
-                                    <td className="px-4 py-3">
-                                        <code className="text-xs font-mono text-muted-foreground bg-muted/50 px-2 py-0.5 rounded">{w.url}</code>
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${w.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-muted text-muted-foreground'}`}>
-                                            {w.status === 'active' ? 'Aktif' : 'Nonaktif'}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-3 text-xs text-muted-foreground">{w.lastHit}</td>
-                                    <td className="px-4 py-3">
-                                        <button className="text-xs font-medium text-primary hover:text-primary/80 transition-colors">Salin URL</button>
-                                    </td>
-                                </tr>
-                            ))}
+                            {WEBHOOK_ENDPOINTS.map((w) => {
+                                const url = w.path ? `${origin}${w.path}` : null;
+                                return (
+                                    <tr key={w.gateway} className="hover:bg-muted/20 transition-colors">
+                                        <td className="px-4 py-3 text-sm font-medium text-foreground">{w.gateway}</td>
+                                        <td className="px-4 py-3">
+                                            <code className="text-xs font-mono text-muted-foreground bg-muted/50 px-2 py-0.5 rounded">{url ?? 'Belum tersedia'}</code>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${w.implemented ? 'bg-emerald-100 text-emerald-700' : 'bg-muted text-muted-foreground'}`}>
+                                                {w.implemented ? 'Aktif' : 'Belum diimplementasikan'}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <button disabled={!url} onClick={() => url && copy(url)}
+                                                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                                                <Copy className="size-3" />{copied === url ? 'Tersalin!' : 'Salin URL'}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
@@ -460,24 +609,29 @@ function TabWebhook() {
             <div className="rounded-2xl border border-border/60 bg-card shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-border/40 bg-muted/20">
                     <h2 className="text-sm font-semibold text-foreground">URL Redirect Setelah Pembayaran</h2>
-                    <p className="text-xs text-muted-foreground mt-0.5">Halaman tujuan setelah proses pembayaran selesai.</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                        Halaman tujuan setelah proses pembayaran selesai. Untuk transaksi Xendit, aplikasi selalu memakai URL rute checkout bawaan
+                        (menyertakan nomor invoice) — kolom di bawah tersimpan sebagai referensi/fallback dan belum menggantikan alur tersebut.
+                    </p>
                 </div>
                 <div className="px-5 py-5 space-y-4">
                     {[
-                        { label: 'Success Redirect URL',  value: 'https://undesia.com/payment/success', hint: 'Setelah pembayaran berhasil.' },
-                        { label: 'Failed Redirect URL',   value: 'https://undesia.com/payment/failed',  hint: 'Setelah pembayaran gagal atau dibatalkan.' },
-                        { label: 'Pending Redirect URL',  value: 'https://undesia.com/payment/pending', hint: 'Untuk metode dengan pembayaran tertunda (VA, minimarket).' },
+                        { label: 'Success Redirect URL', value: successUrl, set: setSuccessUrl, hint: 'Setelah pembayaran berhasil.' },
+                        { label: 'Failed Redirect URL',  value: failedUrl,  set: setFailedUrl,  hint: 'Setelah pembayaran gagal atau dibatalkan.' },
+                        { label: 'Pending Redirect URL', value: pendingUrl, set: setPendingUrl, hint: 'Untuk metode dengan pembayaran tertunda (VA, minimarket).' },
                     ].map((item) => (
                         <div key={item.label}>
                             <label className="block text-xs font-medium text-foreground mb-1">{item.label}</label>
-                            <input type="text" defaultValue={item.value}
+                            <input type="text" value={item.value} onChange={(e) => item.set(e.target.value)}
+                                placeholder="https://undesia.com/payment/..."
                                 className="w-full rounded-lg border border-border/60 bg-background px-3 py-2 text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all" />
                             <p className="mt-1 text-[11px] text-muted-foreground">{item.hint}</p>
                         </div>
                     ))}
                 </div>
             </div>
-            <SaveBar />
+            <SaveBar saving={saving} onSave={handleSave}
+                onReset={() => { setSuccessUrl(webhook.successRedirectUrl); setFailedUrl(webhook.failedRedirectUrl); setPendingUrl(webhook.pendingRedirectUrl); }} />
         </div>
     );
 }
@@ -505,12 +659,19 @@ function TabLogs() {
 
     return (
         <div className="space-y-6">
+            <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                <AlertCircle className="size-4 text-amber-600 shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-700">
+                    Data di bawah ini masih berupa contoh tampilan. Pencatatan log webhook/integrasi real-time belum tersedia di backend.
+                </p>
+            </div>
+
             {/* Summary */}
             <div className="grid grid-cols-4 gap-4">
                 {[
-                    { label: 'Total Webhook Hari Ini', value: '24',    sub: 'diterima'    },
-                    { label: 'Berhasil',               value: '21',    sub: '87.5%'       },
-                    { label: 'Gagal / Error',          value: '3',     sub: 'perlu review'},
+                    { label: 'Total Webhook Hari Ini', value: '24',    sub: 'diterima'     },
+                    { label: 'Berhasil',               value: '21',    sub: '87.5%'        },
+                    { label: 'Gagal / Error',          value: '3',     sub: 'perlu review' },
                     { label: 'Rata-rata Respons',      value: '142ms', sub: 'response time'},
                 ].map((s) => (
                     <div key={s.label} className="rounded-xl border border-border/60 bg-card px-4 py-3 shadow-sm">
@@ -554,7 +715,7 @@ function TabLogs() {
                     <table className="w-full">
                         <thead>
                             <tr className="border-b border-border/40 bg-muted/10">
-                                {['Log ID','Waktu','Gateway','Event','Jumlah','Ref Transaksi','Status'].map((h) => (
+                                {['Log ID', 'Waktu', 'Gateway', 'Event', 'Jumlah', 'Ref Transaksi', 'Status'].map((h) => (
                                     <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground whitespace-nowrap">{h}</th>
                                 ))}
                             </tr>
@@ -581,7 +742,7 @@ function TabLogs() {
                 <div className="px-5 py-3 border-t border-border/40 bg-muted/10 flex items-center justify-between">
                     <p className="text-xs text-muted-foreground">Menampilkan 8 dari 48 log</p>
                     <div className="flex items-center gap-1">
-                        {[1,2,3,'...',6].map((p, i) => (
+                        {[1, 2, 3, '...', 6].map((p, i) => (
                             <button key={i} className={`size-7 rounded text-xs font-medium transition-colors ${p === 1 ? 'bg-primary text-primary-foreground' : 'hover:bg-muted text-muted-foreground'}`}>{p}</button>
                         ))}
                     </div>
@@ -594,12 +755,13 @@ function TabLogs() {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function AdminSettingsPayment() {
+    const { gateways, enabledMethods, webhook } = usePage<PageProps>().props;
     const [activeTab, setActiveTab] = useState('gateway');
 
     const panels: Record<string, React.ReactNode> = {
-        gateway: <TabGateway />,
-        methods: <TabMethods />,
-        webhook: <TabWebhook />,
+        gateway: <TabGateway gateways={gateways} />,
+        methods: <TabMethods enabledMethods={enabledMethods} />,
+        webhook: <TabWebhook webhook={webhook} />,
         logs:    <TabLogs />,
     };
 
@@ -609,6 +771,7 @@ export default function AdminSettingsPayment() {
             <SettingsLayout>
                 <SettingsTabNav tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
                 <div className="max-w-5xl mx-auto p-6">
+                    <FlashBanner />
                     {panels[activeTab]}
                 </div>
             </SettingsLayout>

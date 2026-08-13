@@ -16,88 +16,89 @@ Route::prefix('customer')->name('customer.')->middleware(['auth'])->group(functi
 
     // ─── Undangan ─────────────────────────────────────────────────────────────
     Route::prefix('invitations')->name('invitations.')->group(function () {
-        Route::get('/',                       [InvitationController::class, 'index'])->name('index');
-        Route::get('/create',                 [InvitationController::class, 'create'])->name('create');
-        Route::get('/create/theme',           [InvitationController::class, 'selectTheme'])->name('create.theme');
-        Route::get('/create/detail',          [InvitationController::class, 'createDetail'])->name('create.detail');
-        Route::get('/check-code',             [InvitationController::class, 'checkCode'])->name('check-code');
-        Route::post('/',                      [InvitationController::class, 'store'])->name('store');
-        Route::get('/{invitation}',           fn () => Inertia::render('customer/invitations/show'))->name('show');
-        Route::get('/{invitation}/payment',    [PaymentController::class, 'show'])->name('payment');
-        Route::post('/{invitation}/payment',   [PaymentController::class, 'pay'])->name('pay');
-        Route::get('/{invitation}/edit',      [InvitationController::class, 'edit'])->name('edit');
-        Route::get('/{slug}/detail',          [InvitationController::class, 'edit'])->name('detail');
-        Route::get('/{slug}/settings',        [InvitationController::class, 'edit'])->name('settings');
-        Route::patch('/{slug}/settings',      [InvitationController::class, 'updateSettings'])->name('update-settings');
-        Route::post('/{slug}/upload-music',   [InvitationController::class, 'uploadMusic'])->name('upload-music');
-        Route::patch('/{invitation}/theme',   [InvitationController::class, 'updateTheme'])->name('update-theme');
-        Route::patch('/{invitation}',         [InvitationController::class, 'update'])->name('update');
-        Route::delete('/{invitation}',        fn () => abort(501))->name('destroy');
+        Route::get('/', [InvitationController::class, 'index'])->name('index');
+        Route::get('/create', [InvitationController::class, 'create'])->name('create');
+        Route::get('/create/theme', [InvitationController::class, 'selectTheme'])->name('create.theme');
+        Route::get('/create/detail', [InvitationController::class, 'createDetail'])->name('create.detail');
+        Route::get('/check-code', [InvitationController::class, 'checkCode'])->name('check-code');
+        Route::post('/', [InvitationController::class, 'store'])->name('store');
+        Route::get('/{invitation}', fn () => Inertia::render('customer/invitations/show'))->name('show');
+        Route::get('/{invitation}/payment', [PaymentController::class, 'show'])->name('payment');
+        Route::post('/{invitation}/payment', [PaymentController::class, 'pay'])->name('pay');
+        Route::post('/{invitation}/payment/manual-proof', [PaymentController::class, 'submitManualProof'])->name('payment.manual-proof');
+        Route::get('/{invitation}/edit', [InvitationController::class, 'edit'])->name('edit');
+        Route::get('/{slug}/detail', [InvitationController::class, 'edit'])->name('detail');
+        Route::get('/{slug}/settings', [InvitationController::class, 'edit'])->name('settings');
+        Route::patch('/{slug}/settings', [InvitationController::class, 'updateSettings'])->name('update-settings');
+        Route::post('/{slug}/upload-music', [InvitationController::class, 'uploadMusic'])->name('upload-music');
+        Route::patch('/{invitation}/theme', [InvitationController::class, 'updateTheme'])->name('update-theme');
+        Route::patch('/{invitation}', [InvitationController::class, 'update'])->name('update');
+        Route::delete('/{invitation}', fn () => abort(501))->name('destroy');
 
         // ── Buku Tamu ─────────────────────────────────────────────────────────
         Route::prefix('{invitation}/guests')->name('guests.')->group(function () {
-            Route::get('/',                  [GuestBookController::class, 'index'])->name('index');
-            Route::get('/operator',          [GuestBookController::class, 'operator'])->name('operator');
-            Route::patch('/display-settings',[GuestBookController::class, 'updateDisplaySettings'])->name('display-settings');
-            Route::get('/search',            [GuestBookController::class, 'search'])->name('search');
-            Route::post('/scan',             [GuestBookController::class, 'scan'])->name('scan');
-            Route::post('/',                 [GuestBookController::class, 'store'])->name('store');
-            Route::patch('/{guest}',         [GuestBookController::class, 'update'])->name('update');
+            Route::get('/', [GuestBookController::class, 'index'])->name('index');
+            Route::get('/operator', [GuestBookController::class, 'operator'])->name('operator');
+            Route::patch('/display-settings', [GuestBookController::class, 'updateDisplaySettings'])->name('display-settings');
+            Route::get('/search', [GuestBookController::class, 'search'])->name('search');
+            Route::post('/scan', [GuestBookController::class, 'scan'])->name('scan');
+            Route::post('/', [GuestBookController::class, 'store'])->name('store');
+            Route::patch('/{guest}', [GuestBookController::class, 'update'])->name('update');
             Route::patch('/{guest}/checkin', [GuestBookController::class, 'checkIn'])->name('checkin');
             Route::post('/{guest}/manual-checkin', [GuestBookController::class, 'manualCheckIn'])->name('manual-checkin');
-            Route::delete('/{guest}',        [GuestBookController::class, 'destroy'])->name('destroy');
-            Route::get('/export/csv',        [GuestBookController::class, 'export'])->name('export');
-            Route::get('/export/excel',      [GuestBookController::class, 'exportExcel'])->name('export.excel');
-            Route::get('/export/pdf',        [GuestBookController::class, 'exportPdf'])->name('export.pdf');
-            Route::get('/check-slug',        [GuestBookController::class, 'checkSlug'])->name('check-slug');
+            Route::delete('/{guest}', [GuestBookController::class, 'destroy'])->name('destroy');
+            Route::get('/export/csv', [GuestBookController::class, 'export'])->name('export');
+            Route::get('/export/excel', [GuestBookController::class, 'exportExcel'])->name('export.excel');
+            Route::get('/export/pdf', [GuestBookController::class, 'exportPdf'])->name('export.pdf');
+            Route::get('/check-slug', [GuestBookController::class, 'checkSlug'])->name('check-slug');
         });
 
         // ── Komentar ──────────────────────────────────────────────────────────
         Route::prefix('{invitation}/comments')->name('comments.')->group(function () {
-            Route::get('/',                       [CommentController::class, 'index'])->name('index');
-            Route::patch('/{comment}/approve',    [CommentController::class, 'approve'])->name('approve');
-            Route::patch('/{comment}/reject',     [CommentController::class, 'reject'])->name('reject');
-            Route::patch('/{comment}/flag',       [CommentController::class, 'flag'])->name('flag');
-            Route::delete('/{comment}',           [CommentController::class, 'destroy'])->name('destroy');
-            Route::post('/bulk',                  [CommentController::class, 'bulkAction'])->name('bulk');
+            Route::get('/', [CommentController::class, 'index'])->name('index');
+            Route::patch('/{comment}/approve', [CommentController::class, 'approve'])->name('approve');
+            Route::patch('/{comment}/reject', [CommentController::class, 'reject'])->name('reject');
+            Route::patch('/{comment}/flag', [CommentController::class, 'flag'])->name('flag');
+            Route::delete('/{comment}', [CommentController::class, 'destroy'])->name('destroy');
+            Route::post('/bulk', [CommentController::class, 'bulkAction'])->name('bulk');
         });
 
         // ── Dompet Digital per undangan ───────────────────────────────────────
         Route::prefix('{invitation}/digital-wallets')->name('digital-wallets.')->group(function () {
-            Route::get('/',    [DigitalWalletController::class, 'invitationWallets'])->name('index');
+            Route::get('/', [DigitalWalletController::class, 'invitationWallets'])->name('index');
             Route::post('/sync', [DigitalWalletController::class, 'syncInvitationWallets'])->name('sync');
         });
     });
 
     // ─── Dompet Digital (global milik user) ───────────────────────────────────
     Route::prefix('digital-wallets')->name('digital-wallets.')->group(function () {
-        Route::get('/',                        [DigitalWalletController::class, 'index'])->name('index');
-        Route::post('/',                       [DigitalWalletController::class, 'store'])->name('store');
-        Route::patch('/{digitalWallet}',       [DigitalWalletController::class, 'update'])->name('update');
-        Route::delete('/{digitalWallet}',      [DigitalWalletController::class, 'destroy'])->name('destroy');
+        Route::get('/', [DigitalWalletController::class, 'index'])->name('index');
+        Route::post('/', [DigitalWalletController::class, 'store'])->name('store');
+        Route::patch('/{digitalWallet}', [DigitalWalletController::class, 'update'])->name('update');
+        Route::delete('/{digitalWallet}', [DigitalWalletController::class, 'destroy'])->name('destroy');
     });
 
     // ─── Paket & Langganan ────────────────────────────────────────────────────
     Route::prefix('subscription')->name('subscription.')->group(function () {
-        Route::get('/',        fn () => Inertia::render('customer/subscription/index'))->name('index');
+        Route::get('/', fn () => Inertia::render('customer/subscription/index'))->name('index');
         Route::get('/upgrade', fn () => Inertia::render('customer/subscription/upgrade'))->name('upgrade');
     });
 
     // ─── Pembayaran (success / failed redirect dari Xendit) ───────────────────
     Route::prefix('payments')->name('payments.')->group(function () {
         Route::get('/success', [PaymentController::class, 'success'])->name('success');
-        Route::get('/failed',  [PaymentController::class, 'failed'])->name('failed');
+        Route::get('/failed', [PaymentController::class, 'failed'])->name('failed');
     });
 
     // ─── Transaksi ────────────────────────────────────────────────────────────
     Route::prefix('transactions')->name('transactions.')->group(function () {
-        Route::get('/',              [TransactionController::class, 'index'])->name('index');
+        Route::get('/', [TransactionController::class, 'index'])->name('index');
         Route::get('/{transaction}', [TransactionController::class, 'show'])->name('show');
     });
 
     // ─── Profil ───────────────────────────────────────────────────────────────
     Route::prefix('profile')->name('profile.')->group(function () {
-        Route::get('/',    fn () => Inertia::render('customer/profile/index'))->name('index');
-        Route::patch('/',  fn () => abort(501))->name('update');
+        Route::get('/', fn () => Inertia::render('customer/profile/index'))->name('index');
+        Route::patch('/', fn () => abort(501))->name('update');
     });
 });

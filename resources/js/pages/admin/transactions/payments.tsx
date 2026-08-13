@@ -7,12 +7,15 @@ import {
     CheckCircle2,
     Clock,
     CreditCard,
+    ExternalLink,
+    Eye,
     LoaderCircle,
     Search,
     Wallet,
+    X,
     XCircle,
 } from 'lucide-react';
-import { type ElementType, useMemo, useState } from 'react';
+import { type ElementType, useEffect, useMemo, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard Admin', href: '/admin' },
@@ -33,6 +36,9 @@ interface AdminPayment {
     error_message: string | null;
     webhook_received_at: string | null;
     webhook_verified_at: string | null;
+    proof_file_url: string | null;
+    proof_is_pdf: boolean;
+    proof_uploaded_at: string | null;
     created_at: string;
     transaction: {
         id: number;
@@ -172,14 +178,85 @@ function SummaryCard({
     );
 }
 
+function ProofPreviewModal({ payment, onClose }: { payment: AdminPayment; onClose: () => void }) {
+    useEffect(() => {
+        function onKeyDown(event: KeyboardEvent) {
+            if (event.key === 'Escape') onClose();
+        }
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [onClose]);
+
+    if (!payment.proof_file_url) return null;
+
+    return (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+            onClick={onClose}
+            role="dialog"
+            aria-modal="true"
+        >
+            <div
+                className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-card shadow-xl"
+                onClick={(event) => event.stopPropagation()}
+            >
+                <div className="flex items-center justify-between border-b border-border/40 px-5 py-3">
+                    <div className="min-w-0">
+                        <h3 className="text-sm font-semibold text-foreground">Bukti Transfer</h3>
+                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                            {payment.customer?.name ?? 'Customer'} &middot; {payment.transaction?.invoice_number ?? '-'}
+                        </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                        <a
+                            href={payment.proof_file_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                        >
+                            <ExternalLink className="size-3.5" />
+                            Buka Tab Baru
+                        </a>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                            aria-label="Tutup"
+                        >
+                            <X className="size-4" />
+                        </button>
+                    </div>
+                </div>
+                <div className="overflow-auto bg-muted/20 p-4">
+                    {payment.proof_is_pdf ? (
+                        <iframe
+                            src={payment.proof_file_url}
+                            title="Bukti Transfer"
+                            className="h-[70vh] w-full rounded-lg border border-border/40 bg-white"
+                        />
+                    ) : (
+                        <img
+                            src={payment.proof_file_url}
+                            alt="Bukti transfer"
+                            className="mx-auto max-h-[70vh] w-auto rounded-lg object-contain"
+                        />
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function PaymentRow({
     payment,
     confirming,
     onConfirm,
+    onPreview,
 }: {
     payment: AdminPayment;
     confirming: boolean;
     onConfirm: (payment: AdminPayment) => void;
+    onPreview: (payment: AdminPayment) => void;
 }) {
     const canConfirm = payment.status === 'pending' || payment.status === 'processing';
 
@@ -203,6 +280,16 @@ function PaymentRow({
                     <p className="mt-0.5 max-w-40 truncate font-mono text-xs text-muted-foreground" title={payment.gateway_reference_id}>
                         {payment.gateway_reference_id}
                     </p>
+                    {payment.proof_file_url && (
+                        <button
+                            type="button"
+                            onClick={() => onPreview(payment)}
+                            className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80"
+                        >
+                            <Eye className="size-3" />
+                            Lihat Bukti Transfer
+                        </button>
+                    )}
                 </div>
             </td>
             <td className="px-4 py-4 align-top">
@@ -247,6 +334,7 @@ export default function AdminPayments({ payments, summary }: Props) {
     const [query, setQuery] = useState('');
     const [status, setStatus] = useState<'all' | PaymentStatus>('all');
     const [confirmingId, setConfirmingId] = useState<number | null>(null);
+    const [previewPayment, setPreviewPayment] = useState<AdminPayment | null>(null);
 
     const filteredPayments = useMemo(() => {
         const normalizedQuery = query.trim().toLowerCase();
@@ -408,6 +496,7 @@ export default function AdminPayments({ payments, summary }: Props) {
                                             payment={payment}
                                             confirming={confirmingId === payment.id}
                                             onConfirm={handleConfirm}
+                                            onPreview={setPreviewPayment}
                                         />
                                     ))}
                                 </tbody>
@@ -416,6 +505,8 @@ export default function AdminPayments({ payments, summary }: Props) {
                     )}
                 </div>
             </div>
+
+            {previewPayment && <ProofPreviewModal payment={previewPayment} onClose={() => setPreviewPayment(null)} />}
         </AdminLayout>
     );
 }

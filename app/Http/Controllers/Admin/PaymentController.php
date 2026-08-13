@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -23,47 +24,50 @@ class PaymentController extends Controller
             ->get();
 
         $items = $payments->map(fn (Payment $payment) => [
-            'id'                   => $payment->id,
-            'payment_gateway'      => $payment->payment_gateway,
+            'id' => $payment->id,
+            'payment_gateway' => $payment->payment_gateway,
             'gateway_reference_id' => $payment->gateway_reference_id,
-            'amount'               => (float) $payment->amount,
-            'fee'                  => (float) $payment->fee,
-            'currency'             => $payment->currency,
-            'status'               => $payment->status,
-            'error_message'        => $payment->error_message,
-            'webhook_received_at'  => $payment->webhook_received_at?->toDateTimeString(),
-            'webhook_verified_at'  => $payment->webhook_verified_at?->toDateTimeString(),
-            'created_at'           => $payment->created_at->toDateTimeString(),
-            'transaction'          => $payment->transaction ? [
-                'id'             => $payment->transaction->id,
+            'amount' => (float) $payment->amount,
+            'fee' => (float) $payment->fee,
+            'currency' => $payment->currency,
+            'status' => $payment->status,
+            'error_message' => $payment->error_message,
+            'webhook_received_at' => $payment->webhook_received_at?->toDateTimeString(),
+            'webhook_verified_at' => $payment->webhook_verified_at?->toDateTimeString(),
+            'proof_file_url' => $payment->proof_file_path ? Storage::disk('public')->url($payment->proof_file_path) : null,
+            'proof_is_pdf' => $payment->proof_file_path ? str_ends_with(strtolower($payment->proof_file_path), '.pdf') : false,
+            'proof_uploaded_at' => $payment->proof_uploaded_at?->toDateTimeString(),
+            'created_at' => $payment->created_at->toDateTimeString(),
+            'transaction' => $payment->transaction ? [
+                'id' => $payment->transaction->id,
                 'invoice_number' => $payment->transaction->invoice_number,
-                'status'         => $payment->transaction->status,
+                'status' => $payment->transaction->status,
             ] : null,
             'customer' => $payment->transaction?->user ? [
-                'id'           => $payment->transaction->user->id,
-                'name'         => $payment->transaction->user->name,
-                'email'        => $payment->transaction->user->email,
+                'id' => $payment->transaction->user->id,
+                'name' => $payment->transaction->user->name,
+                'email' => $payment->transaction->user->email,
                 'phone_number' => $payment->transaction->user->phone_number,
             ] : null,
             'invitation' => $payment->transaction?->invitation ? [
-                'id'     => $payment->transaction->invitation->id,
-                'slug'   => $payment->transaction->invitation->slug,
-                'title'  => $payment->transaction->invitation->title,
+                'id' => $payment->transaction->invitation->id,
+                'slug' => $payment->transaction->invitation->slug,
+                'title' => $payment->transaction->invitation->title,
                 'status' => $payment->transaction->invitation->status,
             ] : null,
             'package' => $payment->transaction?->package ? [
-                'name'  => $payment->transaction->package->name,
+                'name' => $payment->transaction->package->name,
                 'label' => $payment->transaction->package->label,
             ] : null,
         ])->values();
 
         return Inertia::render('admin/transactions/payments', [
             'payments' => $items,
-            'summary'  => [
-                'total'         => $items->count(),
-                'pending'       => $items->whereIn('status', ['pending', 'processing'])->count(),
-                'success'       => $items->where('status', 'success')->count(),
-                'failed'        => $items->whereIn('status', ['failed', 'cancelled'])->count(),
+            'summary' => [
+                'total' => $items->count(),
+                'pending' => $items->whereIn('status', ['pending', 'processing'])->count(),
+                'success' => $items->where('status', 'success')->count(),
+                'failed' => $items->whereIn('status', ['failed', 'cancelled'])->count(),
                 'gross_success' => $items->where('status', 'success')->sum('amount'),
             ],
         ]);
@@ -86,7 +90,7 @@ class PaymentController extends Controller
             $now = now();
 
             $payment->update([
-                'status'              => 'success',
+                'status' => 'success',
                 'webhook_verified_at' => $now,
             ]);
 
@@ -97,7 +101,7 @@ class PaymentController extends Controller
 
             if ($transaction->status !== 'paid') {
                 $transaction->update([
-                    'status'  => 'paid',
+                    'status' => 'paid',
                     'paid_at' => $transaction->paid_at ?? $now,
                 ]);
             }
@@ -106,9 +110,9 @@ class PaymentController extends Controller
                 $days = $transaction->package?->duration_days ?? 365;
 
                 $transaction->invitation->update([
-                    'status'       => 'active',
+                    'status' => 'active',
                     'activated_at' => $now,
-                    'expires_at'   => $now->copy()->addDays($days),
+                    'expires_at' => $now->copy()->addDays($days),
                 ]);
             }
         });

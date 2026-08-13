@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Admin\Settings\PackageController;
+use App\Http\Controllers\Admin\Settings\PaymentSettingController;
 use App\Http\Controllers\Admin\Themes\ThemeController;
 use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
@@ -38,11 +39,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         Route::get('/categories', fn () => Inertia::render('admin/themes/categories'))->name('categories');
 
         // ── CRUD ────────────────────────────────────────────────────────────
-        Route::get('/',                 [ThemeController::class, 'index'])->name('index');
-        Route::post('/',                [ThemeController::class, 'store'])->name('store');
+        Route::get('/', [ThemeController::class, 'index'])->name('index');
+        Route::post('/', [ThemeController::class, 'store'])->name('store');
         Route::patch('/{theme}/toggle', [ThemeController::class, 'toggle'])->name('toggle');
-        Route::patch('/{theme}',        [ThemeController::class, 'update'])->name('update');
-        Route::delete('/{theme}',       [ThemeController::class, 'destroy'])->name('destroy');
+        Route::patch('/{theme}', [ThemeController::class, 'update'])->name('update');
+        Route::delete('/{theme}', [ThemeController::class, 'destroy'])->name('destroy');
     });
 
     Route::prefix('packages')->name('packages.')->group(function () {
@@ -73,12 +74,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     // ─── Pengaturan Sistem ────────────────────────────────────────────────────
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/general', fn () => Inertia::render('admin/settings/general'))->name('general');
-        Route::get('/packages',                       [PackageController::class, 'index'])->name('packages');
-        Route::post('/packages',                      [PackageController::class, 'store'])->name('packages.store');
-        Route::patch('/packages/{package}',           [PackageController::class, 'update'])->name('packages.update');
-        Route::patch('/packages/{package}/features',  [PackageController::class, 'updateFeatures'])->name('packages.features');
-        Route::delete('/packages/{package}',          [PackageController::class, 'destroy'])->name('packages.destroy');
-        Route::get('/payment', fn () => Inertia::render('admin/settings/payment'))->name('payment');
+        Route::get('/packages', [PackageController::class, 'index'])->name('packages');
+        Route::post('/packages', [PackageController::class, 'store'])->name('packages.store');
+        Route::patch('/packages/{package}', [PackageController::class, 'update'])->name('packages.update');
+        Route::patch('/packages/{package}/features', [PackageController::class, 'updateFeatures'])->name('packages.features');
+        Route::delete('/packages/{package}', [PackageController::class, 'destroy'])->name('packages.destroy');
+        Route::get('/payment', [PaymentSettingController::class, 'index'])->name('payment');
+        Route::patch('/payment/gateways/{gateway}', [PaymentSettingController::class, 'updateGateway'])->name('payment.gateway.update');
+        Route::patch('/payment/methods', [PaymentSettingController::class, 'updateMethods'])->name('payment.methods.update');
+        Route::patch('/payment/webhook', [PaymentSettingController::class, 'updateWebhook'])->name('payment.webhook.update');
         Route::get('/whatsapp', fn () => Inertia::render('admin/settings/whatsapp'))->name('whatsapp');
         Route::get('/notification', fn () => Inertia::render('admin/settings/notification'))->name('notification');
     });
