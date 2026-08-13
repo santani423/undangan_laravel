@@ -313,7 +313,6 @@ const DEMO_INVITATION: WeddingInvitation = {
     groomMother: 'Ibu Hj. Sitti Rabiah',
     groomBio: 'Anak pertama dari dua bersaudara. Bekerja sebagai software engineer, gemar mendaki gunung dan membaca buku sejarah.',
     groomPhoto: DEMO_PHOTOS.groom,
-    groomInstagram: '',
     brideFullName: 'Satrika, S.KM',
     brideNickname: 'Tika',
     brideInitials: 'T',
@@ -322,7 +321,6 @@ const DEMO_INVITATION: WeddingInvitation = {
     brideMother: 'Ibu Hj. Nurjannah',
     brideBio: 'Anak kedua dari tiga bersaudara. Bekerja sebagai tenaga kesehatan masyarakat, menyukai tanaman hias dan senja.',
     bridePhoto: DEMO_PHOTOS.bride,
-    brideInstagram: '',
     couplePhoto: DEMO_PHOTOS.gallery1,
     loveStory: DEMO_LOVE_STORY,
     dressCodes: DEMO_DRESS_CODES,
@@ -1093,7 +1091,7 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
 
     const visibleWishes = wishEntries.slice(0, wishVisibleCount);
     const hasMoreWishes = wishVisibleCount < wishEntries.length;
-    const heroSubtitle = textValue(data.greeting?.message, DEFAULT_GREETING.message || '');
+    const heroSubtitle = textValue(data.greeting.message, DEFAULT_GREETING.message || '');
     const venueEvent = data.events[0];
 
     return (
@@ -1119,7 +1117,7 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
                         <p className="wt7-eyebrow wt7-cover-kicker">Walimatul 'Urs</p>
                         <p className="wt7-cover-lead">{heroSubtitle}</p>
                         <div className="wt7-cover-guest">
-                            <span className="wt7-cover-guest-label">{textValue(data.greeting?.guestLabel, DEFAULT_GUEST_LABEL)}</span>
+                            <span className="wt7-cover-guest-label">{textValue(data.greeting.guestLabel, DEFAULT_GUEST_LABEL)}</span>
                             <strong className="wt7-cover-guest-name">{guestName}</strong>
                         </div>
                         <div className="wt7-cover-illustration">
@@ -1131,7 +1129,7 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
                             <span className="wt7-script">{data.brideNickname}</span>
                         </h1>
                         <button type="button" className="wt7-btn wt7-btn--primary wt7-cover-cta" onClick={handleOpenInvitation}>
-                            <span>{textValue(data.greeting?.buttonText, 'Buka Undangan')}</span>
+                            <span>{textValue(data.greeting.buttonText, 'Buka Undangan')}</span>
                             <ChevronRight size={16} />
                         </button>
                     </div>

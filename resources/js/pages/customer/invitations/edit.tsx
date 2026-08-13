@@ -1,5 +1,8 @@
 import ImageCropUpload, { compressImage } from '@/components/image-crop-upload';
+import { validateImageFile } from '@/lib/image-upload';
+import SlugField from '@/components/invitations/slug-field';
 import CustomerLayout from '@/layouts/customer-layout';
+import { normalizeInvitationSlug, resolveInvitationSlugBase, resolveInvitationSlugSourceLabel } from '@/lib/invitation-slug';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
@@ -330,12 +333,33 @@ const MANAGEMENT_TABS: TabKey[] = ['theme', 'guests', 'comments', 'digital_envel
 
 const EVENT_TYPE_TABS: Record<string, TabKey[]> = {
     wedding:       ['couple', 'acara', 'gallery', 'love_story'],
-    birthday:      ['info', 'gallery'],
+    birthday:      ['info', 'acara', 'gallery', 'love_story'],
     khitanan:      ['info', 'gallery'],
     aqiqah:        ['info', 'gallery'],
     gender_reveal: ['info', 'gallery'],
     syukuran:      ['host', 'info', 'gallery'],
 };
+
+// Per-event-type override for the shared "love_story" tab's display label —
+// it backs the same Story model for every event type, just framed differently.
+const TAB_LABEL_OVERRIDES: Partial<Record<string, Partial<Record<TabKey, string>>>> = {
+    birthday: { love_story: 'Story' },
+};
+
+function resolveTabLabel(key: TabKey, eventTypeName: string): string {
+    return TAB_LABEL_OVERRIDES[eventTypeName]?.[key] ?? TAB_DEFINITIONS[key].label;
+}
+
+// The video URL (stored under the shared "couple_video_url" field key) is displayed
+// on every theme's Video section, so its label is framed per event type.
+const VIDEO_FIELD_LABELS: Partial<Record<string, string>> = {
+    wedding:  'Video Mempelai',
+    birthday: 'Video Ulang Tahun',
+};
+
+function resolveVideoFieldLabel(eventTypeName: string): string {
+    return VIDEO_FIELD_LABELS[eventTypeName] ?? 'Video Acara';
+}
 
 const DEFAULT_TABS: TabKey[] = ['info', 'gallery'];
 
@@ -906,17 +930,25 @@ function GalleryTab({
     maxUploads,
     coupleVideoUrl,
     onCoupleVideoUrlChange,
+    videoFieldLabel,
 }: {
     items: GalleryItem[];
     setItems: React.Dispatch<React.SetStateAction<GalleryItem[]>>;
     maxUploads: number | null;
     coupleVideoUrl: string;
     onCoupleVideoUrlChange: (value: string) => void;
+    videoFieldLabel: string;
 }) {
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const files = Array.from(e.target.files ?? []);
         const remaining = maxUploads ? maxUploads - items.length : Infinity;
+        const rejected: string[] = [];
         files.slice(0, remaining).forEach((file) => {
+            const error = validateImageFile(file);
+            if (error) {
+                rejected.push(`${file.name}: ${error}`);
+                return;
+            }
             const reader = new FileReader();
             reader.onload = async (ev) => {
                 const compressed = await compressImage(ev.target?.result as string);
@@ -924,6 +956,9 @@ function GalleryTab({
             };
             reader.readAsDataURL(file);
         });
+        if (rejected.length > 0) {
+            alert(rejected.join('\n'));
+        }
         e.target.value = '';
     }
     function removeItem(id: number) { setItems((prev) => prev.filter((i) => i.id !== id)); }
@@ -938,7 +973,7 @@ function GalleryTab({
                         <Video className="size-4" />
                     </div>
                     <div>
-                        <p className="text-sm font-semibold text-foreground">Video Mempelai</p>
+                        <p className="text-sm font-semibold text-foreground">{videoFieldLabel}</p>
                         <p className="text-xs text-muted-foreground">Tambahkan link video highlight, cinematic, YouTube, Vimeo, atau Google Drive.</p>
                     </div>
                 </div>
@@ -1032,6 +1067,8 @@ function LoveStoryTab({ entries, setEntries }: { entries: LoveStoryEntry[]; setE
                                                         <Upload className="size-3.5" />
                                                         <input type="file" accept="image/*" className="sr-only" onChange={async (e) => {
                                                             const file = e.target.files?.[0]; if (!file) return;
+                                                            const error = validateImageFile(file);
+                                                            if (error) { alert(error); e.target.value = ''; return; }
                                                             const reader = new FileReader();
                                                             reader.onload = async (ev) => { const c = await compressImage(ev.target?.result as string); updateEntry(entry.id, 'photo', c); };
                                                             reader.readAsDataURL(file); e.target.value = '';
@@ -1195,6 +1232,11 @@ function ThemeTab({
     slug: string;
 }) {
     const [pendingId,   setPendingId]   = useState<number>(currentTheme.id);
+
+    useEffect(() => {
+        setPendingId(currentTheme.id);
+    }, [currentTheme.id]);
+
     const [categoryFilter, setCategory] = useState('');
     const [search,      setSearch]      = useState('');
     const [saving,      setSaving]      = useState(false);
@@ -1971,12 +2013,18 @@ function ToggleSwitch({ enabled, onChange }: { enabled: boolean; onChange: (v: b
 // ─── Settings Tab ─────────────────────────────────────────────────────────────
 
 function SettingsTab({
-    slug,
+    initialSlug,
+    invitationId,
+    eventTypeName,
+    fieldValues,
     initSettings,
     availableMusic,
     maxMusicMb,
 }: {
-    slug: string;
+    initialSlug: string;
+    invitationId: number;
+    eventTypeName: string;
+    fieldValues: Record<string, string>;
     initSettings: InvitationSettingsData | null;
     availableMusic: MusicTrack[];
     maxMusicMb: number;
@@ -1988,11 +2036,13 @@ function SettingsTab({
     const [greetingMessage,    setGreetingMessage]    = useState(initSettings?.greeting_message    ?? 'Dengan hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di acara kami.');
     const [greetingGuestLabel, setGreetingGuestLabel] = useState(initSettings?.greeting_guest_label ?? 'Tamu Undangan');
     const [greetingButtonText, setGreetingButtonText] = useState(initSettings?.greeting_button_text ?? 'Buka Undangan');
+    const [slug, setSlug] = useState(initialSlug);
+    const [slugError, setSlugError] = useState('');
 
     // ── Invitation code ───────────────────────────────────────────────────────
-    const [code,          setCode]          = useState(initSettings?.invitation_code ?? slug);
+    const [code,          setCode]          = useState(initSettings?.invitation_code ?? initialSlug);
     const [codeEditing,   setCodeEditing]   = useState(false);
-    const [codeDraft,     setCodeDraft]     = useState(initSettings?.invitation_code ?? slug);
+    const [codeDraft,     setCodeDraft]     = useState(initSettings?.invitation_code ?? initialSlug);
     const [codeCopied,    setCodeCopied]    = useState(false);
 
     // ── Music ─────────────────────────────────────────────────────────────────
@@ -2072,7 +2122,7 @@ function SettingsTab({
         setMusicUploading(true);
         const rawCookie = document.cookie.split('; ').find((c) => c.startsWith('XSRF-TOKEN='))?.split('=').slice(1).join('=') ?? '';
         const xsrfToken = rawCookie ? decodeURIComponent(rawCookie) : (document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '');
-        fetch(`/customer/invitations/${slug}/upload-music`, {
+        fetch(`/customer/invitations/${initialSlug}/upload-music`, {
             method: 'POST',
             headers: {
                 'X-XSRF-TOKEN': xsrfToken,
@@ -2096,12 +2146,14 @@ function SettingsTab({
 
     function handleSave() {
         setSaving(true);
-        router.patch(`/customer/invitations/${slug}/settings`, {
+        const normalizedSlug = normalizeInvitationSlug(slug);
+        router.patch(`/customer/invitations/${initialSlug}/settings`, {
             greeting_title:       greetingTitle,
             greeting_message:     greetingMessage,
             greeting_guest_label: greetingGuestLabel,
             greeting_button_text: greetingButtonText,
             invitation_code:      code,
+            slug:                 normalizedSlug,
             music_enabled:        musicEnabled,
             music_autoplay:       musicAutoplay,
             music_loop:           musicLoop,
@@ -2110,13 +2162,20 @@ function SettingsTab({
             music_url:            musicUploadUrl,
             features,
         }, {
+            onError: (errors) => {
+                if (errors.slug) {
+                    setSlugError(String(errors.slug));
+                }
+            },
             onSuccess: () => { setSaveSuccess(true); setTimeout(() => setSaveSuccess(false), 3000); },
             onFinish:  () => setSaving(false),
         });
     }
 
     const selectedLibraryTrack = musicLibrary.find((t) => t.id === musicLibraryId);
-    const previewUrl = `${window.location.origin}/${code}`;
+    const previewUrl = typeof window !== 'undefined'
+        ? `${window.location.origin}/${code}`
+        : `/${code}`;
 
     return (
         <div className="flex flex-col gap-6">
@@ -2223,6 +2282,21 @@ function SettingsTab({
                 </div>
             </section>
 
+            <SlugField
+                value={slug}
+                onChange={(next) => {
+                    setSlugError('');
+                    setSlug(next);
+                }}
+                autoValue={resolveInvitationSlugBase(eventTypeName, fieldValues)}
+                autoSourceLabel={resolveInvitationSlugSourceLabel(eventTypeName)}
+                checkUrl="/customer/invitations/check-slug"
+                excludeId={invitationId}
+                startInAutoMode={false}
+                disabled={saving}
+                serverError={slugError}
+            />
+
             {/* ── 2. Kode Undangan ──────────────────────────────────────────── */}
             <section className="rounded-2xl border border-border bg-card p-5 flex flex-col gap-4">
                 <div className="flex items-center gap-2">
@@ -2230,8 +2304,8 @@ function SettingsTab({
                         <Key className="size-4" />
                     </div>
                     <div>
-                        <h3 className="font-semibold text-foreground text-sm">Kode Undangan</h3>
-                        <p className="text-xs text-muted-foreground">Kode unik yang digunakan sebagai alamat URL undangan</p>
+                        <h3 className="font-semibold text-foreground text-sm">Kode Akses</h3>
+                        <p className="text-xs text-muted-foreground">Kode internal untuk akses dan endpoint RSVP / wishes</p>
                     </div>
                 </div>
 
@@ -3282,6 +3356,18 @@ export default function InvitationsEdit({
         return evs;
     });
 
+    // Default acara date to the birthday date until the user manually overrides it
+    const lastSyncedAcaraDateRef = useRef(initFieldValues?.['birthday_date'] ?? '');
+    const birthdayDateValue = fieldValues['birthday_date'];
+    useEffect(() => {
+        if (eventType.name !== 'birthday' || !birthdayDateValue) return;
+        if (birthdayDateValue === lastSyncedAcaraDateRef.current) return;
+        setAcaraEvents((prev) => prev.map((ev) => (
+            !ev.date || ev.date === lastSyncedAcaraDateRef.current ? { ...ev, date: birthdayDateValue } : ev
+        )));
+        lastSyncedAcaraDateRef.current = birthdayDateValue;
+    }, [birthdayDateValue, eventType.name]);
+
     // Gallery items
     const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(() =>
         (initGallery ?? []).map((item) => ({
@@ -3359,6 +3445,7 @@ export default function InvitationsEdit({
                         maxUploads={pkg.max_gallery_uploads}
                         coupleVideoUrl={fieldValues.couple_video_url ?? ''}
                         onCoupleVideoUrlChange={(value) => handleFieldChange('couple_video_url', value)}
+                        videoFieldLabel={resolveVideoFieldLabel(eventType.name)}
                     />
                 );
             case 'love_story':
@@ -3376,7 +3463,17 @@ export default function InvitationsEdit({
             case 'digital_envelope':
                 return <DigitalEnvelopeTab invitationSlug={invitation.slug} initWallets={digitalWallets} />;
             case 'settings':
-                return <SettingsTab slug={invitation.slug} initSettings={invitationSettings} availableMusic={availableMusic ?? []} maxMusicMb={pkg.max_music_upload_mb ?? 10} />;
+                return (
+                    <SettingsTab
+                        initialSlug={invitation.slug}
+                        invitationId={invitation.id}
+                        eventTypeName={eventType.name}
+                        fieldValues={fieldValues}
+                        initSettings={invitationSettings}
+                        availableMusic={availableMusic ?? []}
+                        maxMusicMb={pkg.max_music_upload_mb ?? 10}
+                    />
+                );
             default:
                 return null;
         }
@@ -3445,7 +3542,7 @@ export default function InvitationsEdit({
                                         activeTab === key ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
-                                    {tab.icon} {tab.label}
+                                    {tab.icon} {resolveTabLabel(key, eventType.name)}
                                     {/* Badge untuk jumlah */}
                                     {key === 'guests' && guestStats.total > 0 && (
                                         <span className="ml-1 inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full bg-primary/10 text-primary text-[10px] font-semibold">
@@ -3473,12 +3570,12 @@ export default function InvitationsEdit({
                     <div className="flex gap-2">
                         {currentTabIndex > 0 && (
                             <button type="button" onClick={() => setActiveTab(tabKeys[currentTabIndex - 1])} className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
-                                <ChevronLeft className="size-4" /> {TAB_DEFINITIONS[tabKeys[currentTabIndex - 1]].label}
+                                <ChevronLeft className="size-4" /> {resolveTabLabel(tabKeys[currentTabIndex - 1], eventType.name)}
                             </button>
                         )}
                         {currentTabIndex < tabKeys.length - 1 && (
                             <button type="button" onClick={() => setActiveTab(tabKeys[currentTabIndex + 1])} className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
-                                {TAB_DEFINITIONS[tabKeys[currentTabIndex + 1]].label} <ChevronRight className="size-4" />
+                                {resolveTabLabel(tabKeys[currentTabIndex + 1], eventType.name)} <ChevronRight className="size-4" />
                             </button>
                         )}
                     </div>

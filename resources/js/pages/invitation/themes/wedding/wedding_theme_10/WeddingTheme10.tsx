@@ -199,6 +199,7 @@ const WISHES_PAGE_SIZE = 4;
 const DEFAULT_GUEST_NAME = 'Tamu Undangan';
 const DEFAULT_COUNTDOWN_TARGET = '2027-01-08T11:00:00+07:00';
 const DEFAULT_SITE_TITLE = 'Safitri & Saputra - Wedding Invitation';
+const DEFAULT_META_DESCRIPTION = 'Undangan pernikahan Safitri Dwi Putri & Saputra Nicolas';
 const DEFAULT_COVER_LABEL = 'Kepada Yth. Bapak/Ibu/Saudara/i';
 const DEFAULT_OPENING_TEXT =
     'Dengan memohon Rahmat dan Ridho Allah SWT, kami bermaksud menyelenggarakan Resepsi pernikahan putra-putri kami.';
@@ -481,6 +482,14 @@ function formatLongDate(dateLike: string): string {
     return date.toLocaleDateString('id-ID', {
         weekday: 'long',
         day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+    });
+}
+
+function formatMonthYear(dateLike: string): string {
+    const date = new Date(`${dateLike}T00:00:00`);
+    return date.toLocaleDateString('id-ID', {
         month: 'long',
         year: 'numeric',
     });
@@ -1181,12 +1190,12 @@ export default function WeddingTheme10({ invitation, visitor, greeting }: Theme1
     async function handleCopy(label: string, value: string, key: string) {
         const ok = await copyText(value);
         if (!ok) {
-            showToast('Gagal menyalin data.');
+            showToast('Gagal menyalin data.', 'error');
             return;
         }
 
         setCopiedKey(key);
-        showToast(`${label} berhasil disalin!`);
+        showToast(`${label} berhasil disalin!`, 'success');
         if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
         copiedTimerRef.current = setTimeout(() => setCopiedKey(null), 2500);
     }
@@ -1196,7 +1205,7 @@ export default function WeddingTheme10({ invitation, visitor, greeting }: Theme1
         const errors = validateRsvp(rsvpForm);
         if (Object.keys(errors).length > 0) {
             setRsvpStatus({ tone: 'error', message: 'Mohon lengkapi data RSVP terlebih dahulu.' });
-            showToast('Mohon lengkapi data RSVP terlebih dahulu.');
+            showToast('Mohon lengkapi data RSVP terlebih dahulu.', 'error');
             setRsvpForm((prev) => ({ ...prev }));
             return;
         }
@@ -1229,7 +1238,7 @@ export default function WeddingTheme10({ invitation, visitor, greeting }: Theme1
 
         setRsvpForm(buildRsvpDefaults(data.guestName));
         setRsvpStatus({ tone: 'success', message: `Terima kasih, ${payload.name}! RSVP Anda telah kami terima.` });
-        showToast('Konfirmasi RSVP berhasil dikirim.');
+        showToast('Konfirmasi RSVP berhasil dikirim.', 'success');
     }
 
     async function submitWish(event: FormEvent<HTMLFormElement>) {
@@ -1237,7 +1246,7 @@ export default function WeddingTheme10({ invitation, visitor, greeting }: Theme1
         const errors = validateWish(wishForm);
         if (Object.keys(errors).length > 0) {
             setWishStatus({ tone: 'error', message: 'Mohon lengkapi nama dan ucapan Anda.' });
-            showToast('Mohon lengkapi nama dan ucapan Anda.');
+            showToast('Mohon lengkapi nama dan ucapan Anda.', 'error');
             return;
         }
 
@@ -1255,7 +1264,7 @@ export default function WeddingTheme10({ invitation, visitor, greeting }: Theme1
         setWishPage(1);
         setWishForm(buildWishDefaults(data.guestName));
         setWishStatus({ tone: 'success', message: 'Ucapan doa restu Anda berhasil dikirim.' });
-        showToast('Ucapan doa restu berhasil dikirim.');
+        showToast('Ucapan doa restu berhasil dikirim.', 'success');
 
         if (invitation?.wishesEndpoint) {
             void fetch(invitation.wishesEndpoint, {

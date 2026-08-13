@@ -5,6 +5,8 @@ interface WishesSectionProps {
     wishesEndpoint: string;
     allowComments: boolean;
     onToast?: (msg: string) => void;
+    initialWishes?: WishItem[];
+    emptyMessage?: string;
     styles: {
         container: string;
         formBox: string;
@@ -21,7 +23,7 @@ interface WishesSectionProps {
     };
 }
 
-const AVATAR_COLORS = ['#2D5016', '#C9A84C', '#E8B4B8', '#6a9fd8', '#a0c87a', '#c8a0d0', '#f0a080', '#80c8c0'];
+const AVATAR_COLORS = ['#ec4899', '#8b5cf6', '#fbbf24', '#bae6fd', '#f9a8d4', '#c4b5fd', '#d97706', '#a855f7'];
 
 function getInitial(name: string) {
     return (name || '?').charAt(0).toUpperCase();
@@ -30,17 +32,22 @@ function getInitial(name: string) {
 function formatDate(dateStr: string) {
     if (!dateStr) return '';
     const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
+    if (Number.isNaN(d.getTime())) return dateStr;
     return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-export default function WishesSection({ wishesEndpoint, allowComments, onToast, styles }: WishesSectionProps) {
-    const [wishes, setWishes] = useState<WishItem[]>([]);
+export default function WishesSection({
+    wishesEndpoint,
+    allowComments,
+    onToast,
+    initialWishes = [],
+    emptyMessage = 'Belum ada ucapan. Jadilah yang pertama!',
+    styles,
+}: WishesSectionProps) {
+    const [wishes, setWishes] = useState<WishItem[]>(initialWishes);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
-
-    // Form state
     const [name, setName] = useState('');
     const [message, setMessage] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -49,6 +56,14 @@ export default function WishesSection({ wishesEndpoint, allowComments, onToast, 
 
     const fetchWishes = useCallback(
         async (pageNum: number) => {
+            if (!wishesEndpoint?.trim()) {
+                setHasMore(false);
+                if (pageNum === 1 && initialWishes.length > 0) {
+                    setWishes(initialWishes);
+                }
+                return;
+            }
+
             try {
                 const url = `${wishesEndpoint}?page=${pageNum}`;
                 const res = await fetch(url, { headers: { Accept: 'application/json' } });
@@ -59,17 +74,19 @@ export default function WishesSection({ wishesEndpoint, allowComments, onToast, 
                     message: w.message ?? w.content ?? '',
                     date: w.date ?? w.approved_at ?? '',
                 }));
+
                 if (pageNum === 1) {
-                    setWishes(items);
+                    setWishes(items.length > 0 ? items : initialWishes);
                 } else {
                     setWishes((prev) => [...prev, ...items]);
                 }
+
                 setHasMore(data.last_page ? pageNum < data.last_page : items.length >= 10);
             } catch {
                 setHasMore(false);
             }
         },
-        [wishesEndpoint],
+        [wishesEndpoint, initialWishes],
     );
 
     useEffect(() => {
@@ -92,32 +109,40 @@ export default function WishesSection({ wishesEndpoint, allowComments, onToast, 
             onToast?.('Nama dan ucapan harus diisi!');
             return;
         }
+
         setSubmitting(true);
+        const localWish: WishItem = { name: name.trim(), message: message.trim(), date: new Date().toISOString() };
+
         try {
-            const res = await fetch(wishesEndpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                body: JSON.stringify({ name: name.trim(), message: message.trim() }),
-            });
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                onToast?.(err?.message ?? 'Gagal mengirim ucapan. Coba lagi.');
-                return;
+            if (wishesEndpoint?.trim()) {
+                const res = await fetch(wishesEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify({ name: localWish.name, message: localWish.message }),
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    onToast?.(err?.message ?? 'Gagal mengirim ucapan. Coba lagi.');
+                } else {
+                    onToast?.('Ucapan berhasil dikirim! 💕');
+                }
+            } else {
+                onToast?.('Ucapan demo berhasil disimpan! 💕');
             }
-            onToast?.('Ucapan berhasil dikirim! 💕');
+
+            setWishes((prev) => [localWish, ...prev]);
             setName('');
             setMessage('');
-            // Prepend to local list for instant feedback
-            setWishes((prev) => [
-                { name: name.trim(), message: message.trim(), date: new Date().toISOString() },
-                ...prev,
-            ]);
         } catch {
             onToast?.('Gagal mengirim ucapan. Periksa koneksi internet Anda.');
+            setWishes((prev) => [localWish, ...prev]);
+            setName('');
+            setMessage('');
         } finally {
             setSubmitting(false);
         }
@@ -125,7 +150,6 @@ export default function WishesSection({ wishesEndpoint, allowComments, onToast, 
 
     return (
         <div className={styles.container}>
-            {/* Form side */}
             {allowComments && (
                 <div>
                     <div className={styles.formBox}>
@@ -142,27 +166,23 @@ export default function WishesSection({ wishesEndpoint, allowComments, onToast, 
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
                                 rows={5}
-                                placeholder="Ucapan dan doa untuk kedua mempelai..."
+                                placeholder="Ucapan dan doa untuk sang ulang tahun..."
                                 className={styles.messageInput}
                             />
                             <button type="submit" disabled={submitting} className={styles.submitBtn}>
-                                {submitting ? 'Mengirim...' : 'Kirim Ucapan ✦'}
+                                {submitting ? 'Mengirim...' : 'Kirim Ucapan ✨'}
                             </button>
                         </form>
                     </div>
                 </div>
             )}
 
-            {/* Wishes list side */}
             <div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                     {wishes.map((w, i) => (
-                        <div key={i} className={styles.wishCard}>
+                        <div key={`${w.name}-${i}`} className={styles.wishCard}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
-                                <div
-                                    className={styles.wishAvatar}
-                                    style={{ background: AVATAR_COLORS[i % AVATAR_COLORS.length] }}
-                                >
+                                <div className={styles.wishAvatar} style={{ background: AVATAR_COLORS[i % AVATAR_COLORS.length] }}>
                                     {getInitial(w.name)}
                                 </div>
                                 <div>
@@ -174,13 +194,11 @@ export default function WishesSection({ wishesEndpoint, allowComments, onToast, 
                         </div>
                     ))}
                     {wishes.length === 0 && (
-                        <p style={{ textAlign: 'center', color: '#999', fontSize: '0.9rem' }}>
-                            Belum ada ucapan. Jadilah yang pertama!
-                        </p>
+                        <p style={{ textAlign: 'center', color: '#999', fontSize: '0.9rem' }}>{emptyMessage}</p>
                     )}
                 </div>
                 {hasMore && (
-                    <button onClick={loadMore} disabled={loadingMore} className={styles.loadMoreBtn}>
+                    <button onClick={loadMore} disabled={loadingMore} className={styles.loadMoreBtn} type="button">
                         {loadingMore ? 'Memuat...' : 'Lihat Lebih Banyak'}
                     </button>
                 )}

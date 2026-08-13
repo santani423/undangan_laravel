@@ -1,4 +1,5 @@
 import CustomerLayout from '@/layouts/customer-layout';
+import { validateImageFile } from '@/lib/image-upload';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import {
@@ -48,7 +49,7 @@ function WalletForm({
     onCancel: () => void;
     submitting: boolean;
 }) {
-    const { data, setData, errors, reset } = useForm({
+    const { data, setData, errors, setError, clearErrors, reset } = useForm({
         provider: initial?.provider ?? '',
         provider_label: initial?.provider_label ?? '',
         account_number: initial?.account_number ?? '',
@@ -68,6 +69,13 @@ function WalletForm({
     const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+        const error = validateImageFile(file, 2);
+        if (error) {
+            setError('logo', error);
+            e.target.value = '';
+            return;
+        }
+        clearErrors('logo');
         const reader = new FileReader();
         reader.onload = () => setData('logo', reader.result as string);
         reader.readAsDataURL(file);
@@ -150,6 +158,7 @@ function WalletForm({
                 {data.logo && (
                     <img src={data.logo} alt="preview" className="mt-2 h-10 w-auto rounded-lg" />
                 )}
+                {errors.logo && <p className="mt-1 text-xs text-destructive">{errors.logo}</p>}
             </div>
 
             {/* Active */}

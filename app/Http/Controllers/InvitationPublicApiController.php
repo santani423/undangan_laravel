@@ -16,6 +16,12 @@ class InvitationPublicApiController extends Controller
             ->where('status', 'active')
             ->first();
 
+        if (! $inv) {
+            $inv = Invitation::where('slug', $code)
+                ->where('status', 'active')
+                ->first();
+        }
+
         abort_if(! $inv, 404, 'Undangan tidak ditemukan.');
 
         return $inv;

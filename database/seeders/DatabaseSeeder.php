@@ -14,72 +14,51 @@ class DatabaseSeeder extends Seeder
      * 2. EAV field definitions (event_type_fields, package_features)
      * 3. Auth (roles, permissions via Spatie)
      * 4. Users (admin accounts)
-     * 5. Payment gateway configs
-     *
-     * Usage:
-     *   php artisan db:seed                     # Full seed
-     *   php artisan db:seed --class=PackageSeeder   # Single seeder
-     *
-     * Prerequisites:
-     *   composer require spatie/laravel-permission
-     *   php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
-     *   php artisan migrate
+     * 5. Customer accounts
+     * 6. Sample invitations
+     * 7. Sample transactions and payment history
+     * 8. Payment gateway configs
+     * 9. Application settings
      */
     public function run(): void
     {
         $this->call([
-            // 1. Core lookup tables (no dependencies)
             EventTypeSeeder::class,
             PackageSeeder::class,
             ThemeSeeder::class,
             AdditionalThemeSeeder::class,
-
-            // 2. EAV field definitions (depends on event_types, packages)
             EventTypeFieldSeeder::class,
-
-            // 3. Roles & Permissions (depends on Spatie tables from migration)
             RolePermissionSeeder::class,
-
-            // 4. Admin users (depends on roles, packages)
             AdminUserSeeder::class,
-
-            // 5. Customer accounts (depends on roles)
             CustomerSeeder::class,
-
-            // 6. Sample invitations per customer (1 per event type)
             InvitationSeeder::class,
-
-            // 7. Payment gateway configs
+            TransactionSeeder::class,
             PaymentGatewayConfigSeeder::class,
-
-            // 8. Application settings (defaults)
             AppSettingSeeder::class,
-
-            // 9. Starter testimonials for the public landing page
-            TestimonialSeeder::class,
         ]);
 
-        $this->command->info('');
-        $this->command->info('==============================================');
-        $this->command->info(' UNDESIA Database Seeding Complete!');
-        $this->command->info('==============================================');
-        $this->command->info('');
-        $this->command->info('Tables seeded:');
-        $this->command->info('  ✓ event_types (6 types)');
-        $this->command->info('  ✓ event_type_fields (EAV field definitions)');
-        $this->command->info('  ✓ packages (18 paket: 3 tier × 6 jenis undangan)');
-        $this->command->info('  ✓ package_features (19 fitur × 18 paket = 342 baris)');
-        $this->command->info('  ✓ themes (12 themes)');
-        $this->command->info('  ✓ roles & permissions (47 permissions, 3 roles)');
-        $this->command->info('  ✓ users (super_admin, admin, demo customer)');
-        $this->command->info('  ✓ invitations (5 customers × 6 types = 30 undangan)');
-        $this->command->info('  ✓ payment_gateway_configs');
-        $this->command->info('  ✓ app_settings (defaults)');
-        $this->command->info('  ✓ testimonials (4 starter/demo entries)');
-        $this->command->info('');
-        $this->command->info('Test accounts:');
-        foreach (\Database\Seeders\Data\DevAccounts::admins() as $a) {
-            $this->command->info("  {$a['email']} / {$a['password']}");
-        }
+        $this->command?->info('');
+        $this->command?->info('==============================================');
+        $this->command?->info('UNDESIA Database Seeding Complete!');
+        $this->command?->info('==============================================');
+        $this->command?->info('');
+        $this->command?->info('Tables seeded:');
+        $this->command?->info('- event_types (6 types)');
+        $this->command?->info('- event_type_fields (EAV field definitions)');
+        $this->command?->info('- packages (18 packages: 3 tiers x 6 invitation types)');
+        $this->command?->info('- package_features (feature catalogue)');
+        $this->command?->info('- themes (default + additional themes)');
+        $this->command?->info('- roles & permissions');
+        $this->command?->info('- users (super_admin, admin, demo customers)');
+        $this->command?->info('- invitations (30 sample records)');
+        $this->command?->info('- transactions (30 sample records)');
+        $this->command?->info('- payments (35 sample records)');
+        $this->command?->info('- payment_gateway_configs');
+        $this->command?->info('- app_settings (defaults)');
+        $this->command?->info('');
+        $this->command?->info('Test accounts:');
+        $this->command?->info('superadmin@undesia.id / SuperAdmin@2026!');
+        $this->command?->info('admin@undesia.id / Admin@2026!');
+        $this->command?->info('demo@undesia.id / Demo@2026!');
     }
 }

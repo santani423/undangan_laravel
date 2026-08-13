@@ -1,10 +1,9 @@
 <?php
 
-use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Admin\Settings\PackageController;
 use App\Http\Controllers\Admin\Settings\PaymentSettingController;
 use App\Http\Controllers\Admin\Themes\ThemeController;
-use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
+use App\Http\Controllers\Admin\Transactions\TransactionController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -52,11 +51,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
 
     // ─── Keuangan & Transaksi ─────────────────────────────────────────────────
     Route::prefix('transactions')->name('transactions.')->group(function () {
-        Route::get('/', [AdminTransactionController::class, 'index'])->name('index');
-        Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments');
-        Route::patch('/payments/{payment}/confirm', [AdminPaymentController::class, 'confirm'])->name('payments.confirm');
+        Route::get('/', [TransactionController::class, 'index'])->name('index');
+        Route::get('/payments', [TransactionController::class, 'payments'])->name('payments');
         Route::get('/refunds', fn () => Inertia::render('admin/transactions/refunds'))->name('refunds');
-        Route::patch('/{transaction}/approve', [AdminTransactionController::class, 'approve'])->name('approve');
+        Route::get('/{transaction}', [TransactionController::class, 'show'])->name('show');
+        Route::patch('/{transaction}/approve', [TransactionController::class, 'approve'])->name('approve');
+        Route::patch('/{transaction}/reject', [TransactionController::class, 'reject'])->name('reject');
     });
 
     // ─── Konten & Komunitas ───────────────────────────────────────────────────

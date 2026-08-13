@@ -1,5 +1,8 @@
 import ImageCropUpload, { compressImage } from '@/components/image-crop-upload';
+import { validateImageFile } from '@/lib/image-upload';
+import SlugField from '@/components/invitations/slug-field';
 import CustomerLayout from '@/layouts/customer-layout';
+import { normalizeInvitationSlug, resolveInvitationSlugBase, resolveInvitationSlugSourceLabel } from '@/lib/invitation-slug';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import {
@@ -19,6 +22,7 @@ import {
     Search,
     Upload,
     Users,
+    Video,
     X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -107,29 +111,46 @@ const TAB_DEFINITIONS: Record<TabKey, TabDef> = {
 
 const EVENT_TYPE_TABS: Record<string, TabKey[]> = {
     wedding:       ['couple', 'acara', 'gallery', 'love_story'],
-    birthday:      ['info', 'gallery'],
+    birthday:      ['info', 'acara', 'gallery', 'love_story'],
     khitanan:      ['info', 'gallery'],
     aqiqah:        ['info', 'gallery'],
     gender_reveal: ['info', 'gallery'],
     syukuran:      ['host', 'info', 'gallery'],
 };
 
-const DEFAULT_TABS: TabKey[] = ['info', 'gallery'];
-
-// Field whose value seeds the auto-generated invitation code (slug) for
-// event types that don't have a dedicated couple/host name step.
-const AUTO_CODE_SOURCE_FIELD_KEY: Record<string, string> = {
-    birthday: 'child_name',
+// Per-event-type override for the shared "love_story" tab's display label —
+// it backs the same Story model for every event type, just framed differently.
+const TAB_LABEL_OVERRIDES: Partial<Record<string, Partial<Record<TabKey, string>>>> = {
+    birthday: { love_story: 'Story' },
 };
 
-function slugifyForCode(value: string): string {
-    return value
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-');
+function resolveTabLabel(key: TabKey, eventTypeName: string): string {
+    return TAB_LABEL_OVERRIDES[eventTypeName]?.[key] ?? TAB_DEFINITIONS[key].label;
 }
+
+// The video URL (stored under the shared "couple_video_url" field key) is displayed
+// on every theme's Video section, so its label is framed per event type.
+const VIDEO_FIELD_LABELS: Partial<Record<string, string>> = {
+    wedding:  'Video Mempelai',
+    birthday: 'Video Ulang Tahun',
+};
+
+function resolveVideoFieldLabel(eventTypeName: string): string {
+    return VIDEO_FIELD_LABELS[eventTypeName] ?? 'Video Acara';
+}
+
+const DEFAULT_TABS: TabKey[] = ['info', 'gallery'];
+
+// Field keys whose values become the invitation title — must mirror
+// InvitationSlugService::TITLE_FIELD_MAP on the backend.
+const TITLE_FIELD_KEYS: Record<string, string[]> = {
+    wedding:       ['groom_name', 'bride_name'],
+    birthday:      ['child_name'],
+    khitanan:      ['child_name'],
+    aqiqah:        ['baby_name'],
+    gender_reveal: ['father_name', 'mother_name'],
+    syukuran:      ['host_name'],
+};
 
 const CHILD_ORDER_FIELD_KEYS = new Set(['groom_child_order', 'bride_child_order']);
 
@@ -814,10 +835,9 @@ function FieldGroup({ fields, values, onChange }: {
 
 type CodeStatus = 'idle' | 'checking' | 'available' | 'taken' | 'empty';
 
-function InvitationCodeInput({ value, onChange, placeholder = 'contoh: periska-dei' }: {
+function InvitationCodeInput({ value, onChange }: {
     value: string;
     onChange: (val: string) => void;
-    placeholder?: string;
 }) {
     const [status, setStatus]         = useState<CodeStatus>('idle');
     const debounceRef                 = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -863,7 +883,7 @@ function InvitationCodeInput({ value, onChange, placeholder = 'contoh: periska-d
                     type="text"
                     value={value}
                     onChange={handleChange}
-                    placeholder={placeholder}
+                    placeholder="contoh: periska-dei"
                     className={`${base}${borderCls}`}
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sm">
@@ -1221,10 +1241,13 @@ interface GalleryItem {
     caption: string;
 }
 
-function GalleryTab({ items, setItems, maxUploads }: {
+function GalleryTab({ items, setItems, maxUploads, videoUrl, onVideoUrlChange, videoFieldLabel }: {
     items: GalleryItem[];
     setItems: React.Dispatch<React.SetStateAction<GalleryItem[]>>;
     maxUploads: number | null;
+    videoUrl: string;
+    onVideoUrlChange: (value: string) => void;
+    videoFieldLabel: string;
 }) {
     const [dragOver, setDragOver] = useState(false);
     const [dragId,   setDragId]   = useState<number | null>(null);
@@ -1236,7 +1259,21 @@ function GalleryTab({ items, setItems, maxUploads }: {
 
     async function processFiles(files: File[]) {
         const slots = remaining !== null ? remaining : files.length;
-        const batch = files.filter((f) => f.type.startsWith('image/')).slice(0, slots);
+        const candidates = files.slice(0, slots);
+        const rejected: string[] = [];
+        const batch = candidates.filter((f) => {
+            const error = validateImageFile(f);
+            if (error) {
+                rejected.push(`${f.name}: ${error}`);
+                return false;
+            }
+            return true;
+        });
+
+        if (rejected.length > 0) {
+            alert(rejected.join('\n'));
+        }
+
         for (const file of batch) {
             await new Promise<void>((resolve) => {
                 const reader = new FileReader();
@@ -1291,6 +1328,27 @@ function GalleryTab({ items, setItems, maxUploads }: {
 
     return (
         <div className="flex flex-col gap-6">
+            {/* Video */}
+            <div className="rounded-2xl border border-border bg-card p-4">
+                <div className="mb-3 flex items-start gap-3">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Video className="size-4" />
+                    </div>
+                    <div>
+                        <p className="text-sm font-semibold text-foreground">{videoFieldLabel}</p>
+                        <p className="text-xs text-muted-foreground">Tambahkan link video highlight, cinematic, YouTube, Vimeo, atau Google Drive.</p>
+                    </div>
+                </div>
+                <input
+                    type="url"
+                    value={videoUrl}
+                    onChange={(e) => onVideoUrlChange(e.target.value)}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                />
+                <p className="mt-2 text-[11px] text-muted-foreground">Video akan tampil pada section Video jika fitur Video aktif di Pengaturan.</p>
+            </div>
+
             {/* Counter + progress */}
             <div className="flex items-center justify-between">
                 <div>
@@ -1573,6 +1631,12 @@ function LoveStoryTab({ entries, setEntries }: {
                                                     onChange={async (e) => {
                                                         const file = e.target.files?.[0];
                                                         if (!file) return;
+                                                        const error = validateImageFile(file);
+                                                        if (error) {
+                                                            alert(error);
+                                                            e.target.value = '';
+                                                            return;
+                                                        }
                                                         const reader = new FileReader();
                                                         reader.onload = async (ev) => {
                                                             const compressed = await compressImage(ev.target?.result as string);
@@ -1610,56 +1674,6 @@ function GenericFieldTab({ fields, values, onChange }: {
     return <FieldGroup fields={fields} values={values} onChange={onChange} />;
 }
 
-// ─── Info Tab (non-wedding event types) ───────────────────────────────────────
-
-function InfoTab({ eventType, fields, values, invitationCode, onFieldChange, onCodeChange }: {
-    eventType: EventType;
-    fields: EventTypeField[];
-    values: Record<string, string>;
-    invitationCode: string;
-    onFieldChange: (key: string, val: string) => void;
-    onCodeChange: (val: string) => void;
-}) {
-    const autoCodeFieldKey = AUTO_CODE_SOURCE_FIELD_KEY[eventType.name];
-    const hasAutoCodeField = !!autoCodeFieldKey && fields.some((f) => f.field_key === autoCodeFieldKey);
-    const sourceValue = autoCodeFieldKey ? (values[autoCodeFieldKey] ?? '') : '';
-
-    // Auto-generate code from the primary name field (e.g. child_name), but
-    // stop touching it once the user has edited it away from the auto value.
-    const prevAutoRef = useRef('');
-    useEffect(() => {
-        if (!hasAutoCodeField) return;
-        const auto = slugifyForCode(sourceValue);
-        if (auto && (invitationCode === prevAutoRef.current || invitationCode === '')) {
-            onCodeChange(auto);
-        }
-        prevAutoRef.current = auto;
-    }, [hasAutoCodeField, sourceValue]);
-
-    return (
-        <div className="flex flex-col gap-8">
-            <FieldGroup fields={fields} values={values} onChange={onFieldChange} />
-
-            {hasAutoCodeField && (
-                <>
-                    <div className="border-t border-border" />
-                    <section>
-                        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                            <Link2 className="size-4 text-primary" />
-                            Kode Undangan
-                        </h3>
-                        <InvitationCodeInput
-                            value={invitationCode}
-                            onChange={onCodeChange}
-                            placeholder="contoh: keanu-ulang-tahun-ke-5"
-                        />
-                    </section>
-                </>
-            )}
-        </div>
-    );
-}
-
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function CreateDetail({ eventType, theme, package: pkg }: Props) {
@@ -1686,19 +1700,50 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
     const [galleryItems,      setGalleryItems]      = useState<GalleryItem[]>([]);
     const [loveStoryEntries,  setLoveStoryEntries]  = useState<LoveStoryEntry[]>([]);
     const [invitationCode,    setInvitationCode]    = useState('');
+    const [slug,              setSlug]              = useState(() => resolveInvitationSlugBase(eventType.name, {}));
+    const [slugError,         setSlugError]         = useState('');
+    const [formError,         setFormError]         = useState('');
+
+    // Default acara date to the birthday date until the user manually overrides it
+    const lastSyncedAcaraDateRef = useRef('');
+    const birthdayDateValue = fieldValues['birthday_date'];
+    useEffect(() => {
+        if (eventType.name !== 'birthday' || !birthdayDateValue) return;
+        setAcaraEvents((prev) => prev.map((ev) => (
+            !ev.date || ev.date === lastSyncedAcaraDateRef.current ? { ...ev, date: birthdayDateValue } : ev
+        )));
+        lastSyncedAcaraDateRef.current = birthdayDateValue;
+    }, [birthdayDateValue, eventType.name]);
     const [submitting,        setSubmitting]        = useState(false);
 
     function handleFieldChange(key: string, val: string) {
         setFieldValues((prev) => ({ ...prev, [key]: val }));
     }
 
+    function missingTitleFieldLabels(): string[] {
+        const requiredKeys = TITLE_FIELD_KEYS[eventType.name] ?? [];
+        return requiredKeys
+            .filter((key) => !(fieldValues[key] ?? '').trim())
+            .map((key) => eventType.fields.find((f) => f.field_key === key)?.field_label ?? key);
+    }
+
     function handleSubmit() {
+        const missing = missingTitleFieldLabels();
+        if (missing.length > 0) {
+            setFormError(`Mohon lengkapi terlebih dahulu: ${missing.join(', ')}.`);
+            setActiveTab(tabKeys[0]);
+            return;
+        }
+
+        setFormError('');
         setSubmitting(true);
+        const normalizedSlug = normalizeInvitationSlug(slug);
         router.post('/customer/invitations', {
             event_type_id:    eventType.id,
             theme_id:         theme.id,
             package_id:       pkg.id,
             invitation_code:  invitationCode || null,
+            slug:             normalizedSlug,
             field_values:     normalizeFieldValuesForSubmit(fieldValues),
             acara_events:  acaraEvents
                 .filter((ev) => ev.name.trim() && ev.date.trim())
@@ -1725,6 +1770,16 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                 photo: entry.photo,
             })),
         }, {
+            onError: (errors) => {
+                if (errors.slug) {
+                    setSlugError(String(errors.slug));
+                }
+                const fieldErrors = Object.entries(errors).filter(([key]) => key.startsWith('field_values.'));
+                if (fieldErrors.length > 0) {
+                    setFormError(String(fieldErrors[0][1]));
+                    setActiveTab(tabKeys[0]);
+                }
+            },
             onFinish: () => setSubmitting(false),
         });
     }
@@ -1744,20 +1799,20 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
             case 'acara':
                 return <AcaraTab events={acaraEvents} setEvents={setAcaraEvents} />;
             case 'gallery':
-                return <GalleryTab items={galleryItems} setItems={setGalleryItems} maxUploads={pkg.max_gallery_uploads} />;
+                return (
+                    <GalleryTab
+                        items={galleryItems}
+                        setItems={setGalleryItems}
+                        maxUploads={pkg.max_gallery_uploads}
+                        videoUrl={fieldValues.couple_video_url ?? ''}
+                        onVideoUrlChange={(value) => handleFieldChange('couple_video_url', value)}
+                        videoFieldLabel={resolveVideoFieldLabel(eventType.name)}
+                    />
+                );
             case 'love_story':
                 return <LoveStoryTab entries={loveStoryEntries} setEntries={setLoveStoryEntries} />;
             case 'info':
-                return (
-                    <InfoTab
-                        eventType={eventType}
-                        fields={eventType.fields}
-                        values={fieldValues}
-                        invitationCode={invitationCode}
-                        onFieldChange={handleFieldChange}
-                        onCodeChange={setInvitationCode}
-                    />
-                );
+                return <GenericFieldTab fields={eventType.fields} values={fieldValues} onChange={handleFieldChange} />;
             case 'host':
                 return (
                     <GenericFieldTab
@@ -1829,16 +1884,35 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                                 }`}
                             >
                                 {tab.icon}
-                                {tab.label}
+                                {resolveTabLabel(key, eventType.name)}
                             </button>
                         );
                     })}
                 </div>
 
+                {formError && (
+                    <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+                        {formError}
+                    </div>
+                )}
+
                 {/* Tab content */}
                 <div className="min-h-[300px]">
                     {renderTabContent()}
                 </div>
+
+                <SlugField
+                    value={slug}
+                    onChange={(next) => {
+                        setSlugError('');
+                        setSlug(next);
+                    }}
+                    autoValue={resolveInvitationSlugBase(eventType.name, fieldValues)}
+                    autoSourceLabel={resolveInvitationSlugSourceLabel(eventType.name)}
+                    checkUrl="/customer/invitations/check-slug"
+                    disabled={submitting}
+                    serverError={slugError}
+                />
 
                 {/* Actions */}
                 <div className="flex items-center justify-between border-t border-border/60 pt-4">
@@ -1858,7 +1932,7 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                             className="inline-flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
                         >
                             <ChevronLeft className="size-4" />
-                            {TAB_DEFINITIONS[tabKeys[currentTabIndex - 1]].label}
+                            {resolveTabLabel(tabKeys[currentTabIndex - 1], eventType.name)}
                         </button>
                     )}
 
@@ -1881,7 +1955,7 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                             onClick={goToNextTab}
                             className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
                         >
-                            {TAB_DEFINITIONS[tabKeys[currentTabIndex + 1]].label}
+                            {resolveTabLabel(tabKeys[currentTabIndex + 1], eventType.name)}
                             <ChevronRight className="size-4" />
                         </button>
                     )}

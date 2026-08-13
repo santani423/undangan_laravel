@@ -1,21 +1,21 @@
 import AdminLayout from '@/layouts/admin-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import {
-    AlertTriangle,
+    ArrowRight,
     Banknote,
     CheckCircle2,
     Clock,
     CreditCard,
     ExternalLink,
-    Eye,
-    LoaderCircle,
-    Search,
+    Package2,
+    Receipt,
+    User,
     Wallet,
-    X,
-    XCircle,
+    AlertCircle,
 } from 'lucide-react';
-import { type ElementType, useEffect, useMemo, useState } from 'react';
+
+import { Badge } from '@/components/ui/badge';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard Admin', href: '/admin' },
@@ -23,154 +23,85 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Pembayaran Masuk', href: '/admin/transactions/payments' },
 ];
 
-type PaymentStatus = 'pending' | 'processing' | 'success' | 'failed' | 'cancelled';
+type TransactionStatus = 'pending' | 'paid' | 'failed' | 'cancelled' | 'expired';
 
-interface AdminPayment {
+interface TransactionData {
     id: number;
-    payment_gateway: string;
-    gateway_reference_id: string;
-    amount: number;
-    fee: number;
-    currency: string;
-    status: PaymentStatus;
-    error_message: string | null;
-    webhook_received_at: string | null;
-    webhook_verified_at: string | null;
-    proof_file_url: string | null;
-    proof_is_pdf: boolean;
-    proof_uploaded_at: string | null;
+    invoice_number: string;
+    invoice_amount: string;
+    invoice_currency: string;
+    status: TransactionStatus;
+    due_date: string | null;
+    paid_at: string | null;
     created_at: string;
-    transaction: {
-        id: number;
-        invoice_number: string;
-        status: string;
-    } | null;
-    customer: {
-        id: number;
-        name: string;
-        email: string;
-        phone_number: string | null;
-    } | null;
-    invitation: {
-        id: number;
-        slug: string;
-        title: string;
-        status: string;
-    } | null;
-    package: {
-        name: string;
-        label: string;
-    } | null;
+    payment_count: number;
+    payment_url: string | null;
+    user: { id: number; name: string; email: string } | null;
+    invitation: { id: number; slug: string; title: string; status: string } | null;
+    package: { id: number; label: string; description: string | null; duration_days: number } | null;
 }
 
-interface PaymentSummary {
+interface SummaryData {
     total: number;
     pending: number;
-    success: number;
-    failed: number;
-    gross_success: number;
+    pending_amount: number;
+    paid: number;
+    rejected: number;
+    revenue: number;
 }
 
-interface Props {
-    payments: AdminPayment[];
-    summary: PaymentSummary;
+interface PageProps {
+    pendingTransactions: TransactionData[];
+    summary: SummaryData;
+    [key: string]: unknown;
 }
 
-const STATUS_CONFIG: Record<PaymentStatus, { label: string; icon: ElementType; className: string }> = {
-    pending: {
-        label: 'Menunggu',
-        icon: Clock,
-        className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-    },
-    processing: {
-        label: 'Diproses',
-        icon: LoaderCircle,
-        className: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
-    },
-    success: {
-        label: 'Berhasil',
-        icon: CheckCircle2,
-        className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-    },
-    failed: {
-        label: 'Gagal',
-        icon: XCircle,
-        className: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
-    },
-    cancelled: {
-        label: 'Dibatalkan',
-        icon: XCircle,
-        className: 'bg-muted text-muted-foreground',
-    },
-};
+function formatCurrency(amount: string | number, currency = 'IDR'): string {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency, minimumFractionDigits: 0 }).format(Number(amount));
+}
 
-const statusOptions: { value: 'all' | PaymentStatus; label: string }[] = [
-    { value: 'all', label: 'Semua Status' },
-    { value: 'pending', label: 'Menunggu' },
-    { value: 'processing', label: 'Diproses' },
-    { value: 'success', label: 'Berhasil' },
-    { value: 'failed', label: 'Gagal' },
-    { value: 'cancelled', label: 'Dibatalkan' },
-];
-
-function formatCurrency(amount: number, currency = 'IDR'): string {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency,
-        maximumFractionDigits: 0,
-    }).format(amount);
+function formatDate(value: string | null): string {
+    if (!value) return '-';
+    return new Date(value).toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    });
 }
 
 function formatDateTime(value: string | null): string {
     if (!value) return '-';
-
     return new Date(value).toLocaleString('id-ID', {
         day: 'numeric',
-        month: 'short',
+        month: 'long',
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
     });
 }
 
-function statusMeta(status: PaymentStatus) {
-    return STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
-}
-
-function StatusBadge({ status }: { status: PaymentStatus }) {
-    const meta = statusMeta(status);
-    const Icon = meta.icon;
-
-    return (
-        <span className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium ${meta.className}`}>
-            <Icon className="size-3" />
-            {meta.label}
-        </span>
-    );
-}
-
 function SummaryCard({
-    title,
+    label,
     value,
-    note,
+    helper,
     icon: Icon,
-    iconClassName,
+    className,
 }: {
-    title: string;
-    value: string | number;
-    note: string;
-    icon: ElementType;
-    iconClassName: string;
+    label: string;
+    value: string;
+    helper: string;
+    icon: React.ElementType;
+    className: string;
 }) {
     return (
-        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
-            <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                    <p className="text-sm font-medium text-muted-foreground">{title}</p>
-                    <p className="mt-1 truncate text-2xl font-bold text-foreground">{value}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{note}</p>
+        <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+                <div>
+                    <p className="text-xs font-medium text-muted-foreground">{label}</p>
+                    <p className="mt-1 text-2xl font-bold text-foreground">{value}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{helper}</p>
                 </div>
-                <div className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${iconClassName}`}>
+                <div className={`rounded-xl p-3 ${className}`}>
                     <Icon className="size-5" />
                 </div>
             </div>
@@ -178,335 +109,150 @@ function SummaryCard({
     );
 }
 
-function ProofPreviewModal({ payment, onClose }: { payment: AdminPayment; onClose: () => void }) {
-    useEffect(() => {
-        function onKeyDown(event: KeyboardEvent) {
-            if (event.key === 'Escape') onClose();
-        }
-        window.addEventListener('keydown', onKeyDown);
-        return () => window.removeEventListener('keydown', onKeyDown);
-    }, [onClose]);
-
-    if (!payment.proof_file_url) return null;
-
+function PendingPaymentCard({ tx }: { tx: TransactionData }) {
     return (
-        <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-            onClick={onClose}
-            role="dialog"
-            aria-modal="true"
-        >
-            <div
-                className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-card shadow-xl"
-                onClick={(event) => event.stopPropagation()}
-            >
-                <div className="flex items-center justify-between border-b border-border/40 px-5 py-3">
-                    <div className="min-w-0">
-                        <h3 className="text-sm font-semibold text-foreground">Bukti Transfer</h3>
-                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                            {payment.customer?.name ?? 'Customer'} &middot; {payment.transaction?.invoice_number ?? '-'}
+        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
+            <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="truncate text-sm font-semibold text-foreground">
+                            {tx.invitation?.title ?? 'Pesanan Undangan'}
+                        </h3>
+                        <Badge variant="outline" className="border-transparent bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-700">
+                            Perlu Dibayar
+                        </Badge>
+                    </div>
+                    <p className="mt-1 truncate font-mono text-xs text-muted-foreground">{tx.invoice_number}</p>
+                    <div className="mt-3 grid gap-2 text-xs text-muted-foreground">
+                        <p className="inline-flex items-center gap-1.5">
+                            <User className="size-3.5" />
+                            {tx.user?.name ?? 'Pengguna'}
+                        </p>
+                        <p className="inline-flex items-center gap-1.5">
+                            <Package2 className="size-3.5" />
+                            {tx.package?.label ?? 'Paket tidak ditemukan'}
+                        </p>
+                        <p className="inline-flex items-center gap-1.5">
+                            <Clock className="size-3.5" />
+                            {tx.due_date ? `Jatuh tempo ${formatDate(tx.due_date)}` : `Dibuat ${formatDateTime(tx.created_at)}`}
                         </p>
                     </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                        <a
-                            href={payment.proof_file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
-                        >
-                            <ExternalLink className="size-3.5" />
-                            Buka Tab Baru
-                        </a>
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                            aria-label="Tutup"
-                        >
-                            <X className="size-4" />
-                        </button>
-                    </div>
                 </div>
-                <div className="overflow-auto bg-muted/20 p-4">
-                    {payment.proof_is_pdf ? (
-                        <iframe
-                            src={payment.proof_file_url}
-                            title="Bukti Transfer"
-                            className="h-[70vh] w-full rounded-lg border border-border/40 bg-white"
-                        />
-                    ) : (
-                        <img
-                            src={payment.proof_file_url}
-                            alt="Bukti transfer"
-                            className="mx-auto max-h-[70vh] w-auto rounded-lg object-contain"
-                        />
-                    )}
+
+                <div className="shrink-0 text-right">
+                    <p className="text-base font-bold text-foreground">{formatCurrency(tx.invoice_amount, tx.invoice_currency)}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                        {tx.payment_count.toLocaleString('id-ID')} riwayat pembayaran
+                    </p>
                 </div>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                <Link
+                    href={`/admin/transactions/${tx.id}`}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                >
+                    Detail <ArrowRight className="size-3.5" />
+                </Link>
+                {tx.payment_url ? (
+                    <a
+                        href={tx.payment_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                    >
+                        <ExternalLink className="size-4" />
+                        Buka Invoice
+                    </a>
+                ) : (
+                    <span className="inline-flex items-center justify-center gap-2 rounded-xl bg-muted px-4 py-2.5 text-sm font-medium text-muted-foreground">
+                        <AlertCircle className="size-4" />
+                        Invoice belum tersedia
+                    </span>
+                )}
             </div>
         </div>
     );
 }
 
-function PaymentRow({
-    payment,
-    confirming,
-    onConfirm,
-    onPreview,
-}: {
-    payment: AdminPayment;
-    confirming: boolean;
-    onConfirm: (payment: AdminPayment) => void;
-    onPreview: (payment: AdminPayment) => void;
-}) {
-    const canConfirm = payment.status === 'pending' || payment.status === 'processing';
-
-    return (
-        <tr className="transition-colors hover:bg-muted/20">
-            <td className="px-4 py-4 align-top">
-                <div className="min-w-48">
-                    <p className="text-sm font-semibold text-foreground">{payment.customer?.name ?? 'Customer'}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{payment.customer?.email ?? '-'}</p>
-                </div>
-            </td>
-            <td className="px-4 py-4 align-top">
-                <div className="min-w-40">
-                    <p className="font-mono text-xs font-semibold text-foreground">{payment.transaction?.invoice_number ?? '-'}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{payment.invitation?.title ?? '-'}</p>
-                </div>
-            </td>
-            <td className="px-4 py-4 align-top">
-                <div className="min-w-32">
-                    <p className="text-sm font-medium text-foreground capitalize">{payment.payment_gateway}</p>
-                    <p className="mt-0.5 max-w-40 truncate font-mono text-xs text-muted-foreground" title={payment.gateway_reference_id}>
-                        {payment.gateway_reference_id}
-                    </p>
-                    {payment.proof_file_url && (
-                        <button
-                            type="button"
-                            onClick={() => onPreview(payment)}
-                            className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80"
-                        >
-                            <Eye className="size-3" />
-                            Lihat Bukti Transfer
-                        </button>
-                    )}
-                </div>
-            </td>
-            <td className="px-4 py-4 align-top">
-                <StatusBadge status={payment.status} />
-                {payment.error_message && (
-                    <p className="mt-1 flex items-start gap-1 text-xs text-red-600">
-                        <AlertTriangle className="mt-0.5 size-3 shrink-0" />
-                        <span className="line-clamp-2">{payment.error_message}</span>
-                    </p>
-                )}
-            </td>
-            <td className="px-4 py-4 align-top">
-                <p className="whitespace-nowrap text-sm font-bold text-foreground">{formatCurrency(payment.amount, payment.currency)}</p>
-                {payment.fee > 0 && <p className="mt-0.5 text-xs text-muted-foreground">Fee {formatCurrency(payment.fee, payment.currency)}</p>}
-            </td>
-            <td className="px-4 py-4 align-top">
-                <p className="whitespace-nowrap text-xs text-muted-foreground">{formatDateTime(payment.created_at)}</p>
-                {payment.webhook_verified_at && (
-                    <p className="mt-0.5 whitespace-nowrap text-xs text-emerald-600">Terverifikasi {formatDateTime(payment.webhook_verified_at)}</p>
-                )}
-            </td>
-            <td className="px-4 py-4 align-top">
-                {canConfirm ? (
-                    <button
-                        type="button"
-                        onClick={() => onConfirm(payment)}
-                        disabled={confirming}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                        {confirming ? <LoaderCircle className="size-3.5 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
-                        {confirming ? 'Memproses' : 'Konfirmasi'}
-                    </button>
-                ) : (
-                    <span className="text-xs text-muted-foreground">-</span>
-                )}
-            </td>
-        </tr>
-    );
-}
-
-export default function AdminPayments({ payments, summary }: Props) {
-    const [query, setQuery] = useState('');
-    const [status, setStatus] = useState<'all' | PaymentStatus>('all');
-    const [confirmingId, setConfirmingId] = useState<number | null>(null);
-    const [previewPayment, setPreviewPayment] = useState<AdminPayment | null>(null);
-
-    const filteredPayments = useMemo(() => {
-        const normalizedQuery = query.trim().toLowerCase();
-
-        return payments.filter((payment) => {
-            const matchesStatus = status === 'all' || payment.status === status;
-
-            if (!matchesStatus) return false;
-            if (!normalizedQuery) return true;
-
-            const haystack = [
-                payment.gateway_reference_id,
-                payment.payment_gateway,
-                payment.transaction?.invoice_number,
-                payment.customer?.name,
-                payment.customer?.email,
-                payment.invitation?.title,
-                payment.invitation?.slug,
-            ]
-                .filter(Boolean)
-                .join(' ')
-                .toLowerCase();
-
-            return haystack.includes(normalizedQuery);
-        });
-    }, [query, status, payments]);
-
-    function handleConfirm(payment: AdminPayment) {
-        const confirmed = confirm(`Konfirmasi pembayaran ${payment.gateway_reference_id} sebesar ${formatCurrency(payment.amount, payment.currency)}?`);
-
-        if (!confirmed) return;
-
-        setConfirmingId(payment.id);
-
-        router.patch(
-            route('admin.transactions.payments.confirm', { payment: payment.id }),
-            {},
-            {
-                preserveScroll: true,
-                onFinish: () => setConfirmingId(null),
-            },
-        );
-    }
+export default function AdminPayments() {
+    const { pendingTransactions, summary } = usePage<PageProps>().props;
 
     return (
         <AdminLayout breadcrumbs={breadcrumbs}>
             <Head title="Pembayaran Masuk" />
+
             <div className="flex flex-col gap-6 p-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-foreground">Pembayaran Masuk</h1>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                        Riwayat pembayaran dari payment gateway (Xendit) dan konfirmasi manual. Pembayaran yang masih menunggu bisa dikonfirmasi
-                        manual jika webhook gateway belum masuk.
-                    </p>
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold text-foreground">Pembayaran Masuk</h1>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                            Daftar transaksi yang masih menunggu pembayaran. Dari sini admin bisa membuka invoice dan melihat detail pesanan.
+                        </p>
+                    </div>
+                    <Link
+                        href="/admin/transactions"
+                        className="inline-flex items-center gap-2 rounded-xl border border-border/60 bg-card px-4 py-2.5 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted"
+                    >
+                        <Receipt className="size-4" />
+                        Lihat Semua Transaksi
+                    </Link>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     <SummaryCard
-                        title="Total Pembayaran"
-                        value={summary.total}
-                        note="Semua percobaan pembayaran"
-                        icon={CreditCard}
-                        iconClassName="bg-primary/10 text-primary"
-                    />
-                    <SummaryCard
-                        title="Menunggu"
-                        value={summary.pending}
-                        note="Perlu dipantau / dikonfirmasi"
+                        label="Menunggu Bayar"
+                        value={summary.pending.toLocaleString('id-ID')}
+                        helper="Transaksi yang belum selesai dibayar"
                         icon={Clock}
-                        iconClassName="bg-amber-100 text-amber-700"
+                        className="bg-amber-100 text-amber-700"
                     />
                     <SummaryCard
-                        title="Berhasil"
-                        value={summary.success}
-                        note={formatCurrency(summary.gross_success)}
+                        label="Total Tagihan Pending"
+                        value={formatCurrency(summary.pending_amount)}
+                        helper="Akumulasi transaksi pending"
+                        icon={Wallet}
+                        className="bg-amber-100 text-amber-700"
+                    />
+                    <SummaryCard
+                        label="Transaksi Lunas"
+                        value={summary.paid.toLocaleString('id-ID')}
+                        helper="Sudah terkonfirmasi berhasil"
                         icon={CheckCircle2}
-                        iconClassName="bg-emerald-100 text-emerald-700"
+                        className="bg-emerald-100 text-emerald-700"
                     />
                     <SummaryCard
-                        title="Gagal/Dibatalkan"
-                        value={summary.failed}
-                        note="Perlu ditinjau"
-                        icon={XCircle}
-                        iconClassName="bg-red-100 text-red-600"
+                        label="Semua Transaksi"
+                        value={summary.total.toLocaleString('id-ID')}
+                        helper="Seluruh pesanan yang tercatat"
+                        icon={Banknote}
+                        className="bg-sky-100 text-sky-700"
                     />
                 </div>
 
-                <div className="rounded-2xl border border-border/60 bg-card shadow-sm">
-                    <div className="flex flex-col gap-3 border-b border-border/40 px-5 py-4 md:flex-row md:items-center md:justify-between">
-                        <div>
-                            <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                                <Wallet className="size-4 text-primary" />
-                                Daftar Pembayaran
-                            </h2>
-                            <p className="mt-0.5 text-xs text-muted-foreground">
-                                {filteredPayments.length} dari {payments.length} pembayaran
-                            </p>
-                        </div>
-
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                            <label className="relative min-w-0 sm:w-72">
-                                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                                <input
-                                    value={query}
-                                    onChange={(event) => setQuery(event.target.value)}
-                                    placeholder="Cari referensi, invoice, customer..."
-                                    className="w-full rounded-lg border border-border/60 bg-background py-2 pl-9 pr-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/30"
-                                />
-                            </label>
-                            <select
-                                value={status}
-                                onChange={(event) => setStatus(event.target.value as 'all' | PaymentStatus)}
-                                className="rounded-lg border border-border/60 bg-background px-3 py-2 text-sm text-foreground outline-none transition-all focus:ring-2 focus:ring-primary/30"
-                            >
-                                {statusOptions.map((option) => (
-                                    <option key={option.value} value={option.value}>
-                                        {option.label}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                {pendingTransactions.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-border/60 bg-card px-6 py-16 text-center shadow-sm">
+                        <CreditCard className="mx-auto size-10 text-muted-foreground/40" />
+                        <h3 className="mt-4 text-sm font-semibold text-foreground">Tidak ada transaksi pending</h3>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                            Saat ini semua transaksi sudah dibayar, dikonfirmasi, atau dibatalkan.
+                        </p>
+                        <Link
+                            href="/admin/transactions"
+                            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                        >
+                            <Receipt className="size-4" />
+                            Kembali ke Semua Transaksi
+                        </Link>
                     </div>
-
-                    {payments.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-                            <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-muted">
-                                <Banknote className="size-7 text-muted-foreground" />
-                            </div>
-                            <h3 className="text-sm font-semibold text-foreground">Belum Ada Pembayaran</h3>
-                            <p className="mt-1 text-sm text-muted-foreground">Pembayaran dari customer akan muncul di halaman ini.</p>
-                        </div>
-                    ) : filteredPayments.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-                            <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-muted">
-                                <Search className="size-7 text-muted-foreground" />
-                            </div>
-                            <h3 className="text-sm font-semibold text-foreground">Data Tidak Ditemukan</h3>
-                            <p className="mt-1 text-sm text-muted-foreground">Coba ubah kata kunci atau status pembayaran.</p>
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead>
-                                    <tr className="border-b border-border/40 bg-muted/20">
-                                        {['Customer', 'Invoice / Undangan', 'Gateway', 'Status', 'Jumlah', 'Waktu', 'Aksi'].map((heading) => (
-                                            <th
-                                                key={heading}
-                                                className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold text-muted-foreground"
-                                            >
-                                                {heading}
-                                            </th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-border/30">
-                                    {filteredPayments.map((payment) => (
-                                        <PaymentRow
-                                            key={payment.id}
-                                            payment={payment}
-                                            confirming={confirmingId === payment.id}
-                                            onConfirm={handleConfirm}
-                                            onPreview={setPreviewPayment}
-                                        />
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
+                ) : (
+                    <div className="grid gap-3">
+                        {pendingTransactions.map((transaction) => (
+                            <PendingPaymentCard key={transaction.id} tx={transaction} />
+                        ))}
+                    </div>
+                )}
             </div>
-
-            {previewPayment && <ProofPreviewModal payment={previewPayment} onClose={() => setPreviewPayment(null)} />}
         </AdminLayout>
     );
 }

@@ -11,7 +11,7 @@ use Inertia\Response;
 
 class InvitationPublicController extends Controller
 {
-    public function show(Request $request, string $code, string $visitor = null): Response
+    public function show(Request $request, string $code, ?string $visitor = null): Response
     {
         $visitor = $visitor
         ? urldecode($visitor)
@@ -27,9 +27,22 @@ class InvitationPublicController extends Controller
             'stories'        => fn($q) => $q->where('story_type', 'love_story')->where('is_published', true)->orderBy('display_order'),
             'digitalWallets' => fn($q) => $q->wherePivot('is_displayed', true)->orderByPivot('display_order'),
         ])
-            ->where('invitation_code', $code)
+            ->where('slug', $code)
+            ->first();
 
-            ->firstOrFail();
+        if (! $invitation) {
+            $invitation = Invitation::with([
+                'theme',
+                'settings',
+                'events'         => fn($q) => $q->orderBy('display_order')->orderBy('event_date'),
+                'contents',
+                'galleryPhotos'  => fn($q) => $q->whereIn('category', ['general', 'love_story'])->orderBy('category')->orderBy('display_order'),
+                'stories'        => fn($q) => $q->where('story_type', 'love_story')->where('is_published', true)->orderBy('display_order'),
+                'digitalWallets' => fn($q) => $q->wherePivot('is_displayed', true)->orderByPivot('display_order'),
+            ])
+                ->where('invitation_code', $code)
+                ->firstOrFail();
+        }
         // $invitation = Invitation::where('invitation_code', $code)
  
         // ->first();
@@ -37,7 +50,6 @@ class InvitationPublicController extends Controller
         abort_if($invitation->isExpired(), 410, 'Undangan ini sudah tidak aktif.');
 
         $theme = $invitation->theme;
-        // dd($invitation->theme);
         abort_if(! $theme, 404, 'Tema undangan tidak tersedia.');
 
         $guest = Guest::where('invitation_id', $invitation->id)
@@ -51,6 +63,7 @@ class InvitationPublicController extends Controller
             }
             $data['guestSlug'] = $guest->slug;
         }
+    // dd($theme);
         return Inertia::render('invitation/show', [
             'invitation' => $data,
             'themeSlug'  => $theme->slug,
@@ -109,7 +122,6 @@ class InvitationPublicController extends Controller
         ])->all();
 
         $bankAccounts = json_decode($contents->get('bank_accounts', '[]'), true) ?? [];
-        $lifeJourney  = json_decode($contents->get('life_journey', '[]'), true) ?? [];
 
         // Gallery — from GalleryPhoto model (general category)
         $gallery = $invitation->galleryPhotos->where('category', 'general')->map(fn($p) => [
@@ -128,7 +140,7 @@ class InvitationPublicController extends Controller
             return [
                 'title' => $story->title,
                 'desc'  => $story->content,
-                'date'  => $story->story_date?->format('Y') ?? '',
+                'date'  => $story->story_period ?: ($story->story_date?->format('Y') ?? ''),
                 'photo' => $photo ? asset('storage/' . $photo->file_path) : '',
             ];
         })->values()->all();
@@ -172,7 +184,7 @@ class InvitationPublicController extends Controller
 
         $base = [
             'type'              => $eventType,
-            'code'              => $invitation->invitation_code,
+            'code'              => $invitation->invitation_code ?: $invitation->slug,
             'slug'              => $invitation->slug,
             'title'             => $invitation->title ?? '',
             'guestName'         => $guestName,
@@ -188,8 +200,8 @@ class InvitationPublicController extends Controller
             'allowComments'     => (bool) $invitation->allow_guest_comments,
             'greeting'          => $greeting,
             'featureToggles'    => $featureToggles,
-            'rsvpEndpoint'      => url("/api/inv/{$invitation->invitation_code}/rsvp"),
-            'wishesEndpoint'    => url("/api/inv/{$invitation->invitation_code}/wishes"),
+            'rsvpEndpoint'      => url("/api/inv/" . ($invitation->invitation_code ?: $invitation->slug) . "/rsvp"),
+            'wishesEndpoint'    => url("/api/inv/" . ($invitation->invitation_code ?: $invitation->slug) . "/wishes"),
         ];
 
         if ($features !== null) {
@@ -219,7 +231,6 @@ class InvitationPublicController extends Controller
                 'groomMother'      => $contents->get('groom_mother', ''),
                 'groomBio'         => $contents->get('groom_bio', ''),
                 'groomPhoto'       => $this->resolveContentUrl($invitation, 'groom_photo'),
-                'groomInstagram'   => $contents->get('groom_instagram', ''),
                 'couplePhoto'      => $this->resolveContentUrl($invitation, 'couple_photo'),
                 'brideFullName'    => $brideFull,
                 'brideNickname'    => $brideNick,
@@ -229,7 +240,6 @@ class InvitationPublicController extends Controller
                 'brideMother'      => $contents->get('bride_mother', ''),
                 'brideBio'         => $contents->get('bride_bio', ''),
                 'bridePhoto'       => $this->resolveContentUrl($invitation, 'bride_photo'),
-                'brideInstagram'   => $contents->get('bride_instagram', ''),
                 'loveStory'        => $loveStory,
                 'dressCodes'       => json_decode($contents->get('dress_code_colors', '[]'), true) ?? [],
                 'rsvpDeadline'     => $contents->get('rsvp_deadline', ''),
@@ -251,68 +261,7 @@ class InvitationPublicController extends Controller
                 'celebrantBio'      => $contents->get('opening_message', ''),
                 'celebrantPhoto'    => $this->resolveContentUrl($invitation, 'child_photo'),
                 'parentName'        => trim(implode(' & ', array_filter([$fatherName, $motherName]))),
-                'lifeJourney'       => $lifeJourney,
-            ]);
-        }
-
-        if ($eventType === 'khitanan') {
-            $childName = $contents->get('child_name', '');
-
-            return array_merge($base, [
-                'pageTitle'      => $invitation->title ?: "Undangan Khitanan {$childName}",
-                'childName'      => $childName,
-                'childPhoto'     => $this->resolveContentUrl($invitation, 'child_photo'),
-                'childAge'       => $contents->get('child_age', ''),
-                'fatherName'     => $contents->get('father_name', ''),
-                'motherName'     => $contents->get('mother_name', ''),
-                'openingMessage' => $contents->get('opening_message', ''),
-            ]);
-        }
-
-        if ($eventType === 'aqiqah') {
-            $babyName = $contents->get('baby_name', '');
-            $birthDate = $contents->get('birth_date', '');
-
-            return array_merge($base, [
-                'pageTitle'          => $invitation->title ?: "Aqiqah {$babyName}",
-                'babyName'           => $babyName,
-                'babyPhoto'          => $this->resolveContentUrl($invitation, 'baby_photo'),
-                'babyGender'         => $contents->get('baby_gender', ''),
-                'birthDateFormatted' => $birthDate ? $this->formatDateId(Carbon::parse($birthDate)) : '',
-                'fatherName'         => $contents->get('father_name', ''),
-                'motherName'         => $contents->get('mother_name', ''),
-                'openingMessage'     => $contents->get('opening_message', ''),
-            ]);
-        }
-
-        if ($eventType === 'gender_reveal') {
-            $motherName = $contents->get('mother_name', '');
-            $fatherName = $contents->get('father_name', '');
-            $dueDate    = $contents->get('due_date', '');
-            $revealDate = $contents->get('reveal_scheduled_at', '');
-
-            return array_merge($base, [
-                'pageTitle'           => $invitation->title ?: "Gender Reveal {$fatherName} & {$motherName}",
-                'motherName'          => $motherName,
-                'fatherName'          => $fatherName,
-                'parentsPhoto'        => $this->resolveContentUrl($invitation, 'parents_photo'),
-                'dueDateFormatted'    => $dueDate ? $this->formatDateId(Carbon::parse($dueDate)) : '',
-                'teamAName'           => $contents->get('team_a_name', ''),
-                'teamBName'           => $contents->get('team_b_name', ''),
-                'revealDateFormatted' => $revealDate ? $this->formatDateId(Carbon::parse($revealDate)) : '',
-                'openingMessage'      => $contents->get('opening_message', ''),
-            ]);
-        }
-
-        if ($eventType === 'syukuran') {
-            $hostName = $contents->get('host_name', '');
-
-            return array_merge($base, [
-                'pageTitle'      => $invitation->title ?: "Syukuran {$hostName}",
-                'hostName'       => $hostName,
-                'hostPhoto'      => $this->resolveContentUrl($invitation, 'host_photo'),
-                'occasion'       => $contents->get('occasion', ''),
-                'openingMessage' => $contents->get('opening_message', ''),
+                'lifeJourney'       => $loveStory,
             ]);
         }
 

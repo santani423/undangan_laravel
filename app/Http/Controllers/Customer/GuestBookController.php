@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Guest;
 use App\Models\Invitation;
 use App\Models\SliderPhoto;
+use App\Rules\Base64Image;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
@@ -92,8 +94,8 @@ class GuestBookController extends Controller
         $data = $request->validate([
             'slider_images' => 'nullable|array',
             'slider_images.*.id' => 'nullable|integer',
-            'slider_images.*.preview' => 'nullable|string',
-            'background_image' => 'nullable|string',
+            'slider_images.*.preview' => ['nullable', 'string', new Base64Image()],
+            'background_image' => ['nullable', 'string', new Base64Image()],
             'background_color' => 'nullable|string|max:20',
             'overlay_color' => 'nullable|string|max:20',
             'overlay_opacity' => 'nullable|numeric|min:0|max:1',
@@ -116,32 +118,38 @@ class GuestBookController extends Controller
             ->when($existingIds, fn ($q) => $q->whereNotIn('id', $existingIds))
             ->delete();
 
-        foreach ($submitted as $index => $item) {
-            if (! empty($item['id'])) {
-                $invitation->sliderPhotos()
-                    ->where('id', (int) $item['id'])
-                    ->update(['display_order' => $index, 'is_approved' => true, 'approved_at' => now()]);
-                continue;
+        try {
+            foreach ($submitted as $index => $item) {
+                if (! empty($item['id'])) {
+                    $invitation->sliderPhotos()
+                        ->where('id', (int) $item['id'])
+                        ->update(['display_order' => $index, 'is_approved' => true, 'approved_at' => now()]);
+                    continue;
+                }
+
+                $preview = (string) ($item['preview'] ?? '');
+                if (str_starts_with($preview, 'data:image/')) {
+                    SliderPhoto::create([
+                        'invitation_id' => $invitation->id,
+                        'file_path' => \App\Services\UploadService::uploadBase64Image($preview, "invitations/{$invitation->id}/guest-book/sliders"),
+                        'display_order' => $index,
+                        'is_approved' => true,
+                        'approved_at' => now(),
+                    ]);
+                }
             }
 
-            $preview = (string) ($item['preview'] ?? '');
-            if (str_starts_with($preview, 'data:image/')) {
-                SliderPhoto::create([
-                    'invitation_id' => $invitation->id,
-                    'file_path' => \App\Services\UploadService::uploadBase64Image($preview, "invitations/{$invitation->id}/guest-book/sliders"),
-                    'display_order' => $index,
-                    'is_approved' => true,
-                    'approved_at' => now(),
-                ]);
+            $backgroundImage = (string) ($data['background_image'] ?? '');
+            $oldBackgroundImage = $invitation->contents()->where('content_key', 'guestbook_background_image')->value('content_value');
+            if (str_starts_with($backgroundImage, 'data:image/')) {
+                $backgroundImage = \App\Services\UploadService::uploadBase64Image($backgroundImage, "invitations/{$invitation->id}/guest-book", $oldBackgroundImage);
+            } elseif (str_starts_with($backgroundImage, '/storage/')) {
+                $backgroundImage = ltrim(str_replace('/storage/', '', $backgroundImage), '/');
             }
-        }
-
-        $backgroundImage = (string) ($data['background_image'] ?? '');
-        $oldBackgroundImage = $invitation->contents()->where('content_key', 'guestbook_background_image')->value('content_value');
-        if (str_starts_with($backgroundImage, 'data:image/')) {
-            $backgroundImage = \App\Services\UploadService::uploadBase64Image($backgroundImage, "invitations/{$invitation->id}/guest-book", $oldBackgroundImage);
-        } elseif (str_starts_with($backgroundImage, '/storage/')) {
-            $backgroundImage = ltrim(str_replace('/storage/', '', $backgroundImage), '/');
+        } catch (\RuntimeException $e) {
+            throw ValidationException::withMessages([
+                'background_image' => $e->getMessage(),
+            ]);
         }
 
         $settings = [

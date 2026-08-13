@@ -10,12 +10,16 @@ use App\Models\InvitationContent;
 use App\Models\InvitationEvent;
 use App\Models\InvitationSetting;
 use App\Models\Package;
+use App\Models\Transaction;
 use App\Models\Story;
 use App\Models\Theme;
+use App\Services\InvitationSlugService;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -120,34 +124,61 @@ class InvitationController extends Controller
     public function checkCode(Request $request): \Illuminate\Http\JsonResponse
     {
         $code   = trim((string) $request->query('code', ''));
-        $exists = $code !== '' && Invitation::where('invitation_code', $code)->exists();
+        $exists = $code !== '' && Invitation::withTrashed()->where('invitation_code', $code)->exists();
 
         return response()->json(['available' => !$exists]);
     }
 
+    public function checkSlug(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $slug = $this->slugService()->normalize((string) $request->query('slug', ''));
+        $ignoreInvitationId = $request->integer('exclude_id') ?: null;
+
+        if ($slug === '') {
+            return response()->json([
+                'slug'        => '',
+                'available'   => false,
+                'suggestions' => [],
+            ]);
+        }
+
+        $available = $this->slugService()->isAvailable($slug, $ignoreInvitationId);
+
+        return response()->json([
+            'slug'        => $slug,
+            'available'   => $available,
+            'suggestions' => $available ? [] : $this->slugService()->suggestions($slug, $ignoreInvitationId),
+        ]);
+    }
+
+    public function slugRecommendations(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $slug = $this->slugService()->normalize((string) $request->query('slug', ''));
+        $ignoreInvitationId = $request->integer('exclude_id') ?: null;
+
+        return response()->json([
+            'slug'        => $slug,
+            'suggestions' => $this->slugService()->suggestions($slug, $ignoreInvitationId),
+        ]);
+    }
+
     public function store(\App\Http\Requests\StoreInvitationRequest $request): RedirectResponse
     {
+        try {
+            DB::transaction(function () use ($request) {
+                $pkg = Package::find($request->input('package_id'));
+            $fields = $request->input('field_values', []);
 
-        DB::transaction(function () use ($request) {
-            // ── Derive title from couple names or fallback ────────────────
-            $fields    = $request->input('field_values', []);
-            $groomName = $fields['groom_name'] ?? '';
-            $brideName = $fields['bride_name'] ?? '';
-            $hostName  = $fields['host_name']  ?? '';
-            $title = match (true) {
-                $groomName && $brideName => "{$groomName} & {$brideName}",
-                $hostName !== ''         => $hostName,
-                default                  => 'Undangan',
-            };
-
-            // ── Generate unique slug ──────────────────────────────────────
-            $base = Str::slug($title) ?: 'undangan';
-            $slug = $base;
-            $n    = 1;
-            while (Invitation::where('slug', $slug)->exists()) {
-                $slug = "{$base}-{$n}";
-                $n++;
-            }
+            // ── Generate unique slug & derive title from event-type fields ─
+            $eventType = EventType::findOrFail($request->input('event_type_id'));
+            $title = $this->slugService()->resolveTitle($eventType->name, $fields);
+            $slug = $this->resolveSlugForInvitation(
+                $request->input('slug'),
+                $eventType->name,
+                $fields,
+                $title
+            );
+            $this->ensureSlugIsAvailable($slug);
 
             // ── 1. Create Invitation ──────────────────────────────────────
             $rawCode        = $request->input('invitation_code', '');
@@ -173,6 +204,18 @@ class InvitationController extends Controller
 
             // ── 2. Default settings ───────────────────────────────────────
             InvitationSetting::create(['invitation_id' => $invitation->id]);
+            if ($pkg && (float) $pkg->price > 0) {
+                Transaction::create([
+                    'user_id'          => auth()->id(),
+                    'invitation_id'    => $invitation->id,
+                    'package_id'       => $pkg->id,
+                    'invoice_number'   => $this->generateInvoiceNumber(auth()->id()),
+                    'invoice_amount'   => (float) $pkg->price,
+                    'invoice_currency' => $pkg->currency ?? 'IDR',
+                    'status'           => 'pending',
+                    'due_date'         => now()->addDay(),
+                ]);
+            }
 
             // ── 3. Field values → InvitationContent ──────────────────────
             foreach ($fields as $key => $value) {
@@ -220,7 +263,6 @@ class InvitationController extends Controller
             }
 
             // ── 5. Gallery ────────────────────────────────────────────────
-            $pkg         = Package::find($request->input('package_id'));
             $maxGallery  = $pkg?->max_gallery_uploads;
             $galleryItems = $request->input('gallery_items', []);
             if ($maxGallery !== null) {
@@ -235,7 +277,7 @@ class InvitationController extends Controller
                     'invitation_id' => $invitation->id,
                     'file_path'     => $path,
                     'media_type'    => 'photo',
-                    'mime_type'     => 'image/jpeg',
+                    'mime_type'     => \App\Services\UploadService::mimeTypeForPath($path),
                     'title'         => $item['caption'] ?? null,
                     'category'      => 'general',
                     'display_order' => $i,
@@ -248,13 +290,7 @@ class InvitationController extends Controller
                     continue;
                 }
 
-                $storyDate = null;
-                if (!empty($entry['year'])) {
-                    $year = preg_replace('/\D/', '', (string) $entry['year']);
-                    if (strlen($year) === 4) {
-                        $storyDate = "{$year}-01-01";
-                    }
-                }
+                [$storyDate, $storyPeriod] = $this->resolveStoryDateAndPeriod($entry['year'] ?? '');
 
                 $story = Story::create([
                     'invitation_id' => $invitation->id,
@@ -262,6 +298,7 @@ class InvitationController extends Controller
                     'content'       => $entry['story'] ?? '',
                     'story_type'    => 'love_story',
                     'story_date'    => $storyDate,
+                    'story_period'  => $storyPeriod,
                     'display_order' => $i,
                 ]);
 
@@ -271,7 +308,7 @@ class InvitationController extends Controller
                         'invitation_id' => $invitation->id,
                         'file_path'     => $photoPath,
                         'media_type'    => 'photo',
-                        'mime_type'     => 'image/jpeg',
+                        'mime_type'     => \App\Services\UploadService::mimeTypeForPath($photoPath),
                         'category'      => 'love_story',
                         'display_order' => $i,
                     ]);
@@ -284,7 +321,26 @@ class InvitationController extends Controller
                     ]);
                 }
             }
-        });
+            });
+        } catch (QueryException $e) {
+            if ($this->isSlugUniqueConstraintViolation($e)) {
+                throw ValidationException::withMessages([
+                    'slug' => 'Slug sudah digunakan oleh undangan lain. Silakan gunakan slug yang berbeda.',
+                ]);
+            }
+
+            if ($this->isInvitationCodeUniqueConstraintViolation($e)) {
+                throw ValidationException::withMessages([
+                    'invitation_code' => 'Kode undangan sudah digunakan oleh undangan lain. Silakan gunakan kode yang berbeda.',
+                ]);
+            }
+
+            throw $e;
+        } catch (\RuntimeException $e) {
+            throw ValidationException::withMessages([
+                'field_values' => $e->getMessage(),
+            ]);
+        }
 
         return redirect()->route('customer.invitations.index')
             ->with('success', 'Undangan berhasil dibuat!');
@@ -351,7 +407,7 @@ class InvitationController extends Controller
 
         $loveStory = $invitation->stories->map(fn ($story) => [
             'dbId'  => $story->id,
-            'year'  => $story->story_date?->format('Y') ?? '',
+            'year'  => $story->story_period ?: ($story->story_date?->format('Y') ?? ''),
             'title' => $story->title,
             'story' => $story->content,
             'photo' => isset($storyPhotos[$story->display_order])
@@ -529,7 +585,8 @@ class InvitationController extends Controller
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
 
-        DB::transaction(function () use ($request, $invitation) {
+        try {
+            DB::transaction(function () use ($request, $invitation) {
             // ── Status ────────────────────────────────────────────────────
             if ($request->filled('status')) {
                 $invitation->update(['status' => $request->input('status')]);
@@ -567,6 +624,17 @@ class InvitationController extends Controller
                     ['content_key'   => $key],
                     ['content_value' => $storedValue, 'content_type' => $contentType],
                 );
+            }
+
+            if ($request->has('field_values')) {
+                $title = $this->slugService()->resolveTitle(
+                    $invitation->eventType?->name ?? '',
+                    $request->input('field_values', []),
+                    $invitation->title
+                );
+                if ($title !== $invitation->title) {
+                    $invitation->update(['title' => $title]);
+                }
             }
 
             // ── Acara events — replace all ────────────────────────────────
@@ -624,7 +692,7 @@ class InvitationController extends Controller
                         'invitation_id' => $invitation->id,
                         'file_path'     => $path,
                         'media_type'    => 'photo',
-                        'mime_type'     => 'image/jpeg',
+                        'mime_type'     => \App\Services\UploadService::mimeTypeForPath($path),
                         'title'         => $item['caption'] ?? null,
                         'category'      => 'general',
                         'display_order' => $i,
@@ -642,19 +710,14 @@ class InvitationController extends Controller
                 if (empty($entry['title']) && empty($entry['story'])) {
                     continue;
                 }
-                $storyDate = null;
-                if (!empty($entry['year'])) {
-                    $year = preg_replace('/\D/', '', (string) $entry['year']);
-                    if (strlen($year) === 4) {
-                        $storyDate = "{$year}-01-01";
-                    }
-                }
+                [$storyDate, $storyPeriod] = $this->resolveStoryDateAndPeriod($entry['year'] ?? '');
                 $story = Story::create([
                     'invitation_id' => $invitation->id,
                     'title'         => $entry['title'] ?? '',
                     'content'       => $entry['story'] ?? '',
                     'story_type'    => 'love_story',
                     'story_date'    => $storyDate,
+                    'story_period'  => $storyPeriod,
                     'display_order' => $i,
                 ]);
 
@@ -665,7 +728,7 @@ class InvitationController extends Controller
                         'invitation_id' => $invitation->id,
                         'file_path'     => $photoPath,
                         'media_type'    => 'photo',
-                        'mime_type'     => 'image/jpeg',
+                        'mime_type'     => \App\Services\UploadService::mimeTypeForPath($photoPath),
                         'category'      => 'love_story',
                         'display_order' => $i,
                     ]);
@@ -682,7 +745,7 @@ class InvitationController extends Controller
                         'invitation_id' => $invitation->id,
                         'file_path'     => $storedPath,
                         'media_type'    => 'photo',
-                        'mime_type'     => 'image/jpeg',
+                        'mime_type'     => \App\Services\UploadService::mimeTypeForPath($storedPath),
                         'category'      => 'love_story',
                         'display_order' => $i,
                     ]);
@@ -694,7 +757,12 @@ class InvitationController extends Controller
                     ]);
                 }
             }
-        });
+            });
+        } catch (\RuntimeException $e) {
+            throw ValidationException::withMessages([
+                'field_values' => $e->getMessage(),
+            ]);
+        }
 
         return back()->with('success', 'Undangan berhasil diperbarui!');
     }
@@ -710,6 +778,7 @@ class InvitationController extends Controller
             'greeting_guest_label' => 'nullable|string|max:100',
             'greeting_button_text' => 'nullable|string|max:100',
             'invitation_code'      => 'nullable|string|max:100|unique:invitations,invitation_code,' . $invitation->id,
+            'slug'                 => 'nullable|string|max:255',
             'music_enabled'        => 'boolean',
             'music_autoplay'       => 'boolean',
             'music_loop'           => 'boolean',
@@ -719,30 +788,64 @@ class InvitationController extends Controller
             'features'             => 'nullable|array',
         ]);
 
-        // Update invitation_code on invitations table
-        if ($request->filled('invitation_code')) {
-            $invitation->update(['invitation_code' => $request->input('invitation_code')]);
+        try {
+            DB::transaction(function () use ($request, $invitation) {
+                $newSlug = $this->resolveSlugForInvitation(
+                    $request->input('slug', $invitation->slug),
+                    $invitation->eventType?->name ?? 'undangan',
+                    $request->input('field_values', []),
+                    $invitation->title
+                );
+
+                if ($newSlug !== $invitation->slug) {
+                    $this->ensureSlugIsAvailable($newSlug, $invitation->id);
+                    $invitation->slug = $newSlug;
+                }
+
+                // Update invitation_code on invitations table
+                if ($request->filled('invitation_code')) {
+                    $invitation->invitation_code = $request->input('invitation_code');
+                }
+
+                $invitation->save();
+
+                // Update or create invitation settings
+                $invitation->settings()->updateOrCreate(
+                    ['invitation_id' => $invitation->id],
+                    [
+                        'greeting_title'       => $request->input('greeting_title', 'Kepada Yth.'),
+                        'greeting_message'     => $request->input('greeting_message'),
+                        'greeting_guest_label' => $request->input('greeting_guest_label', 'Tamu Undangan'),
+                        'greeting_button_text' => $request->input('greeting_button_text', 'Buka Undangan'),
+                        'music_enabled'        => $request->boolean('music_enabled'),
+                        'music_autoplay'       => $request->boolean('music_autoplay'),
+                        'music_loop'           => $request->boolean('music_loop'),
+                        'music_source'         => $request->input('music_source') ?: null,
+                        'music_library_id'     => $request->input('music_library_id') ?: null,
+                        'music_url'            => $request->input('music_url') ?: null,
+                        'features'             => $request->input('features') ?: null,
+                    ]
+                );
+            });
+        } catch (QueryException $e) {
+            if ($this->isSlugUniqueConstraintViolation($e)) {
+                throw ValidationException::withMessages([
+                    'slug' => 'Slug sudah digunakan oleh undangan lain. Silakan gunakan slug yang berbeda.',
+                ]);
+            }
+
+            if ($this->isInvitationCodeUniqueConstraintViolation($e)) {
+                throw ValidationException::withMessages([
+                    'invitation_code' => 'Kode undangan sudah digunakan oleh undangan lain. Silakan gunakan kode yang berbeda.',
+                ]);
+            }
+
+            throw $e;
         }
 
-        // Update or create invitation settings
-        $invitation->settings()->updateOrCreate(
-            ['invitation_id' => $invitation->id],
-            [
-                'greeting_title'       => $request->input('greeting_title', 'Kepada Yth.'),
-                'greeting_message'     => $request->input('greeting_message'),
-                'greeting_guest_label' => $request->input('greeting_guest_label', 'Tamu Undangan'),
-                'greeting_button_text' => $request->input('greeting_button_text', 'Buka Undangan'),
-                'music_enabled'        => $request->boolean('music_enabled'),
-                'music_autoplay'       => $request->boolean('music_autoplay'),
-                'music_loop'           => $request->boolean('music_loop'),
-                'music_source'         => $request->input('music_source') ?: null,
-                'music_library_id'     => $request->input('music_library_id') ?: null,
-                'music_url'            => $request->input('music_url') ?: null,
-                'features'             => $request->input('features') ?: null,
-            ]
-        );
-
-        return back()->with('success', 'Pengaturan berhasil disimpan.');
+        return redirect()
+            ->route('customer.invitations.settings', $invitation->slug)
+            ->with('success', 'Pengaturan berhasil disimpan.');
     }
 
     public function updateTheme(Request $request, Invitation $invitation): RedirectResponse
@@ -766,7 +869,7 @@ class InvitationController extends Controller
 
         // Sesuaikan usage_count
         if ($oldThemeId && $oldThemeId !== $theme->id) {
-            Theme::where('id', $oldThemeId)->decrement('usage_count');
+            Theme::where('id', $oldThemeId)->where('usage_count', '>', 0)->decrement('usage_count');
         }
         if ($oldThemeId !== $theme->id) {
             Theme::where('id', $theme->id)->increment('usage_count');
@@ -776,6 +879,68 @@ class InvitationController extends Controller
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private function slugService(): InvitationSlugService
+    {
+        return app(InvitationSlugService::class);
+    }
+
+    private function resolveSlugForInvitation(?string $requestedSlug, string $eventTypeName, array $fields = [], ?string $title = null): string
+    {
+        return $this->slugService()->resolveCandidate($requestedSlug, $eventTypeName, $fields, $title);
+    }
+
+    private function ensureSlugIsAvailable(string $slug, ?int $ignoreInvitationId = null): void
+    {
+        if (! $this->slugService()->isAvailable($slug, $ignoreInvitationId)) {
+            throw ValidationException::withMessages([
+                'slug' => 'Slug sudah digunakan oleh undangan lain. Silakan gunakan slug yang berbeda.',
+            ]);
+        }
+    }
+
+    private function isSlugUniqueConstraintViolation(QueryException $exception): bool
+    {
+        $message = $exception->getMessage();
+
+        return str_contains($message, 'invitations.slug')
+            || str_contains($message, 'slug_unique')
+            || (str_contains($message, 'UNIQUE constraint failed') && str_contains($message, 'slug'));
+    }
+
+    private function isInvitationCodeUniqueConstraintViolation(QueryException $exception): bool
+    {
+        $message = $exception->getMessage();
+
+        return str_contains($message, 'invitations.invitation_code')
+            || str_contains($message, 'invitation_code_unique')
+            || (str_contains($message, 'UNIQUE constraint failed') && str_contains($message, 'invitation_code'));
+    }
+
+    /**
+     * The "Tahun / Periode" field accepts free text (e.g. "2020 - Usia 2 Tahun"),
+     * not just a bare year, so it's kept verbatim in story_period. story_date is
+     * best-effort, derived from the first 4-digit run, purely for chronological sorting.
+     */
+    private function resolveStoryDateAndPeriod(string $rawPeriod): array
+    {
+        $period = trim($rawPeriod);
+        if ($period === '') {
+            return [null, null];
+        }
+
+        $storyDate = null;
+        if (preg_match('/\d{4}/', $period, $matches)) {
+            $storyDate = "{$matches[0]}-01-01";
+        }
+
+        return [$storyDate, mb_substr($period, 0, 100)];
+    }
+
+    private function generateInvoiceNumber(int $userId): string
+    {
+        return 'INV-' . now()->format('Ymd') . '-' . $userId . '-' . strtoupper(Str::random(6));
+    }
 
     public function uploadMusic(Request $request, string $slug): \Illuminate\Http\JsonResponse
     {

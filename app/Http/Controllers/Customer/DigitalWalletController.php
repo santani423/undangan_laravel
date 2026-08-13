@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -40,13 +41,18 @@ class DigitalWalletController extends Controller
     {
         $dir      = 'digital-wallets/' . auth()->id();
         $logoPath = null;
-        if ($request->filled('logo') && str_starts_with($request->logo, 'data:image/')) {
-            $logoPath = \App\Services\UploadService::uploadBase64Image($request->logo, $dir);
-        }
-
         $qrisPath = null;
-        if ($request->filled('qris_qr') && str_starts_with($request->qris_qr, 'data:image/')) {
-            $qrisPath = \App\Services\UploadService::uploadBase64Image($request->qris_qr, $dir);
+
+        try {
+            if ($request->filled('logo') && str_starts_with($request->logo, 'data:image/')) {
+                $logoPath = \App\Services\UploadService::uploadBase64Image($request->logo, $dir);
+            }
+
+            if ($request->filled('qris_qr') && str_starts_with($request->qris_qr, 'data:image/')) {
+                $qrisPath = \App\Services\UploadService::uploadBase64Image($request->qris_qr, $dir);
+            }
+        } catch (\RuntimeException $e) {
+            throw ValidationException::withMessages(['logo' => $e->getMessage()]);
         }
 
         $wallet = DigitalWallet::create([
@@ -83,15 +89,19 @@ class DigitalWalletController extends Controller
 
         $logoPath = $digitalWallet->logo_path;
 
-        if ($request->filled('logo')) {
-            if (str_starts_with($request->logo, 'data:image/')) {
-                $logoPath = \App\Services\UploadService::uploadBase64Image($request->logo, 'digital-wallets/' . auth()->id(), $logoPath);
-            } elseif ($request->logo === 'remove') {
-                if ($logoPath) {
-                    \App\Services\UploadService::deleteFile($logoPath);
+        try {
+            if ($request->filled('logo')) {
+                if (str_starts_with($request->logo, 'data:image/')) {
+                    $logoPath = \App\Services\UploadService::uploadBase64Image($request->logo, 'digital-wallets/' . auth()->id(), $logoPath);
+                } elseif ($request->logo === 'remove') {
+                    if ($logoPath) {
+                        \App\Services\UploadService::deleteFile($logoPath);
+                    }
+                    $logoPath = null;
                 }
-                $logoPath = null;
             }
+        } catch (\RuntimeException $e) {
+            throw ValidationException::withMessages(['logo' => $e->getMessage()]);
         }
 
         $digitalWallet->update([

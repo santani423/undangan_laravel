@@ -6,7 +6,6 @@ interface RSVPFormProps {
     guestSlug?: string;
     onSuccess?: () => void;
     onToast?: (msg: string) => void;
-    // Style props for theming
     styles: {
         form: string;
         label: string;
@@ -38,7 +37,7 @@ const DEFAULT_LABELS = {
     guests: 'Jumlah Tamu',
     attendance: 'Konfirmasi Kehadiran *',
     attending: '✓ Insya Allah Hadir',
-    notAttending: '✗ Tidak Dapat Hadir',
+    notAttending: '✕ Tidak Dapat Hadir',
     maybe: '? Masih Belum Pasti',
     message: 'Pesan / Doa',
     submit: 'Kirim Konfirmasi',
@@ -46,7 +45,7 @@ const DEFAULT_LABELS = {
     successSub: 'Kami menantikan kehadiran Anda!',
 };
 
-export default function RSVPForm({ rsvpEndpoint, guestName, guestSlug, onToast, styles, labels = {} }: RSVPFormProps) {
+export default function RSVPForm({ rsvpEndpoint, guestName, guestSlug, onSuccess, onToast, styles, labels = {} }: RSVPFormProps) {
     const L = { ...DEFAULT_LABELS, ...labels };
     const [name, setName] = useState(guestName ?? '');
     const [guests, setGuests] = useState('1');
@@ -67,34 +66,42 @@ export default function RSVPForm({ rsvpEndpoint, guestName, guestSlug, onToast, 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
+
         setLoading(true);
         const rsvpStatusMap: Record<string, string> = {
             hadir: 'attending',
             tidak: 'not_attending',
             belum: 'maybe',
         };
+
         const payload: Record<string, string | number | undefined> = {
             name: name.trim(),
-            number_of_guests: parseInt(guests) || 1,
+            number_of_guests: parseInt(guests, 10) || 1,
             rsvp_status: rsvpStatusMap[attendance] ?? attendance,
             message,
             guest_slug: guestSlug,
         };
+
         try {
-            await fetch(rsvpEndpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                body: JSON.stringify(payload),
-            });
+            if (rsvpEndpoint?.trim()) {
+                await fetch(rsvpEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify(payload),
+                });
+            } else {
+                onToast?.('RSVP demo berhasil disimpan!');
+            }
         } catch {
-            // Show success even on network error (graceful degradation)
+            // Demo mode and offline mode both resolve to a friendly success state.
         } finally {
             setLoading(false);
             setSubmitted(true);
+            onSuccess?.();
         }
     };
 
@@ -110,7 +117,6 @@ export default function RSVPForm({ rsvpEndpoint, guestName, guestSlug, onToast, 
 
     return (
         <form onSubmit={handleSubmit} className={styles.form}>
-            {/* Name */}
             <div style={{ marginBottom: '25px' }}>
                 <label className={styles.label}>{L.name}</label>
                 <input
@@ -125,7 +131,6 @@ export default function RSVPForm({ rsvpEndpoint, guestName, guestSlug, onToast, 
                 {errors.name && <p className={styles.errorText}>{errors.name}</p>}
             </div>
 
-            {/* Guests */}
             <div style={{ marginBottom: '25px' }}>
                 <label className={styles.label}>{L.guests}</label>
                 <select value={guests} onChange={(e) => setGuests(e.target.value)} className={styles.select}>
@@ -137,7 +142,6 @@ export default function RSVPForm({ rsvpEndpoint, guestName, guestSlug, onToast, 
                 </select>
             </div>
 
-            {/* Attendance */}
             <div style={{ marginBottom: '25px' }}>
                 <label className={styles.label}>{L.attendance}</label>
                 <div className={styles.radioGroup}>
@@ -153,7 +157,7 @@ export default function RSVPForm({ rsvpEndpoint, guestName, guestSlug, onToast, 
                                 value={opt.value}
                                 checked={attendance === opt.value}
                                 onChange={() => setAttendance(opt.value)}
-                                style={{ accentColor: 'var(--green, #2D5016)', width: '18px', height: '18px' }}
+                                style={{ accentColor: 'var(--sn-lavender-deep, #8b5cf6)', width: '18px', height: '18px' }}
                             />
                             {opt.label}
                         </label>
@@ -162,14 +166,13 @@ export default function RSVPForm({ rsvpEndpoint, guestName, guestSlug, onToast, 
                 {errors.attendance && <p className={styles.errorText}>{errors.attendance}</p>}
             </div>
 
-            {/* Message */}
             <div style={{ marginBottom: '25px' }}>
                 <label className={styles.label}>{L.message}</label>
                 <textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     rows={4}
-                    placeholder="Tuliskan pesan atau doa untuk kedua mempelai..."
+                    placeholder="Tuliskan pesan atau doa untuk sang ulang tahun..."
                     className={styles.textarea}
                 />
             </div>

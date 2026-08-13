@@ -1,6 +1,7 @@
 import Cropper from 'react-easy-crop';
 import { useCallback, useRef, useState } from 'react';
 import { ImageIcon, Minus, Plus, RotateCcw, Upload, X, ZoomIn } from 'lucide-react';
+import { validateImageFile } from '@/lib/image-upload';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -122,14 +123,9 @@ export default function ImageCropUpload({
         const file = e.target.files?.[0];
         if (!file) return;
 
-        if (!file.type.startsWith('image/')) {
-            alert('Format file tidak didukung. Harap upload gambar.');
-            e.target.value = '';
-            return;
-        }
-
-        if (file.size > 5 * 1024 * 1024) {
-            alert('Ukuran gambar terlalu besar. Maksimal 5MB.');
+        const error = validateImageFile(file, 5);
+        if (error) {
+            alert(error);
             e.target.value = '';
             return;
         }
