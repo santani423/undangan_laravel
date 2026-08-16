@@ -102,7 +102,7 @@ class TransactionSeeder extends Seeder
             $updatedAt = $paidAt?->copy() ?? $seededAt->copy()->addHours(1);
 
             DB::table('transactions')->updateOrInsert(
-                ['invoice_number' => $invoiceNumber],
+                ['invitation_id' => $invitation->id],
                 [
                     'user_id' => $invitation->user_id,
                     'invitation_id' => $invitation->id,

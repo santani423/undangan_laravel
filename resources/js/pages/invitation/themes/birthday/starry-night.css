@@ -185,11 +185,12 @@ body {
 }
 
 .sn-cover-qr {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.45rem;
-  margin: 0.5rem 0 1.2rem;
+  width: fit-content;
+  margin: 0.5rem auto 1.2rem;
 }
 
 .sn-cover-qr p {

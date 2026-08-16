@@ -525,6 +525,7 @@ const DEMO_INVITATION: BirthdayInvitation = {
 };
 
 export default function BirthdayStarryNight({ invitation, visitor }: Props) {
+    console.log('BirthdayStarryNight invitation:', visitor, invitation);
     const data = invitation ?? DEMO_INVITATION;
     const [opened, setOpened] = useState(data.features?.cover === false);
     const [musicArmed, setMusicArmed] = useState(false);
@@ -540,6 +541,7 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
 
     const features = data.features ?? {};
     const isEnabled = (key: keyof FeatureFlags) => features[key] !== false;
+    const hasSpecificGuest = Boolean(visitor?.trim() || data.guestName);
     const guestLabel = visitor?.trim() || data.guestName || data.greeting?.guestLabel || 'Tamu Undangan';
     const celebrantName = data.celebrantNickname || data.celebrantName || 'Birthday Star';
 
@@ -549,9 +551,12 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
     const galleryItems = data.gallery.length > 0 ? data.gallery : DEMO_GALLERY;
     const galleryCategories = Array.from(new Set(galleryItems.map((item) => item.category).filter(Boolean)));
     const filteredGallery = galleryFilter === 'all' ? galleryItems : galleryItems.filter((item) => item.category === galleryFilter);
-    const timelineItems = data.lifeJourney?.length > 0 ? data.lifeJourney : DEMO_TIMELINE;
+    // Like bank/e-wallet accounts, the life-journey timeline must never fall back to
+    // demo content on a real invitation — if the celebrant hasn't added any story
+    // entries, the "Her Story" section should simply stay hidden.
+    const timelineItems = invitation ? (data.lifeJourney ?? []) : DEMO_TIMELINE;
     // Bank/e-wallet accounts carry real payment details, so — unlike the placeholder
-    // gallery/timeline content — a real invitation must never fall back to demo accounts
+    // gallery content — a real invitation must never fall back to demo accounts
     // just because the couple hasn't linked any yet.
     const bankAccounts = invitation ? data.bankAccounts : DEMO_INVITATION.bankAccounts;
     const digitalWallets = invitation ? data.digitalWallets : DEMO_INVITATION.digitalWallets;
@@ -574,7 +579,7 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
             case 'event':
                 return isEnabled('event_detail');
             case 'timeline':
-                return isEnabled('love_story');
+                return isEnabled('love_story') && timelineItems.length > 0;
             case 'gallery':
                 return isEnabled('gallery');
             case 'gift':
@@ -794,9 +799,9 @@ export default function BirthdayStarryNight({ invitation, visitor }: Props) {
                     </div>
 
                     <div className="sn-cover-content">
-                        <p className="sn-cover-tag">✨ Royal Birthday Invitation ✨</p>
+                        <p className="sn-cover-tag">Royal Birthday Invitation </p>
                         <p className="sn-cover-subtitle">{coverSubtitle}</p>
-                        <div className="sn-cover-name">{celebrantName}</div>
+                        <div className="sn-cover-name">{data.guestName ? data.guestName : 'Saudara/i'}</div>
                         {data.celebrantAge && <p className="sn-cover-age">🎂 Turning {data.celebrantAge} Years Old 👑</p>}
                         {mainEvent && <p className="sn-cover-date">📅 {mainEvent.dateFormatted}</p>}
                         <p className="sn-cover-guest">

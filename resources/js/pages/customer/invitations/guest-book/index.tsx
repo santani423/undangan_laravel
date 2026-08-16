@@ -5,11 +5,13 @@ import { Head, Link, router } from '@inertiajs/react';
 import {
     ArrowLeft,
     AlertCircle,
+    Check,
     CheckCircle2,
     CheckSquare,
     Download,
     ExternalLink,
     Image,
+    Link2,
     Palette,
     Pencil,
     Plus,
@@ -631,13 +633,29 @@ function EditGuestModal({ guest, invSlug, onClose }: { guest: GuestRow; invSlug:
 
 // ─── Guest Row ────────────────────────────────────────────────────────────────
 
-function GuestTableRow({ guest, slug, onEdit }: { guest: GuestRow; slug: string; onEdit: (g: GuestRow) => void }) {
+function GuestTableRow({ guest, slug, onEdit, onCopied }: { guest: GuestRow; slug: string; onEdit: (g: GuestRow) => void; onCopied: (name: string) => void }) {
+    const [copied, setCopied] = useState(false);
+    const invitationUrl = guest.slug && typeof window !== 'undefined'
+        ? `${window.location.origin}/${slug}/${guest.slug}`
+        : null;
+
     const handleCheckIn = () => {
         router.patch(`/customer/invitations/${slug}/guests/${guest.id}/checkin`);
     };
     const handleDelete = () => {
         if (!confirm(`Hapus tamu "${guest.name}"?`)) return;
         router.delete(`/customer/invitations/${slug}/guests/${guest.id}`);
+    };
+    const handleCopyLink = async () => {
+        if (!invitationUrl) return;
+        try {
+            await navigator.clipboard.writeText(invitationUrl);
+            setCopied(true);
+            onCopied(guest.name);
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            window.prompt('Salin link undangan:', invitationUrl);
+        }
     };
 
     return (
@@ -649,7 +667,17 @@ function GuestTableRow({ guest, slug, onEdit }: { guest: GuestRow; slug: string;
             </td>
             <td className="px-4 py-3">
                 {guest.slug
-                    ? <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded text-muted-foreground">{guest.slug}</span>
+                    ? (
+                        <a
+                            href={invitationUrl ?? '#'}
+                            target="_blank"
+                            rel="noreferrer"
+                            title={`Buka undangan untuk ${guest.name}: ${invitationUrl}`}
+                            className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded text-muted-foreground hover:text-primary hover:underline"
+                        >
+                            {guest.slug}
+                        </a>
+                    )
                     : <span className="text-xs text-muted-foreground">—</span>}
             </td>
             <td className="px-4 py-3 text-xs text-muted-foreground">{guest.category ?? '—'}</td>
@@ -677,6 +705,20 @@ function GuestTableRow({ guest, slug, onEdit }: { guest: GuestRow; slug: string;
                         className={`p-1.5 rounded-lg transition-colors ${guest.checked_in_at ? 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20' : 'text-muted-foreground hover:bg-muted'}`}
                     >
                         <CheckSquare className="size-4" />
+                    </button>
+                    <button
+                        title={guest.slug ? (copied ? 'Link tersalin!' : 'Salin Link Undangan Tamu') : 'Tambahkan slug agar tamu memiliki link personal'}
+                        onClick={handleCopyLink}
+                        disabled={!guest.slug}
+                        className={`p-1.5 rounded-lg transition-colors ${
+                            !guest.slug
+                                ? 'text-muted-foreground/30 cursor-not-allowed'
+                                : copied
+                                    ? 'text-emerald-600'
+                                    : 'text-muted-foreground hover:bg-muted'
+                        }`}
+                    >
+                        {copied ? <Check className="size-4" /> : <Link2 className="size-4" />}
                     </button>
                     <button
                         title="Edit"
@@ -710,6 +752,12 @@ export default function GuestBookIndex({ invitation, guests, stats, displaySetti
 
     const [search, setSearch] = useState(filters.search ?? '');
     const [showAddModal, setShowAddModal] = useState(false);
+    const [copyToast, setCopyToast] = useState<string | null>(null);
+
+    const handleGuestCopied = (name: string) => {
+        setCopyToast(name);
+        setTimeout(() => setCopyToast(null), 2500);
+    };
     const [editingGuest, setEditingGuest] = useState<GuestRow | null>(null);
     const exportStatus = filters.checked_in === 'yes' ? 'checked_in' : (filters.checked_in === 'no' ? 'not_checked_in' : '');
 
@@ -742,6 +790,13 @@ export default function GuestBookIndex({ invitation, guests, stats, displaySetti
                     invSlug={invitation.slug}
                     onClose={() => setEditingGuest(null)}
                 />
+            )}
+
+            {copyToast && (
+                <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-medium text-white shadow-lg animate-in fade-in slide-in-from-bottom-2">
+                    <CheckCircle2 className="size-4 shrink-0" />
+                    Link undangan untuk {copyToast} berhasil disalin
+                </div>
             )}
 
             <div className="flex flex-col gap-6 p-6">
@@ -865,7 +920,7 @@ export default function GuestBookIndex({ invitation, guests, stats, displaySetti
                                 </thead>
                                 <tbody>
                                     {guests.data.map((g) => (
-                                        <GuestTableRow key={g.id} guest={g} slug={invitation.slug} onEdit={setEditingGuest} />
+                                        <GuestTableRow key={g.id} guest={g} slug={invitation.slug} onEdit={setEditingGuest} onCopied={handleGuestCopied} />
                                     ))}
                                 </tbody>
                             </table>

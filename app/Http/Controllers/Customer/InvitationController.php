@@ -551,6 +551,7 @@ class InvitationController extends Controller
             'guests'       => $guestsPage->through(fn ($g) => [
                 'id'             => $g->id,
                 'name'           => $g->name,
+                'slug'           => $g->slug,
                 'email'          => $g->email,
                 'phone_number'   => $g->phone_number,
                 'gender'         => $g->gender,

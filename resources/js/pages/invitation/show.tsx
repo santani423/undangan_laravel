@@ -20,6 +20,7 @@ interface Props {
 }
 
 function resolveThemeComponent(themeSlug: string, invitation: InvitationData, visitor?: string): React.ReactNode {
+    console.log('Resolving theme component for slug:', themeSlug, 'with invitation type:', invitation.type);
     switch (themeSlug) {
         // Birthday themes
         case 'birthday':

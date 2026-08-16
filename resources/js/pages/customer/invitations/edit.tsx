@@ -156,6 +156,7 @@ interface ThemeItem {
 interface GuestData {
     id: number;
     name: string;
+    slug: string | null;
     email: string | null;
     phone_number: string | null;
     gender: 'male' | 'female' | null;
@@ -1511,10 +1512,34 @@ function GuestsTab({
         });
     }
 
+    const [copiedGuestId, setCopiedGuestId] = useState<number | null>(null);
+    const [copyToast, setCopyToast] = useState<string | null>(null);
+
+    async function handleCopyLink(g: GuestData) {
+        if (!g.slug) return;
+        const url = `${window.location.origin}/${slug}/${g.slug}`;
+        try {
+            await navigator.clipboard.writeText(url);
+            setCopiedGuestId(g.id);
+            setCopyToast(g.name);
+            setTimeout(() => setCopiedGuestId(null), 2000);
+            setTimeout(() => setCopyToast(null), 2500);
+        } catch {
+            window.prompt('Salin link undangan:', url);
+        }
+    }
+
     const inputCls = 'w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition';
 
     return (
         <div className="flex flex-col gap-5">
+            {copyToast && (
+                <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-medium text-white shadow-lg animate-in fade-in slide-in-from-bottom-2">
+                    <Check className="size-4 shrink-0" />
+                    Link undangan untuk {copyToast} berhasil disalin
+                </div>
+            )}
+
             {/* Stats mini cards */}
             <div className="grid grid-cols-4 gap-3 sm:grid-cols-7">
                 {[
@@ -1706,6 +1731,20 @@ function GuestsTab({
                                                     className={`p-1.5 rounded-lg transition-colors ${g.checked_in_at ? 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20' : 'text-muted-foreground hover:bg-muted'}`}
                                                 >
                                                     <CheckSquare className="size-4" />
+                                                </button>
+                                                <button
+                                                    title={g.slug ? (copiedGuestId === g.id ? 'Link tersalin!' : 'Salin Link Undangan Tamu') : 'Tambahkan slug agar tamu memiliki link personal'}
+                                                    onClick={() => handleCopyLink(g)}
+                                                    disabled={!g.slug}
+                                                    className={`p-1.5 rounded-lg transition-colors ${
+                                                        !g.slug
+                                                            ? 'text-muted-foreground/30 cursor-not-allowed'
+                                                            : copiedGuestId === g.id
+                                                                ? 'text-emerald-600'
+                                                                : 'text-muted-foreground hover:bg-muted'
+                                                    }`}
+                                                >
+                                                    {copiedGuestId === g.id ? <Check className="size-4" /> : <Link2 className="size-4" />}
                                                 </button>
                                                 <button
                                                     title="Hapus"
