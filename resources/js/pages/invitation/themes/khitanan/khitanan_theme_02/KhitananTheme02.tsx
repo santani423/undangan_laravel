@@ -16,7 +16,7 @@ interface KhitananTheme02Props {
     greeting?: Greeting;
 }
 
-const EVENT_ICONS = ['🕌', '📿', '🌙', '✦', '🍽️', '⭐'];
+const EVENT_ICONS = ['🕌', '👑', '🏰', '✨', '🍽️', '⭐'];
 
 function addToCalendar(ev: KhitananInvitation['events'][0]) {
     const start = (ev.date || '').replace(/-/g, '') + 'T' + (ev.time || '080000').replace(/:/g, '') + '00Z';
@@ -114,9 +114,22 @@ export default function KhitananTheme02({ invitation, visitor, greeting }: Khita
             {/* ── Opening Overlay ────────────────────────────────────────────────── */}
             {coverEnabled && (
                 <div className={`kt2-overlay${opened ? ' hide' : ''}`}>
+                    <span className="kt2-deco kt2-deco-cloud" style={{ top: '10%', left: '8%' }}>
+                        ☁️
+                    </span>
+                    <span className="kt2-deco kt2-deco-sparkle" style={{ top: '16%', right: '10%', animationDelay: '-1s' }}>
+                        ✨
+                    </span>
+                    <span className="kt2-deco kt2-deco-cloud" style={{ bottom: '14%', right: '9%', animationDelay: '-6s' }}>
+                        ☁️
+                    </span>
+                    <span className="kt2-deco kt2-deco-sparkle" style={{ bottom: '18%', left: '11%', animationDelay: '-2s' }}>
+                        ⭐
+                    </span>
                     <div className="kt2-overlay-frame">
                         <div className="kt2-corner-tr" />
                         <div className="kt2-corner-bl" />
+                        <div className="kt2-overlay-crown">👑</div>
                         <p className="kt2-overlay-bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
                         <div className="kt2-overlay-divider" />
                         <p className="kt2-overlay-label">Walimatul Khitan</p>
@@ -137,15 +150,15 @@ export default function KhitananTheme02({ invitation, visitor, greeting }: Khita
                                 <GuestQrCode
                                     data={invitation.guestQrData}
                                     size={120}
-                                    style={{ borderRadius: '8px', border: '3px solid rgba(232,217,160,0.6)' }}
+                                    style={{ borderRadius: '8px', border: '3px solid rgba(242,226,168,0.6)' }}
                                 />
-                                <p style={{ color: 'rgba(232,217,160,0.55)', fontSize: '0.65rem', marginTop: '6px', letterSpacing: '1.5px' }}>
+                                <p style={{ color: 'rgba(242,226,168,0.55)', fontSize: '0.65rem', marginTop: '6px', letterSpacing: '1.5px' }}>
                                     QR Check-in Tamu
                                 </p>
                             </div>
                         )}
                         <button className="kt2-btn-open" onClick={openInvitation}>
-                            ✦ {greeting?.buttonText ?? 'Buka Undangan'} ✦
+                            👑 {greeting?.buttonText ?? 'Buka Undangan'} 👑
                         </button>
                     </div>
                 </div>
@@ -155,17 +168,34 @@ export default function KhitananTheme02({ invitation, visitor, greeting }: Khita
             <div ref={mainRef} className={`kt2-main${opened ? ' visible' : ''}`}>
                 {/* ── HERO ──────────────────────────────────────────────────────── */}
                 <section className="kt2-hero">
+                    <span className="kt2-deco kt2-deco-cloud" style={{ top: '9%', left: '7%' }}>
+                        ☁️
+                    </span>
+                    <span className="kt2-deco kt2-deco-sparkle" style={{ top: '15%', right: '9%', animationDelay: '-1.4s' }}>
+                        ✨
+                    </span>
+                    <span className="kt2-deco kt2-deco-cloud" style={{ bottom: '12%', right: '8%', animationDelay: '-7s' }}>
+                        ☁️
+                    </span>
+                    <span className="kt2-castle-silhouette" aria-hidden="true">
+                        🏰
+                    </span>
                     <div className="kt2-hero-frame kt2-anim-up">
                         <p className="kt2-hero-label">Walimatul Khitan</p>
                         <h1 className="kt2-hero-name">{invitation.childName}</h1>
-                        <div className="kt2-hero-photo-arch">
-                            <div
-                                className="kt2-hero-photo"
-                                style={
-                                    childPhoto ? { backgroundImage: `url(${childPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}
-                                }
-                            >
-                                {!childPhoto && invitation.childName?.charAt(0)}
+                        <div className="kt2-hero-photo-wrap">
+                            <span className="kt2-crown">👑</span>
+                            <div className="kt2-hero-photo-arch">
+                                <div
+                                    className="kt2-hero-photo"
+                                    style={
+                                        childPhoto
+                                            ? { backgroundImage: `url(${childPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                                            : {}
+                                    }
+                                >
+                                    {!childPhoto && invitation.childName?.charAt(0)}
+                                </div>
                             </div>
                         </div>
                         {invitation.childAge && <p className="kt2-hero-sub">Genap berusia {formatAge(invitation.childAge)}</p>}
@@ -196,7 +226,7 @@ export default function KhitananTheme02({ invitation, visitor, greeting }: Khita
                     <section className="kt2-section kt2-profile">
                         <h2 className="kt2-section-title kt2-anim-up">Ananda Tersayang</h2>
                         <div className="kt2-divider kt2-anim-up">
-                            <span>✦</span>
+                            <span>👑</span>
                         </div>
                         <div className="kt2-profile-card kt2-anim-up">
                             <div className="kt2-profile-photo-arch">
@@ -223,7 +253,7 @@ export default function KhitananTheme02({ invitation, visitor, greeting }: Khita
                     <section className="kt2-section kt2-events-bg">
                         <h2 className="kt2-section-title light kt2-anim-up">Rangkaian Acara</h2>
                         <div className="kt2-divider kt2-anim-up">
-                            <span>🌙</span>
+                            <span>🏰</span>
                         </div>
                         <div className="kt2-events-grid">
                             {invitation.events.map((ev, i) => {
@@ -450,6 +480,15 @@ export default function KhitananTheme02({ invitation, visitor, greeting }: Khita
 
                 {/* ── CLOSING ───────────────────────────────────────────────────── */}
                 <section className="kt2-closing">
+                    <span className="kt2-deco kt2-deco-cloud" style={{ top: '10%', left: '9%' }}>
+                        ☁️
+                    </span>
+                    <span className="kt2-deco kt2-deco-sparkle" style={{ top: '14%', right: '11%', animationDelay: '-1.6s' }}>
+                        ✨
+                    </span>
+                    <span className="kt2-deco kt2-deco-sparkle" style={{ bottom: '16%', left: '10%', animationDelay: '-0.8s' }}>
+                        ⭐
+                    </span>
                     <div className="kt2-closing-frame kt2-anim-up">
                         <p className="kt2-closing-arabic">جَزَاكُمُ اللَّهُ خَيْرًا</p>
                         <div className="kt2-gold-line" />
@@ -466,7 +505,7 @@ export default function KhitananTheme02({ invitation, visitor, greeting }: Khita
                         <p className="kt2-closing-name">{invitation.childName}</p>
                         {parentsLine && <p className="kt2-closing-family">Keluarga {parentsLine}</p>}
                         <div className="kt2-gold-line" />
-                        <p style={{ color: 'var(--kt2-gold)', fontSize: '1.4rem', animation: 'kt2Float 3s ease-in-out infinite' }}>☾</p>
+                        <p className="kt2-closing-moon">☾</p>
                         <p className="kt2-closing-credit">Created with love ✦ Undesia Digital Invitation</p>
                     </div>
                 </section>

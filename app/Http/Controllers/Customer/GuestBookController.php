@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Customer\StoreGuestRequest;
+use App\Http\Requests\Customer\UpdateGuestRequest;
 use App\Models\Guest;
 use App\Models\Invitation;
 use App\Models\SliderPhoto;
 use App\Rules\Base64Image;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,6 +22,8 @@ use Inertia\Response as InertiaResponse;
 
 class GuestBookController extends Controller
 {
+    use AuthorizesRequests;
+
     public function index(Request $request, Invitation $invitation): InertiaResponse
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
@@ -285,8 +290,8 @@ class GuestBookController extends Controller
 
     public function manualCheckIn(Invitation $invitation, Guest $guest): JsonResponse
     {
-        abort_if($invitation->user_id !== auth()->id(), 403);
         abort_if($guest->invitation_id !== $invitation->id, 404);
+        $this->authorize('update', $guest);
 
         if ($guest->checked_in_at) {
             return response()->json([
@@ -324,20 +329,11 @@ class GuestBookController extends Controller
         return response()->json(['available' => ! $exists]);
     }
 
-    public function store(Request $request, Invitation $invitation): RedirectResponse
+    public function store(StoreGuestRequest $request, Invitation $invitation): RedirectResponse
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
 
         $slug = Str::slug($request->input('slug', '')) ?: Str::slug($request->input('name', ''));
-
-        $request->validate([
-            'name'         => 'required|string|max:255',
-            'email'        => 'nullable|email|max:255',
-            'phone_number' => 'nullable|string|max:20',
-            'gender'       => 'nullable|in:male,female',
-            'category'     => 'nullable|string|max:100',
-            'notes'        => 'nullable|string|max:500',
-        ]);
 
         if ($slug && $invitation->guests()->where('slug', $slug)->exists()) {
             return back()->withErrors(['slug' => 'Slug sudah digunakan pada undangan ini.'])->withInput();
@@ -357,22 +353,10 @@ class GuestBookController extends Controller
         return back()->with('success', 'Tamu berhasil ditambahkan.');
     }
 
-    public function update(Request $request, Invitation $invitation, Guest $guest): RedirectResponse
+    public function update(UpdateGuestRequest $request, Invitation $invitation, Guest $guest): RedirectResponse
     {
-        abort_if($invitation->user_id !== auth()->id(), 403);
         abort_if($guest->invitation_id !== $invitation->id, 404);
-
-        $request->validate([
-            'name'           => 'sometimes|required|string|max:255',
-            'email'          => 'nullable|email|max:255',
-            'phone_number'   => 'nullable|string|max:20',
-            'gender'         => 'nullable|in:male,female',
-            'category'       => 'nullable|string|max:100',
-            'notes'          => 'nullable|string|max:500',
-            'rsvp_status'    => 'sometimes|in:pending,attending,not_attending,maybe',
-            'rsvp_headcount' => 'nullable|integer|min:0|max:100',
-            'checked_in_at'  => 'nullable|date',
-        ]);
+        $this->authorize('update', $guest);
 
         if ($request->has('slug')) {
             $slug = Str::slug($request->input('slug', ''));
@@ -398,8 +382,8 @@ class GuestBookController extends Controller
 
     public function checkIn(Invitation $invitation, Guest $guest): RedirectResponse
     {
-        abort_if($invitation->user_id !== auth()->id(), 403);
         abort_if($guest->invitation_id !== $invitation->id, 404);
+        $this->authorize('update', $guest);
 
         $guest->update(['checked_in_at' => $guest->checked_in_at ? null : now()]);
 
@@ -410,8 +394,8 @@ class GuestBookController extends Controller
 
     public function destroy(Invitation $invitation, Guest $guest): RedirectResponse
     {
-        abort_if($invitation->user_id !== auth()->id(), 403);
         abort_if($guest->invitation_id !== $invitation->id, 404);
+        $this->authorize('delete', $guest);
 
         $guest->delete();
 

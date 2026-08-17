@@ -36,6 +36,7 @@ import {
     Pause,
     Play,
     Plus,
+    RefreshCw,
     Save,
     Search,
     Settings,
@@ -1425,14 +1426,19 @@ function GuestsTab({
     const [addSlugStatus, setAddSlugStatus] = useState<'idle'|'checking'|'available'|'taken'>('idle');
     const addSlugDebounce = useRef<ReturnType<typeof setTimeout>|null>(null);
     const [addSaving,   setAddSaving]   = useState(false);
+    const [refreshing,  setRefreshing]  = useState(false);
 
-    const reload = useCallback((extra: Record<string, string>) => {
+    const reload = useCallback((extra: Record<string, string>, opts?: { onStart?: () => void; onFinish?: () => void }) => {
         router.get(
             window.location.pathname,
             { guest_search: search, guest_status: guestFilters.guestStatus, guest_checked_in: guestFilters.guestCheckedIn, ...extra },
-            { only: ['guests', 'guestStats', 'guestFilters'], preserveState: true, preserveScroll: true },
+            { only: ['guests', 'guestStats', 'guestFilters'], preserveState: true, preserveScroll: true, onStart: opts?.onStart, onFinish: opts?.onFinish },
         );
     }, [search, guestFilters]);
+
+    const handleRefresh = () => {
+        reload({}, { onStart: () => setRefreshing(true), onFinish: () => setRefreshing(false) });
+    };
 
     const guestToSlug = (text: string) =>
         text.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -1597,6 +1603,15 @@ function GuestsTab({
                     <option value="yes">Sudah Check-in</option>
                     <option value="no">Belum Check-in</option>
                 </select>
+                <button
+                    type="button"
+                    onClick={handleRefresh}
+                    disabled={refreshing}
+                    title="Muat Ulang"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                >
+                    <RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} /> Muat Ulang
+                </button>
                 <a
                     href={`/customer/invitations/${slug}/guests/operator`}
                     target="_blank"
@@ -3087,7 +3102,10 @@ function DigitalEnvelopeTab({
     function handleWalletCreated(created: Omit<DigitalWalletItem, 'is_linked' | 'is_displayed' | 'display_order'>) {
         setWallets((prev) => {
             if (prev.some((w) => w.id === created.id)) return prev;
-            return [...prev, { ...created, is_linked: false, is_displayed: false, display_order: 99 }];
+            const linkedCount = prev.filter((w) => w.is_linked).length;
+            const next = [...prev, { ...created, is_linked: true, is_displayed: true, display_order: linkedCount }];
+            syncToServer(next);
+            return next;
         });
     }
 

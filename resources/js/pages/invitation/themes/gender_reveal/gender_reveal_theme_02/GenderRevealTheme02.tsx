@@ -16,9 +16,29 @@ interface GenderRevealTheme02Props {
     greeting?: Greeting;
 }
 
-const CONFETTI_COLORS = ['#8B5FBF', '#F0B429', '#C9A9E8', '#FFE6A8', '#B489DE'];
-const BALLOON_EMOJI = ['🎈', '🎈', '🎈', '🎈'];
-const EVENT_ICONS = ['🎈', '🎊', '🎉', '🍭', '🧁', '✨'];
+const CONFETTI_COLORS = ['#FF7A59', '#FFB648', '#3FB6A8', '#FFE1A8', '#F2966B'];
+const EVENT_ICONS = ['🎈', '🧭', '🏕️', '🌠', '🦋', '✨'];
+const SKY_CLOUDS = ['☁️', '☁️', '☁️'];
+const TEASER_STARS = [
+    { top: '12%', left: '8%', size: '0.7rem', duration: '2.6s', delay: '0s' },
+    { top: '22%', left: '85%', size: '0.9rem', duration: '3.2s', delay: '0.4s' },
+    { top: '8%', left: '45%', size: '0.6rem', duration: '2.2s', delay: '0.9s' },
+    { top: '38%', left: '18%', size: '0.8rem', duration: '3s', delay: '1.3s' },
+    { top: '15%', left: '65%', size: '0.65rem', duration: '2.8s', delay: '0.6s' },
+    { top: '30%', left: '92%', size: '0.7rem', duration: '2.4s', delay: '1.6s' },
+    { top: '45%', left: '75%', size: '0.6rem', duration: '3.4s', delay: '0.2s' },
+    { top: '5%', left: '25%', size: '0.75rem', duration: '2.9s', delay: '1s' },
+];
+const TEASER_SPARKS = [
+    { left: '6%', color: 'var(--gr2-amber)', delay: '0s' },
+    { left: '20%', color: 'var(--gr2-coral)', delay: '0.3s' },
+    { left: '34%', color: 'var(--gr2-teal)', delay: '0.6s' },
+    { left: '48%', color: 'var(--gr2-amber-light)', delay: '0.9s' },
+    { left: '62%', color: 'var(--gr2-coral)', delay: '0.2s' },
+    { left: '76%', color: 'var(--gr2-teal)', delay: '1.1s' },
+    { left: '90%', color: 'var(--gr2-amber)', delay: '0.5s' },
+    { left: '13%', color: 'var(--gr2-coral)', delay: '1.4s' },
+];
 
 function addToCalendar(ev: GenderRevealInvitation['events'][0]) {
     const start = (ev.date || '').replace(/-/g, '') + 'T' + (ev.time || '100000').replace(/:/g, '') + '00Z';
@@ -108,7 +128,14 @@ export default function GenderRevealTheme02({ invitation, visitor, greeting }: G
     const fatherName = invitation.fatherName;
     const motherName = invitation.motherName;
     const parentsNames = fatherName && motherName ? `${fatherName} & ${motherName}` : fatherName || motherName || '';
-    const parentsLine = fatherName && motherName ? `Ayah ${fatherName} & Bunda ${motherName}` : fatherName ? `Ayah ${fatherName}` : motherName ? `Bunda ${motherName}` : '';
+    const parentsLine =
+        fatherName && motherName
+            ? `Ayah ${fatherName} & Bunda ${motherName}`
+            : fatherName
+              ? `Ayah ${fatherName}`
+              : motherName
+                ? `Bunda ${motherName}`
+                : '';
     const guestName = invitation.guestName || visitor || '';
     const coverGuestName = guestName || greeting?.guestLabel || '';
     const videoEmbedUrl = getVideoEmbedUrl(invitation.coupleVideoUrl ?? '');
@@ -146,9 +173,20 @@ export default function GenderRevealTheme02({ invitation, visitor, greeting }: G
                     )}
 
                     <div className="gr2-cover-garland" aria-hidden="true" />
+                    <div className="gr2-cover-stars" aria-hidden="true">
+                        {TEASER_STARS.slice(0, 5).map((s, i) => (
+                            <span
+                                key={i}
+                                className="gr2-star"
+                                style={{ top: s.top, left: s.left, fontSize: s.size, animationDuration: s.duration, animationDelay: s.delay }}
+                            >
+                                ✦
+                            </span>
+                        ))}
+                    </div>
 
                     <div className="gr2-cover-card">
-                        <span className="gr2-cover-tag">🎈 Kejutan Spesial Segera Tiba 🎈</span>
+                        <span className="gr2-cover-tag">🎈 Petualangan Kecil Segera Dimulai 🎈</span>
                         <p className="gr2-cover-subtitle">Yuk, rayakan momen penuh kejutan dan sukacita bersama kami</p>
                         {parentsNames && <h1 className="gr2-cover-name">{parentsNames}</h1>}
                         {invitation.dueDateFormatted && <div className="gr2-cover-due-badge">🤰 HPL {invitation.dueDateFormatted}</div>}
@@ -164,7 +202,11 @@ export default function GenderRevealTheme02({ invitation, visitor, greeting }: G
 
                         {invitation.guestQrData && (
                             <div className="gr2-cover-qr">
-                                <GuestQrCode data={invitation.guestQrData} size={116} style={{ borderRadius: '12px', border: '3px solid rgba(255,255,255,0.65)' }} />
+                                <GuestQrCode
+                                    data={invitation.guestQrData}
+                                    size={116}
+                                    style={{ borderRadius: '12px', border: '3px solid rgba(255,255,255,0.65)' }}
+                                />
                                 <p className="gr2-cover-qr-label">QR Check-in Tamu</p>
                             </div>
                         )}
@@ -178,30 +220,49 @@ export default function GenderRevealTheme02({ invitation, visitor, greeting }: G
 
             {/* ── Main Content ──────────────────────────────────────────────────── */}
             <div ref={mainRef} className={`gr2-main${opened ? ' gr2-main-visible' : ''}`}>
-                {/* HERO */}
+                {/* HERO — adventure sky: mountains, hot air balloon, drifting clouds */}
                 <section className="gr2-hero">
+                    <div className="gr2-mountains" aria-hidden="true">
+                        <div className="gr2-mountain-row gr2-mountain-back" />
+                        <div className="gr2-mountain-row gr2-mountain-front" />
+                    </div>
+                    <div className="gr2-sky-clouds" aria-hidden="true">
+                        {SKY_CLOUDS.map((c, i) => (
+                            <span key={i} className={`gr2-sky-cloud gr2-sky-cloud-${i}`}>
+                                {c}
+                            </span>
+                        ))}
+                    </div>
+                    <div className="gr2-hot-balloon-drift" aria-hidden="true">
+                        <div className="gr2-hot-balloon-bob">
+                            <div className="gr2-balloon-envelope" />
+                            <div className="gr2-balloon-strings" />
+                            <div className="gr2-balloon-basket" />
+                        </div>
+                    </div>
                     {confettiEnabled && (
                         <div className="gr2-hero-balloons" aria-hidden="true">
-                            {BALLOON_EMOJI.map((b, i) => (
-                                <span key={i} className={`gr2-balloon gr2-balloon-${i}`}>
-                                    {b}
-                                </span>
-                            ))}
+                            <span className="gr2-balloon gr2-balloon-0">🎈</span>
+                            <span className="gr2-balloon gr2-balloon-1">🎈</span>
                         </div>
                     )}
                     <div className="gr2-hero-inner gr2-anim-up">
-                        <p className="gr2-hero-label">✨ Balloon Reveal Party ✨</p>
+                        <p className="gr2-hero-label">✨ Little Adventure Awaits ✨</p>
                         <div className="gr2-hero-photo-wrap">
                             <div
                                 className="gr2-hero-photo"
-                                style={parentsPhoto ? { backgroundImage: `url(${parentsPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+                                style={
+                                    parentsPhoto
+                                        ? { backgroundImage: `url(${parentsPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                                        : {}
+                                }
                             >
                                 {!parentsPhoto && '🤰'}
                             </div>
                             <div className="gr2-hero-mystery-burst">❓</div>
                         </div>
                         {parentsNames && <h1 className="gr2-hero-name">{parentsNames}</h1>}
-                        <p className="gr2-hero-tagline">"Satu kejutan istimewa sedang bersiap untuk pecah bersama sukacita!"</p>
+                        <p className="gr2-hero-tagline">"Boy or girl? Satu petualangan seru sedang menanti untuk kita jelajahi bersama!"</p>
                         {invitation.mainDateFormatted && <p className="gr2-hero-date">{invitation.mainDateFormatted}</p>}
 
                         {isEnabled('countdown') && (
@@ -238,6 +299,42 @@ export default function GenderRevealTheme02({ invitation, visitor, greeting }: G
                     </section>
                 )}
 
+                {/* "BOY OR GIRL?" TEASER — dusk sky, twinkling stars, scroll-triggered reveal.
+                    No real answer exists yet: this only builds anticipation for the live event. */}
+                <section className="gr2-teaser-section">
+                    <div className="gr2-teaser-stars" aria-hidden="true">
+                        {TEASER_STARS.map((s, i) => (
+                            <span
+                                key={i}
+                                className="gr2-star"
+                                style={{ top: s.top, left: s.left, fontSize: s.size, animationDuration: s.duration, animationDelay: s.delay }}
+                            >
+                                ✦
+                            </span>
+                        ))}
+                    </div>
+                    <div className="gr2-teaser-body gr2-anim-up">
+                        <p className="gr2-teaser-label">Petualangan Kecil Kami</p>
+                        <div className="gr2-teaser-mark">?</div>
+                        <h2 className="gr2-teaser-title">Boy or Girl? 🧭</h2>
+                        <p className="gr2-teaser-sub">
+                            Jawabannya masih jadi rahasia peta petualangan kami. Yuk, datang dan saksikan sendiri keseruan momen pengungkapannya
+                            bersama-sama!
+                        </p>
+                        {confettiEnabled && (
+                            <div className="gr2-teaser-sparks" aria-hidden="true">
+                                {TEASER_SPARKS.map((s, i) => (
+                                    <span key={i} className="gr2-spark" style={{ left: s.left, background: s.color, animationDelay: s.delay }} />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    <div className="gr2-teaser-mountains" aria-hidden="true">
+                        <div className="gr2-mountain-row gr2-mountain-back" />
+                        <div className="gr2-mountain-row gr2-mountain-front" />
+                    </div>
+                </section>
+
                 {/* PARENTS / REVEAL PROFILE */}
                 {isEnabled('couple_profile') && (
                     <section className="gr2-section gr2-profile-bg">
@@ -249,7 +346,11 @@ export default function GenderRevealTheme02({ invitation, visitor, greeting }: G
                             <div className="gr2-profile-photo-frame">
                                 <div
                                     className="gr2-profile-photo"
-                                    style={parentsPhoto ? { backgroundImage: `url(${parentsPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+                                    style={
+                                        parentsPhoto
+                                            ? { backgroundImage: `url(${parentsPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                                            : {}
+                                    }
                                 >
                                     {!parentsPhoto && '🤰'}
                                 </div>
@@ -259,7 +360,9 @@ export default function GenderRevealTheme02({ invitation, visitor, greeting }: G
                             {(invitation.dueDateFormatted || invitation.revealDateFormatted) && (
                                 <div className="gr2-profile-tags">
                                     {invitation.dueDateFormatted && <span className="gr2-profile-tag">🤰 HPL {invitation.dueDateFormatted}</span>}
-                                    {invitation.revealDateFormatted && <span className="gr2-profile-tag">🎉 Reveal {invitation.revealDateFormatted}</span>}
+                                    {invitation.revealDateFormatted && (
+                                        <span className="gr2-profile-tag">🎉 Reveal {invitation.revealDateFormatted}</span>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -294,7 +397,8 @@ export default function GenderRevealTheme02({ invitation, visitor, greeting }: G
                         </div>
                         <div className="gr2-events-grid">
                             {invitation.events.map((ev, i) => {
-                                const mapsUrl = ev.locationUrl || (ev.mapsLat && ev.mapsLng ? `https://maps.google.com/?q=${ev.mapsLat},${ev.mapsLng}` : '');
+                                const mapsUrl =
+                                    ev.locationUrl || (ev.mapsLat && ev.mapsLng ? `https://maps.google.com/?q=${ev.mapsLat},${ev.mapsLng}` : '');
                                 return (
                                     <div key={i} className="gr2-event-card gr2-anim-up">
                                         <span className="gr2-event-icon">{EVENT_ICONS[i % EVENT_ICONS.length]}</span>
@@ -521,6 +625,17 @@ export default function GenderRevealTheme02({ invitation, visitor, greeting }: G
                 {/* CLOSING / FOOTER */}
                 {isEnabled('footer') && (
                     <section className="gr2-closing">
+                        <div className="gr2-closing-stars" aria-hidden="true">
+                            {TEASER_STARS.slice(0, 6).map((s, i) => (
+                                <span
+                                    key={i}
+                                    className="gr2-star"
+                                    style={{ top: s.top, left: s.left, fontSize: s.size, animationDuration: s.duration, animationDelay: s.delay }}
+                                >
+                                    ✦
+                                </span>
+                            ))}
+                        </div>
                         {confettiEnabled && (
                             <div className="gr2-closing-balloons" aria-hidden="true">
                                 <span className="gr2-closing-balloon">🎈</span>
@@ -529,7 +644,7 @@ export default function GenderRevealTheme02({ invitation, visitor, greeting }: G
                             </div>
                         )}
                         <div className="gr2-closing-frame gr2-anim-up">
-                            <p className="gr2-closing-emoji">🎈🎊💜</p>
+                            <p className="gr2-closing-emoji">🎈🧭🧡</p>
                             <p className="gr2-closing-title">Terima Kasih</p>
                             <p className="gr2-closing-sub">
                                 Atas doa, ucapan, dan kehadiran
@@ -553,7 +668,7 @@ export default function GenderRevealTheme02({ invitation, visitor, greeting }: G
                     autoplay={invitation.music.autoplay}
                     loop={invitation.music.loop}
                     triggerPlay={opened}
-                    buttonStyle={{ background: 'var(--gr2-purple)', border: '2px solid #fff', color: '#fff' }}
+                    buttonStyle={{ background: 'var(--gr2-coral)', border: '2px solid #fff', color: '#fff' }}
                 />
             )}
 

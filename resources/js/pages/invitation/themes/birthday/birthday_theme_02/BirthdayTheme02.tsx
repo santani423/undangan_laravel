@@ -16,9 +16,9 @@ interface BirthdayTheme02Props {
     greeting?: Greeting;
 }
 
-const CONFETTI_COLORS = ['#FF5D8F', '#FFC93C', '#4EC5D4', '#7C5CFC', '#FF9F5A'];
-const BALLOON_EMOJI = ['🎈', '🎈', '🎈'];
-const EVENT_ICONS = ['🎉', '🎂', '🍰', '🎊', '🥳'];
+const SPARKLE_COLORS = ['#FFD76A', '#F9A8D4', '#C4B5FD', '#8AD9F0', '#FFFFFF'];
+const CLOUD_EMOJI = ['☁️', '☁️', '☁️'];
+const EVENT_ICONS = ['🏰', '✨', '🌈', '🦄', '⭐'];
 
 function addToCalendar(ev: BirthdayInvitation['events'][0], celebrant: string) {
     const start = (ev.date || '').replace(/-/g, '') + 'T' + (ev.time || '100000').replace(/:/g, '') + '00Z';
@@ -91,17 +91,15 @@ export default function BirthdayTheme02({ invitation, visitor, greeting }: Birth
 
     const openInvitation = () => setOpened(true);
 
-    // Deterministic confetti pieces (regenerated once)
-    const confettiPieces = useMemo(
+    // Deterministic magical sparkle particles (regenerated once)
+    const sparkleParticles = useMemo(
         () =>
-            Array.from({ length: 45 }, () => ({
+            Array.from({ length: 40 }, () => ({
                 left: Math.random() * 100,
-                size: 6 + Math.random() * 8,
-                color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
-                delay: Math.random() * 5,
-                duration: 4 + Math.random() * 4,
-                rotate: Math.round(Math.random() * 360),
-                shape: Math.random() > 0.5 ? '50%' : '3px',
+                size: 3 + Math.random() * 5,
+                color: SPARKLE_COLORS[Math.floor(Math.random() * SPARKLE_COLORS.length)],
+                delay: Math.random() * 6,
+                duration: 6 + Math.random() * 6,
             })),
         [],
     );
@@ -118,36 +116,52 @@ export default function BirthdayTheme02({ invitation, visitor, greeting }: Birth
         <div className="bt2-root">
             {/* Google Fonts */}
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap');
+                @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap');
             `}</style>
 
             {/* ── Cover Overlay ─────────────────────────────────────────────────── */}
             {coverEnabled && (
                 <div className={`bt2-cover${opened ? ' bt2-hide' : ''}`}>
                     {confettiEnabled && (
-                        <div className="bt2-confetti-bg" aria-hidden="true">
-                            {confettiPieces.map((p, i) => (
+                        <div className="bt2-sparkle-bg" aria-hidden="true">
+                            {sparkleParticles.map((p, i) => (
                                 <span
                                     key={i}
-                                    className="bt2-confetti-piece"
+                                    className="bt2-sparkle-particle"
                                     style={{
                                         left: `${p.left}%`,
                                         width: p.size,
                                         height: p.size,
                                         background: p.color,
-                                        borderRadius: p.shape,
                                         animationDelay: `${p.delay}s`,
                                         animationDuration: `${p.duration}s`,
-                                        transform: `rotate(${p.rotate}deg)`,
                                     }}
                                 />
                             ))}
                         </div>
                     )}
+                    <div className="bt2-cover-rainbow" aria-hidden="true">
+                        🌈
+                    </div>
+                    <span className="bt2-cover-star bt2-cover-star-1" aria-hidden="true">
+                        ✨
+                    </span>
+                    <span className="bt2-cover-star bt2-cover-star-2" aria-hidden="true">
+                        ⭐
+                    </span>
+                    <span className="bt2-cover-star bt2-cover-star-3" aria-hidden="true">
+                        ✨
+                    </span>
+                    <span className="bt2-cover-unicorn" aria-hidden="true">
+                        🦄
+                    </span>
+                    <div className="bt2-cover-castle" aria-hidden="true">
+                        🏰
+                    </div>
 
                     <div className="bt2-cover-card">
-                        <span className="bt2-cover-tag">🎉 Anda Diundang 🎉</span>
-                        <p className="bt2-cover-subtitle">ke pesta ulang tahun yang meriah bersama</p>
+                        <span className="bt2-cover-tag">✨ Anda Diundang ✨</span>
+                        <p className="bt2-cover-subtitle">ke pesta ulang tahun penuh keajaiban bersama</p>
                         <h1 className="bt2-cover-name">{displayName}</h1>
                         {age !== '' && <div className="bt2-cover-age-badge">🎂 Genap {formatAge(age)} 🎂</div>}
                         {invitation.mainDateFormatted && <p className="bt2-cover-date">📅 {invitation.mainDateFormatted}</p>}
@@ -168,7 +182,7 @@ export default function BirthdayTheme02({ invitation, visitor, greeting }: Birth
                         )}
 
                         <button className="bt2-btn-open" onClick={openInvitation}>
-                            🎈 {greeting?.buttonText ?? 'Buka Undangan'} 🎈
+                            ✨ {greeting?.buttonText ?? 'Buka Undangan'} ✨
                         </button>
                     </div>
                 </div>
@@ -179,16 +193,25 @@ export default function BirthdayTheme02({ invitation, visitor, greeting }: Birth
                 {/* HERO */}
                 <section className="bt2-hero">
                     {confettiEnabled && (
-                        <div className="bt2-hero-balloons" aria-hidden="true">
-                            {BALLOON_EMOJI.map((b, i) => (
-                                <span key={i} className={`bt2-balloon bt2-balloon-${i}`}>
-                                    {b}
+                        <div className="bt2-hero-deco" aria-hidden="true">
+                            {CLOUD_EMOJI.map((c, i) => (
+                                <span key={`c-${i}`} className={`bt2-cloud bt2-cloud-${i}`}>
+                                    {c}
                                 </span>
                             ))}
+                            <span className="bt2-star bt2-star-1">⭐</span>
+                            <span className="bt2-star bt2-star-2">✨</span>
+                            <span className="bt2-star bt2-star-3">✨</span>
+                            <span className="bt2-unicorn" aria-hidden="true">
+                                🦄
+                            </span>
+                            <div className="bt2-hero-castle" aria-hidden="true">
+                                🏰
+                            </div>
                         </div>
                     )}
                     <div className="bt2-hero-inner bt2-anim-up">
-                        <p className="bt2-hero-label">✨ Pesta Ulang Tahun ✨</p>
+                        <p className="bt2-hero-label">✨ Ulang Tahun Penuh Keajaiban ✨</p>
                         <div className="bt2-hero-photo-wrap">
                             <div
                                 className="bt2-hero-photo"
@@ -197,9 +220,12 @@ export default function BirthdayTheme02({ invitation, visitor, greeting }: Birth
                                 {!celebrantPhoto && (displayName?.charAt(0) ?? '🎂')}
                             </div>
                             {age !== '' && <div className="bt2-hero-age-burst">{age}</div>}
+                            <span className="bt2-hero-crown" aria-hidden="true">
+                                👑
+                            </span>
                         </div>
                         <h1 className="bt2-hero-name">{displayName}</h1>
-                        <p className="bt2-hero-tagline">"Setiap ulang tahun adalah kado terindah dari-Nya"</p>
+                        <p className="bt2-hero-tagline">"Di negeri dongeng, hari ini adalah harimu, Sang Bintang"</p>
                         {invitation.mainDateFormatted && <p className="bt2-hero-date">{invitation.mainDateFormatted}</p>}
 
                         {isEnabled('countdown') && mainEvent && (
@@ -212,7 +238,7 @@ export default function BirthdayTheme02({ invitation, visitor, greeting }: Birth
                                 labels={{ days: 'Hari', hours: 'Jam', minutes: 'Menit', seconds: 'Detik' }}
                                 doneMessage={
                                     <div className="bt2-countdown-done">
-                                        <div className="bt2-countdown-done-emoji">🎉</div>
+                                        <div className="bt2-countdown-done-emoji">🏰✨🦄</div>
                                         <h3>Selamat Ulang Tahun!</h3>
                                     </div>
                                 }
@@ -225,9 +251,9 @@ export default function BirthdayTheme02({ invitation, visitor, greeting }: Birth
                 {/* PROFILE */}
                 {isEnabled('couple_profile') && (
                     <section className="bt2-section bt2-profile-bg">
-                        <h2 className="bt2-section-title bt2-anim-up">Sang Bintang Ulang Tahun</h2>
+                        <h2 className="bt2-section-title bt2-anim-up">Sang Bintang Negeri Dongeng</h2>
                         <div className="bt2-divider bt2-anim-up">
-                            <span>🎈</span>
+                            <span>🦄</span>
                         </div>
                         <div className="bt2-profile-card bt2-anim-up">
                             <div className="bt2-profile-photo-frame">
@@ -235,7 +261,7 @@ export default function BirthdayTheme02({ invitation, visitor, greeting }: Birth
                                     className="bt2-profile-photo"
                                     style={celebrantPhoto ? { backgroundImage: `url(${celebrantPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
                                 >
-                                    {!celebrantPhoto && '🎉'}
+                                    {!celebrantPhoto && '👑'}
                                 </div>
                             </div>
                             <h3 className="bt2-profile-name">{invitation.celebrantName}</h3>
@@ -252,9 +278,9 @@ export default function BirthdayTheme02({ invitation, visitor, greeting }: Birth
                 {/* EVENTS */}
                 {isEnabled('event_detail') && invitation.events.length > 0 && (
                     <section className="bt2-section bt2-events-bg">
-                        <h2 className="bt2-section-title bt2-light bt2-anim-up">Detail Pesta</h2>
+                        <h2 className="bt2-section-title bt2-light bt2-anim-up">Rangkaian Acara Ajaib</h2>
                         <div className="bt2-divider bt2-light bt2-anim-up">
-                            <span>🎊</span>
+                            <span>🌈</span>
                         </div>
                         <div className="bt2-events-grid">
                             {invitation.events.map((ev, i) => {
@@ -344,7 +370,7 @@ export default function BirthdayTheme02({ invitation, visitor, greeting }: Birth
                 {/* LIFE JOURNEY */}
                 {isEnabled('love_story') && invitation.lifeJourney?.length > 0 && (
                     <section className="bt2-section bt2-timeline-bg">
-                        <h2 className="bt2-section-title bt2-anim-up">Perjalanan Bertumbuh</h2>
+                        <h2 className="bt2-section-title bt2-anim-up">Kisah Perjalanan Ajaib</h2>
                         <div className="bt2-divider bt2-anim-up">
                             <span>🌟</span>
                         </div>
@@ -352,7 +378,7 @@ export default function BirthdayTheme02({ invitation, visitor, greeting }: Birth
                         <div className="bt2-timeline-wrap">
                             {invitation.lifeJourney.map((item, i) => (
                                 <div key={i} className="bt2-timeline-item bt2-anim-up">
-                                    <div className="bt2-timeline-dot">🎈</div>
+                                    <div className="bt2-timeline-dot">✨</div>
                                     <div className="bt2-timeline-card">
                                         {item.photo && <div className="bt2-timeline-photo" style={{ backgroundImage: `url(${item.photo})` }} />}
                                         <p className="bt2-timeline-date">{item.date}</p>
@@ -368,7 +394,7 @@ export default function BirthdayTheme02({ invitation, visitor, greeting }: Birth
                 {/* GALLERY */}
                 {isEnabled('gallery') && invitation.gallery?.length > 0 && (
                     <section className="bt2-section bt2-gallery-bg">
-                        <h2 className="bt2-section-title bt2-anim-up">Galeri Momen</h2>
+                        <h2 className="bt2-section-title bt2-anim-up">Galeri Momen Ajaib</h2>
                         <div className="bt2-divider bt2-anim-up">
                             <span>📷</span>
                         </div>
@@ -464,12 +490,12 @@ export default function BirthdayTheme02({ invitation, visitor, greeting }: Birth
                                 successBox: 'bt2-rsvp-success',
                             }}
                             labels={{
-                                attending: '🎉 Ya, Saya Hadir!',
+                                attending: '✨ Ya, Saya Hadir!',
                                 notAttending: '😢 Maaf, Berhalangan',
                                 maybe: '🤔 Masih Ragu',
                                 submit: '✨ Kirim Konfirmasi ✨',
-                                successTitle: '🎉 Terima kasih! Konfirmasi Anda sudah kami terima.',
-                                successSub: 'Sampai jumpa di pesta!',
+                                successTitle: '✨ Terima kasih! Konfirmasi Anda sudah kami terima.',
+                                successSub: 'Sampai jumpa di pesta ajaib!',
                             }}
                         />
                     </section>
@@ -507,8 +533,17 @@ export default function BirthdayTheme02({ invitation, visitor, greeting }: Birth
                 {/* CLOSING / FOOTER */}
                 {isEnabled('footer') && (
                     <section className="bt2-closing">
+                        <span className="bt2-closing-star bt2-closing-star-1" aria-hidden="true">
+                            ✨
+                        </span>
+                        <span className="bt2-closing-star bt2-closing-star-2" aria-hidden="true">
+                            ⭐
+                        </span>
+                        <div className="bt2-closing-castle" aria-hidden="true">
+                            🏰
+                        </div>
                         <div className="bt2-closing-frame bt2-anim-up">
-                            <p className="bt2-closing-emoji">🎉🎈🎂</p>
+                            <p className="bt2-closing-emoji">🏰🦄✨</p>
                             <p className="bt2-closing-title">Terima Kasih</p>
                             <p className="bt2-closing-sub">
                                 Atas doa, ucapan, dan kehadiran

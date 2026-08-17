@@ -16,7 +16,7 @@ interface AqiqahTheme01Props {
     greeting?: Greeting;
 }
 
-const EVENT_ICONS = ['🐑', '✂️', '🍽️', '🤲', '🌸', '⭐'];
+const EVENT_ICONS = ['🦁', '🐘', '🦒', '🐒', '🌴', '🍃'];
 
 function addToCalendar(ev: AqiqahInvitation['events'][0], babyName: string) {
     const start = (ev.date || '').replace(/-/g, '') + 'T' + (ev.time || '090000').replace(/:/g, '') + '00Z';
@@ -121,16 +121,19 @@ export default function AqiqahTheme01({ invitation, visitor, greeting }: AqiqahT
         <div className="aq1-root" data-gender={genderDataAttr}>
             {/* Google Fonts */}
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Nunito:wght@300;400;600;700;800&display=swap');
+                @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@300;400;600;700;800&display=swap');
             `}</style>
 
             {/* ── Opening Overlay ────────────────────────────────────────────────── */}
             {coverEnabled && (
                 <div className={`aq1-overlay${opened ? ' aq1-hide' : ''}`}>
                     <div className="aq1-overlay-decor" aria-hidden="true">
-                        <span className="aq1-overlay-petal aq1-overlay-petal-1">🌸</span>
-                        <span className="aq1-overlay-petal aq1-overlay-petal-2">🌿</span>
-                        <span className="aq1-overlay-petal aq1-overlay-petal-3">🌸</span>
+                        <span className="aq1-overlay-petal aq1-overlay-petal-1">🦁</span>
+                        <span className="aq1-overlay-petal aq1-overlay-petal-2">🐘</span>
+                        <span className="aq1-overlay-petal aq1-overlay-petal-3">🦒</span>
+                        <span className="aq1-overlay-cloud aq1-overlay-cloud-1">☁️</span>
+                        <span className="aq1-overlay-cloud aq1-overlay-cloud-2">☁️</span>
+                        <span className="aq1-overlay-leaf aq1-overlay-leaf-1">🍃</span>
                     </div>
                     <div className="aq1-overlay-frame">
                         <p className="aq1-overlay-label">Walimatul Aqiqah</p>
@@ -157,13 +160,13 @@ export default function AqiqahTheme01({ invitation, visitor, greeting }: AqiqahT
                                 <GuestQrCode
                                     data={invitation.guestQrData}
                                     size={120}
-                                    style={{ borderRadius: '12px', border: '3px solid rgba(232,139,168,0.5)' }}
+                                    style={{ borderRadius: '12px', border: '3px solid rgba(201,122,46,0.5)' }}
                                 />
                                 <p className="aq1-overlay-qr-label">QR Check-in Tamu</p>
                             </div>
                         )}
                         <button className="aq1-btn-open" onClick={openInvitation}>
-                            🌸 {greeting?.buttonText ?? 'Buka Undangan'} 🌸
+                            🐾 {greeting?.buttonText ?? 'Buka Undangan'} 🐾
                         </button>
                     </div>
                 </div>
@@ -174,9 +177,14 @@ export default function AqiqahTheme01({ invitation, visitor, greeting }: AqiqahT
                 {/* ── HERO ──────────────────────────────────────────────────────── */}
                 <section className="aq1-hero">
                     <div className="aq1-hero-decor" aria-hidden="true">
-                        <span className="aq1-petal aq1-petal-1">🌸</span>
-                        <span className="aq1-petal aq1-petal-2">🌿</span>
-                        <span className="aq1-petal aq1-petal-3">🌸</span>
+                        <span className="aq1-petal aq1-petal-1">🐒</span>
+                        <span className="aq1-petal aq1-petal-2">🦒</span>
+                        <span className="aq1-petal aq1-petal-3">🐘</span>
+                        <span className="aq1-hero-cloud aq1-hero-cloud-1">☁️</span>
+                        <span className="aq1-hero-cloud aq1-hero-cloud-2">☁️</span>
+                        <span className="aq1-hero-leaf aq1-hero-leaf-1">🍃</span>
+                        <span className="aq1-hero-leaf aq1-hero-leaf-2">🌿</span>
+                        <span className="aq1-hero-ground" />
                     </div>
                     <div className="aq1-hero-frame aq1-anim-up">
                         <p className="aq1-hero-label">Walimatul Aqiqah</p>
@@ -215,7 +223,7 @@ export default function AqiqahTheme01({ invitation, visitor, greeting }: AqiqahT
                         <div className="aq1-quote-mark">❝</div>
                         <p className="aq1-quote-text aq1-anim-up">{invitation.openingMessage}</p>
                         <div className="aq1-quote-divider">
-                            <span>🌿</span>
+                            <span className="aq1-leaf-sway">🌿</span>
                         </div>
                     </section>
                 )}
@@ -225,7 +233,7 @@ export default function AqiqahTheme01({ invitation, visitor, greeting }: AqiqahT
                     <section className="aq1-section aq1-profile">
                         <h2 className="aq1-section-title aq1-anim-up">Buah Hati Kami</h2>
                         <div className="aq1-divider aq1-anim-up">
-                            <span>🌸</span>
+                            <span>🦒</span>
                         </div>
                         <div className="aq1-profile-card aq1-anim-up">
                             <div className="aq1-profile-photo-arch">
@@ -255,7 +263,7 @@ export default function AqiqahTheme01({ invitation, visitor, greeting }: AqiqahT
                     <section className="aq1-section aq1-events-bg">
                         <h2 className="aq1-section-title aq1-light aq1-anim-up">Rangkaian Acara</h2>
                         <div className="aq1-divider aq1-light aq1-anim-up">
-                            <span>🌸</span>
+                            <span>🌴</span>
                         </div>
                         <div className="aq1-events-grid">
                             {invitation.events.map((ev, i) => {
@@ -474,8 +482,13 @@ export default function AqiqahTheme01({ invitation, visitor, greeting }: AqiqahT
                 {/* ── CLOSING ───────────────────────────────────────────────────── */}
                 {isEnabled('footer') && (
                     <section className="aq1-closing">
+                        <div className="aq1-closing-decor" aria-hidden="true">
+                            <span className="aq1-closing-leaf aq1-closing-leaf-1">🍃</span>
+                            <span className="aq1-closing-leaf aq1-closing-leaf-2">🌿</span>
+                            <span className="aq1-closing-cloud">☁️</span>
+                        </div>
                         <div className="aq1-closing-frame aq1-anim-up">
-                            <p className="aq1-closing-emoji">🌸🐑🤲</p>
+                            <p className="aq1-closing-emoji">🦁🐘🌴</p>
                             <p className="aq1-closing-title">Terima Kasih</p>
                             <div className="aq1-closing-line" />
                             <p className="aq1-closing-sub">
@@ -501,7 +514,7 @@ export default function AqiqahTheme01({ invitation, visitor, greeting }: AqiqahT
                     autoplay={invitation.music.autoplay}
                     loop={invitation.music.loop}
                     triggerPlay={opened}
-                    buttonStyle={{ background: 'var(--aq1-pink-deep)', border: '2px solid #fff', color: '#fff' }}
+                    buttonStyle={{ background: 'var(--aq1-amber-deep)', border: '2px solid #fff', color: '#fff' }}
                 />
             )}
 

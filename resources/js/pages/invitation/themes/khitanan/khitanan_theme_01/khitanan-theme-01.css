@@ -1,11 +1,13 @@
 .kt1-root {
-    --kt1-blue: #1565c0;
-    --kt1-blue-dark: #0d3f7a;
-    --kt1-blue-light: #4fa3f7;
-    --kt1-sky: #eaf5ff;
+    --kt1-blue: #1e56e8;
+    --kt1-blue-dark: #0b2a6b;
+    --kt1-blue-light: #5b8dff;
+    --kt1-red: #e8253f;
+    --kt1-red-dark: #a8172c;
+    --kt1-sky: #eef3ff;
     --kt1-gold: #ffb300;
     --kt1-gold-light: #ffe0a3;
-    --kt1-navy: #10243f;
+    --kt1-navy: #0c1c3d;
     --kt1-white: #ffffff;
 
     font-family: 'Nunito', sans-serif;
@@ -45,33 +47,24 @@ html:has(.kt1-root) {
     opacity: 0;
     pointer-events: none;
 }
-.kt1-overlay-cloud {
+.kt1-deco {
     position: absolute;
-    font-size: 2.4rem;
-    opacity: 0.35;
-    animation: kt1Drift 12s ease-in-out infinite;
+    font-size: 1.9rem;
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+    z-index: 1;
 }
-.kt1-cloud-1 {
-    top: 8%;
-    left: 8%;
+.kt1-deco-star {
+    animation: kt1Twinkle 2.6s ease-in-out infinite;
 }
-.kt1-cloud-2 {
-    top: 14%;
-    right: 10%;
-    animation-delay: -3s;
-    font-size: 1.8rem;
+.kt1-deco-bolt {
+    font-size: 2.1rem;
+    filter: drop-shadow(0 0 8px rgba(255, 179, 0, 0.55));
+    animation: kt1BoltFlicker 2.2s ease-in-out infinite;
 }
-.kt1-cloud-3 {
-    bottom: 10%;
-    left: 12%;
-    animation-delay: -6s;
-    font-size: 2rem;
-}
-.kt1-cloud-4 {
-    bottom: 16%;
-    right: 8%;
-    animation-delay: -9s;
-    font-size: 1.6rem;
+.kt1-deco-fly {
+    animation: kt1Fly 7s ease-in-out infinite;
 }
 .kt1-overlay-frame {
     position: relative;
@@ -85,8 +78,10 @@ html:has(.kt1-root) {
     border-radius: 32px;
 }
 .kt1-overlay-badge {
-    font-size: 2.6rem;
+    font-size: 2.8rem;
     margin-bottom: 10px;
+    filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
+    animation: kt1Bounce 2.4s ease-in-out infinite;
 }
 .kt1-overlay-salam {
     color: rgba(255, 224, 163, 0.85);
@@ -225,19 +220,23 @@ html:has(.kt1-root) {
 .kt1-hero {
     min-height: 100vh;
     background:
-        radial-gradient(circle at 15% 20%, rgba(21, 101, 192, 0.08) 0%, transparent 55%),
+        radial-gradient(circle at 15% 20%, rgba(30, 86, 232, 0.08) 0%, transparent 55%),
         radial-gradient(circle at 85% 75%, rgba(255, 179, 0, 0.12) 0%, transparent 55%);
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     overflow: hidden;
+    position: relative;
 }
-.kt1-hero-cloud {
+.kt1-hero::before {
+    content: '';
     position: absolute;
-    font-size: 2.5rem;
-    opacity: 0.5;
-    animation: kt1Drift 14s ease-in-out infinite;
+    inset: 0;
+    background: repeating-conic-gradient(from 0deg, rgba(232, 37, 63, 0.05) 0deg 8deg, transparent 8deg 20deg);
+    mask-image: radial-gradient(circle at 50% 40%, black 0%, transparent 65%);
+    -webkit-mask-image: radial-gradient(circle at 50% 40%, black 0%, transparent 65%);
+    pointer-events: none;
 }
 .kt1-hero-frame {
     max-width: 640px;
@@ -263,14 +262,47 @@ html:has(.kt1-root) {
 }
 .kt1-hero-photo-wrap {
     position: relative;
-    width: 190px;
-    height: 190px;
+    width: 210px;
+    height: 236px;
     margin: 0 auto 20px;
+    opacity: 1;
+    transform: none;
+}
+.kt1-main.visible .kt1-hero-photo-wrap {
+    animation: kt1HeroEntrance 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s both;
+}
+.kt1-hero-cape {
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    width: 250px;
+    height: 270px;
+    transform: translateX(-50%);
+    transform-origin: 50% 10%;
+    background: linear-gradient(160deg, var(--kt1-red), var(--kt1-red-dark));
+    clip-path: polygon(50% 0%, 88% 10%, 100% 92%, 74% 78%, 50% 100%, 26% 78%, 0% 92%, 12% 10%);
+    box-shadow: 0 10px 24px rgba(168, 23, 44, 0.35);
+    z-index: 0;
+    animation: kt1CapeFlutter 4s ease-in-out infinite;
+}
+.kt1-hero-shield-frame {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+    padding: 7px;
+    background: linear-gradient(160deg, var(--kt1-gold), var(--kt1-gold-light));
+    clip-path: polygon(50% 0%, 100% 14%, 100% 52%, 50% 100%, 0% 52%, 0% 14%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 14px 34px rgba(12, 28, 61, 0.28);
 }
 .kt1-hero-photo {
     width: 100%;
     height: 100%;
-    border-radius: 50%;
+    clip-path: polygon(50% 0%, 100% 14%, 100% 52%, 50% 100%, 0% 52%, 0% 14%);
     background: linear-gradient(135deg, var(--kt1-blue), var(--kt1-blue-light));
     display: flex;
     align-items: center;
@@ -278,16 +310,12 @@ html:has(.kt1-root) {
     color: white;
     font-family: 'Baloo 2', cursive;
     font-size: 2.2rem;
-    border: 6px solid var(--kt1-white);
-    box-shadow:
-        0 14px 40px rgba(21, 101, 192, 0.3),
-        0 0 0 4px var(--kt1-gold);
-    animation: kt1Float 3s ease-in-out infinite;
 }
 .kt1-hero-badge {
     position: absolute;
-    bottom: -6px;
-    right: -6px;
+    bottom: -4px;
+    right: -8px;
+    z-index: 2;
     background: var(--kt1-gold);
     color: var(--kt1-blue-dark);
     width: 52px;
@@ -298,7 +326,8 @@ html:has(.kt1-root) {
     justify-content: center;
     font-size: 1.5rem;
     border: 4px solid var(--kt1-white);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+    animation: kt1Bounce 2.4s ease-in-out infinite;
 }
 .kt1-hero-age {
     display: inline-block;
@@ -319,7 +348,7 @@ html:has(.kt1-root) {
 }
 .kt1-scroll-indicator {
     margin-top: 26px;
-    animation: kt1Float 2s ease-in-out infinite;
+    animation: kt1Bounce 1.6s ease-in-out infinite;
     color: var(--kt1-blue);
     font-size: 1.4rem;
 }
@@ -900,7 +929,8 @@ html:has(.kt1-root) {
 .kt1-closing-icon {
     font-size: 2.6rem;
     margin-bottom: 16px;
-    animation: kt1Float 3s ease-in-out infinite;
+    filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.25));
+    animation: kt1Bounce 2.4s ease-in-out infinite;
 }
 .kt1-closing-title {
     font-family: 'Baloo 2', cursive;
@@ -974,13 +1004,84 @@ html:has(.kt1-root) {
         transform: translateY(-10px);
     }
 }
-@keyframes kt1Drift {
+@keyframes kt1Bounce {
     0%,
     100% {
-        transform: translate(0, 0);
+        transform: translateY(0);
     }
     50% {
-        transform: translate(14px, -10px);
+        transform: translateY(-9px);
+    }
+}
+@keyframes kt1Twinkle {
+    0%,
+    100% {
+        opacity: 0.35;
+        transform: scale(0.85);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.15);
+    }
+}
+@keyframes kt1BoltFlicker {
+    0%,
+    19%,
+    21%,
+    100% {
+        opacity: 0.9;
+        transform: scale(1);
+    }
+    20% {
+        opacity: 0.35;
+        transform: scale(0.9);
+    }
+    45%,
+    55% {
+        opacity: 1;
+        transform: scale(1.08);
+    }
+}
+@keyframes kt1Fly {
+    0% {
+        transform: translate(-16px, 10px) rotate(-6deg);
+        opacity: 0;
+    }
+    15% {
+        opacity: 1;
+    }
+    50% {
+        transform: translate(12px, -16px) rotate(5deg);
+    }
+    85% {
+        opacity: 1;
+    }
+    100% {
+        transform: translate(34px, -4px) rotate(9deg);
+        opacity: 0;
+    }
+}
+@keyframes kt1CapeFlutter {
+    0%,
+    100% {
+        transform: translateX(-50%) rotate(-4deg) scaleX(1);
+    }
+    50% {
+        transform: translateX(-50%) rotate(4deg) scaleX(1.05);
+    }
+}
+@keyframes kt1HeroEntrance {
+    0% {
+        opacity: 0;
+        transform: scale(0.5) translateY(50px);
+    }
+    70% {
+        opacity: 1;
+        transform: scale(1.05) translateY(-4px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
     }
 }
 
@@ -1003,10 +1104,16 @@ html:has(.kt1-root) {
         transition: none;
     }
     .kt1-hero-photo,
+    .kt1-hero-cape,
+    .kt1-hero-badge,
+    .kt1-overlay-badge,
     .kt1-scroll-indicator,
     .kt1-closing-icon,
-    .kt1-overlay-cloud,
-    .kt1-hero-cloud {
+    .kt1-deco,
+    .kt1-deco-star,
+    .kt1-deco-bolt,
+    .kt1-deco-fly,
+    .kt1-main.visible .kt1-hero-photo-wrap {
         animation: none;
     }
 }
@@ -1047,5 +1154,14 @@ html:has(.kt1-root) {
     }
     .kt1-ewallet-grid {
         grid-template-columns: 1fr 1fr;
+    }
+    .kt1-hero-photo-wrap {
+        width: 176px;
+        height: 198px;
+    }
+    .kt1-hero-cape {
+        width: 210px;
+        height: 226px;
+        top: -14px;
     }
 }

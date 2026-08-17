@@ -7,6 +7,7 @@ import RSVPForm from '@/components/invitation/RSVPForm';
 import Toast, { useToast } from '@/components/invitation/Toast';
 import WishesSection from '@/components/invitation/WishesSection';
 import type { GenderRevealInvitation, Greeting } from '@/types/invitation';
+import type { CSSProperties } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import './gender-reveal-theme-01.css';
 
@@ -103,11 +104,46 @@ export default function GenderRevealTheme01({ invitation, visitor, greeting }: G
         [],
     );
 
+    // Reveal-teaser: a tap-to-pop mystery box with a pink+blue confetti burst.
+    // No real gender data exists yet — this is purely an anticipation-building
+    // interaction that always resolves to "come see for yourself at the event".
+    const [teaserOpened, setTeaserOpened] = useState(false);
+    const [teaserBurst, setTeaserBurst] = useState(0);
+    const [teaserConfetti, setTeaserConfetti] = useState<{ tx: number; ty: number; size: number; color: string; delay: number; round: boolean }[]>(
+        [],
+    );
+
+    const handleTeaserTap = () => {
+        setTeaserOpened(true);
+        setTeaserBurst((b) => b + 1);
+        setTeaserConfetti(
+            Array.from({ length: 24 }, () => {
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 55 + Math.random() * 95;
+                return {
+                    tx: Math.round(Math.cos(angle) * distance),
+                    ty: Math.round(Math.sin(angle) * distance),
+                    size: 5 + Math.random() * 7,
+                    color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+                    delay: Math.random() * 0.18,
+                    round: Math.random() > 0.5,
+                };
+            }),
+        );
+    };
+
     const parentsPhoto = invitation.parentsPhoto;
     const fatherName = invitation.fatherName;
     const motherName = invitation.motherName;
     const parentsNames = fatherName && motherName ? `${fatherName} & ${motherName}` : fatherName || motherName || '';
-    const parentsLine = fatherName && motherName ? `Ayah ${fatherName} & Bunda ${motherName}` : fatherName ? `Ayah ${fatherName}` : motherName ? `Bunda ${motherName}` : '';
+    const parentsLine =
+        fatherName && motherName
+            ? `Ayah ${fatherName} & Bunda ${motherName}`
+            : fatherName
+              ? `Ayah ${fatherName}`
+              : motherName
+                ? `Bunda ${motherName}`
+                : '';
     const guestName = invitation.guestName || visitor || '';
     const coverGuestName = guestName || greeting?.guestLabel || '';
     const videoEmbedUrl = getVideoEmbedUrl(invitation.coupleVideoUrl ?? '');
@@ -161,7 +197,11 @@ export default function GenderRevealTheme01({ invitation, visitor, greeting }: G
 
                         {invitation.guestQrData && (
                             <div className="gr1-cover-qr">
-                                <GuestQrCode data={invitation.guestQrData} size={116} style={{ borderRadius: '12px', border: '3px solid rgba(255,255,255,0.65)' }} />
+                                <GuestQrCode
+                                    data={invitation.guestQrData}
+                                    size={116}
+                                    style={{ borderRadius: '12px', border: '3px solid rgba(255,255,255,0.65)' }}
+                                />
                                 <p className="gr1-cover-qr-label">QR Check-in Tamu</p>
                             </div>
                         )}
@@ -189,7 +229,11 @@ export default function GenderRevealTheme01({ invitation, visitor, greeting }: G
                         <div className="gr1-hero-photo-wrap">
                             <div
                                 className="gr1-hero-photo"
-                                style={parentsPhoto ? { backgroundImage: `url(${parentsPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+                                style={
+                                    parentsPhoto
+                                        ? { backgroundImage: `url(${parentsPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                                        : {}
+                                }
                             >
                                 {!parentsPhoto && '🤰'}
                             </div>
@@ -238,7 +282,11 @@ export default function GenderRevealTheme01({ invitation, visitor, greeting }: G
                             <div className="gr1-profile-photo-frame">
                                 <div
                                     className="gr1-profile-photo"
-                                    style={parentsPhoto ? { backgroundImage: `url(${parentsPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+                                    style={
+                                        parentsPhoto
+                                            ? { backgroundImage: `url(${parentsPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                                            : {}
+                                    }
                                 >
                                     {!parentsPhoto && '🤰'}
                                 </div>
@@ -248,7 +296,9 @@ export default function GenderRevealTheme01({ invitation, visitor, greeting }: G
                             {(invitation.dueDateFormatted || invitation.revealDateFormatted) && (
                                 <div className="gr1-profile-tags">
                                     {invitation.dueDateFormatted && <span className="gr1-profile-tag">🤰 HPL {invitation.dueDateFormatted}</span>}
-                                    {invitation.revealDateFormatted && <span className="gr1-profile-tag">🎉 Reveal {invitation.revealDateFormatted}</span>}
+                                    {invitation.revealDateFormatted && (
+                                        <span className="gr1-profile-tag">🎉 Reveal {invitation.revealDateFormatted}</span>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -275,6 +325,57 @@ export default function GenderRevealTheme01({ invitation, visitor, greeting }: G
                                 </p>
                             </>
                         )}
+
+                        {/* REVEAL TEASER — anticipation-builder, not a real answer */}
+                        <div className="gr1-teaser-stage gr1-anim-up">
+                            <p className="gr1-teaser-intro">
+                                Rahasia si kecil masih tersimpan rapat! Ketuk kotak misteri di bawah untuk sekadar meramaikan suasana — jawaban
+                                sesungguhnya cuma bisa disaksikan langsung di hari bahagia nanti.
+                            </p>
+                            <div className="gr1-teaser-box-area">
+                                <button
+                                    key={teaserBurst}
+                                    type="button"
+                                    className={`gr1-teaser-box${teaserOpened ? ' gr1-teaser-box-open' : ''}`}
+                                    onClick={handleTeaserTap}
+                                    aria-label="Ketuk kotak misteri gender reveal"
+                                >
+                                    <span className="gr1-teaser-box-mark">?</span>
+                                    <span className="gr1-teaser-box-ribbon" aria-hidden="true" />
+                                </button>
+                                {confettiEnabled && teaserOpened && (
+                                    <div className="gr1-teaser-burst" key={`burst-${teaserBurst}`} aria-hidden="true">
+                                        {teaserConfetti.map((p, i) => (
+                                            <span
+                                                key={i}
+                                                className="gr1-teaser-confetti-piece"
+                                                style={
+                                                    {
+                                                        '--tx': `${p.tx}px`,
+                                                        '--ty': `${p.ty}px`,
+                                                        width: p.size,
+                                                        height: p.size,
+                                                        background: p.color,
+                                                        borderRadius: p.round ? '50%' : '2px',
+                                                        animationDelay: `${p.delay}s`,
+                                                    } as CSSProperties
+                                                }
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            {!teaserOpened && <p className="gr1-teaser-hint">👉 Ketuk untuk kejutan kecil</p>}
+                            <div className={`gr1-teaser-message${teaserOpened ? ' gr1-teaser-message-show' : ''}`}>
+                                <p className="gr1-teaser-message-title">Boy or Girl? 💙💗</p>
+                                <p className="gr1-teaser-message-sub">
+                                    Jawabannya masih rahasia kami berdua — datang dan saksikan sendiri momen serunya bersama kami!
+                                </p>
+                                <button type="button" className="gr1-teaser-replay" onClick={handleTeaserTap}>
+                                    🎊 Ketuk Lagi
+                                </button>
+                            </div>
+                        </div>
                     </section>
                 )}
 
@@ -287,7 +388,8 @@ export default function GenderRevealTheme01({ invitation, visitor, greeting }: G
                         </div>
                         <div className="gr1-events-grid">
                             {invitation.events.map((ev, i) => {
-                                const mapsUrl = ev.locationUrl || (ev.mapsLat && ev.mapsLng ? `https://maps.google.com/?q=${ev.mapsLat},${ev.mapsLng}` : '');
+                                const mapsUrl =
+                                    ev.locationUrl || (ev.mapsLat && ev.mapsLng ? `https://maps.google.com/?q=${ev.mapsLat},${ev.mapsLng}` : '');
                                 return (
                                     <div key={i} className="gr1-event-card gr1-anim-up">
                                         <span className="gr1-event-icon">{EVENT_ICONS[i % EVENT_ICONS.length]}</span>

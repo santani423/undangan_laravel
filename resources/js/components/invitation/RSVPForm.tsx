@@ -122,11 +122,9 @@ export default function RSVPForm({ rsvpEndpoint, guestName, guestSlug, onSuccess
                 <input
                     type="text"
                     value={name}
-                    onChange={(e) => !guestName && setName(e.target.value)}
+                    onChange={(e) => setName(e.target.value)}
                     placeholder="Masukkan nama lengkap Anda"
                     className={styles.input}
-                    readOnly={!!guestName}
-                    style={guestName ? { opacity: 0.75, cursor: 'not-allowed' } : undefined}
                 />
                 {errors.name && <p className={styles.errorText}>{errors.name}</p>}
             </div>

@@ -234,8 +234,13 @@ html:has(.gr1-root) {
     justify-content: center;
     text-align: center;
     overflow: hidden;
-    background:
-        linear-gradient(135deg, rgba(63, 182, 232, 0.92) 0%, rgba(63, 182, 232, 0.92) 46%, rgba(255, 95, 150, 0.92) 54%, rgba(255, 95, 150, 0.92) 100%);
+    background: linear-gradient(
+        135deg,
+        rgba(63, 182, 232, 0.92) 0%,
+        rgba(63, 182, 232, 0.92) 46%,
+        rgba(255, 95, 150, 0.92) 54%,
+        rgba(255, 95, 150, 0.92) 100%
+    );
 }
 .gr1-hero::before {
     content: '';
@@ -243,6 +248,20 @@ html:has(.gr1-root) {
     inset: 0;
     background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.12) 0%, transparent 65%);
     pointer-events: none;
+}
+/* Animated pink/blue "transition" — a soft light sweeps across the split */
+.gr1-hero::after {
+    content: '';
+    position: absolute;
+    top: -20%;
+    bottom: -20%;
+    left: -30%;
+    width: 26%;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.32), transparent);
+    transform: skewX(-18deg) translateX(0);
+    animation: gr1SplitSweep 7s ease-in-out infinite;
+    pointer-events: none;
+    mix-blend-mode: overlay;
 }
 .gr1-hero-balloons {
     position: absolute;
@@ -326,7 +345,8 @@ html:has(.gr1-root) {
     width: 58px;
     height: 58px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--gr1-blue), var(--gr1-pink));
+    background: linear-gradient(120deg, var(--gr1-blue), var(--gr1-pink), var(--gr1-blue));
+    background-size: 220% 220%;
     color: var(--gr1-white);
     display: flex;
     align-items: center;
@@ -336,6 +356,9 @@ html:has(.gr1-root) {
     font-size: 1.7rem;
     border: 4px solid var(--gr1-cream);
     box-shadow: 0 6px 16px rgba(255, 95, 150, 0.4);
+    animation:
+        gr1QuestionBounce 1.9s ease-in-out infinite,
+        gr1ColorCycle 5s ease-in-out infinite;
 }
 .gr1-hero-name {
     font-family: 'Fredoka', sans-serif;
@@ -573,6 +596,149 @@ html:has(.gr1-root) {
     font-size: 0.95rem;
     font-style: italic;
     line-height: 1.7;
+}
+
+/* ── REVEAL TEASER (anticipation-builder, not a real answer) ────────────── */
+.gr1-teaser-stage {
+    text-align: center;
+    margin-top: 48px;
+    padding-top: 40px;
+    border-top: 1px dashed var(--gr1-pink-light);
+}
+.gr1-teaser-intro {
+    max-width: 480px;
+    margin: 0 auto 28px;
+    color: #6f6280;
+    font-size: 0.95rem;
+    font-style: italic;
+    line-height: 1.7;
+}
+.gr1-teaser-box-area {
+    position: relative;
+    width: 152px;
+    height: 152px;
+    margin: 0 auto;
+}
+.gr1-teaser-box {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 42px;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    background: linear-gradient(135deg, var(--gr1-blue) 0%, var(--gr1-blue) 50%, var(--gr1-pink) 50%, var(--gr1-pink) 100%);
+    box-shadow: 0 18px 40px rgba(36, 28, 53, 0.28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: gr1TeaserPop 0.7s ease;
+    transition: transform 0.3s ease;
+}
+.gr1-teaser-box:hover {
+    transform: translateY(-4px) scale(1.03);
+}
+.gr1-teaser-box:active {
+    transform: scale(0.96);
+}
+.gr1-teaser-box::before {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    border-radius: inherit;
+    border: 2px dashed rgba(255, 255, 255, 0.55);
+    animation: gr1TeaserRingPulse 2.4s ease-in-out infinite;
+}
+.gr1-teaser-box-open {
+    background: linear-gradient(135deg, var(--gr1-blue-dark) 0%, var(--gr1-blue-dark) 50%, var(--gr1-pink-dark) 50%, var(--gr1-pink-dark) 100%);
+}
+.gr1-teaser-box-mark {
+    position: relative;
+    z-index: 1;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 3.4rem;
+    font-weight: 700;
+    color: var(--gr1-white);
+    text-shadow: 0 4px 14px rgba(36, 28, 53, 0.35);
+    animation: gr1QuestionBounce 1.9s ease-in-out infinite;
+}
+.gr1-teaser-box-open .gr1-teaser-box-mark {
+    animation: none;
+    transform: scale(1.1);
+}
+.gr1-teaser-box-ribbon {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 32px;
+    background: var(--gr1-gold);
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(36, 28, 53, 0.25);
+}
+.gr1-teaser-burst {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+.gr1-teaser-confetti-piece {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    opacity: 0;
+    animation: gr1TeaserBurst 0.9s ease-out forwards;
+}
+.gr1-teaser-hint {
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: var(--gr1-pink-dark);
+    font-weight: 700;
+    animation: gr1Float 1.8s ease-in-out infinite;
+}
+.gr1-teaser-message {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition:
+        max-height 0.6s ease,
+        opacity 0.5s ease,
+        margin 0.5s ease;
+}
+.gr1-teaser-message-show {
+    max-height: 280px;
+    opacity: 1;
+    margin-top: 22px;
+}
+.gr1-teaser-message-title {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 1.4rem;
+    color: var(--gr1-charcoal);
+    margin-bottom: 8px;
+}
+.gr1-teaser-message-sub {
+    max-width: 420px;
+    margin: 0 auto 18px;
+    color: #6f6280;
+    font-size: 0.92rem;
+    line-height: 1.7;
+}
+.gr1-teaser-replay {
+    background: transparent;
+    border: 2px solid var(--gr1-pink);
+    color: var(--gr1-pink-dark);
+    padding: 10px 26px;
+    border-radius: 50px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.gr1-teaser-replay:hover {
+    background: var(--gr1-pink);
+    color: var(--gr1-white);
 }
 
 /* ── EVENTS ────────────────────────────────────────────────────────────── */
@@ -1175,6 +1341,70 @@ html:has(.gr1-root) {
         opacity: 0.3;
     }
 }
+@keyframes gr1SplitSweep {
+    0% {
+        transform: skewX(-18deg) translateX(-120%);
+    }
+    100% {
+        transform: skewX(-18deg) translateX(420%);
+    }
+}
+@keyframes gr1QuestionBounce {
+    0%,
+    100% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(-7px) scale(1.08);
+    }
+}
+@keyframes gr1ColorCycle {
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+}
+@keyframes gr1TeaserPop {
+    0% {
+        transform: scale(0.85) rotate(-6deg);
+    }
+    35% {
+        transform: scale(1.12) rotate(4deg);
+    }
+    60% {
+        transform: scale(0.96) rotate(-2deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
+}
+@keyframes gr1TeaserRingPulse {
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.7;
+    }
+    50% {
+        transform: scale(1.08);
+        opacity: 0.25;
+    }
+}
+@keyframes gr1TeaserBurst {
+    0% {
+        transform: translate(-50%, -50%) scale(0.3);
+        opacity: 0;
+    }
+    15% {
+        opacity: 1;
+    }
+    100% {
+        transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1);
+        opacity: 0;
+    }
+}
 
 .gr1-anim-up {
     opacity: 0;
@@ -1196,8 +1426,15 @@ html:has(.gr1-root) {
     }
     .gr1-scroll-indicator,
     .gr1-balloon,
-    .gr1-confetti-piece {
-        animation: none;
+    .gr1-confetti-piece,
+    .gr1-hero::after,
+    .gr1-hero-mystery-burst,
+    .gr1-teaser-box,
+    .gr1-teaser-box::before,
+    .gr1-teaser-box-mark,
+    .gr1-teaser-hint,
+    .gr1-teaser-confetti-piece {
+        animation: none !important;
     }
 }
 

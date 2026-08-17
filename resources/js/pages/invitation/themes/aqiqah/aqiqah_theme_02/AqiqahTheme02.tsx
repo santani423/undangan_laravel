@@ -122,6 +122,17 @@ export default function AqiqahTheme02({ invitation, visitor, greeting }: AqiqahT
             })),
         [],
     );
+    // Extra twinkling sparkle accents layered on top of the plain star dots
+    const sparkles = useMemo(
+        () =>
+            Array.from({ length: 8 }, () => ({
+                left: Math.random() * 100,
+                top: Math.random() * 100,
+                delay: Math.random() * 4,
+                duration: 3 + Math.random() * 2.5,
+            })),
+        [],
+    );
 
     const babyPhoto = invitation.babyPhoto;
     const babyGender = invitation.babyGender || '';
@@ -168,7 +179,19 @@ export default function AqiqahTheme02({ invitation, visitor, greeting }: AqiqahT
                                 }}
                             />
                         ))}
+                        {sparkles.map((s, i) => (
+                            <span
+                                key={`sp-${i}`}
+                                className="aq2-sparkle"
+                                style={{ left: `${s.left}%`, top: `${s.top}%`, animationDelay: `${s.delay}s`, animationDuration: `${s.duration}s` }}
+                            >
+                                ✨
+                            </span>
+                        ))}
                         <span className="aq2-moon">🌙</span>
+                        <span className="aq2-cloud aq2-cloud-3">☁️</span>
+                        <span className="aq2-float-star aq2-float-star-1">✦</span>
+                        <span className="aq2-float-star aq2-float-star-2">✦</span>
                         {confettiEnabled && (
                             <>
                                 <span className="aq2-cloud aq2-cloud-1">☁️</span>
@@ -178,6 +201,12 @@ export default function AqiqahTheme02({ invitation, visitor, greeting }: AqiqahT
                     </div>
 
                     <div className="aq2-cover-card">
+                        <div className="aq2-baby-badge" aria-hidden="true">
+                            <span className="aq2-baby-badge-glow" />
+                            <span className="aq2-baby-badge-icon">👶</span>
+                            <span className="aq2-baby-badge-sparkle aq2-baby-badge-sparkle-1">✨</span>
+                            <span className="aq2-baby-badge-sparkle aq2-baby-badge-sparkle-2">✨</span>
+                        </div>
                         <span className="aq2-cover-tag">✦ Walimatul Aqiqah ✦</span>
                         <h1 className="aq2-cover-name">{invitation.babyName}</h1>
                         {babyGender && (
@@ -201,7 +230,7 @@ export default function AqiqahTheme02({ invitation, visitor, greeting }: AqiqahT
                                 <GuestQrCode
                                     data={invitation.guestQrData}
                                     size={116}
-                                    style={{ borderRadius: '12px', border: '3px solid rgba(244,201,93,0.6)' }}
+                                    style={{ borderRadius: '12px', border: '3px solid rgba(242,193,105,0.6)' }}
                                 />
                                 <p className="aq2-cover-qr-label">QR Check-in Tamu</p>
                             </div>
@@ -233,7 +262,20 @@ export default function AqiqahTheme02({ invitation, visitor, greeting }: AqiqahT
                                 }}
                             />
                         ))}
+                        {sparkles.map((s, i) => (
+                            <span
+                                key={`hsp-${i}`}
+                                className="aq2-sparkle"
+                                style={{ left: `${s.left}%`, top: `${s.top}%`, animationDelay: `${s.delay}s`, animationDuration: `${s.duration}s` }}
+                            >
+                                ✨
+                            </span>
+                        ))}
                         <span className="aq2-hero-moon">🌙</span>
+                        <span className="aq2-hero-cloud aq2-hero-cloud-1">☁️</span>
+                        <span className="aq2-hero-cloud aq2-hero-cloud-2">☁️</span>
+                        <span className="aq2-float-star aq2-float-star-1">✦</span>
+                        <span className="aq2-float-star aq2-float-star-2">✦</span>
                     </div>
                     <div className="aq2-hero-inner aq2-anim-up">
                         <p className="aq2-hero-label">✦ Selamat Datang, Bintang Kecil ✦</p>
@@ -587,9 +629,11 @@ export default function AqiqahTheme02({ invitation, visitor, greeting }: AqiqahT
                                 />
                             ))}
                             <span className="aq2-closing-moon">🌙</span>
+                            <span className="aq2-float-star aq2-float-star-1">✦</span>
+                            <span className="aq2-float-star aq2-float-star-2">✦</span>
                         </div>
                         <div className="aq2-closing-frame aq2-anim-up">
-                            <p className="aq2-closing-emoji">⭐🌙✨</p>
+                            <p className="aq2-closing-emoji">🌙⭐🧸</p>
                             <p className="aq2-closing-title">Terima Kasih</p>
                             <p className="aq2-closing-sub">
                                 Atas doa, ucapan, dan kehadiran

@@ -51,6 +51,7 @@ class InvitationPublicApiController extends Controller
 
         if ($guest) {
             $guest->update([
+                'name'              => $data['name'] ?? $guest->name,
                 'phone_number'      => $data['phone_number'] ?? $guest->phone_number,
                 'rsvp_headcount'    => $data['number_of_guests'] ?? $guest->rsvp_headcount,
                 'rsvp_status'       => $data['rsvp_status'] ?? 'attending',
@@ -72,9 +73,11 @@ class InvitationPublicApiController extends Controller
         if (! empty($data['message']) && $invitation->allow_guest_comments) {
             Comment::create([
                 'invitation_id' => $invitation->id,
-                'guest_name'    => $data['name'],
+                'guest_id'      => $guest->id,
+                'guest_name'    => $guest->name,
                 'comment_text'  => $data['message'],
-                'status'        => 'pending',
+                'status'        => 'approved',
+                'approved_at'   => now(),
             ]);
         }
 
@@ -127,12 +130,13 @@ class InvitationPublicApiController extends Controller
             'invitation_id' => $invitation->id,
             'guest_name'    => $data['name'],
             'comment_text'  => $data['message'],
-            'status'        => 'pending',
+            'status'        => 'approved',
+            'approved_at'   => now(),
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Ucapan berhasil dikirim dan menunggu persetujuan.',
+            'message' => 'Ucapan berhasil dikirim.',
         ], 201);
     }
 }

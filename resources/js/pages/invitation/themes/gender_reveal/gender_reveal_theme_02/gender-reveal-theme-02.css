@@ -1,13 +1,15 @@
 .gr2-root {
-    --gr2-purple: #8b5fbf;
-    --gr2-purple-dark: #5b3a86;
-    --gr2-purple-deep: #3d2657;
-    --gr2-lavender: #c9a9e8;
-    --gr2-lavender-light: #ede0fb;
-    --gr2-gold: #f0b429;
-    --gr2-gold-light: #ffe6a8;
-    --gr2-cream: #fdfaff;
-    --gr2-charcoal: #362c46;
+    --gr2-coral: #ff7a59;
+    --gr2-coral-dark: #d9481f;
+    --gr2-amber: #ffb648;
+    --gr2-amber-light: #ffe1a8;
+    --gr2-teal: #3fb6a8;
+    --gr2-teal-dark: #1f8577;
+    --gr2-teal-light: #cdefea;
+    --gr2-navy: #2c2350;
+    --gr2-navy-2: #1b1638;
+    --gr2-cream: #fff8ee;
+    --gr2-charcoal: #3a2e42;
     --gr2-white: #ffffff;
 
     font-family: 'Poppins', sans-serif;
@@ -33,9 +35,9 @@ html:has(.gr2-root) {
     z-index: 9999;
     overflow: hidden;
     background:
-        radial-gradient(circle at 18% 12%, rgba(240, 180, 41, 0.22) 0%, transparent 45%),
-        radial-gradient(circle at 85% 82%, rgba(201, 169, 232, 0.28) 0%, transparent 48%),
-        linear-gradient(160deg, var(--gr2-purple-deep) 0%, var(--gr2-purple-dark) 55%, #4a2f6b 100%);
+        radial-gradient(circle at 18% 12%, rgba(255, 182, 72, 0.22) 0%, transparent 45%),
+        radial-gradient(circle at 85% 82%, rgba(63, 182, 168, 0.25) 0%, transparent 48%),
+        linear-gradient(160deg, var(--gr2-navy-2) 0%, var(--gr2-navy) 55%, #3a2f66 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -56,13 +58,7 @@ html:has(.gr2-root) {
     left: 0;
     right: 0;
     height: 22px;
-    background: repeating-linear-gradient(
-        110deg,
-        var(--gr2-gold) 0px,
-        var(--gr2-gold) 16px,
-        var(--gr2-lavender) 16px,
-        var(--gr2-lavender) 32px
-    );
+    background: repeating-linear-gradient(110deg, var(--gr2-amber) 0px, var(--gr2-amber) 16px, var(--gr2-teal) 16px, var(--gr2-teal) 32px);
     clip-path: polygon(
         0% 0%,
         4% 100%,
@@ -95,6 +91,12 @@ html:has(.gr2-root) {
     opacity: 0.85;
 }
 
+.gr2-cover-stars {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
 .gr2-confetti-bg {
     position: absolute;
     inset: 0;
@@ -124,7 +126,7 @@ html:has(.gr2-root) {
     display: inline-block;
     font-size: 0.92rem;
     letter-spacing: 1px;
-    color: var(--gr2-gold);
+    color: var(--gr2-amber);
     margin-bottom: 6px;
     font-weight: 700;
 }
@@ -140,11 +142,11 @@ html:has(.gr2-root) {
     font-size: clamp(1.7rem, 7vw, 2.4rem);
     line-height: 1.3;
     margin-bottom: 14px;
-    text-shadow: 0 4px 20px rgba(139, 95, 191, 0.5);
+    text-shadow: 0 4px 20px rgba(255, 122, 89, 0.5);
 }
 .gr2-cover-due-badge {
     display: inline-block;
-    background: linear-gradient(135deg, var(--gr2-purple), var(--gr2-gold));
+    background: linear-gradient(135deg, var(--gr2-coral), var(--gr2-amber));
     color: var(--gr2-white);
     font-weight: 700;
     font-size: 0.92rem;
@@ -165,7 +167,7 @@ html:has(.gr2-root) {
 }
 .gr2-cover-guest-name {
     font-family: 'Comfortaa', cursive;
-    color: var(--gr2-gold-light);
+    color: var(--gr2-amber-light);
     font-size: 1.15rem;
     margin-bottom: 16px;
 }
@@ -189,7 +191,7 @@ html:has(.gr2-root) {
     letter-spacing: 1.5px;
 }
 .gr2-btn-open {
-    background: linear-gradient(135deg, var(--gr2-purple), var(--gr2-gold));
+    background: linear-gradient(135deg, var(--gr2-coral), var(--gr2-amber));
     color: var(--gr2-white);
     border: none;
     padding: 15px 38px;
@@ -199,7 +201,7 @@ html:has(.gr2-root) {
     font-size: 0.95rem;
     letter-spacing: 0.5px;
     cursor: pointer;
-    box-shadow: 0 10px 30px rgba(139, 95, 191, 0.45);
+    box-shadow: 0 10px 30px rgba(255, 122, 89, 0.45);
     transition: transform 0.25s ease;
 }
 .gr2-btn-open:hover {
@@ -226,14 +228,14 @@ html:has(.gr2-root) {
     font-size: 1.9rem;
     text-align: center;
     margin-bottom: 10px;
-    color: var(--gr2-purple-dark);
+    color: var(--gr2-coral-dark);
 }
 .gr2-section-title.gr2-light {
     color: var(--gr2-white);
 }
 .gr2-section-sub {
     text-align: center;
-    color: #77698c;
+    color: #79706a;
     font-size: 0.98rem;
     max-width: 520px;
     margin: 0 auto 10px;
@@ -252,10 +254,10 @@ html:has(.gr2-root) {
     max-width: 90px;
     height: 2px;
     border-radius: 2px;
-    background: linear-gradient(to right, transparent, var(--gr2-gold));
+    background: linear-gradient(to right, transparent, var(--gr2-amber));
 }
 .gr2-divider::after {
-    background: linear-gradient(to left, transparent, var(--gr2-gold));
+    background: linear-gradient(to left, transparent, var(--gr2-amber));
 }
 .gr2-divider.gr2-light::before,
 .gr2-divider.gr2-light::after {
@@ -268,21 +270,178 @@ html:has(.gr2-root) {
     font-size: 1.3rem;
 }
 
-/* ── HERO ──────────────────────────────────────────────────────────────── */
+/* ── HERO — adventure sky: mountains, hot air balloon, clouds ───────────── */
 .gr2-hero {
     position: relative;
     min-height: 100vh;
     background: var(--gr2-cream);
     background-image:
-        radial-gradient(ellipse at 15% 15%, rgba(139, 95, 191, 0.14) 0%, transparent 55%),
-        radial-gradient(ellipse at 85% 85%, rgba(240, 180, 41, 0.14) 0%, transparent 55%),
-        radial-gradient(ellipse at 85% 15%, rgba(201, 169, 232, 0.2) 0%, transparent 50%);
+        radial-gradient(ellipse at 15% 15%, rgba(255, 122, 89, 0.14) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 85%, rgba(255, 182, 72, 0.16) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 15%, rgba(63, 182, 168, 0.2) 0%, transparent 50%);
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     overflow: hidden;
 }
+
+/* Mountain range — two silhouette layers drifting at different speeds (parallax feel) */
+.gr2-mountains {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 34%;
+    min-height: 130px;
+    overflow: hidden;
+    pointer-events: none;
+}
+.gr2-mountain-row {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+}
+.gr2-mountain-back {
+    background: var(--gr2-teal);
+    opacity: 0.3;
+    clip-path: polygon(
+        0% 100%,
+        0% 60%,
+        6% 35%,
+        12% 55%,
+        18% 20%,
+        25% 50%,
+        32% 25%,
+        38% 58%,
+        44% 18%,
+        50% 52%,
+        56% 35%,
+        62% 55%,
+        68% 20%,
+        75% 50%,
+        82% 25%,
+        88% 58%,
+        94% 18%,
+        100% 52%,
+        100% 100%
+    );
+    animation: gr2MountainDrift 55s linear infinite;
+}
+.gr2-mountain-front {
+    background: var(--gr2-coral-dark);
+    opacity: 0.4;
+    bottom: -4px;
+    clip-path: polygon(
+        0% 100%,
+        0% 70%,
+        5% 25%,
+        10% 65%,
+        15% 10%,
+        20% 60%,
+        27% 15%,
+        33% 68%,
+        40% 8%,
+        46% 55%,
+        50% 70%,
+        55% 25%,
+        60% 65%,
+        65% 10%,
+        70% 60%,
+        77% 15%,
+        83% 68%,
+        90% 8%,
+        96% 55%,
+        100% 70%,
+        100% 100%
+    );
+    animation: gr2MountainDrift 30s linear infinite;
+}
+
+/* Drifting clouds */
+.gr2-sky-clouds {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+.gr2-sky-cloud {
+    position: absolute;
+    font-size: 2.4rem;
+    opacity: 0.7;
+    animation: gr2CloudDrift linear infinite;
+    filter: saturate(0) opacity(0.75) brightness(1.15);
+}
+.gr2-sky-cloud-0 {
+    top: 12%;
+    left: -15%;
+    animation-duration: 46s;
+    animation-delay: 0s;
+    font-size: 2.1rem;
+}
+.gr2-sky-cloud-1 {
+    top: 22%;
+    left: -30%;
+    animation-duration: 60s;
+    animation-delay: -18s;
+    font-size: 2.8rem;
+}
+.gr2-sky-cloud-2 {
+    top: 8%;
+    left: -45%;
+    animation-duration: 38s;
+    animation-delay: -9s;
+    font-size: 1.7rem;
+}
+
+/* Hot air balloon — signature drifting visual */
+.gr2-hot-balloon-drift {
+    position: absolute;
+    top: 9%;
+    left: -18%;
+    z-index: 0;
+    pointer-events: none;
+    animation: gr2BalloonDrift 32s linear infinite;
+}
+.gr2-hot-balloon-bob {
+    animation: gr2BalloonBob 4.4s ease-in-out infinite;
+}
+.gr2-balloon-envelope {
+    position: relative;
+    width: 74px;
+    height: 90px;
+    margin: 0 auto;
+    border-radius: 50% 50% 46% 46% / 62% 62% 38% 38%;
+    background: repeating-linear-gradient(100deg, var(--gr2-coral) 0px 12px, var(--gr2-amber) 12px 24px);
+    box-shadow: 0 14px 26px rgba(44, 35, 80, 0.28);
+}
+.gr2-balloon-envelope::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -8px;
+    transform: translateX(-50%);
+    width: 26px;
+    height: 16px;
+    background: var(--gr2-coral-dark);
+    clip-path: polygon(0 0, 100% 0, 84% 100%, 16% 100%);
+}
+.gr2-balloon-strings {
+    width: 2px;
+    height: 20px;
+    margin: 0 auto;
+    background: rgba(44, 35, 80, 0.4);
+}
+.gr2-balloon-basket {
+    width: 24px;
+    height: 16px;
+    margin: 0 auto;
+    background: var(--gr2-navy);
+    border-radius: 3px;
+    box-shadow: 0 4px 8px rgba(44, 35, 80, 0.3);
+}
+
 .gr2-hero-balloons {
     position: absolute;
     inset: 0;
@@ -290,36 +449,22 @@ html:has(.gr2-root) {
 }
 .gr2-balloon {
     position: absolute;
-    font-size: 3.2rem;
-    opacity: 0.88;
+    font-size: 2.1rem;
+    opacity: 0.6;
     animation: gr2Sway 6.5s ease-in-out infinite;
-    filter: hue-rotate(60deg) saturate(1.4);
 }
 .gr2-balloon-0 {
-    left: 7%;
-    top: 14%;
-    animation-delay: 0s;
+    right: 10%;
+    top: 24%;
+    animation-delay: 1.4s;
 }
 .gr2-balloon-1 {
-    right: 9%;
-    top: 20%;
-    animation-delay: 1.4s;
-    font-size: 2.5rem;
-    filter: hue-rotate(20deg) saturate(1.5);
-}
-.gr2-balloon-2 {
-    right: 20%;
-    bottom: 14%;
+    right: 22%;
+    bottom: 32%;
     animation-delay: 2.8s;
-    font-size: 2.8rem;
+    font-size: 1.7rem;
 }
-.gr2-balloon-3 {
-    left: 16%;
-    bottom: 10%;
-    animation-delay: 4.2s;
-    font-size: 2.2rem;
-    filter: hue-rotate(20deg) saturate(1.5);
-}
+
 .gr2-hero-inner {
     position: relative;
     z-index: 1;
@@ -331,7 +476,7 @@ html:has(.gr2-root) {
     font-size: 0.85rem;
     letter-spacing: 3px;
     text-transform: uppercase;
-    color: var(--gr2-purple);
+    color: var(--gr2-coral);
     font-weight: 700;
     margin-bottom: 24px;
 }
@@ -340,19 +485,20 @@ html:has(.gr2-root) {
     width: 170px;
     height: 170px;
     margin: 0 auto 20px;
+    animation: gr2Float 4.5s ease-in-out infinite;
 }
 .gr2-hero-photo {
     width: 100%;
     height: 100%;
     border-radius: 50%;
     padding: 6px;
-    background: linear-gradient(140deg, var(--gr2-purple), var(--gr2-gold), var(--gr2-lavender));
+    background: linear-gradient(140deg, var(--gr2-coral), var(--gr2-amber), var(--gr2-teal));
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--gr2-white);
     font-size: 2.6rem;
-    box-shadow: 0 16px 40px rgba(139, 95, 191, 0.3);
+    box-shadow: 0 16px 40px rgba(255, 122, 89, 0.32);
     background-clip: padding-box;
     border: 6px solid var(--gr2-cream);
     background-origin: border-box;
@@ -364,7 +510,8 @@ html:has(.gr2-root) {
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--gr2-purple), var(--gr2-gold));
+    background: linear-gradient(120deg, var(--gr2-coral), var(--gr2-amber), var(--gr2-coral));
+    background-size: 220% 220%;
     color: var(--gr2-white);
     display: flex;
     align-items: center;
@@ -373,7 +520,10 @@ html:has(.gr2-root) {
     font-weight: 700;
     font-size: 1.3rem;
     border: 4px solid var(--gr2-cream);
-    box-shadow: 0 6px 16px rgba(139, 95, 191, 0.4);
+    box-shadow: 0 6px 16px rgba(255, 122, 89, 0.4);
+    animation:
+        gr2QuestionBounce 1.9s ease-in-out infinite,
+        gr2ColorCycle 5s ease-in-out infinite;
 }
 .gr2-hero-name {
     font-family: 'Comfortaa', cursive;
@@ -385,13 +535,13 @@ html:has(.gr2-root) {
 }
 .gr2-hero-tagline {
     font-style: italic;
-    color: #77698c;
+    color: #79706a;
     font-size: 1.02rem;
     margin-bottom: 10px;
 }
 .gr2-hero-date {
     font-size: 1rem;
-    color: var(--gr2-purple-dark);
+    color: var(--gr2-coral-dark);
     font-weight: 700;
     letter-spacing: 1px;
     margin-bottom: 10px;
@@ -399,7 +549,7 @@ html:has(.gr2-root) {
 .gr2-scroll-indicator {
     margin-top: 30px;
     animation: gr2Float 2.4s ease-in-out infinite;
-    color: var(--gr2-purple);
+    color: var(--gr2-coral);
     font-size: 1.4rem;
 }
 
@@ -417,13 +567,13 @@ html:has(.gr2-root) {
     padding: 14px 16px;
     min-width: 72px;
     text-align: center;
-    box-shadow: 0 8px 22px rgba(139, 95, 191, 0.16);
+    box-shadow: 0 8px 22px rgba(255, 122, 89, 0.16);
 }
 .gr2-countdown-num {
     font-family: 'Comfortaa', cursive;
     font-size: 1.8rem;
     font-weight: 700;
-    color: var(--gr2-purple);
+    color: var(--gr2-coral);
     display: block;
     line-height: 1;
 }
@@ -431,7 +581,7 @@ html:has(.gr2-root) {
     font-size: 0.62rem;
     letter-spacing: 1.5px;
     text-transform: uppercase;
-    color: var(--gr2-gold);
+    color: var(--gr2-amber);
     display: block;
     margin-top: 5px;
     font-weight: 600;
@@ -445,7 +595,7 @@ html:has(.gr2-root) {
 }
 .gr2-countdown-done h3 {
     font-family: 'Comfortaa', cursive;
-    color: var(--gr2-purple-dark);
+    color: var(--gr2-coral-dark);
     font-size: 1.9rem;
     margin: 6px 0 0;
 }
@@ -453,7 +603,7 @@ html:has(.gr2-root) {
 /* ── OPENING MESSAGE ───────────────────────────────────────────────────── */
 .gr2-message-section {
     position: relative;
-    background: linear-gradient(150deg, var(--gr2-purple-dark) 0%, var(--gr2-purple-deep) 100%);
+    background: linear-gradient(150deg, var(--gr2-navy) 0%, var(--gr2-navy-2) 100%);
     padding: 80px 24px;
     text-align: center;
     overflow: hidden;
@@ -466,7 +616,7 @@ html:has(.gr2-root) {
 .gr2-message-balloon {
     position: absolute;
     font-size: 2.6rem;
-    opacity: 0.5;
+    opacity: 0.4;
     left: 6%;
     top: 10%;
     animation: gr2Sway 7s ease-in-out infinite;
@@ -496,6 +646,109 @@ html:has(.gr2-root) {
     line-height: 1.85;
 }
 
+/* ── "BOY OR GIRL?" TEASER — dusk sky, stars, mountains, scroll-triggered ── */
+.gr2-teaser-section {
+    position: relative;
+    background: linear-gradient(165deg, var(--gr2-navy-2) 0%, var(--gr2-navy) 65%, #3a2f66 100%);
+    padding: 90px 20px 70px;
+    text-align: center;
+    overflow: hidden;
+}
+.gr2-teaser-stars {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+.gr2-star {
+    position: absolute;
+    color: var(--gr2-amber-light);
+    font-size: 0.85rem;
+    opacity: 0.25;
+    animation: gr2StarTwinkle ease-in-out infinite;
+}
+.gr2-teaser-body {
+    position: relative;
+    z-index: 1;
+    max-width: 560px;
+    margin: 0 auto;
+}
+.gr2-teaser-label {
+    font-size: 0.82rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gr2-amber);
+    font-weight: 700;
+    margin-bottom: 18px;
+}
+.gr2-teaser-mark {
+    width: 118px;
+    height: 118px;
+    margin: 0 auto 26px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gr2-coral), var(--gr2-amber));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Comfortaa', cursive;
+    font-weight: 700;
+    font-size: 3rem;
+    color: var(--gr2-white);
+    box-shadow: 0 18px 40px rgba(255, 122, 89, 0.4);
+    transform: scale(0);
+    opacity: 0;
+    transition:
+        transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s,
+        opacity 0.5s ease 0.15s;
+}
+.gr2-teaser-body.gr2-visible .gr2-teaser-mark {
+    transform: scale(1);
+    opacity: 1;
+    animation: gr2QuestionBounce 2.2s ease-in-out 0.9s infinite;
+}
+.gr2-teaser-title {
+    font-family: 'Comfortaa', cursive;
+    font-weight: 700;
+    font-size: clamp(1.7rem, 6vw, 2.3rem);
+    color: var(--gr2-white);
+    margin-bottom: 14px;
+}
+.gr2-teaser-sub {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 1rem;
+    line-height: 1.8;
+    max-width: 460px;
+    margin: 0 auto 8px;
+}
+.gr2-teaser-sparks {
+    position: relative;
+    height: 40px;
+    margin-top: 18px;
+    pointer-events: none;
+}
+.gr2-spark {
+    position: absolute;
+    bottom: 0;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    opacity: 0;
+    animation: gr2SparkRise 2.6s ease-out infinite;
+    animation-play-state: paused;
+}
+.gr2-teaser-body.gr2-visible .gr2-spark {
+    animation-play-state: running;
+}
+.gr2-teaser-mountains {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 90px;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: 0.9;
+}
+
 /* ── PROFILE ───────────────────────────────────────────────────────────── */
 .gr2-profile-bg {
     background: var(--gr2-white);
@@ -503,11 +756,11 @@ html:has(.gr2-root) {
 .gr2-profile-card {
     max-width: 460px;
     margin: 0 auto;
-    background: var(--gr2-lavender-light);
+    background: var(--gr2-teal-light);
     border-radius: 26px;
     padding: 44px 34px;
     text-align: center;
-    box-shadow: 0 14px 40px rgba(139, 95, 191, 0.14);
+    box-shadow: 0 14px 40px rgba(63, 182, 168, 0.18);
 }
 .gr2-profile-photo-frame {
     width: 140px;
@@ -515,19 +768,19 @@ html:has(.gr2-root) {
     margin: 0 auto 18px;
     border-radius: 50%;
     padding: 5px;
-    background: linear-gradient(140deg, var(--gr2-purple), var(--gr2-gold), var(--gr2-lavender));
+    background: linear-gradient(140deg, var(--gr2-coral), var(--gr2-amber), var(--gr2-teal));
 }
 .gr2-profile-photo {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--gr2-purple-dark), var(--gr2-purple));
+    background: linear-gradient(135deg, var(--gr2-coral-dark), var(--gr2-coral));
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--gr2-white);
     font-size: 2rem;
-    border: 4px solid var(--gr2-lavender-light);
+    border: 4px solid var(--gr2-teal-light);
 }
 .gr2-profile-name {
     font-family: 'Comfortaa', cursive;
@@ -537,7 +790,7 @@ html:has(.gr2-root) {
     margin-bottom: 4px;
 }
 .gr2-profile-line {
-    color: var(--gr2-purple-dark);
+    color: var(--gr2-coral-dark);
     font-style: italic;
     font-size: 1rem;
     margin-bottom: 16px;
@@ -551,7 +804,7 @@ html:has(.gr2-root) {
 }
 .gr2-profile-tag {
     background: var(--gr2-white);
-    border: 1px solid var(--gr2-lavender);
+    border: 1px solid var(--gr2-teal);
     color: var(--gr2-charcoal);
     font-size: 0.82rem;
     padding: 7px 16px;
@@ -572,11 +825,11 @@ html:has(.gr2-root) {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: linear-gradient(135deg, var(--gr2-purple), var(--gr2-purple-dark));
+    background: linear-gradient(135deg, var(--gr2-coral), var(--gr2-coral-dark));
     color: var(--gr2-white);
     padding: 16px 26px;
     border-radius: 50px;
-    box-shadow: 0 10px 26px rgba(139, 95, 191, 0.28);
+    box-shadow: 0 10px 26px rgba(255, 122, 89, 0.3);
 }
 .gr2-team-emoji {
     font-size: 1.3rem;
@@ -590,13 +843,13 @@ html:has(.gr2-root) {
     font-family: 'Comfortaa', cursive;
     font-weight: 700;
     font-size: 1.4rem;
-    color: var(--gr2-gold);
+    color: var(--gr2-amber);
 }
 .gr2-teams-caption {
     max-width: 500px;
     margin: 20px auto 0;
     text-align: center;
-    color: #77698c;
+    color: #79706a;
     font-size: 0.95rem;
     font-style: italic;
     line-height: 1.7;
@@ -604,7 +857,7 @@ html:has(.gr2-root) {
 
 /* ── EVENTS ────────────────────────────────────────────────────────────── */
 .gr2-events-bg {
-    background: linear-gradient(165deg, var(--gr2-purple-deep) 0%, var(--gr2-purple-dark) 100%);
+    background: linear-gradient(165deg, var(--gr2-navy-2) 0%, var(--gr2-navy) 100%);
 }
 .gr2-events-grid {
     display: grid;
@@ -629,7 +882,7 @@ html:has(.gr2-root) {
     font-family: 'Comfortaa', cursive;
     font-weight: 700;
     font-size: 1.25rem;
-    color: var(--gr2-gold-light);
+    color: var(--gr2-amber-light);
     margin-bottom: 16px;
 }
 .gr2-event-divider {
@@ -663,15 +916,15 @@ html:has(.gr2-root) {
     font-family: 'Poppins', sans-serif;
 }
 .gr2-btn-event:hover {
-    background: var(--gr2-gold);
-    border-color: var(--gr2-gold);
-    color: var(--gr2-purple-deep);
+    background: var(--gr2-amber);
+    border-color: var(--gr2-amber);
+    color: var(--gr2-navy-2);
 }
 
 /* ── LOCATION ──────────────────────────────────────────────────────────── */
 .gr2-location-sub {
     text-align: center;
-    color: var(--gr2-purple-dark);
+    color: var(--gr2-coral-dark);
     font-size: 1rem;
     margin-bottom: 8px;
     font-style: italic;
@@ -684,18 +937,18 @@ html:has(.gr2-root) {
     border-radius: 22px;
     overflow: hidden;
     border: 4px solid var(--gr2-white);
-    box-shadow: 0 12px 34px rgba(139, 95, 191, 0.16);
+    box-shadow: 0 12px 34px rgba(255, 122, 89, 0.18);
 }
 .gr2-btn-maps {
     display: inline-block;
-    background: linear-gradient(135deg, var(--gr2-purple), var(--gr2-gold));
+    background: linear-gradient(135deg, var(--gr2-coral), var(--gr2-amber));
     color: var(--gr2-white);
     padding: 14px 32px;
     text-decoration: none;
     font-size: 0.85rem;
     font-weight: 700;
     border-radius: 50px;
-    box-shadow: 0 8px 22px rgba(139, 95, 191, 0.32);
+    box-shadow: 0 8px 22px rgba(255, 122, 89, 0.34);
     transition: transform 0.25s;
 }
 .gr2-btn-maps:hover {
@@ -728,7 +981,7 @@ html:has(.gr2-root) {
 .gr2-gallery-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(139, 95, 191, 0.72);
+    background: rgba(255, 122, 89, 0.72);
     opacity: 0;
     transition: opacity 0.3s;
     display: flex;
@@ -753,7 +1006,7 @@ html:has(.gr2-root) {
 }
 .gr2-filter-btn {
     background: var(--gr2-white);
-    border: 1px solid var(--gr2-lavender);
+    border: 1px solid var(--gr2-teal);
     color: var(--gr2-charcoal);
     padding: 8px 18px;
     border-radius: 50px;
@@ -761,8 +1014,8 @@ html:has(.gr2-root) {
     cursor: pointer;
 }
 .gr2-filter-btn-active {
-    background: var(--gr2-purple);
-    border-color: var(--gr2-purple);
+    background: var(--gr2-coral);
+    border-color: var(--gr2-coral);
     color: var(--gr2-white);
 }
 
@@ -772,7 +1025,7 @@ html:has(.gr2-root) {
     margin: 0 auto;
     border-radius: 22px;
     border: 4px solid var(--gr2-white);
-    box-shadow: 0 14px 40px rgba(139, 95, 191, 0.16);
+    box-shadow: 0 14px 40px rgba(255, 122, 89, 0.18);
     aspect-ratio: 16 / 9;
     overflow: hidden;
 }
@@ -785,7 +1038,7 @@ html:has(.gr2-root) {
 
 /* ── DIGITAL GIFT ──────────────────────────────────────────────────────── */
 .gr2-gift-bg {
-    background: linear-gradient(165deg, var(--gr2-purple-dark) 0%, var(--gr2-purple-deep) 100%);
+    background: linear-gradient(165deg, var(--gr2-navy) 0%, var(--gr2-navy-2) 100%);
 }
 .gr2-gift-subtitle {
     text-align: center;
@@ -815,7 +1068,7 @@ html:has(.gr2-root) {
     font-weight: 700;
     font-size: 1.15rem;
     margin-bottom: 4px;
-    color: var(--gr2-gold-light);
+    color: var(--gr2-amber-light);
 }
 .gr2-bank-type {
     font-size: 0.65rem;
@@ -837,9 +1090,9 @@ html:has(.gr2-root) {
     margin-bottom: 14px;
 }
 .gr2-btn-copy-bank {
-    background: var(--gr2-gold);
+    background: var(--gr2-amber);
     border: none;
-    color: var(--gr2-purple-deep);
+    color: var(--gr2-navy-2);
     padding: 8px 20px;
     border-radius: 50px;
     font-size: 0.76rem;
@@ -861,7 +1114,7 @@ html:has(.gr2-root) {
     padding: 22px 14px;
     text-align: center;
     color: var(--gr2-white);
-    background: linear-gradient(135deg, var(--gr2-purple), var(--gr2-purple-dark));
+    background: linear-gradient(135deg, var(--gr2-coral), var(--gr2-coral-dark));
     border-radius: 18px;
 }
 .gr2-ewallet-name {
@@ -903,12 +1156,12 @@ html:has(.gr2-root) {
     background: var(--gr2-white);
     border-radius: 26px;
     padding: 46px 40px;
-    box-shadow: 0 14px 40px rgba(139, 95, 191, 0.12);
+    box-shadow: 0 14px 40px rgba(255, 122, 89, 0.14);
 }
 .gr2-rsvp-label {
     display: block;
     font-size: 0.8rem;
-    color: var(--gr2-purple-dark);
+    color: var(--gr2-coral-dark);
     margin-bottom: 8px;
     font-weight: 700;
 }
@@ -917,7 +1170,7 @@ html:has(.gr2-root) {
 .gr2-rsvp-textarea {
     width: 100%;
     padding: 12px 16px;
-    border: 2px solid var(--gr2-lavender);
+    border: 2px solid var(--gr2-teal);
     border-radius: 16px;
     font-family: 'Poppins', sans-serif;
     font-size: 0.95rem;
@@ -929,7 +1182,7 @@ html:has(.gr2-root) {
 .gr2-rsvp-input:focus,
 .gr2-rsvp-select:focus,
 .gr2-rsvp-textarea:focus {
-    border-color: var(--gr2-purple);
+    border-color: var(--gr2-coral);
 }
 .gr2-rsvp-radio-group {
     display: flex;
@@ -946,7 +1199,7 @@ html:has(.gr2-root) {
     color: var(--gr2-charcoal);
 }
 .gr2-rsvp-radio-label input[type='radio'] {
-    accent-color: var(--gr2-purple);
+    accent-color: var(--gr2-coral);
     width: 18px;
     height: 18px;
 }
@@ -958,7 +1211,7 @@ html:has(.gr2-root) {
 }
 .gr2-rsvp-submit {
     width: 100%;
-    background: linear-gradient(135deg, var(--gr2-purple), var(--gr2-gold));
+    background: linear-gradient(135deg, var(--gr2-coral), var(--gr2-amber));
     color: var(--gr2-white);
     border: none;
     padding: 16px;
@@ -967,7 +1220,7 @@ html:has(.gr2-root) {
     font-weight: 600;
     font-size: 0.9rem;
     cursor: pointer;
-    box-shadow: 0 10px 28px rgba(139, 95, 191, 0.32);
+    box-shadow: 0 10px 28px rgba(255, 122, 89, 0.34);
     transition: transform 0.25s;
 }
 .gr2-rsvp-submit:hover {
@@ -977,7 +1230,7 @@ html:has(.gr2-root) {
     text-align: center;
     padding: 30px;
     font-size: 1.1rem;
-    color: var(--gr2-purple-dark);
+    color: var(--gr2-coral-dark);
 }
 
 /* ── WISHES ────────────────────────────────────────────────────────────── */
@@ -992,7 +1245,7 @@ html:has(.gr2-root) {
     margin: 0 auto;
 }
 .gr2-wishes-form {
-    background: var(--gr2-lavender-light);
+    background: var(--gr2-teal-light);
     border-radius: 22px;
     padding: 32px;
 }
@@ -1000,13 +1253,13 @@ html:has(.gr2-root) {
     font-family: 'Comfortaa', cursive;
     font-weight: 700;
     font-size: 1.15rem;
-    color: var(--gr2-purple-dark);
+    color: var(--gr2-coral-dark);
     margin-bottom: 22px;
 }
 .gr2-wish-input {
     width: 100%;
     padding: 12px 16px;
-    border: 2px solid var(--gr2-lavender);
+    border: 2px solid var(--gr2-teal);
     border-radius: 16px;
     margin-bottom: 14px;
     font-family: 'Poppins', sans-serif;
@@ -1016,10 +1269,10 @@ html:has(.gr2-root) {
     transition: border-color 0.3s;
 }
 .gr2-wish-input:focus {
-    border-color: var(--gr2-purple);
+    border-color: var(--gr2-coral);
 }
 .gr2-wish-btn {
-    background: linear-gradient(135deg, var(--gr2-purple), var(--gr2-gold));
+    background: linear-gradient(135deg, var(--gr2-coral), var(--gr2-amber));
     color: var(--gr2-white);
     border: none;
     padding: 12px 28px;
@@ -1034,10 +1287,10 @@ html:has(.gr2-root) {
     transform: translateY(-2px);
 }
 .gr2-wish-card {
-    background: var(--gr2-lavender-light);
+    background: var(--gr2-teal-light);
     border-radius: 18px;
     padding: 18px 20px;
-    border-left: 4px solid var(--gr2-gold);
+    border-left: 4px solid var(--gr2-amber);
     margin-bottom: 14px;
 }
 .gr2-wish-avatar {
@@ -1059,19 +1312,19 @@ html:has(.gr2-root) {
 }
 .gr2-wish-date {
     font-size: 0.74rem;
-    color: #9c8bab;
+    color: #9c8f86;
 }
 .gr2-wish-message {
     font-size: 0.95rem;
-    color: #57496b;
+    color: #5a4d42;
     line-height: 1.7;
 }
 .gr2-btn-more {
     display: block;
     margin: 20px auto 0;
     background: transparent;
-    border: 2px solid var(--gr2-purple);
-    color: var(--gr2-purple-dark);
+    border: 2px solid var(--gr2-coral);
+    color: var(--gr2-coral-dark);
     padding: 10px 24px;
     border-radius: 50px;
     cursor: pointer;
@@ -1080,7 +1333,7 @@ html:has(.gr2-root) {
     transition: all 0.3s;
 }
 .gr2-btn-more:hover {
-    background: var(--gr2-purple);
+    background: var(--gr2-coral);
     color: var(--gr2-white);
 }
 
@@ -1088,7 +1341,7 @@ html:has(.gr2-root) {
 .gr2-closing {
     position: relative;
     min-height: 80vh;
-    background: linear-gradient(165deg, var(--gr2-purple-deep) 0%, var(--gr2-purple-dark) 60%, #4a2f6b 100%);
+    background: linear-gradient(165deg, var(--gr2-navy-2) 0%, var(--gr2-navy) 60%, #3a2f66 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1103,7 +1356,7 @@ html:has(.gr2-root) {
 .gr2-closing-balloon {
     position: absolute;
     font-size: 2.8rem;
-    opacity: 0.35;
+    opacity: 0.3;
     left: 10%;
     bottom: -10%;
     animation: gr2Rise 9s ease-in infinite;
@@ -1118,6 +1371,11 @@ html:has(.gr2-root) {
     animation-delay: 6s;
     font-size: 3.2rem;
 }
+.gr2-closing-stars {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
 .gr2-closing-frame {
     position: relative;
     max-width: 560px;
@@ -1131,7 +1389,7 @@ html:has(.gr2-root) {
 .gr2-closing-title {
     font-family: 'Comfortaa', cursive;
     font-weight: 700;
-    color: var(--gr2-gold-light);
+    color: var(--gr2-amber-light);
     font-size: clamp(1.7rem, 5vw, 2.4rem);
     margin-bottom: 14px;
 }
@@ -1159,7 +1417,7 @@ html:has(.gr2-root) {
     width: 90px;
     height: 2px;
     border-radius: 2px;
-    background: linear-gradient(to right, var(--gr2-purple), var(--gr2-gold), var(--gr2-lavender));
+    background: linear-gradient(to right, var(--gr2-coral), var(--gr2-amber), var(--gr2-teal));
     margin: 0 auto 22px;
 }
 .gr2-closing-credit {
@@ -1170,13 +1428,13 @@ html:has(.gr2-root) {
 
 /* ── TOAST / BACK TO TOP ───────────────────────────────────────────────── */
 .gr2-toast {
-    background: var(--gr2-purple-deep);
+    background: var(--gr2-navy-2);
     color: var(--gr2-white);
     padding: 12px 28px;
     border-radius: 50px;
     font-size: 0.85rem;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-    border: 1px solid var(--gr2-gold);
+    border: 1px solid var(--gr2-amber);
 }
 .gr2-back-top {
     position: fixed;
@@ -1186,7 +1444,7 @@ html:has(.gr2-root) {
     width: 46px;
     height: 46px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--gr2-purple), var(--gr2-gold));
+    background: linear-gradient(135deg, var(--gr2-coral), var(--gr2-amber));
     border: none;
     color: var(--gr2-white);
     cursor: pointer;
@@ -1194,7 +1452,7 @@ html:has(.gr2-root) {
     align-items: center;
     justify-content: center;
     font-size: 1.2rem;
-    box-shadow: 0 8px 22px rgba(139, 95, 191, 0.4);
+    box-shadow: 0 8px 22px rgba(255, 122, 89, 0.4);
     transition: transform 0.25s;
 }
 .gr2-back-top:hover {
@@ -1236,13 +1494,88 @@ html:has(.gr2-root) {
         opacity: 0;
     }
     10% {
-        opacity: 0.35;
+        opacity: 0.3;
     }
     90% {
-        opacity: 0.35;
+        opacity: 0.3;
     }
     100% {
         transform: translateY(-120vh) rotate(3deg);
+        opacity: 0;
+    }
+}
+@keyframes gr2MountainDrift {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
+}
+@keyframes gr2CloudDrift {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(160vw);
+    }
+}
+@keyframes gr2BalloonDrift {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(148vw);
+    }
+}
+@keyframes gr2BalloonBob {
+    0%,
+    100% {
+        transform: translateY(0) rotate(-2deg);
+    }
+    50% {
+        transform: translateY(-14px) rotate(2deg);
+    }
+}
+@keyframes gr2QuestionBounce {
+    0%,
+    100% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(-7px) scale(1.08);
+    }
+}
+@keyframes gr2ColorCycle {
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+}
+@keyframes gr2StarTwinkle {
+    0%,
+    100% {
+        opacity: 0.15;
+        transform: scale(0.85);
+    }
+    50% {
+        opacity: 0.9;
+        transform: scale(1.15);
+    }
+}
+@keyframes gr2SparkRise {
+    0% {
+        transform: translateY(0) scale(0.6);
+        opacity: 0;
+    }
+    20% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-38px) scale(1);
         opacity: 0;
     }
 }
@@ -1269,8 +1602,17 @@ html:has(.gr2-root) {
     .gr2-balloon,
     .gr2-confetti-piece,
     .gr2-message-balloon,
-    .gr2-closing-balloon {
-        animation: none;
+    .gr2-closing-balloon,
+    .gr2-mountain-row,
+    .gr2-sky-cloud,
+    .gr2-hot-balloon-drift,
+    .gr2-hot-balloon-bob,
+    .gr2-hero-mystery-burst,
+    .gr2-hero-photo-wrap,
+    .gr2-star,
+    .gr2-spark,
+    .gr2-teaser-mark {
+        animation: none !important;
     }
 }
 
@@ -1311,6 +1653,19 @@ html:has(.gr2-root) {
     .gr2-teams-row {
         flex-direction: column;
     }
+    .gr2-hot-balloon-drift {
+        transform: scale(0.8);
+    }
+    .gr2-mountains,
+    .gr2-teaser-mountains {
+        height: 22%;
+        min-height: 80px;
+    }
+    .gr2-teaser-mark {
+        width: 96px;
+        height: 96px;
+        font-size: 2.4rem;
+    }
 }
 @media (max-width: 480px) {
     .gr2-gallery-grid {
@@ -1318,5 +1673,9 @@ html:has(.gr2-root) {
     }
     .gr2-ewallet-grid {
         grid-template-columns: 1fr 1fr;
+    }
+    .gr2-sky-cloud-1,
+    .gr2-sky-cloud-2 {
+        display: none;
     }
 }

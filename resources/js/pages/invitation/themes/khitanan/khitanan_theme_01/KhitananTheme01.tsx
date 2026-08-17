@@ -16,7 +16,7 @@ interface KhitananTheme01Props {
     greeting?: Greeting;
 }
 
-const EVENT_ICONS = ['🕌', '🎉', '🎊', '🎈', '🍽️', '⭐'];
+const EVENT_ICONS = ['🕌', '🦸', '⚡', '🛡️', '🍽️', '✨'];
 
 function addToCalendar(ev: KhitananInvitation['events'][0]) {
     const start = (ev.date || '').replace(/-/g, '') + 'T' + (ev.time || '080000').replace(/:/g, '') + '00Z';
@@ -114,12 +114,20 @@ export default function KhitananTheme01({ invitation, visitor, greeting }: Khita
             {/* ── Opening Overlay ────────────────────────────────────────────────── */}
             {coverEnabled && (
                 <div className={`kt1-overlay${opened ? ' hide' : ''}`}>
-                    <span className="kt1-overlay-cloud kt1-cloud-1">☁️</span>
-                    <span className="kt1-overlay-cloud kt1-cloud-2">☁️</span>
-                    <span className="kt1-overlay-cloud kt1-cloud-3">☁️</span>
-                    <span className="kt1-overlay-cloud kt1-cloud-4">☁️</span>
+                    <span className="kt1-deco kt1-deco-star" style={{ top: '9%', left: '9%' }}>
+                        ✨
+                    </span>
+                    <span className="kt1-deco kt1-deco-bolt" style={{ top: '15%', right: '11%', animationDelay: '-0.6s' }}>
+                        ⚡
+                    </span>
+                    <span className="kt1-deco kt1-deco-fly" style={{ bottom: '12%', left: '13%', animationDelay: '-1.4s' }}>
+                        ☁️
+                    </span>
+                    <span className="kt1-deco kt1-deco-bolt" style={{ bottom: '17%', right: '9%', animationDelay: '-1s' }}>
+                        ⚡
+                    </span>
                     <div className="kt1-overlay-frame">
-                        <div className="kt1-overlay-badge">🏅</div>
+                        <div className="kt1-overlay-badge">🦸</div>
                         <p className="kt1-overlay-salam">Assalamu'alaikum Warahmatullahi Wabarakatuh</p>
                         <div className="kt1-overlay-divider" />
                         <p className="kt1-overlay-label">Undangan Khitanan</p>
@@ -147,7 +155,7 @@ export default function KhitananTheme01({ invitation, visitor, greeting }: Khita
                             </div>
                         )}
                         <button className="kt1-btn-open" onClick={openInvitation}>
-                            🎈 {greeting?.buttonText ?? 'Buka Undangan'}
+                            ⚡ {greeting?.buttonText ?? 'Buka Undangan'}
                         </button>
                     </div>
                 </div>
@@ -157,28 +165,33 @@ export default function KhitananTheme01({ invitation, visitor, greeting }: Khita
             <div ref={mainRef} className={`kt1-main${opened ? ' visible' : ''}`}>
                 {/* ── HERO ──────────────────────────────────────────────────────── */}
                 <section className="kt1-hero">
-                    <span className="kt1-hero-cloud" style={{ top: '10%', left: '6%' }}>
+                    <span className="kt1-deco kt1-deco-fly" style={{ top: '10%', left: '6%' }}>
                         ☁️
                     </span>
-                    <span className="kt1-hero-cloud" style={{ top: '18%', right: '8%', animationDelay: '-4s' }}>
-                        ☁️
+                    <span className="kt1-deco kt1-deco-bolt" style={{ top: '18%', right: '8%', animationDelay: '-0.9s' }}>
+                        ⚡
                     </span>
-                    <span className="kt1-hero-cloud" style={{ bottom: '14%', left: '10%', animationDelay: '-8s' }}>
-                        ✈️
+                    <span className="kt1-deco kt1-deco-fly" style={{ bottom: '14%', left: '10%', animationDelay: '-3s' }}>
+                        ⭐
                     </span>
                     <div className="kt1-hero-frame kt1-anim-up">
                         <p className="kt1-hero-label">Undangan Khitanan</p>
                         <h1 className="kt1-hero-name">{invitation.childName}</h1>
                         <div className="kt1-hero-photo-wrap">
-                            <div
-                                className="kt1-hero-photo"
-                                style={
-                                    childPhoto ? { backgroundImage: `url(${childPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}
-                                }
-                            >
-                                {!childPhoto && invitation.childName?.charAt(0)}
+                            <span className="kt1-hero-cape" aria-hidden="true" />
+                            <div className="kt1-hero-shield-frame">
+                                <div
+                                    className="kt1-hero-photo"
+                                    style={
+                                        childPhoto
+                                            ? { backgroundImage: `url(${childPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                                            : {}
+                                    }
+                                >
+                                    {!childPhoto && invitation.childName?.charAt(0)}
+                                </div>
                             </div>
-                            <span className="kt1-hero-badge">🏅</span>
+                            <span className="kt1-hero-badge">🛡️</span>
                         </div>
                         {invitation.childAge && <div className="kt1-hero-age">🎂 {formatAge(invitation.childAge)}</div>}
                         <p className="kt1-hero-date">{invitation.mainDateFormatted}</p>
@@ -208,7 +221,7 @@ export default function KhitananTheme01({ invitation, visitor, greeting }: Khita
                     <section className="kt1-section kt1-profile">
                         <h2 className="kt1-section-title kt1-anim-up">Sang Jagoan Cilik</h2>
                         <div className="kt1-divider kt1-anim-up">
-                            <span>🎈</span>
+                            <span>🦸</span>
                         </div>
                         <div className="kt1-profile-card kt1-anim-up">
                             <div
@@ -231,7 +244,7 @@ export default function KhitananTheme01({ invitation, visitor, greeting }: Khita
                     <section className="kt1-section kt1-events-bg">
                         <h2 className="kt1-section-title light kt1-anim-up">Rangkaian Acara</h2>
                         <div className="kt1-divider kt1-anim-up">
-                            <span>🎊</span>
+                            <span>⚡</span>
                         </div>
                         <div className="kt1-events-grid">
                             {invitation.events.map((ev, i) => {
@@ -449,14 +462,14 @@ export default function KhitananTheme01({ invitation, visitor, greeting }: Khita
 
                 {/* ── CLOSING ───────────────────────────────────────────────────── */}
                 <section className="kt1-closing">
-                    <span className="kt1-hero-cloud" style={{ top: '12%', left: '10%' }}>
+                    <span className="kt1-deco kt1-deco-fly" style={{ top: '12%', left: '10%' }}>
                         ☁️
                     </span>
-                    <span className="kt1-hero-cloud" style={{ bottom: '16%', right: '10%', animationDelay: '-5s' }}>
-                        ☁️
+                    <span className="kt1-deco kt1-deco-bolt" style={{ bottom: '16%', right: '10%', animationDelay: '-1.2s' }}>
+                        ⚡
                     </span>
                     <div className="kt1-closing-frame kt1-anim-up">
-                        <div className="kt1-closing-icon">🏅</div>
+                        <div className="kt1-closing-icon">🛡️</div>
                         <p className="kt1-closing-title">Terima Kasih</p>
                         <p className="kt1-closing-sub">
                             Atas segala doa dan kehadiran

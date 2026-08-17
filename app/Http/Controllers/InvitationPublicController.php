@@ -265,6 +265,53 @@ class InvitationPublicController extends Controller
             ]);
         }
 
+        if ($eventType === 'khitanan') {
+            $childName = $contents->get('child_name', '');
+
+            return array_merge($base, [
+                'pageTitle'      => $invitation->title ?: "Undangan Khitanan - {$childName}",
+                'childName'      => $childName,
+                'childPhoto'     => $this->resolveContentUrl($invitation, 'child_photo'),
+                'childAge'       => $contents->get('child_age', ''),
+                'fatherName'     => $contents->get('father_name', ''),
+                'motherName'     => $contents->get('mother_name', ''),
+                'openingMessage' => $contents->get('opening_message', ''),
+            ]);
+        }
+
+        if ($eventType === 'aqiqah') {
+            $babyName = $contents->get('baby_name', '');
+            $birthDate = $contents->get('birth_date', '');
+
+            return array_merge($base, [
+                'pageTitle'          => $invitation->title ?: "Undangan Aqiqah - {$babyName}",
+                'babyName'           => $babyName,
+                'babyPhoto'          => $this->resolveContentUrl($invitation, 'baby_photo'),
+                'babyGender'         => $contents->get('baby_gender', ''),
+                'birthDateFormatted' => $birthDate ? $this->formatDateId(Carbon::parse($birthDate)) : '',
+                'fatherName'         => $contents->get('father_name', ''),
+                'motherName'         => $contents->get('mother_name', ''),
+                'openingMessage'     => $contents->get('opening_message', ''),
+            ]);
+        }
+
+        if ($eventType === 'gender_reveal') {
+            $dueDate    = $contents->get('due_date', '');
+            $revealDate = $contents->get('reveal_scheduled_at', '');
+
+            return array_merge($base, [
+                'pageTitle'           => $invitation->title ?: 'Undangan Gender Reveal',
+                'motherName'          => $contents->get('mother_name', ''),
+                'fatherName'          => $contents->get('father_name', ''),
+                'parentsPhoto'        => $this->resolveContentUrl($invitation, 'parents_photo'),
+                'dueDateFormatted'    => $dueDate ? $this->formatDateId(Carbon::parse($dueDate)) : '',
+                'teamAName'           => $contents->get('team_a_name', ''),
+                'teamBName'           => $contents->get('team_b_name', ''),
+                'revealDateFormatted' => $revealDate ? $this->formatDateId(Carbon::parse($revealDate)) : '',
+                'openingMessage'      => $contents->get('opening_message', ''),
+            ]);
+        }
+
         return array_merge($base, ['pageTitle' => $invitation->title ?? '']);
     }
 

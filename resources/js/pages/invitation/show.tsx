@@ -1,7 +1,15 @@
-import type { BirthdayInvitation, InvitationData, WeddingInvitation } from '@/types/invitation';
+import type { AqiqahInvitation, BirthdayInvitation, GenderRevealInvitation, InvitationData, KhitananInvitation, WeddingInvitation } from '@/types/invitation';
 import { Head } from '@inertiajs/react';
 import { useEffect } from 'react';
+import AqiqahTheme01 from './themes/aqiqah/aqiqah_theme_01/AqiqahTheme01';
+import AqiqahTheme02 from './themes/aqiqah/aqiqah_theme_02/AqiqahTheme02';
 import BirthdayStarryNight from './themes/birthday/BirthdayStarryNight';
+import BirthdayTheme01 from './themes/birthday/birthday_theme_01/BirthdayTheme01';
+import BirthdayTheme02 from './themes/birthday/birthday_theme_02/BirthdayTheme02';
+import GenderRevealTheme01 from './themes/gender_reveal/gender_reveal_theme_01/GenderRevealTheme01';
+import GenderRevealTheme02 from './themes/gender_reveal/gender_reveal_theme_02/GenderRevealTheme02';
+import KhitananTheme01 from './themes/khitanan/khitanan_theme_01/KhitananTheme01';
+import KhitananTheme02 from './themes/khitanan/khitanan_theme_02/KhitananTheme02';
 import WeddingBase from './themes/wedding/blossom-garden/WeddingBase';
 import WeddingTheme01 from './themes/wedding/wedding_theme_01/WeddingTheme01';
 import WeddingTheme02 from './themes/wedding/wedding_theme_02/WeddingTheme02';
@@ -25,9 +33,50 @@ function resolveThemeComponent(themeSlug: string, invitation: InvitationData, vi
         // Birthday themes
         case 'birthday':
         case 'starry-night':
+            return <BirthdayStarryNight invitation={invitation as BirthdayInvitation} visitor={visitor} />;
+
         case 'birthday_theme_01':
         case 'birthday-theme-01':
-            return <BirthdayStarryNight invitation={invitation as BirthdayInvitation} visitor={visitor} />;
+            return (
+                <BirthdayTheme01 invitation={invitation as BirthdayInvitation} visitor={visitor} greeting={invitation.greeting} />
+            );
+
+        case 'birthday_theme_02':
+        case 'birthday-theme-02':
+            return (
+                <BirthdayTheme02 invitation={invitation as BirthdayInvitation} visitor={visitor} greeting={invitation.greeting} />
+            );
+
+        // Aqiqah themes
+        case 'aqiqah_theme_01':
+        case 'aqiqah-theme-01':
+            return <AqiqahTheme01 invitation={invitation as AqiqahInvitation} visitor={visitor} greeting={invitation.greeting} />;
+
+        case 'aqiqah_theme_02':
+        case 'aqiqah-theme-02':
+            return <AqiqahTheme02 invitation={invitation as AqiqahInvitation} visitor={visitor} greeting={invitation.greeting} />;
+
+        // Gender reveal themes
+        case 'gender_reveal_theme_01':
+        case 'gender-reveal-theme-01':
+            return (
+                <GenderRevealTheme01 invitation={invitation as GenderRevealInvitation} visitor={visitor} greeting={invitation.greeting} />
+            );
+
+        case 'gender_reveal_theme_02':
+        case 'gender-reveal-theme-02':
+            return (
+                <GenderRevealTheme02 invitation={invitation as GenderRevealInvitation} visitor={visitor} greeting={invitation.greeting} />
+            );
+
+        // Khitanan themes
+        case 'khitanan_theme_01':
+        case 'khitanan-theme-01':
+            return <KhitananTheme01 invitation={invitation as KhitananInvitation} visitor={visitor} greeting={invitation.greeting} />;
+
+        case 'khitanan_theme_02':
+        case 'khitanan-theme-02':
+            return <KhitananTheme02 invitation={invitation as KhitananInvitation} visitor={visitor} greeting={invitation.greeting} />;
 
         // Wedding themes
         case 'wedding':

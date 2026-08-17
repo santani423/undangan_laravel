@@ -1,13 +1,14 @@
 .bt2-root {
-    --bt2-pink: #ff5d8f;
-    --bt2-pink-light: #ffd1e0;
-    --bt2-yellow: #ffc93c;
-    --bt2-blue: #4ec5d4;
-    --bt2-purple: #7c5cfc;
-    --bt2-dark: #2b1b3d;
-    --bt2-dark-2: #4a2f63;
-    --bt2-cream: #fff9f2;
-    --bt2-charcoal: #3a2e4d;
+    /* Dreamy fantasy palette — soft lavender/purple, gold, pastel pink, night-sky navy */
+    --bt2-pink: #f9a8d4;
+    --bt2-pink-light: #fbd7ec;
+    --bt2-yellow: #ffd76a;
+    --bt2-blue: #8ad9f0;
+    --bt2-purple: #8b6fd6;
+    --bt2-dark: #1c1233;
+    --bt2-dark-2: #2e1e52;
+    --bt2-cream: #faf7ff;
+    --bt2-charcoal: #372b52;
     --bt2-white: #ffffff;
 
     font-family: 'Quicksand', sans-serif;
@@ -33,9 +34,9 @@ html:has(.bt2-root) {
     z-index: 9999;
     overflow: hidden;
     background:
-        radial-gradient(circle at 20% 10%, rgba(255, 201, 60, 0.25) 0%, transparent 45%),
-        radial-gradient(circle at 85% 80%, rgba(78, 197, 212, 0.25) 0%, transparent 45%),
-        linear-gradient(160deg, var(--bt2-dark) 0%, var(--bt2-dark-2) 55%, #5a3a7a 100%);
+        radial-gradient(circle at 20% 10%, rgba(255, 215, 106, 0.22) 0%, transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(138, 217, 240, 0.2) 0%, transparent 45%),
+        linear-gradient(160deg, var(--bt2-dark) 0%, var(--bt2-dark-2) 55%, #4a2f7a 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -50,17 +51,69 @@ html:has(.bt2-root) {
     pointer-events: none;
 }
 
-.bt2-confetti-bg {
+.bt2-sparkle-bg {
     position: absolute;
     inset: 0;
     overflow: hidden;
     pointer-events: none;
 }
-.bt2-confetti-piece {
+.bt2-sparkle-particle {
     position: absolute;
-    top: -20px;
+    bottom: -12px;
+    border-radius: 50%;
+    opacity: 0;
+    box-shadow: 0 0 6px 1.5px rgba(255, 255, 255, 0.55);
+    animation: bt2ParticleRise linear infinite;
+}
+
+.bt2-cover-rainbow {
+    position: absolute;
+    top: 6%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 3.6rem;
     opacity: 0.85;
-    animation: bt2Fall linear infinite;
+    pointer-events: none;
+    animation: bt2RainbowDrift 8s ease-in-out infinite;
+}
+.bt2-cover-star {
+    position: absolute;
+    font-size: 1.5rem;
+    pointer-events: none;
+    animation: bt2Sparkle 2.6s ease-in-out infinite;
+}
+.bt2-cover-star-1 {
+    top: 14%;
+    left: 12%;
+}
+.bt2-cover-star-2 {
+    top: 20%;
+    right: 14%;
+    animation-delay: -0.9s;
+}
+.bt2-cover-star-3 {
+    bottom: 30%;
+    left: 18%;
+    animation-delay: -1.7s;
+}
+.bt2-cover-unicorn {
+    position: absolute;
+    bottom: 20%;
+    right: 10%;
+    font-size: 2.6rem;
+    opacity: 0.9;
+    pointer-events: none;
+    animation: bt2CharacterFloat 4.5s ease-in-out infinite;
+}
+.bt2-cover-castle {
+    position: absolute;
+    bottom: -1%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 7rem;
+    opacity: 0.22;
+    pointer-events: none;
+    filter: brightness(0.6) saturate(0.7);
 }
 
 .bt2-cover-card {
@@ -69,11 +122,12 @@ html:has(.bt2-root) {
     text-align: center;
     max-width: 460px;
     width: 100%;
-    background: rgba(255, 255, 255, 0.06);
-    border: 2px dashed rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.07);
+    border: 2px solid rgba(255, 215, 106, 0.4);
     border-radius: 28px;
     padding: 50px 34px 40px;
     backdrop-filter: blur(4px);
+    box-shadow: 0 0 60px rgba(139, 111, 214, 0.25);
 }
 .bt2-cover-tag {
     display: inline-block;
@@ -89,18 +143,18 @@ html:has(.bt2-root) {
     margin-bottom: 14px;
 }
 .bt2-cover-name {
-    font-family: 'Baloo 2', cursive;
-    font-weight: 700;
+    font-family: 'Great Vibes', cursive;
+    font-weight: 400;
     color: var(--bt2-white);
-    font-size: clamp(2rem, 8vw, 2.8rem);
+    font-size: clamp(2.6rem, 10vw, 3.8rem);
     line-height: 1.2;
     margin-bottom: 14px;
-    text-shadow: 0 4px 20px rgba(255, 93, 143, 0.4);
+    text-shadow: 0 4px 24px rgba(255, 215, 106, 0.5);
 }
 .bt2-cover-age-badge {
     display: inline-block;
-    background: linear-gradient(135deg, var(--bt2-pink), var(--bt2-purple));
-    color: var(--bt2-white);
+    background: linear-gradient(135deg, var(--bt2-yellow), var(--bt2-pink));
+    color: var(--bt2-dark);
     font-weight: 700;
     font-size: 0.95rem;
     padding: 8px 22px;
@@ -144,7 +198,7 @@ html:has(.bt2-root) {
     letter-spacing: 1.5px;
 }
 .bt2-btn-open {
-    background: linear-gradient(135deg, var(--bt2-pink), var(--bt2-purple));
+    background: linear-gradient(135deg, var(--bt2-purple), var(--bt2-pink));
     color: var(--bt2-white);
     border: none;
     padding: 15px 38px;
@@ -154,7 +208,7 @@ html:has(.bt2-root) {
     font-size: 0.95rem;
     letter-spacing: 0.5px;
     cursor: pointer;
-    box-shadow: 0 10px 30px rgba(124, 92, 252, 0.4);
+    box-shadow: 0 10px 30px rgba(139, 111, 214, 0.45);
     transition: transform 0.25s ease;
 }
 .bt2-btn-open:hover {
@@ -181,14 +235,14 @@ html:has(.bt2-root) {
     font-size: 2rem;
     text-align: center;
     margin-bottom: 10px;
-    color: var(--bt2-pink);
+    color: var(--bt2-purple);
 }
 .bt2-section-title.bt2-light {
     color: var(--bt2-white);
 }
 .bt2-section-sub {
     text-align: center;
-    color: #776b8a;
+    color: #776b93;
     font-size: 0.98rem;
     max-width: 520px;
     margin: 0 auto 10px;
@@ -229,42 +283,76 @@ html:has(.bt2-root) {
     min-height: 100vh;
     background: var(--bt2-cream);
     background-image:
-        radial-gradient(ellipse at 15% 15%, rgba(255, 93, 143, 0.1) 0%, transparent 55%),
-        radial-gradient(ellipse at 85% 85%, rgba(78, 197, 212, 0.12) 0%, transparent 55%),
-        radial-gradient(ellipse at 85% 15%, rgba(255, 201, 60, 0.14) 0%, transparent 50%);
+        radial-gradient(ellipse at 15% 15%, rgba(249, 168, 212, 0.14) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 85%, rgba(138, 217, 240, 0.16) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 15%, rgba(255, 215, 106, 0.18) 0%, transparent 50%);
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     overflow: hidden;
 }
-.bt2-hero-balloons {
+.bt2-hero-deco {
     position: absolute;
     inset: 0;
     pointer-events: none;
 }
-.bt2-balloon {
+.bt2-cloud {
     position: absolute;
-    font-size: 3.4rem;
-    opacity: 0.85;
-    animation: bt2Sway 6s ease-in-out infinite;
+    font-size: 3rem;
+    opacity: 0.8;
+    animation: bt2CloudDrift 16s ease-in-out infinite;
 }
-.bt2-balloon-0 {
-    left: 8%;
-    top: 15%;
+.bt2-cloud-0 {
+    left: 6%;
+    top: 12%;
     animation-delay: 0s;
 }
-.bt2-balloon-1 {
-    right: 10%;
-    top: 22%;
-    animation-delay: 1.5s;
+.bt2-cloud-1 {
+    right: 8%;
+    top: 18%;
+    animation-delay: -5s;
+    font-size: 2.4rem;
+}
+.bt2-cloud-2 {
+    left: 14%;
+    bottom: 16%;
+    animation-delay: -10s;
     font-size: 2.6rem;
 }
-.bt2-balloon-2 {
+.bt2-star {
+    position: absolute;
+    font-size: 1.5rem;
+    animation: bt2Sparkle 2.4s ease-in-out infinite;
+}
+.bt2-star-1 {
+    left: 26%;
+    top: 10%;
+}
+.bt2-star-2 {
     right: 22%;
+    top: 30%;
+    animation-delay: -1.1s;
+}
+.bt2-star-3 {
+    right: 30%;
+    bottom: 18%;
+    animation-delay: -1.9s;
+}
+.bt2-unicorn {
+    position: absolute;
+    left: 10%;
     bottom: 12%;
-    animation-delay: 3s;
-    font-size: 2.9rem;
+    font-size: 3.2rem;
+    animation: bt2CharacterFloat 5s ease-in-out infinite;
+}
+.bt2-hero-castle {
+    position: absolute;
+    bottom: -2%;
+    right: 4%;
+    font-size: 5.5rem;
+    opacity: 0.16;
+    filter: brightness(0.6) saturate(0.7);
 }
 .bt2-hero-inner {
     position: relative;
@@ -299,10 +387,11 @@ html:has(.bt2-root) {
     color: var(--bt2-white);
     font-family: 'Baloo 2', cursive;
     font-size: 2.2rem;
-    box-shadow: 0 16px 40px rgba(124, 92, 252, 0.25);
+    box-shadow: 0 16px 40px rgba(139, 111, 214, 0.3);
     background-clip: padding-box;
     border: 6px solid var(--bt2-cream);
     background-origin: border-box;
+    animation: bt2Float 4s ease-in-out infinite;
 }
 .bt2-hero-age-burst {
     position: absolute;
@@ -320,25 +409,32 @@ html:has(.bt2-root) {
     font-weight: 700;
     font-size: 1.3rem;
     border: 4px solid var(--bt2-cream);
-    box-shadow: 0 6px 16px rgba(255, 93, 143, 0.4);
+    box-shadow: 0 6px 16px rgba(249, 168, 212, 0.5);
+}
+.bt2-hero-crown {
+    position: absolute;
+    top: -16px;
+    left: -4px;
+    font-size: 1.9rem;
+    animation: bt2CrownWiggle 3.4s ease-in-out infinite;
 }
 .bt2-hero-name {
-    font-family: 'Baloo 2', cursive;
-    font-weight: 800;
-    font-size: clamp(2.2rem, 7vw, 3.2rem);
-    line-height: 1.2;
+    font-family: 'Great Vibes', cursive;
+    font-weight: 400;
+    font-size: clamp(3rem, 10vw, 4.6rem);
+    line-height: 1.15;
     color: var(--bt2-charcoal);
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 .bt2-hero-tagline {
     font-style: italic;
-    color: #776b8a;
+    color: #776b93;
     font-size: 1.02rem;
     margin-bottom: 10px;
 }
 .bt2-hero-date {
     font-size: 1rem;
-    color: var(--bt2-pink);
+    color: var(--bt2-purple);
     font-weight: 700;
     letter-spacing: 1px;
     margin-bottom: 10px;
@@ -350,7 +446,7 @@ html:has(.bt2-root) {
     font-size: 1.4rem;
 }
 
-/* COUNTDOWN */
+/* COUNTDOWN — glowing magical boxes */
 .bt2-countdown {
     display: flex;
     gap: 12px;
@@ -359,18 +455,19 @@ html:has(.bt2-root) {
     flex-wrap: wrap;
 }
 .bt2-countdown-box {
-    background: var(--bt2-white);
+    background: linear-gradient(160deg, var(--bt2-dark-2), var(--bt2-dark));
+    border: 1px solid rgba(255, 215, 106, 0.4);
     border-radius: 16px;
     padding: 14px 16px;
     min-width: 72px;
     text-align: center;
-    box-shadow: 0 8px 22px rgba(124, 92, 252, 0.14);
+    animation: bt2Glow 2.6s ease-in-out infinite;
 }
 .bt2-countdown-num {
     font-family: 'Baloo 2', cursive;
     font-size: 1.9rem;
     font-weight: 700;
-    color: var(--bt2-pink);
+    color: var(--bt2-yellow);
     display: block;
     line-height: 1;
 }
@@ -378,7 +475,7 @@ html:has(.bt2-root) {
     font-size: 0.62rem;
     letter-spacing: 1.5px;
     text-transform: uppercase;
-    color: var(--bt2-purple);
+    color: rgba(255, 255, 255, 0.75);
     display: block;
     margin-top: 5px;
     font-weight: 600;
@@ -392,7 +489,7 @@ html:has(.bt2-root) {
 }
 .bt2-countdown-done h3 {
     font-family: 'Baloo 2', cursive;
-    color: var(--bt2-pink);
+    color: var(--bt2-purple);
     font-size: 2rem;
     margin: 6px 0 0;
 }
@@ -408,7 +505,7 @@ html:has(.bt2-root) {
     border-radius: 24px;
     padding: 44px 34px;
     text-align: center;
-    box-shadow: 0 14px 40px rgba(124, 92, 252, 0.1);
+    box-shadow: 0 14px 40px rgba(139, 111, 214, 0.12);
 }
 .bt2-profile-photo-frame {
     width: 140px;
@@ -437,7 +534,7 @@ html:has(.bt2-root) {
     margin-bottom: 4px;
 }
 .bt2-profile-nickname {
-    color: var(--bt2-pink);
+    color: var(--bt2-purple);
     font-style: italic;
     font-size: 1rem;
     margin-bottom: 16px;
@@ -459,7 +556,7 @@ html:has(.bt2-root) {
 }
 .bt2-profile-bio {
     font-size: 0.98rem;
-    color: #665a7a;
+    color: #6d6285;
     line-height: 1.75;
 }
 
@@ -476,7 +573,7 @@ html:has(.bt2-root) {
 }
 .bt2-event-card {
     background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 215, 106, 0.2);
     border-radius: 20px;
     padding: 38px 30px;
     text-align: center;
@@ -523,14 +620,14 @@ html:has(.bt2-root) {
     font-family: 'Quicksand', sans-serif;
 }
 .bt2-btn-event:hover {
-    background: var(--bt2-pink);
-    border-color: var(--bt2-pink);
+    background: var(--bt2-purple);
+    border-color: var(--bt2-purple);
 }
 
 /* ── LOCATION ──────────────────────────────────────────────────────────── */
 .bt2-location-sub {
     text-align: center;
-    color: var(--bt2-pink);
+    color: var(--bt2-purple);
     font-size: 1rem;
     margin-bottom: 8px;
     font-style: italic;
@@ -543,18 +640,18 @@ html:has(.bt2-root) {
     border-radius: 20px;
     overflow: hidden;
     border: 4px solid var(--bt2-white);
-    box-shadow: 0 12px 34px rgba(124, 92, 252, 0.14);
+    box-shadow: 0 12px 34px rgba(139, 111, 214, 0.14);
 }
 .bt2-btn-maps {
     display: inline-block;
-    background: linear-gradient(135deg, var(--bt2-pink), var(--bt2-purple));
+    background: linear-gradient(135deg, var(--bt2-purple), var(--bt2-pink));
     color: var(--bt2-white);
     padding: 14px 32px;
     text-decoration: none;
     font-size: 0.85rem;
     font-weight: 700;
     border-radius: 50px;
-    box-shadow: 0 8px 22px rgba(124, 92, 252, 0.3);
+    box-shadow: 0 8px 22px rgba(139, 111, 214, 0.3);
     transition: transform 0.25s;
 }
 .bt2-btn-maps:hover {
@@ -593,20 +690,20 @@ html:has(.bt2-root) {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--bt2-pink), var(--bt2-purple));
+    background: linear-gradient(135deg, var(--bt2-purple), var(--bt2-yellow));
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.1rem;
     z-index: 1;
-    box-shadow: 0 6px 16px rgba(255, 93, 143, 0.3);
+    box-shadow: 0 6px 16px rgba(139, 111, 214, 0.35);
 }
 .bt2-timeline-card {
     flex: 1;
     background: var(--bt2-cream);
     border-radius: 18px;
     padding: 22px 24px;
-    box-shadow: 0 6px 20px rgba(124, 92, 252, 0.08);
+    box-shadow: 0 6px 20px rgba(139, 111, 214, 0.08);
 }
 .bt2-timeline-photo {
     width: 100%;
@@ -617,7 +714,7 @@ html:has(.bt2-root) {
     margin-bottom: 14px;
 }
 .bt2-timeline-date {
-    color: var(--bt2-pink);
+    color: var(--bt2-purple);
     font-size: 0.78rem;
     font-weight: 700;
     letter-spacing: 1px;
@@ -632,7 +729,7 @@ html:has(.bt2-root) {
 }
 .bt2-timeline-desc {
     font-size: 0.92rem;
-    color: #665a7a;
+    color: #6d6285;
     line-height: 1.7;
 }
 
@@ -662,7 +759,7 @@ html:has(.bt2-root) {
 .bt2-gallery-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(255, 93, 143, 0.72);
+    background: rgba(139, 111, 214, 0.72);
     opacity: 0;
     transition: opacity 0.3s;
     display: flex;
@@ -695,8 +792,8 @@ html:has(.bt2-root) {
     cursor: pointer;
 }
 .bt2-filter-btn-active {
-    background: var(--bt2-pink);
-    border-color: var(--bt2-pink);
+    background: var(--bt2-purple);
+    border-color: var(--bt2-purple);
     color: var(--bt2-white);
 }
 
@@ -706,7 +803,7 @@ html:has(.bt2-root) {
     margin: 0 auto;
     border-radius: 20px;
     border: 4px solid var(--bt2-white);
-    box-shadow: 0 14px 40px rgba(124, 92, 252, 0.14);
+    box-shadow: 0 14px 40px rgba(139, 111, 214, 0.14);
     aspect-ratio: 16 / 9;
     overflow: hidden;
 }
@@ -738,8 +835,8 @@ html:has(.bt2-root) {
     margin: 0 auto 44px;
 }
 .bt2-bank-card {
-    background: rgba(255, 255, 255, 0.07);
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 215, 106, 0.2);
     border-radius: 18px;
     padding: 28px 22px;
     text-align: center;
@@ -771,7 +868,7 @@ html:has(.bt2-root) {
     margin-bottom: 14px;
 }
 .bt2-btn-copy-bank {
-    background: var(--bt2-pink);
+    background: var(--bt2-purple);
     border: none;
     color: var(--bt2-white);
     padding: 8px 20px;
@@ -835,7 +932,7 @@ html:has(.bt2-root) {
     background: var(--bt2-white);
     border-radius: 24px;
     padding: 46px 40px;
-    box-shadow: 0 14px 40px rgba(124, 92, 252, 0.1);
+    box-shadow: 0 14px 40px rgba(139, 111, 214, 0.12);
 }
 .bt2-rsvp-label {
     display: block;
@@ -861,7 +958,7 @@ html:has(.bt2-root) {
 .bt2-rsvp-input:focus,
 .bt2-rsvp-select:focus,
 .bt2-rsvp-textarea:focus {
-    border-color: var(--bt2-pink);
+    border-color: var(--bt2-purple);
 }
 .bt2-rsvp-radio-group {
     display: flex;
@@ -878,7 +975,7 @@ html:has(.bt2-root) {
     color: var(--bt2-charcoal);
 }
 .bt2-rsvp-radio-label input[type='radio'] {
-    accent-color: var(--bt2-pink);
+    accent-color: var(--bt2-purple);
     width: 18px;
     height: 18px;
 }
@@ -890,7 +987,7 @@ html:has(.bt2-root) {
 }
 .bt2-rsvp-submit {
     width: 100%;
-    background: linear-gradient(135deg, var(--bt2-pink), var(--bt2-purple));
+    background: linear-gradient(135deg, var(--bt2-purple), var(--bt2-pink));
     color: var(--bt2-white);
     border: none;
     padding: 16px;
@@ -899,7 +996,7 @@ html:has(.bt2-root) {
     font-weight: 700;
     font-size: 0.9rem;
     cursor: pointer;
-    box-shadow: 0 10px 28px rgba(124, 92, 252, 0.3);
+    box-shadow: 0 10px 28px rgba(139, 111, 214, 0.3);
     transition: transform 0.25s;
 }
 .bt2-rsvp-submit:hover {
@@ -909,7 +1006,7 @@ html:has(.bt2-root) {
     text-align: center;
     padding: 30px;
     font-size: 1.1rem;
-    color: var(--bt2-pink);
+    color: var(--bt2-purple);
 }
 
 /* ── WISHES ────────────────────────────────────────────────────────────── */
@@ -931,7 +1028,7 @@ html:has(.bt2-root) {
 .bt2-wishes-form-title {
     font-family: 'Baloo 2', cursive;
     font-size: 1.2rem;
-    color: var(--bt2-pink);
+    color: var(--bt2-purple);
     margin-bottom: 22px;
 }
 .bt2-wish-input {
@@ -947,10 +1044,10 @@ html:has(.bt2-root) {
     transition: border-color 0.3s;
 }
 .bt2-wish-input:focus {
-    border-color: var(--bt2-pink);
+    border-color: var(--bt2-purple);
 }
 .bt2-wish-btn {
-    background: linear-gradient(135deg, var(--bt2-pink), var(--bt2-purple));
+    background: linear-gradient(135deg, var(--bt2-purple), var(--bt2-pink));
     color: var(--bt2-white);
     border: none;
     padding: 12px 28px;
@@ -968,7 +1065,7 @@ html:has(.bt2-root) {
     background: var(--bt2-cream);
     border-radius: 16px;
     padding: 18px 20px;
-    border-left: 4px solid var(--bt2-pink);
+    border-left: 4px solid var(--bt2-purple);
     margin-bottom: 14px;
 }
 .bt2-wish-avatar {
@@ -990,19 +1087,19 @@ html:has(.bt2-root) {
 }
 .bt2-wish-date {
     font-size: 0.74rem;
-    color: #9a8bab;
+    color: #9c8fb4;
 }
 .bt2-wish-message {
     font-size: 0.95rem;
-    color: #55496b;
+    color: #55496f;
     line-height: 1.7;
 }
 .bt2-btn-more {
     display: block;
     margin: 20px auto 0;
     background: transparent;
-    border: 2px solid var(--bt2-pink);
-    color: var(--bt2-pink);
+    border: 2px solid var(--bt2-purple);
+    color: var(--bt2-purple);
     padding: 10px 24px;
     border-radius: 50px;
     cursor: pointer;
@@ -1011,23 +1108,50 @@ html:has(.bt2-root) {
     transition: all 0.3s;
 }
 .bt2-btn-more:hover {
-    background: var(--bt2-pink);
+    background: var(--bt2-purple);
     color: var(--bt2-white);
 }
 
 /* ── CLOSING ───────────────────────────────────────────────────────────── */
 .bt2-closing {
     min-height: 80vh;
-    background: linear-gradient(165deg, var(--bt2-dark) 0%, var(--bt2-dark-2) 60%, #5a3a7a 100%);
+    background: linear-gradient(165deg, var(--bt2-dark) 0%, var(--bt2-dark-2) 60%, #4a2f7a 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.bt2-closing-star {
+    position: absolute;
+    font-size: 1.6rem;
+    animation: bt2Sparkle 2.8s ease-in-out infinite;
+}
+.bt2-closing-star-1 {
+    top: 14%;
+    left: 12%;
+}
+.bt2-closing-star-2 {
+    bottom: 20%;
+    right: 12%;
+    animation-delay: -1.3s;
+}
+.bt2-closing-castle {
+    position: absolute;
+    bottom: -2%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 6.5rem;
+    opacity: 0.16;
+    filter: brightness(0.6) saturate(0.7);
 }
 .bt2-closing-frame {
     max-width: 560px;
     width: 100%;
     padding: 60px 40px;
+    position: relative;
+    z-index: 1;
 }
 .bt2-closing-emoji {
     font-size: 2.4rem;
@@ -1054,9 +1178,10 @@ html:has(.bt2-root) {
     margin-bottom: 12px;
 }
 .bt2-closing-name {
-    font-family: 'Baloo 2', cursive;
+    font-family: 'Great Vibes', cursive;
+    font-weight: 400;
     color: var(--bt2-white);
-    font-size: 1.7rem;
+    font-size: 2.2rem;
     margin-bottom: 24px;
 }
 .bt2-closing-line {
@@ -1080,7 +1205,7 @@ html:has(.bt2-root) {
     border-radius: 50px;
     font-size: 0.85rem;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-    border: 1px solid var(--bt2-pink);
+    border: 1px solid var(--bt2-yellow);
 }
 .bt2-back-top {
     position: fixed;
@@ -1090,7 +1215,7 @@ html:has(.bt2-root) {
     width: 46px;
     height: 46px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--bt2-pink), var(--bt2-purple));
+    background: linear-gradient(135deg, var(--bt2-purple), var(--bt2-pink));
     border: none;
     color: var(--bt2-white);
     cursor: pointer;
@@ -1098,7 +1223,7 @@ html:has(.bt2-root) {
     align-items: center;
     justify-content: center;
     font-size: 1.2rem;
-    box-shadow: 0 8px 22px rgba(124, 92, 252, 0.35);
+    box-shadow: 0 8px 22px rgba(139, 111, 214, 0.4);
     transition: transform 0.25s;
 }
 .bt2-back-top:hover {
@@ -1115,23 +1240,82 @@ html:has(.bt2-root) {
         transform: translateY(-8px);
     }
 }
-@keyframes bt2Sway {
+@keyframes bt2Sparkle {
     0%,
     100% {
-        transform: translateY(0) rotate(-4deg);
+        opacity: 0.35;
+        transform: scale(0.85) rotate(0deg);
     }
     50% {
-        transform: translateY(-18px) rotate(4deg);
+        opacity: 1;
+        transform: scale(1.2) rotate(8deg);
     }
 }
-@keyframes bt2Fall {
+@keyframes bt2ParticleRise {
     0% {
-        transform: translateY(-20px) rotate(0deg);
+        transform: translateY(0) scale(0.6);
+        opacity: 0;
+    }
+    15% {
         opacity: 0.9;
     }
+    50% {
+        opacity: 0.6;
+        transform: translateY(-55vh) scale(1.1);
+    }
+    85% {
+        opacity: 0.8;
+    }
     100% {
-        transform: translateY(105vh) rotate(360deg);
-        opacity: 0.3;
+        transform: translateY(-100vh) scale(0.7);
+        opacity: 0;
+    }
+}
+@keyframes bt2CloudDrift {
+    0%,
+    100% {
+        transform: translateX(0) translateY(0);
+    }
+    50% {
+        transform: translateX(22px) translateY(-8px);
+    }
+}
+@keyframes bt2RainbowDrift {
+    0%,
+    100% {
+        transform: translateX(-50%) translateY(0);
+        filter: hue-rotate(0deg);
+    }
+    50% {
+        transform: translateX(-50%) translateY(-10px);
+        filter: hue-rotate(25deg);
+    }
+}
+@keyframes bt2CharacterFloat {
+    0%,
+    100% {
+        transform: translateY(0) rotate(-3deg);
+    }
+    50% {
+        transform: translateY(-16px) rotate(3deg);
+    }
+}
+@keyframes bt2CrownWiggle {
+    0%,
+    100% {
+        transform: rotate(-8deg);
+    }
+    50% {
+        transform: rotate(8deg);
+    }
+}
+@keyframes bt2Glow {
+    0%,
+    100% {
+        box-shadow: 0 8px 22px rgba(255, 215, 106, 0.14);
+    }
+    50% {
+        box-shadow: 0 8px 30px rgba(255, 215, 106, 0.4);
     }
 }
 
@@ -1154,9 +1338,18 @@ html:has(.bt2-root) {
         transition: none;
     }
     .bt2-scroll-indicator,
-    .bt2-balloon,
-    .bt2-confetti-piece {
-        animation: none;
+    .bt2-cloud,
+    .bt2-star,
+    .bt2-unicorn,
+    .bt2-hero-crown,
+    .bt2-hero-photo,
+    .bt2-sparkle-particle,
+    .bt2-cover-star,
+    .bt2-cover-unicorn,
+    .bt2-cover-rainbow,
+    .bt2-closing-star,
+    .bt2-countdown-box {
+        animation: none !important;
     }
 }
 
@@ -1191,8 +1384,14 @@ html:has(.bt2-root) {
     .bt2-closing {
         padding: 60px 20px;
     }
-    .bt2-balloon {
-        display: none;
+    .bt2-cloud,
+    .bt2-unicorn {
+        font-size: 2rem !important;
+    }
+    .bt2-hero-castle,
+    .bt2-cover-castle,
+    .bt2-closing-castle {
+        opacity: 0.1;
     }
 }
 @media (max-width: 480px) {
