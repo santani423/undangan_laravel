@@ -118,6 +118,12 @@ interface LoveStoryData {
     photo: string;
 }
 
+interface AdditionalInfoItem {
+    id: number;
+    label: string;
+    value: string;
+}
+
 interface AcaraEventData {
     id?: number;
     name: string;
@@ -226,6 +232,7 @@ interface Props {
     theme:               Theme;
     package:             PackageItem;
     fieldValues:         Record<string, string>;
+    additionalInfo:      AdditionalInfoItem[];
     acaraEvents:         AcaraEventData[];
     galleryItems:        GalleryItemData[];
     loveStory:           LoveStoryData[];
@@ -336,10 +343,10 @@ const MANAGEMENT_TABS: TabKey[] = ['theme', 'guests', 'comments', 'digital_envel
 const EVENT_TYPE_TABS: Record<string, TabKey[]> = {
     wedding:       ['couple', 'acara', 'gallery', 'love_story'],
     birthday:      ['info', 'acara', 'gallery', 'love_story'],
-    khitanan:      ['info', 'gallery'],
-    aqiqah:        ['info', 'gallery'],
-    gender_reveal: ['info', 'gallery'],
-    syukuran:      ['host', 'info', 'gallery'],
+    khitanan:      ['info', 'acara', 'gallery'],
+    aqiqah:        ['info', 'acara', 'gallery'],
+    gender_reveal: ['info', 'acara', 'gallery'],
+    syukuran:      ['host', 'info', 'acara', 'gallery'],
 };
 
 // Per-event-type override for the shared "love_story" tab's display label —
@@ -756,6 +763,49 @@ function FieldGroup({ fields, values, onChange }: { fields: EventTypeField[]; va
                     {f.field_type !== 'file' && f.help_text && <p className="text-xs text-muted-foreground">{f.help_text}</p>}
                 </div>
             ))}
+        </div>
+    );
+}
+
+// ─── Additional Info Section ───────────────────────────────────────────────────
+
+function AdditionalInfoSection({ items, setItems }: { items: AdditionalInfoItem[]; setItems: React.Dispatch<React.SetStateAction<AdditionalInfoItem[]>> }) {
+    const inputCls = 'w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition';
+
+    function addItem() { setItems((prev) => [...prev, { id: Date.now() + Math.random(), label: '', value: '' }]); }
+    function updateItem(id: number, key: 'label' | 'value', val: string) { setItems((prev) => prev.map((i) => i.id === id ? { ...i, [key]: val } : i)); }
+    function removeItem(id: number) { setItems((prev) => prev.filter((i) => i.id !== id)); }
+
+    return (
+        <div className="flex flex-col gap-4">
+            <div>
+                <h3 className="font-semibold text-foreground text-sm">Informasi Tambahan</h3>
+                <p className="text-xs text-muted-foreground">Tambahkan detail lain seputar acara (opsional), misalnya dress code atau catatan khusus.</p>
+            </div>
+            {items.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Belum ada informasi tambahan.</p>}
+            <div className="flex flex-col gap-3">
+                {items.map((item, idx) => (
+                    <div key={item.id} className="rounded-2xl border border-border p-4 flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                            <p className="text-xs font-medium text-muted-foreground">Info #{idx + 1}</p>
+                            <button type="button" onClick={() => removeItem(item.id)} className="text-xs text-destructive hover:underline">Hapus</button>
+                        </div>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-xs font-medium text-foreground">Label</label>
+                                <input type="text" placeholder="cth. Dress Code" value={item.label} onChange={(e) => updateItem(item.id, 'label', e.target.value)} className={inputCls} />
+                            </div>
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-xs font-medium text-foreground">Keterangan</label>
+                                <input type="text" placeholder="cth. Kasual, warna pastel" value={item.value} onChange={(e) => updateItem(item.id, 'value', e.target.value)} className={inputCls} />
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+            <button type="button" onClick={addItem} className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border py-3 text-sm font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors">
+                + Tambah Informasi
+            </button>
         </div>
     );
 }
@@ -3354,6 +3404,7 @@ export default function InvitationsEdit({
     theme,
     package: pkg,
     fieldValues: initFieldValues,
+    additionalInfo: initAdditionalInfo,
     acaraEvents: initAcaraEvents,
     galleryItems: initGallery,
     loveStory: initLoveStory,
@@ -3448,6 +3499,15 @@ export default function InvitationsEdit({
         }))
     );
 
+    // Additional info items
+    const [additionalInfoItems, setAdditionalInfoItems] = useState<AdditionalInfoItem[]>(() =>
+        (initAdditionalInfo ?? []).map((item) => ({
+            id:    Date.now() + Math.random(),
+            label: item.label,
+            value: item.value,
+        }))
+    );
+
     function handleFieldChange(key: string, val: string) {
         setFieldValues((prev) => ({ ...prev, [key]: val }));
     }
@@ -3481,6 +3541,10 @@ export default function InvitationsEdit({
                 story: entry.story,
                 photo: entry.photo,
             })),
+            additional_info: additionalInfoItems.map((item) => ({
+                label: item.label,
+                value: item.value,
+            })),
         }, {
             onSuccess: () => { setShowSuccess(true); },
             onFinish:  () => setSubmitting(false),
@@ -3508,7 +3572,13 @@ export default function InvitationsEdit({
             case 'love_story':
                 return <LoveStoryTab entries={loveStoryEntries} setEntries={setLoveStoryEntries} />;
             case 'info':
-                return <FieldGroup fields={eventType.fields} values={fieldValues} onChange={handleFieldChange} />;
+                return (
+                    <div className="flex flex-col gap-8">
+                        <FieldGroup fields={eventType.fields} values={fieldValues} onChange={handleFieldChange} />
+                        <div className="border-t border-border" />
+                        <AdditionalInfoSection items={additionalInfoItems} setItems={setAdditionalInfoItems} />
+                    </div>
+                );
             case 'host':
                 return <FieldGroup fields={eventType.fields.filter((f) => ['host_name', 'host_photo', 'occasion', 'opening_message'].includes(f.field_key))} values={fieldValues} onChange={handleFieldChange} />;
             case 'theme':

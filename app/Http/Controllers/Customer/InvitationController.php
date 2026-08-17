@@ -238,6 +238,17 @@ class InvitationController extends Controller
                 ]);
             }
 
+            // ── 3b. Additional info ───────────────────────────────────────
+            $additionalInfo = $this->normalizedAdditionalInfo($request->input('additional_info', []));
+            if ($additionalInfo->isNotEmpty()) {
+                InvitationContent::create([
+                    'invitation_id' => $invitation->id,
+                    'content_key'   => 'additional_info_items',
+                    'content_value' => $additionalInfo->toJson(),
+                    'content_type'  => 'json',
+                ]);
+            }
+
             // ── 4. Acara events ───────────────────────────────────────────
             $acaraInputs = $request->input('acara_events', []);
             $hasCountdown = collect($acaraInputs)->contains(fn ($ev) => !empty($ev['is_countdown']));
@@ -363,8 +374,20 @@ class InvitationController extends Controller
 
         // Field values — convert stored paths to public URLs
         $fieldValues = [];
+        $additionalInfo = [];
         foreach ($invitation->contents as $content) {
             if (str_starts_with($content->content_key, 'love_story_')) {
+                continue;
+            }
+            if ($content->content_key === 'additional_info_items') {
+                $additionalInfo = collect(json_decode($content->content_value ?? '[]', true) ?: [])
+                    ->values()
+                    ->map(fn ($item, $i) => [
+                        'id'    => $i,
+                        'label' => $item['label'] ?? '',
+                        'value' => $item['value'] ?? '',
+                    ])
+                    ->all();
                 continue;
             }
             $value = $content->content_value;
@@ -539,6 +562,7 @@ class InvitationController extends Controller
             'theme'        => $invitation->theme,
             'package'      => $invitation->package,
             'fieldValues'        => $fieldValues,
+            'additionalInfo'     => $additionalInfo,
             'acaraEvents'        => $acaraEvents,
             'galleryItems'       => $galleryItems,
             'loveStory'          => $loveStory,
@@ -624,6 +648,17 @@ class InvitationController extends Controller
                 $invitation->contents()->updateOrCreate(
                     ['content_key'   => $key],
                     ['content_value' => $storedValue, 'content_type' => $contentType],
+                );
+            }
+
+            // ── Additional info — replace ───────────────────────────────
+            $additionalInfo = $this->normalizedAdditionalInfo($request->input('additional_info', []));
+            if ($additionalInfo->isEmpty()) {
+                $invitation->contents()->where('content_key', 'additional_info_items')->delete();
+            } else {
+                $invitation->contents()->updateOrCreate(
+                    ['content_key' => 'additional_info_items'],
+                    ['content_value' => $additionalInfo->toJson(), 'content_type' => 'json'],
                 );
             }
 
@@ -880,6 +915,17 @@ class InvitationController extends Controller
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private function normalizedAdditionalInfo(array $items): \Illuminate\Support\Collection
+    {
+        return collect($items)
+            ->map(fn ($item) => [
+                'label' => trim((string) ($item['label'] ?? '')),
+                'value' => trim((string) ($item['value'] ?? '')),
+            ])
+            ->filter(fn ($item) => $item['label'] !== '' || $item['value'] !== '')
+            ->values();
+    }
 
     private function slugService(): InvitationSlugService
     {

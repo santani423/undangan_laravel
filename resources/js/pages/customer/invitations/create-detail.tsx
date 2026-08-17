@@ -112,10 +112,10 @@ const TAB_DEFINITIONS: Record<TabKey, TabDef> = {
 const EVENT_TYPE_TABS: Record<string, TabKey[]> = {
     wedding:       ['couple', 'acara', 'gallery', 'love_story'],
     birthday:      ['info', 'acara', 'gallery', 'love_story'],
-    khitanan:      ['info', 'gallery'],
-    aqiqah:        ['info', 'gallery'],
-    gender_reveal: ['info', 'gallery'],
-    syukuran:      ['host', 'info', 'gallery'],
+    khitanan:      ['info', 'acara', 'gallery'],
+    aqiqah:        ['info', 'acara', 'gallery'],
+    gender_reveal: ['info', 'acara', 'gallery'],
+    syukuran:      ['host', 'info', 'acara', 'gallery'],
 };
 
 // Per-event-type override for the shared "love_story" tab's display label —
@@ -792,6 +792,56 @@ function FieldInput({ field, value, onChange }: {
             pattern={isChildOrderField ? '[0-9]*' : undefined}
             className={base}
         />
+    );
+}
+
+interface AdditionalInfoItem {
+    id: number;
+    label: string;
+    value: string;
+}
+
+function AdditionalInfoSection({ items, setItems }: {
+    items: AdditionalInfoItem[];
+    setItems: React.Dispatch<React.SetStateAction<AdditionalInfoItem[]>>;
+}) {
+    const inputCls = 'w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition';
+
+    function addItem() { setItems((prev) => [...prev, { id: Date.now() + Math.random(), label: '', value: '' }]); }
+    function updateItem(id: number, key: 'label' | 'value', val: string) { setItems((prev) => prev.map((i) => i.id === id ? { ...i, [key]: val } : i)); }
+    function removeItem(id: number) { setItems((prev) => prev.filter((i) => i.id !== id)); }
+
+    return (
+        <div className="flex flex-col gap-4">
+            <div>
+                <h3 className="font-semibold text-foreground text-sm">Informasi Tambahan</h3>
+                <p className="text-xs text-muted-foreground">Tambahkan detail lain seputar acara (opsional), misalnya dress code atau catatan khusus.</p>
+            </div>
+            {items.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Belum ada informasi tambahan.</p>}
+            <div className="flex flex-col gap-3">
+                {items.map((item, idx) => (
+                    <div key={item.id} className="rounded-2xl border border-border p-4 flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                            <p className="text-xs font-medium text-muted-foreground">Info #{idx + 1}</p>
+                            <button type="button" onClick={() => removeItem(item.id)} className="text-xs text-destructive hover:underline">Hapus</button>
+                        </div>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-xs font-medium text-foreground">Label</label>
+                                <input type="text" placeholder="cth. Dress Code" value={item.label} onChange={(e) => updateItem(item.id, 'label', e.target.value)} className={inputCls} />
+                            </div>
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-xs font-medium text-foreground">Keterangan</label>
+                                <input type="text" placeholder="cth. Kasual, warna pastel" value={item.value} onChange={(e) => updateItem(item.id, 'value', e.target.value)} className={inputCls} />
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+            <button type="button" onClick={addItem} className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border py-3 text-sm font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors">
+                + Tambah Informasi
+            </button>
+        </div>
     );
 }
 
@@ -1699,6 +1749,7 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
     const [acaraEvents,       setAcaraEvents]       = useState<AcaraEvent[]>(defaultAcaraEvents);
     const [galleryItems,      setGalleryItems]      = useState<GalleryItem[]>([]);
     const [loveStoryEntries,  setLoveStoryEntries]  = useState<LoveStoryEntry[]>([]);
+    const [additionalInfoItems, setAdditionalInfoItems] = useState<AdditionalInfoItem[]>([]);
     const [invitationCode,    setInvitationCode]    = useState('');
     const [slug,              setSlug]              = useState(() => resolveInvitationSlugBase(eventType.name, {}));
     const [slugError,         setSlugError]         = useState('');
@@ -1769,6 +1820,10 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                 story: entry.story,
                 photo: entry.photo,
             })),
+            additional_info: additionalInfoItems.map((item) => ({
+                label: item.label,
+                value: item.value,
+            })),
         }, {
             onError: (errors) => {
                 if (errors.slug) {
@@ -1812,7 +1867,13 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
             case 'love_story':
                 return <LoveStoryTab entries={loveStoryEntries} setEntries={setLoveStoryEntries} />;
             case 'info':
-                return <GenericFieldTab fields={eventType.fields} values={fieldValues} onChange={handleFieldChange} />;
+                return (
+                    <div className="flex flex-col gap-8">
+                        <GenericFieldTab fields={eventType.fields} values={fieldValues} onChange={handleFieldChange} />
+                        <div className="border-t border-border" />
+                        <AdditionalInfoSection items={additionalInfoItems} setItems={setAdditionalInfoItems} />
+                    </div>
+                );
             case 'host':
                 return (
                     <GenericFieldTab

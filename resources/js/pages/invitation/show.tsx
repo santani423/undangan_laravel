@@ -1,4 +1,4 @@
-import type { AqiqahInvitation, BirthdayInvitation, GenderRevealInvitation, InvitationData, KhitananInvitation, WeddingInvitation } from '@/types/invitation';
+import type { AqiqahInvitation, BirthdayInvitation, GenderRevealInvitation, InvitationData, KhitananInvitation, SyukuranInvitation, WeddingInvitation } from '@/types/invitation';
 import { Head } from '@inertiajs/react';
 import { useEffect } from 'react';
 import AqiqahTheme01 from './themes/aqiqah/aqiqah_theme_01/AqiqahTheme01';
@@ -150,14 +150,24 @@ function resolveThemeComponent(themeSlug: string, invitation: InvitationData, vi
 }
 
 function getFaviconUrl(invitation: InvitationData): string {
-    if (invitation.type === 'wedding') {
-        const w = invitation as WeddingInvitation;
-        return w.couplePhoto || w.groomPhoto || w.bridePhoto || '';
+    switch (invitation.type) {
+        case 'wedding': {
+            const w = invitation as WeddingInvitation;
+            return w.couplePhoto || w.groomPhoto || w.bridePhoto || '';
+        }
+        case 'birthday':
+            return (invitation as BirthdayInvitation).celebrantPhoto || '';
+        case 'khitanan':
+            return (invitation as KhitananInvitation).childPhoto || '';
+        case 'aqiqah':
+            return (invitation as AqiqahInvitation).babyPhoto || '';
+        case 'gender_reveal':
+            return (invitation as GenderRevealInvitation).parentsPhoto || '';
+        case 'syukuran':
+            return (invitation as SyukuranInvitation).hostPhoto || '';
+        default:
+            return '';
     }
-    if (invitation.type === 'birthday') {
-        return (invitation as BirthdayInvitation).celebrantPhoto || '';
-    }
-    return '';
 }
 
 export default function InvitationShow({ invitation, themeSlug, visitor }: Props) {

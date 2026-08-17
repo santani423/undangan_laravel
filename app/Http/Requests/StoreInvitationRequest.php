@@ -55,6 +55,9 @@ class StoreInvitationRequest extends FormRequest
             'love_story.*.title'              => 'nullable|string|max:255',
             'love_story.*.story'              => 'nullable|string',
             'love_story.*.year'               => 'nullable|string|max:50',
+            'additional_info'                 => 'nullable|array',
+            'additional_info.*.label'         => 'nullable|string|max:255',
+            'additional_info.*.value'         => 'nullable|string|max:1000',
         ];
 
         foreach ($this->titleFieldKeys() as $key) {
