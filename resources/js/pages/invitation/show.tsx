@@ -6,8 +6,11 @@ import AqiqahTheme02 from './themes/aqiqah/aqiqah_theme_02/AqiqahTheme02';
 import BirthdayStarryNight from './themes/birthday/BirthdayStarryNight';
 import BirthdayTheme01 from './themes/birthday/birthday_theme_01/BirthdayTheme01';
 import BirthdayTheme02 from './themes/birthday/birthday_theme_02/BirthdayTheme02';
+
 import GenderRevealTheme01 from './themes/gender_reveal/gender_reveal_theme_01/GenderRevealTheme01';
 import GenderRevealTheme02 from './themes/gender_reveal/gender_reveal_theme_02/GenderRevealTheme02';
+import GenderRevealTheme03 from './themes/gender_reveal/gender_reveal_theme_03/GenderRevealTheme03';
+
 import KhitananTheme01 from './themes/khitanan/khitanan_theme_01/KhitananTheme01';
 import KhitananTheme02 from './themes/khitanan/khitanan_theme_02/KhitananTheme02';
 import WeddingBase from './themes/wedding/blossom-garden/WeddingBase';
@@ -67,6 +70,13 @@ function resolveThemeComponent(themeSlug: string, invitation: InvitationData, vi
         case 'gender-reveal-theme-02':
             return (
                 <GenderRevealTheme02 invitation={invitation as GenderRevealInvitation} visitor={visitor} greeting={invitation.greeting} />
+            );
+
+        // case 'gender_reveal_theme_03':
+        case 'gender_reveal_theme_03':
+             
+            return (
+                <GenderRevealTheme03 invitation={invitation as GenderRevealInvitation} visitor={visitor} greeting={invitation.greeting} />
             );
 
         // Khitanan themes

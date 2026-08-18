@@ -478,14 +478,24 @@ class InvitationController extends Controller
 
         $guestsPage = $guestQuery->latest()->paginate(20, ['*'], 'guest_page');
 
+        $guestStatsRow = $invitation->guests()->selectRaw("
+            COUNT(*) as total,
+            SUM(rsvp_status = 'attending') as attending,
+            SUM(rsvp_status = 'not_attending') as not_attending,
+            SUM(rsvp_status = 'maybe') as maybe,
+            SUM(rsvp_status = 'pending') as pending,
+            SUM(checked_in_at IS NOT NULL) as checked_in,
+            SUM(CASE WHEN rsvp_status = 'attending' THEN rsvp_headcount ELSE 0 END) as total_heads
+        ")->first();
+
         $guestStats = [
-            'total'        => $invitation->guests()->count(),
-            'attending'    => $invitation->guests()->where('rsvp_status', 'attending')->count(),
-            'notAttending' => $invitation->guests()->where('rsvp_status', 'not_attending')->count(),
-            'maybe'        => $invitation->guests()->where('rsvp_status', 'maybe')->count(),
-            'pending'      => $invitation->guests()->where('rsvp_status', 'pending')->count(),
-            'checkedIn'    => $invitation->guests()->whereNotNull('checked_in_at')->count(),
-            'totalHeads'   => (int) $invitation->guests()->where('rsvp_status', 'attending')->sum('rsvp_headcount'),
+            'total'        => (int) $guestStatsRow->total,
+            'attending'    => (int) $guestStatsRow->attending,
+            'notAttending' => (int) $guestStatsRow->not_attending,
+            'maybe'        => (int) $guestStatsRow->maybe,
+            'pending'      => (int) $guestStatsRow->pending,
+            'checkedIn'    => (int) $guestStatsRow->checked_in,
+            'totalHeads'   => (int) $guestStatsRow->total_heads,
         ];
 
         // ── Comments data ─────────────────────────────────────────────────────
@@ -504,12 +514,20 @@ class InvitationController extends Controller
 
         $commentsPage = $commentQuery->latest()->paginate(10, ['*'], 'comment_page');
 
+        $commentStatsRow = $invitation->comments()->selectRaw("
+            COUNT(*) as total,
+            SUM(status = 'approved') as approved,
+            SUM(status = 'pending') as pending,
+            SUM(status = 'rejected') as rejected,
+            SUM(is_flagged = 1) as flagged
+        ")->first();
+
         $commentStats = [
-            'total'    => $invitation->comments()->count(),
-            'approved' => $invitation->comments()->where('status', 'approved')->count(),
-            'pending'  => $invitation->comments()->where('status', 'pending')->count(),
-            'rejected' => $invitation->comments()->where('status', 'rejected')->count(),
-            'flagged'  => $invitation->comments()->where('is_flagged', true)->count(),
+            'total'    => (int) $commentStatsRow->total,
+            'approved' => (int) $commentStatsRow->approved,
+            'pending'  => (int) $commentStatsRow->pending,
+            'rejected' => (int) $commentStatsRow->rejected,
+            'flagged'  => (int) $commentStatsRow->flagged,
         ];
 
         // ── Digital wallets ───────────────────────────────────────────────────

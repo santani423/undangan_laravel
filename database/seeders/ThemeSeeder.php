@@ -429,6 +429,20 @@ class ThemeSeeder extends Seeder
                 'price'           => 55000,
                 'usage_count'     => 0,
             ],
+            [
+                'name'            => 'Little Star',
+                'slug'            => 'gender_reveal_theme_03',
+                'description'     => 'Langit malam bertabur bintang dan rembulan untuk menantikan bintang kecil kami.',
+                'category'        => 'Elegan',
+                'event_type'      => 'gender_reveal',
+                'color_primary'   => '#b9a0e8',
+                'color_secondary' => '#f3c66d',
+                'tags'            => ['bintang', 'bulan', 'dreamy'],
+                'is_premium'      => true,
+                'is_exclusive'    => false,
+                'price'           => 55000,
+                'usage_count'     => 0,
+            ],
         ];
     }
 
