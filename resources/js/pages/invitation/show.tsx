@@ -6,6 +6,13 @@ import AqiqahTheme02 from './themes/aqiqah/aqiqah_theme_02/AqiqahTheme02';
 import BirthdayStarryNight from './themes/birthday/BirthdayStarryNight';
 import BirthdayTheme01 from './themes/birthday/birthday_theme_01/BirthdayTheme01';
 import BirthdayTheme02 from './themes/birthday/birthday_theme_02/BirthdayTheme02';
+import BirthdayTheme03 from './themes/birthday/birthday_theme_03/BirthdayTheme03';
+import BirthdayTheme04 from './themes/birthday/birthday_theme_04/BirthdayTheme04';
+import BirthdayTheme05 from './themes/birthday/birthday_theme_05/BirthdayTheme05';
+import BirthdayTheme06 from './themes/birthday/birthday_theme_06/BirthdayTheme06';
+import BirthdayTheme07 from './themes/birthday/birthday_theme_07/BirthdayTheme07';
+import BirthdayTheme08 from './themes/birthday/birthday_theme_08/BirthdayTheme08';
+import BirthdayTheme09 from './themes/birthday/birthday_theme_09/BirthdayTheme09';
 
 import GenderRevealTheme01 from './themes/gender_reveal/gender_reveal_theme_01/GenderRevealTheme01';
 import GenderRevealTheme02 from './themes/gender_reveal/gender_reveal_theme_02/GenderRevealTheme02';
@@ -48,6 +55,48 @@ function resolveThemeComponent(themeSlug: string, invitation: InvitationData, vi
         case 'birthday-theme-02':
             return (
                 <BirthdayTheme02 invitation={invitation as BirthdayInvitation} visitor={visitor} greeting={invitation.greeting} />
+            );
+
+        case 'birthday_theme_03':
+        case 'birthday-theme-03':
+            return (
+                <BirthdayTheme03 invitation={invitation as BirthdayInvitation} visitor={visitor} greeting={invitation.greeting} />
+            );
+
+        case 'birthday_theme_04':
+        case 'birthday-theme-04':
+            return (
+                <BirthdayTheme04 invitation={invitation as BirthdayInvitation} visitor={visitor} greeting={invitation.greeting} />
+            );
+
+        case 'birthday_theme_05':
+        case 'birthday-theme-05':
+            return (
+                <BirthdayTheme05 invitation={invitation as BirthdayInvitation} visitor={visitor} greeting={invitation.greeting} />
+            );
+
+        case 'birthday_theme_06':
+        case 'birthday-theme-06':
+            return (
+                <BirthdayTheme06 invitation={invitation as BirthdayInvitation} visitor={visitor} greeting={invitation.greeting} />
+            );
+
+        case 'birthday_theme_07':
+        case 'birthday-theme-07':
+            return (
+                <BirthdayTheme07 invitation={invitation as BirthdayInvitation} visitor={visitor} greeting={invitation.greeting} />
+            );
+
+        case 'birthday_theme_08':
+        case 'birthday-theme-08':
+            return (
+                <BirthdayTheme08 invitation={invitation as BirthdayInvitation} visitor={visitor} greeting={invitation.greeting} />
+            );
+
+        case 'birthday_theme_09':
+        case 'birthday-theme-09':
+            return (
+                <BirthdayTheme09 invitation={invitation as BirthdayInvitation} visitor={visitor} greeting={invitation.greeting} />
             );
 
         // Aqiqah themes

@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Undangan Ulang Tahun Bimo — Balapan Gokart</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Racing+Sans+One&family=Rubik:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --langit:#6EC6F2;
+    --langit-2:#C3EAFB;
+    --aspal:#3B4149;
+    --aspal-tua:#2A2F35;
+    --marka:#FFD23F;
+    --merah:#E63946;
+    --merah-tua:#B92A37;
+    --krem:#FFFBF2;
+    --tinta:#242A32;
+    --hijau:#3FBF7F;
+    --display:"Racing Sans One","Arial Black",system-ui,sans-serif;
+    --teks:"Rubik","Segoe UI",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;font-family:var(--teks);color:var(--tinta);
+    background:linear-gradient(180deg,#4FB3E8 0%,#8FD6F5 60%,#C9EDFB 100%) fixed;
+    min-height:100vh;padding:26px 14px 54px;overflow-x:hidden;
+  }
+
+  .kartu{
+    max-width:680px;margin:0 auto;background:var(--krem);
+    border-radius:26px;overflow:hidden;
+    box-shadow:0 26px 60px rgba(20,50,70,.35);
+  }
+
+  /* ---------- panggung balap ---------- */
+  .trek{
+    position:relative;overflow:hidden;text-align:center;
+    padding:20px 20px 0;
+    background:linear-gradient(180deg,var(--langit) 0%,var(--langit-2) 100%);
+  }
+  .matahari{position:absolute;top:16px;right:22px;width:64px;height:64px;border-radius:50%;
+    background:#FFD23F;box-shadow:0 0 0 12px rgba(255,210,63,.28);}
+  .awan{position:absolute;height:22px;background:#fff;border-radius:999px;opacity:.85;}
+  .awan::before,.awan::after{content:"";position:absolute;background:#fff;border-radius:50%;}
+  .awan.a{width:78px;top:34px;left:-90px;animation:hanyut 26s linear infinite;}
+  .awan.a::before{width:34px;height:34px;top:-16px;left:12px;}
+  .awan.a::after{width:26px;height:26px;top:-11px;left:42px;}
+  .awan.b{width:60px;top:78px;left:-80px;animation:hanyut 34s linear infinite 8s;}
+  .awan.b::before{width:28px;height:28px;top:-13px;left:10px;}
+  .awan.b::after{width:22px;height:22px;top:-9px;left:32px;}
+  @keyframes hanyut{to{transform:translateX(calc(100vw + 200px));}}
+
+  .eyebrow{
+    position:relative;font-family:var(--teks);font-weight:800;font-size:.7rem;
+    letter-spacing:.28em;text-transform:uppercase;color:#1E5C7D;margin:0 0 2px;
+  }
+  .adegan{position:relative;width:min(380px,92vw);height:auto;display:block;margin:0 auto -3px;overflow:visible;}
+
+  /* lampu start */
+  .lampu-1,.lampu-2,.lampu-3{opacity:.12;}
+  .siap .lampu-1{animation:nyalakan .2s ease .25s both, matikan .2s ease 1.75s both;}
+  .siap .lampu-2{animation:nyalakan .2s ease .75s both, matikan .2s ease 1.75s both;}
+  .siap .lampu-3{animation:nyalakan .2s ease 1.25s both, matikan .2s ease 1.75s both;}
+  .hijau{opacity:0;}
+  .siap .hijau{animation:nyalakan .2s ease 1.75s both;}
+  @keyframes nyalakan{to{opacity:1;}}
+  @keyframes matikan{to{opacity:.12;}}
+
+  /* mobil */
+  .mobil-masuk{transform-box:fill-box;transform-origin:center;transform:translateX(-460px);}
+  .siap .mobil-masuk{animation:melesat 1.2s cubic-bezier(.2,.75,.3,1) 1.8s both;}
+  @keyframes melesat{
+    0%{transform:translateX(-460px);}
+    72%{transform:translateX(26px);}
+    88%{transform:translateX(-9px);}
+    100%{transform:translateX(0);}
+  }
+  .mobil-getar{transform-box:fill-box;transform-origin:center;}
+  .siap .mobil-getar{animation:goyang .28s ease-in-out 3s infinite alternate;}
+  @keyframes goyang{from{transform:translateY(0) rotate(-.4deg);}to{transform:translateY(-3px) rotate(.4deg);}}
+  .roda{transform-box:fill-box;transform-origin:center;}
+  .siap .roda{animation:putar .32s linear 1.8s infinite;}
+  @keyframes putar{to{transform:rotate(360deg);}}
+  .asap{opacity:0;}
+  .siap .asap{animation:mengepul .9s ease-out 2.9s 2;}
+  @keyframes mengepul{0%{opacity:.7;transform:translateX(0) scale(.5);}100%{opacity:0;transform:translateX(-46px) scale(1.7);}}
+
+  /* aspal bergulir */
+  .aspal{position:relative;height:60px;background:var(--aspal);overflow:hidden;border-bottom:5px solid var(--marka);}
+  .marka{position:absolute;top:50%;left:0;width:300%;height:7px;border-radius:4px;
+    background:repeating-linear-gradient(90deg,var(--marka) 0 48px,transparent 48px 96px);}
+  .siap .marka{animation:lari .8s linear infinite;}
+  @keyframes lari{from{transform:translate(0,-50%);}to{transform:translate(-96px,-50%);}}
+
+  .teks-hero{opacity:0;padding:0 20px;background:var(--krem);}
+  .siap .teks-hero{animation:naik .6s ease 3s both;}
+  @keyframes naik{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+
+  .finis{
+    display:inline-block;font-family:var(--display);font-size:.85rem;letter-spacing:.2em;
+    background:var(--tinta);color:#fff;padding:6px 16px;border-radius:6px;margin-top:18px;
+  }
+  .nama{
+    font-family:var(--display);font-size:clamp(2.9rem,13vw,4.6rem);line-height:.95;
+    margin:8px 0 8px;color:var(--merah);letter-spacing:.01em;
+  }
+  .nomor{
+    display:inline-block;font-family:var(--display);font-size:1rem;letter-spacing:.1em;
+    background:var(--marka);color:var(--tinta);padding:7px 20px;border-radius:999px;
+  }
+  .pengantar{max-width:34ch;margin:14px auto 0;font-weight:600;font-size:.95rem;color:#5A6470;}
+  .ulang{
+    font-family:var(--display);font-size:.95rem;letter-spacing:.12em;
+    background:transparent;color:var(--merah);border:2px solid var(--merah);
+    border-radius:10px;padding:11px 24px;cursor:pointer;margin:18px auto 22px;display:block;
+    transition:background .18s,color .18s,transform .15s;
+  }
+  .ulang:hover{background:var(--merah);color:#fff;transform:translateY(-2px);}
+
+  /* ---------- isi ---------- */
+  .isi{padding:6px 22px 30px;}
+  .blok + .blok{margin-top:28px;}
+  .judul{
+    font-family:var(--display);font-size:1.2rem;letter-spacing:.05em;color:var(--tinta);
+    margin:0 0 14px;display:flex;align-items:center;gap:12px;
+  }
+  .judul::after{
+    content:"";flex:1;height:12px;border-radius:2px;
+    background:
+      repeating-conic-gradient(var(--tinta) 0 25%, transparent 0 50%) 0 0/12px 12px;
+    opacity:.35;
+  }
+
+  .mundur{display:flex;gap:8px;justify-content:center;background:var(--tinta);border-radius:14px;padding:14px 10px;}
+  .mundur div{flex:1;text-align:center;}
+  .mundur b{display:block;font-family:var(--display);font-size:2rem;line-height:1;color:var(--marka);font-variant-numeric:tabular-nums;}
+  .mundur span{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;font-weight:800;color:rgba(255,255,255,.55);}
+
+  .detail{list-style:none;margin:0;padding:0;display:grid;gap:10px;}
+  .detail li{display:flex;gap:14px;align-items:flex-start;background:#fff;border:2px solid #EFE7D6;border-radius:14px;padding:13px 16px;}
+  .ikon{flex:none;width:40px;height:40px;border-radius:10px;background:#FFF0CC;display:grid;place-items:center;font-size:1.15rem;}
+  .detail dt{font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;color:var(--merah);font-weight:800;margin:0 0 3px;}
+  .detail dd{margin:0;font-weight:700;font-size:1rem;}
+  .detail small{display:block;font-weight:500;color:#7A828C;margin-top:3px;}
+
+  .acara{list-style:none;margin:0;padding:0;}
+  .acara li{display:flex;gap:16px;align-items:baseline;padding:11px 0;border-bottom:2px dotted #E6DECC;}
+  .acara li:last-child{border-bottom:0;}
+  .jam{font-family:var(--display);font-size:1rem;color:var(--merah);min-width:60px;font-variant-numeric:tabular-nums;}
+  .acara p{margin:0;font-weight:600;font-size:.95rem;}
+
+  .catatan{background:var(--tinta);color:#fff;border-radius:18px;padding:20px 22px;}
+  .catatan .judul{color:var(--marka);}
+  .catatan .judul::after{background:repeating-conic-gradient(#fff 0 25%, transparent 0 50%) 0 0/12px 12px;opacity:.4;}
+  .catatan ul{margin:0;padding-left:20px;}
+  .catatan li{margin:7px 0;font-weight:600;font-size:.95rem;}
+
+  .rsvp{display:grid;gap:12px;}
+  label{font-weight:800;font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;color:#8A929C;display:block;margin-bottom:6px;}
+  input,select{width:100%;font:inherit;font-weight:600;padding:12px 14px;border:2px solid #EFE7D6;border-radius:12px;background:#fff;color:var(--tinta);}
+  input::placeholder{color:#B6BCC4;}
+  input:focus,select:focus,button:focus-visible{outline:3px solid var(--merah);outline-offset:2px;}
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  button{font-family:var(--display);font-size:1rem;letter-spacing:.1em;border:0;border-radius:12px;padding:14px 18px;cursor:pointer;transition:transform .15s,box-shadow .15s;}
+  button:hover{transform:translateY(-2px);}
+  .utama{background:var(--merah);color:#fff;box-shadow:0 5px 0 var(--merah-tua);}
+  .utama:hover{box-shadow:0 7px 0 var(--merah-tua);}
+  .kedua{background:#fff;color:var(--tinta);border:2px solid #E1D8C6;box-shadow:0 4px 0 #E1D8C6;}
+  .kedua:hover{box-shadow:0 6px 0 #E1D8C6;}
+  .pesan-galat{color:#C42232;font-weight:700;font-size:.85rem;min-height:1.2em;margin:0;}
+
+  footer{
+    text-align:center;padding:22px 20px 26px;color:#fff;font-weight:600;font-size:.86rem;
+    background:var(--tinta);
+    border-top:8px solid transparent;
+    border-image:repeating-conic-gradient(#fff 0 25%, var(--tinta) 0 50%) 0 0/12px 12px 8 repeat;
+  }
+  footer span{display:block;font-family:var(--display);font-size:1.05rem;letter-spacing:.08em;color:var(--marka);margin-bottom:6px;}
+
+  .konfeti{position:fixed;top:-16px;width:9px;height:15px;border-radius:2px;z-index:5;pointer-events:none;animation:turun linear forwards;}
+  @keyframes turun{to{transform:translateY(108vh) rotate(700deg);opacity:0;}}
+
+  @media (max-width:420px){
+    .isi{padding:6px 16px 26px;}
+    .duo{grid-template-columns:1fr;}
+    .mundur b{font-size:1.6rem;}
+    .matahari{width:48px;height:48px;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none !important;transition:none !important;}
+    .mobil-masuk{transform:none;}
+    .teks-hero{opacity:1;}
+    .lampu-1,.lampu-2,.lampu-3{opacity:.12;}
+    .hijau{opacity:1;}
+  }
+</style>
+</head>
+<body>
+
+<main class="kartu">
+
+  <!-- ============ TREK ============ -->
+  <header class="siap" id="trek">
+    <div class="trek">
+      <div class="matahari" aria-hidden="true"></div>
+      <div class="awan a" aria-hidden="true"></div>
+      <div class="awan b" aria-hidden="true"></div>
+
+      <p class="eyebrow">Lampu hijau · Ulang tahun</p>
+
+      <svg class="adegan" viewBox="0 0 400 210" role="img"
+           aria-label="Animasi lampu start menyala lalu mobil balap merah melaju masuk">
+
+        <!-- tiang lampu start -->
+        <rect x="196" y="60" width="8" height="34" rx="3" fill="#4A5560"/>
+        <rect x="128" y="12" width="144" height="50" rx="12" fill="#2A2F35"/>
+        <circle cx="158" cy="37" r="15" fill="#5B1E24"/>
+        <circle cx="200" cy="37" r="15" fill="#5B1E24"/>
+        <circle cx="242" cy="37" r="15" fill="#5B1E24"/>
+        <circle class="lampu-1" cx="158" cy="37" r="15" fill="#FF3B4E"/>
+        <circle class="lampu-2" cx="200" cy="37" r="15" fill="#FF3B4E"/>
+        <circle class="lampu-3" cx="242" cy="37" r="15" fill="#FF3B4E"/>
+        <g class="hijau">
+          <circle cx="158" cy="37" r="15" fill="#3FBF7F"/>
+          <circle cx="200" cy="37" r="15" fill="#3FBF7F"/>
+          <circle cx="242" cy="37" r="15" fill="#3FBF7F"/>
+        </g>
+
+        <g class="mobil-masuk">
+          <!-- asap knalpot -->
+          <g class="asap">
+            <circle cx="52" cy="150" r="10" fill="#C9D3DA"/>
+            <circle cx="34" cy="142" r="7" fill="#DCE4E9"/>
+          </g>
+
+          <g class="mobil-getar">
+            <!-- sayap belakang -->
+            <rect x="52" y="112" width="10" height="28" rx="4" fill="#2A2F35"/>
+            <rect x="36" y="104" width="46" height="11" rx="5" fill="#2A2F35"/>
+
+            <!-- bodi -->
+            <path d="M70 172 h250 c14 0 20 -8 20 -18 v-20 c0 -12 -10 -18 -24 -20 l-46 -6 -30 -24 c-6 -5 -13 -8 -21 -8 h-58 c-9 0 -16 4 -20 11 l-16 27 -32 6 c-12 2 -18 8 -18 18 v16 c0 11 6 18 15 18 z" fill="#E63946"/>
+            <path d="M70 172 h250 c14 0 20 -8 20 -18 h-290 c0 11 6 18 20 18 z" fill="#B92A37"/>
+
+            <!-- kaca -->
+            <path d="M148 118 l14 -22 c2 -4 6 -6 11 -6 h20 v28 z" fill="#BFE7FA"/>
+            <path d="M203 90 h27 c5 0 9 2 13 6 l18 22 h-58 z" fill="#A8DCF7"/>
+
+            <!-- nomor start -->
+            <circle cx="200" cy="146" r="21" fill="#FFFBF2"/>
+            <text x="200" y="156" text-anchor="middle" font-family="Racing Sans One, Arial Black, sans-serif" font-size="26" fill="#242A32">9</text>
+
+            <!-- lampu depan & garis -->
+            <ellipse cx="334" cy="140" rx="9" ry="7" fill="#FFD23F"/>
+            <rect x="86" y="128" width="44" height="8" rx="4" fill="#FFFBF2" opacity=".85"/>
+
+            <!-- roda -->
+            <circle cx="122" cy="172" r="30" fill="#2A2F35"/>
+            <circle cx="290" cy="172" r="30" fill="#2A2F35"/>
+            <circle cx="122" cy="172" r="15" fill="#D9DEE3"/>
+            <circle cx="290" cy="172" r="15" fill="#D9DEE3"/>
+            <g class="roda" stroke="#8A939B" stroke-width="4" stroke-linecap="round">
+              <path d="M122 160 v24 M110 172 h24 M113 163 l18 18 M131 163 l-18 18"/>
+            </g>
+            <g class="roda" stroke="#8A939B" stroke-width="4" stroke-linecap="round">
+              <path d="M290 160 v24 M278 172 h24 M281 163 l18 18 M299 163 l-18 18"/>
+            </g>
+          </g>
+        </g>
+      </svg>
+    </div>
+
+    <!-- aspal bergulir -->
+    <div class="aspal"><div class="marka"></div></div>
+
+    <div class="teks-hero" style="text-align:center">
+      <p class="finis">Garis finis: 9 tahun</p>
+      <h1 class="nama">Bimo</h1>
+      <p class="nomor">Nomor start 09</p>
+      <p class="pengantar">Satu lintasan, beberapa lap, dan podium yang belum lengkap tanpa kamu. Ayo balapan bareng!</p>
+      <button class="ulang" id="tombolUlang">Gas lagi</button>
+    </div>
+  </header>
+
+  <!-- ============ ISI ============ -->
+  <div class="isi">
+
+    <section class="blok">
+      <h2 class="judul">Menuju lampu hijau</h2>
+      <div class="mundur" id="mundur" aria-live="polite">
+        <div><b id="hari">–</b><span>hari</span></div>
+        <div><b id="jam">–</b><span>jam</span></div>
+        <div><b id="menit">–</b><span>menit</span></div>
+        <div><b id="detik">–</b><span>detik</span></div>
+      </div>
+    </section>
+
+    <section class="blok">
+      <h2 class="judul">Waktu &amp; sirkuit</h2>
+      <ul class="detail">
+        <li><span class="ikon" aria-hidden="true">📅</span>
+          <dl><dt>Tanggal</dt><dd>Sabtu, 10 Oktober 2026</dd></dl></li>
+        <li><span class="ikon" aria-hidden="true">🏁</span>
+          <dl><dt>Start</dt><dd>09.00 – 12.00 WIB<small>Briefing keselamatan 08.45. Yang telat ikut dari lap kedua.</small></dd></dl></li>
+        <li><span class="ikon" aria-hidden="true">📍</span>
+          <dl><dt>Sirkuit</dt><dd>Arena Gokart Sunter<small>Jl. Danau Raya No. 3, Jakarta Utara · parkir di pit belakang</small></dd></dl></li>
+      </ul>
+      <div class="duo" style="margin-top:14px">
+        <button class="kedua" id="tombolKalender">Simpan ke kalender</button>
+        <button class="kedua" id="tombolPeta">Buka peta lokasi</button>
+      </div>
+    </section>
+
+    <section class="blok">
+      <h2 class="judul">Urutan balapan</h2>
+      <ul class="acara">
+        <li><span class="jam">08.45</span><p>Registrasi, ambil helm dan sarung tangan</p></li>
+        <li><span class="jam">09.00</span><p>Briefing keselamatan dari marshal</p></li>
+        <li><span class="jam">09.20</span><p>Lap latihan, kenalan sama lintasan</p></li>
+        <li><span class="jam">10.00</span><p>Balapan seri 1 dan seri 2</p></li>
+        <li><span class="jam">10.45</span><p>Podium, medali, siram-siraman jus jeruk</p></li>
+        <li><span class="jam">11.15</span><p>Tiup lilin, potong kue, makan siang di pit</p></li>
+      </ul>
+    </section>
+
+    <section class="blok catatan">
+      <h2 class="judul">Aturan pit</h2>
+      <ul>
+        <li>Wajib celana panjang dan sepatu tertutup. Sandal tidak boleh masuk lintasan.</li>
+        <li>Rambut panjang diikat, jaket bertali dilepas sebelum naik gokart.</li>
+        <li>Helm dan sarung tangan disediakan arena, sudah termasuk.</li>
+        <li>Pembalap cilik minimal tinggi 130 cm. Yang lebih kecil bisa naik gokart ganda bersama orang tua.</li>
+        <li>Menu siang ada versi bebas kacang — beri tahu kami kalau ada alergi lain.</li>
+      </ul>
+    </section>
+
+    <section class="blok">
+      <h2 class="judul">Daftar pembalap</h2>
+      <div class="rsvp">
+        <div>
+          <label for="nama">Nama kamu</label>
+          <input id="nama" type="text" placeholder="Contoh: Keluarga Putra" autocomplete="name">
+        </div>
+        <div class="duo">
+          <div>
+            <label for="jumlah">Jumlah yang datang</label>
+            <input id="jumlah" type="number" min="1" max="12" value="2">
+          </div>
+          <div>
+            <label for="status">Ikut balapan?</label>
+            <select id="status">
+              <option value="hadir">Siap di garis start</option>
+              <option value="tidak">Maaf, belum bisa</option>
+            </select>
+          </div>
+        </div>
+        <p class="pesan-galat" id="galat" role="alert"></p>
+        <button class="utama" id="tombolKirim">Kirim lewat WhatsApp</button>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>
+    <span>Sampai jumpa di garis start</span>
+    Ayah, Bunda, dan Bimo · 0812-3456-7890
+  </footer>
+</main>
+
+<script>
+/* ============================================================
+   GANTI DATA ACARA DI SINI
+   ============================================================ */
+const ACARA = {
+  judul: "Ulang Tahun Bimo ke-9",
+  mulai: "2026-10-10T09:00:00+07:00",
+  selesai: "2026-10-10T12:00:00+07:00",
+  lokasi: "Arena Gokart Sunter, Jl. Danau Raya No. 3, Jakarta Utara",
+  waLatar: "6281234567890"   // nomor tujuan RSVP, format internasional tanpa tanda +
+};
+const DETIK_KONFETI = 2950;   // konfeti pecah saat mobil sampai (mili detik)
+
+const el = id => document.getElementById(id);
+const diamSaja = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- ulangi start balapan ---------- */
+const trek = el("trek");
+let jadwalKonfeti;
+function mulaiBalapan(){
+  if (diamSaja) return;
+  clearTimeout(jadwalKonfeti);
+  trek.classList.remove("siap");
+  void trek.offsetWidth;            // paksa browser menggambar ulang
+  trek.classList.add("siap");
+  jadwalKonfeti = setTimeout(hujanKonfeti, DETIK_KONFETI);
+}
+el("tombolUlang").addEventListener("click", mulaiBalapan);
+if (!diamSaja) jadwalKonfeti = setTimeout(hujanKonfeti, DETIK_KONFETI);
+
+function hujanKonfeti(){
+  const warna = ["#E63946","#FFD23F","#FFFFFF","#242A32","#3FBF7F"];
+  for (let i = 0; i < 80; i++){
+    const k = document.createElement("span");
+    k.className = "konfeti";
+    k.style.left = Math.random() * 100 + "vw";
+    k.style.background = warna[i % warna.length];
+    k.style.animationDuration = (2.3 + Math.random() * 2.2) + "s";
+    k.style.animationDelay = (Math.random() * .5) + "s";
+    document.body.appendChild(k);
+    setTimeout(() => k.remove(), 5400);
+  }
+}
+
+/* ---------- hitung mundur ---------- */
+const target = new Date(ACARA.mulai).getTime();
+function perbarui(){
+  const sisa = target - Date.now();
+  if (sisa <= 0){
+    el("mundur").innerHTML = '<div style="flex:1"><b>Gas!</b><span>balapannya sudah dimulai</span></div>';
+    clearInterval(jamTangan);
+    return;
+  }
+  el("hari").textContent  = Math.floor(sisa / 86400000);
+  el("jam").textContent   = String(Math.floor(sisa / 3600000) % 24).padStart(2,"0");
+  el("menit").textContent = String(Math.floor(sisa / 60000) % 60).padStart(2,"0");
+  el("detik").textContent = String(Math.floor(sisa / 1000) % 60).padStart(2,"0");
+}
+perbarui();
+const jamTangan = setInterval(perbarui, 1000);
+
+/* ---------- simpan ke kalender (.ics) ---------- */
+el("tombolKalender").addEventListener("click", () => {
+  const rapi = t => new Date(t).toISOString().replace(/[-:]/g,"").split(".")[0] + "Z";
+  const isi = [
+    "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Undangan Gokart//ID","BEGIN:VEVENT",
+    "UID:" + Date.now() + "@undangan-gokart",
+    "DTSTAMP:" + rapi(Date.now()),
+    "DTSTART:" + rapi(ACARA.mulai),
+    "DTEND:" + rapi(ACARA.selesai),
+    "SUMMARY:" + ACARA.judul,
+    "LOCATION:" + ACARA.lokasi,
+    "DESCRIPTION:Briefing 08.45. Wajib celana panjang dan sepatu tertutup.",
+    "END:VEVENT","END:VCALENDAR"
+  ].join("\r\n");
+  const tautan = document.createElement("a");
+  tautan.href = URL.createObjectURL(new Blob([isi], {type:"text/calendar"}));
+  tautan.download = "ulang-tahun-bimo.ics";
+  tautan.click();
+  URL.revokeObjectURL(tautan.href);
+});
+
+/* ---------- buka peta ---------- */
+el("tombolPeta").addEventListener("click", () => {
+  window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(ACARA.lokasi), "_blank");
+});
+
+/* ---------- kirim RSVP ---------- */
+el("tombolKirim").addEventListener("click", () => {
+  const nama = el("nama").value.trim();
+  const galat = el("galat");
+  if (!nama){
+    galat.textContent = "Isi nama dulu supaya kami bisa siapkan gokartnya.";
+    el("nama").focus();
+    return;
+  }
+  galat.textContent = "";
+  const jumlah = el("jumlah").value || 1;
+  const hadir = el("status").value === "hadir";
+  const pesan = hadir
+    ? `Halo! ${nama} ikut balapan di ${ACARA.judul} bersama ${jumlah} orang. Sampai ketemu di garis start!`
+    : `Halo! Maaf, ${nama} belum bisa ikut ${ACARA.judul}. Selamat ulang tahun untuk Bimo ya!`;
+  window.open(`https://wa.me/${ACARA.waLatar}?text=` + encodeURIComponent(pesan), "_blank");
+});
+</script>
+</body>
+</html>
