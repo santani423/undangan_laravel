@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f5e6d8"/>
+      <stop offset="100%" style="stop-color:#e8c9b0"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="400" fill="url(#bg)"/>
+  <ellipse cx="150" cy="120" rx="52" ry="58" fill="#c4a882" opacity=".45"/>
+  <!-- Hijab/veil shape -->
+  <path d="M90 130 Q90 70 150 65 Q210 70 210 130 Q220 160 200 175 Q175 185 150 185 Q125 185 100 175 Q80 160 90 130Z" fill="#d4b896" opacity=".35"/>
+  <!-- Dress/gown -->
+  <path d="M40 400 C30 300 80 265 150 260 C220 265 270 300 260 400" fill="#c4a882" opacity=".35"/>
+  <text x="150" y="380" text-anchor="middle" font-family="serif" font-size="14" fill="#5a3a20" opacity=".7">Mempelai Wanita</text>
+</svg>
