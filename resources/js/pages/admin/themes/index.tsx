@@ -54,8 +54,22 @@ interface PageProps {
     [key: string]: unknown;
 }
 
-const CATEGORIES = ['Semua', 'Floral', 'Modern', 'Mewah', 'Minimalis', 'Rustic', 'Alam'];
-const EVENT_TYPES = ['Semua', 'Pernikahan', 'Pertunangan', 'Ulang Tahun', 'Aqiqah', 'Khitanan'];
+const CATEGORIES = ['Semua', 'Floral', 'Modern', 'Mewah', 'Minimalis', 'Rustic', 'Alam', 'Ceria', 'Elegan', 'Fantasi', 'Islami', 'Klasik', 'Romantis', 'Premium'];
+
+// `value` mirrors the event_type slug stored in the database; `label` is the Indonesian display text.
+const EVENT_TYPES: { value: string; label: string }[] = [
+    { value: 'Semua', label: 'Semua' },
+    { value: 'wedding', label: 'Pernikahan' },
+    { value: 'birthday', label: 'Ulang Tahun' },
+    { value: 'khitanan', label: 'Khitanan' },
+    { value: 'aqiqah', label: 'Aqiqah' },
+    { value: 'gender_reveal', label: 'Gender Reveal' },
+    { value: 'syukuran', label: 'Syukuran' },
+];
+
+function eventTypeLabel(value: string): string {
+    return EVENT_TYPES.find((t) => t.value === value)?.label ?? value;
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -139,7 +153,7 @@ interface FormState {
 }
 
 const defaultForm: FormState = {
-    name: '', category: 'Floral', event_type: 'Pernikahan',
+    name: '', category: 'Floral', event_type: 'wedding',
     color_primary: '#e8a5b4', color_secondary: '#f9e4ea',
     is_active: true, is_premium: false, is_exclusive: false,
     price: '0', tags: '',
@@ -281,7 +295,7 @@ function TemplateFormModal({
                                         onChange={(e) => set('event_type', e.target.value)}
                                         className="w-full rounded-lg border border-border/60 bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                                     >
-                                        {EVENT_TYPES.filter((t) => t !== 'Semua').map((t) => <option key={t}>{t}</option>)}
+                                        {EVENT_TYPES.filter((t) => t.value !== 'Semua').map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                                     </select>
                                     {errors.event_type && <p className="mt-1 text-xs text-red-500">{errors.event_type}</p>}
                                 </div>
@@ -403,7 +417,7 @@ function TemplateFormModal({
                             <TemplateThumbnail tpl={previewTpl} size="lg" />
                             <div className="space-y-1">
                                 <p className="text-xs font-semibold text-foreground truncate">{form.name || '—'}</p>
-                                <p className="text-[11px] text-muted-foreground">{form.category} · {form.event_type}</p>
+                                <p className="text-[11px] text-muted-foreground">{form.category} · {eventTypeLabel(form.event_type)}</p>
                                 {(() => {
                                     const tm = tierMeta(previewTpl);
                                     const Icon = tm.icon;
@@ -462,7 +476,7 @@ function DeleteConfirmModal({ template, onClose, onConfirm }: { template: Templa
                     <div className="rounded-xl border border-border/40 bg-muted/20 p-3 mb-4">
                         <TemplateThumbnail tpl={template} size="sm" />
                         <p className="mt-2 text-sm font-semibold text-foreground">{template.name}</p>
-                        <p className="text-xs text-muted-foreground">{template.category} · {template.event_type} · {template.usage_count} penggunaan</p>
+                        <p className="text-xs text-muted-foreground">{template.category} · {eventTypeLabel(template.event_type)} · {template.usage_count} penggunaan</p>
                     </div>
                     <p className="text-sm text-muted-foreground">
                         Yakin ingin menghapus template <strong className="text-foreground">"{template.name}"</strong>?
@@ -546,7 +560,7 @@ function TemplateCard({
             <div className="p-3 space-y-2">
                 <div>
                     <p className="text-sm font-semibold text-foreground leading-tight truncate">{template.name}</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">{template.category} · {template.event_type}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{template.category} · {eventTypeLabel(template.event_type)}</p>
                 </div>
 
                 {/* Tags */}
@@ -619,7 +633,7 @@ function TemplateRow({
             <td className="px-4 py-3">
                 <div>
                     <p className="text-sm text-foreground">{template.category}</p>
-                    <p className="text-[11px] text-muted-foreground">{template.event_type}</p>
+                    <p className="text-[11px] text-muted-foreground">{eventTypeLabel(template.event_type)}</p>
                 </div>
             </td>
             {/* Tier */}
@@ -822,7 +836,7 @@ export default function AdminThemes() {
                             value={filterEvt} onChange={(e) => setFilterEvt(e.target.value)}
                             className="rounded-xl border border-border/60 bg-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                         >
-                            {EVENT_TYPES.map((t) => <option key={t}>{t}</option>)}
+                            {EVENT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                         </select>
                         {/* Tier filter pills */}
                         <div className="flex rounded-xl border border-border/60 overflow-hidden bg-background">

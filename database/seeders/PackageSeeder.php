@@ -26,23 +26,23 @@ class PackageSeeder extends Seeder
     private array $tierDefaults = [
         'basic' => [
             'billing_period'      => 'once',
-            'duration_days'       => 90,
+            'duration_days'       => 4,
             'trial_days'          => 3,
-            'max_gallery_uploads' => 10,
+            'max_gallery_uploads' => 5,
             'display_order_offset' => 1,
         ],
         'premium' => [
             'billing_period'      => 'once',
             'duration_days'       => 180,
             'trial_days'          => 7,
-            'max_gallery_uploads' => 50,
+            'max_gallery_uploads' => 10,
             'display_order_offset' => 2,
         ],
         'exclusive' => [
             'billing_period'      => 'once',
             'duration_days'       => 365,
             'trial_days'          => 14,
-            'max_gallery_uploads' => 0,
+            'max_gallery_uploads' => 50,
             'display_order_offset' => 3,
         ],
     ];
@@ -50,12 +50,12 @@ class PackageSeeder extends Seeder
     // ─── Harga per jenis per tier ─────────────────────────────────────────────
 
     private array $pricing = [
-        'pernikahan'   => ['basic' => 149000, 'premium' => 299000, 'exclusive' => 599000],
-        'ulang_tahun'  => ['basic' =>  99000, 'premium' => 199000, 'exclusive' => 399000],
-        'khitanan'     => ['basic' => 119000, 'premium' => 249000, 'exclusive' => 449000],
-        'aqiqah'       => ['basic' =>  99000, 'premium' => 199000, 'exclusive' => 349000],
-        'gender_reveal'=> ['basic' => 119000, 'premium' => 249000, 'exclusive' => 449000],
-        'syukuran'     => ['basic' =>  89000, 'premium' => 179000, 'exclusive' => 349000],
+        'pernikahan'   => ['basic' => 0, 'premium' => 59000, 'exclusive' => 99000],
+        'ulang_tahun'  => ['basic' =>  0, 'premium' => 59000, 'exclusive' => 99000],
+        'khitanan'     => ['basic' => 0, 'premium' => 59000, 'exclusive' => 99000],
+        'aqiqah'       => ['basic' =>  0, 'premium' => 59000, 'exclusive' => 99000],
+        'gender_reveal'=> ['basic' => 0, 'premium' => 59000, 'exclusive' => 99000],
+        'syukuran'     => ['basic' =>  0, 'premium' => 59000, 'exclusive' => 99000],
     ];
 
     // ─── Label & deskripsi per jenis per tier ─────────────────────────────────
