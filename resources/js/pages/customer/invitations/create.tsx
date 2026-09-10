@@ -70,7 +70,7 @@ export default function InvitationsCreate({ eventTypes }: Props) {
     return (
         <CustomerLayout breadcrumbs={breadcrumbs}>
             <Head title="Buat Undangan" />
-            <div className="flex flex-col gap-6 p-6">
+            <div className="flex flex-col gap-6 p-4 sm:p-6">
                 {/* Header */}
                 <div>
                     <h1 className="text-2xl font-bold text-foreground">Buat Undangan Baru</h1>
@@ -78,25 +78,25 @@ export default function InvitationsCreate({ eventTypes }: Props) {
                 </div>
 
                 {/* Step indicator */}
-                <div className="flex items-center gap-2 text-sm">
-                    <div className="flex items-center gap-1.5 font-medium text-primary">
-                        <div className="size-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">1</div>
+                <div className="flex items-center gap-2 text-sm overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                    <div className="flex shrink-0 items-center gap-1.5 font-medium text-primary whitespace-nowrap">
+                        <div className="size-6 shrink-0 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">1</div>
                         Jenis Undangan
                     </div>
-                    <ChevronRight className="size-4 text-muted-foreground" />
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <div className="size-6 rounded-full border border-border flex items-center justify-center text-xs font-bold">2</div>
+                    <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+                    <div className="flex shrink-0 items-center gap-1.5 text-muted-foreground whitespace-nowrap">
+                        <div className="size-6 shrink-0 rounded-full border border-border flex items-center justify-center text-xs font-bold">2</div>
                         Pilih Tema
                     </div>
-                    <ChevronRight className="size-4 text-muted-foreground" />
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <div className="size-6 rounded-full border border-border flex items-center justify-center text-xs font-bold">3</div>
+                    <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+                    <div className="flex shrink-0 items-center gap-1.5 text-muted-foreground whitespace-nowrap">
+                        <div className="size-6 shrink-0 rounded-full border border-border flex items-center justify-center text-xs font-bold">3</div>
                         Detail Acara
                     </div>
                 </div>
 
                 {/* Event Type Cards */}
-                <div className="bg-card rounded-2xl border border-border/60 p-6 shadow-sm">
+                <div className="bg-card rounded-2xl border border-border/60 p-4 sm:p-6 shadow-sm">
                     <h2 className="font-semibold text-foreground mb-1">Pilih Jenis Undangan</h2>
                     <p className="text-sm text-muted-foreground mb-5">Jenis undangan menentukan template dan fitur yang tersedia.</p>
 
@@ -111,7 +111,7 @@ export default function InvitationsCreate({ eventTypes }: Props) {
                                     key={type.id}
                                     type="button"
                                     onClick={() => setSelectedEventType(type)}
-                                    className={`relative flex flex-col items-center gap-3 rounded-xl border-2 p-5 text-center transition-all duration-150 cursor-pointer ${
+                                    className={`relative flex flex-col items-center gap-3 rounded-xl border-2 p-4 sm:p-5 text-center transition-all duration-150 cursor-pointer ${
                                         isSelected ? selectedColor : baseColor
                                     }`}
                                 >
@@ -139,7 +139,7 @@ export default function InvitationsCreate({ eventTypes }: Props) {
                         type="button"
                         onClick={handleNext}
                         disabled={!selectedEventType}
-                        className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed sm:w-auto"
                     >
                         Lanjutkan
                         <ChevronRight className="size-4" />

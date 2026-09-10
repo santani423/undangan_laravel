@@ -1618,7 +1618,7 @@ function LoveStoryTab({ entries, setEntries }: {
                                         Hapus
                                     </button>
                                 </div>
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                     <div className="flex flex-col gap-1.5">
                                         <label className="text-xs font-medium text-foreground">Tahun / Periode</label>
                                         <input type="text" placeholder="cth. 2020" value={entry.year} onChange={(e) => updateEntry(entry.id, 'year', e.target.value)} className={inputCls} />
@@ -1627,11 +1627,11 @@ function LoveStoryTab({ entries, setEntries }: {
                                         <label className="text-xs font-medium text-foreground">Judul Momen</label>
                                         <input type="text" placeholder="cth. Pertama Bertemu" value={entry.title} onChange={(e) => updateEntry(entry.id, 'title', e.target.value)} className={inputCls} />
                                     </div>
-                                    <div className="flex flex-col gap-1.5 col-span-2">
+                                    <div className="flex flex-col gap-1.5 sm:col-span-2">
                                         <label className="text-xs font-medium text-foreground">Cerita</label>
                                         <textarea rows={3} placeholder="Ceritakan momen ini..." value={entry.story} onChange={(e) => updateEntry(entry.id, 'story', e.target.value)} className={`${inputCls} resize-none`} />
                                     </div>
-                                    <div className="flex flex-col gap-1.5 col-span-2">
+                                    <div className="flex flex-col gap-1.5 sm:col-span-2">
                                         <label className="text-xs font-medium text-foreground">Foto (opsional)</label>
                                         {entry.photo ? (
                                             <div className="relative w-28 group">
@@ -1892,7 +1892,7 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
     return (
         <CustomerLayout breadcrumbs={breadcrumbs}>
             <Head title="Detail Acara" />
-            <div className="flex flex-col gap-6 p-6">
+            <div className="flex flex-col gap-6 p-4 sm:p-6">
                 {/* Header */}
                 <div>
                     <h1 className="text-2xl font-bold text-foreground">Detail Acara</h1>
@@ -1903,23 +1903,23 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                 </div>
 
                 {/* Step indicator */}
-                <div className="flex items-center gap-2 text-sm">
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <div className="size-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
+                <div className="flex items-center gap-2 text-sm overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                    <div className="flex shrink-0 items-center gap-1.5 text-muted-foreground whitespace-nowrap">
+                        <div className="size-6 shrink-0 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
                             <Check className="size-3" />
                         </div>
                         Jenis Undangan
                     </div>
-                    <ChevronRight className="size-4 text-muted-foreground" />
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <div className="size-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
+                    <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+                    <div className="flex shrink-0 items-center gap-1.5 text-muted-foreground whitespace-nowrap">
+                        <div className="size-6 shrink-0 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
                             <Check className="size-3" />
                         </div>
                         Tema & Paket
                     </div>
-                    <ChevronRight className="size-4 text-muted-foreground" />
-                    <div className="flex items-center gap-1.5 font-medium text-primary">
-                        <div className="size-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                    <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+                    <div className="flex shrink-0 items-center gap-1.5 font-medium text-primary whitespace-nowrap">
+                        <div className="size-6 shrink-0 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
                             3
                         </div>
                         Detail Acara
@@ -1976,12 +1976,12 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                 />
 
                 {/* Actions */}
-                <div className="flex items-center justify-between border-t border-border/60 pt-4">
+                <div className="flex flex-col-reverse gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
                     {isFirstTab ? (
                         <button
                             type="button"
                             onClick={() => window.history.back()}
-                            className="inline-flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors sm:w-auto"
                         >
                             <ChevronLeft className="size-4" />
                             Kembali
@@ -1990,7 +1990,7 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                         <button
                             type="button"
                             onClick={goToPrevTab}
-                            className="inline-flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors sm:w-auto"
                         >
                             <ChevronLeft className="size-4" />
                             {resolveTabLabel(tabKeys[currentTabIndex - 1], eventType.name)}
@@ -2002,7 +2002,7 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                             type="button"
                             onClick={handleSubmit}
                             disabled={submitting}
-                            className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors sm:w-auto"
                         >
                             {submitting ? (
                                 <><Loader2 className="size-4 animate-spin" /> Menyimpan...</>
@@ -2014,7 +2014,7 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                         <button
                             type="button"
                             onClick={goToNextTab}
-                            className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors sm:w-auto"
                         >
                             {resolveTabLabel(tabKeys[currentTabIndex + 1], eventType.name)}
                             <ChevronRight className="size-4" />

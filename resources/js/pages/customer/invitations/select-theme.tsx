@@ -325,7 +325,7 @@ export default function SelectTheme({ eventType, themes, packages }: Props) {
     return (
         <CustomerLayout breadcrumbs={breadcrumbs}>
             <Head title="Pilih Tema & Paket" />
-            <div className="flex flex-col gap-8 p-6">
+            <div className="flex flex-col gap-6 p-4 sm:gap-8 sm:p-6">
                 {/* Header */}
                 <div>
                     <h1 className="text-2xl font-bold text-foreground">Pilih Tema & Paket</h1>
@@ -335,23 +335,23 @@ export default function SelectTheme({ eventType, themes, packages }: Props) {
                 </div>
 
                 {/* Step indicator */}
-                <div className="flex items-center gap-2 text-sm">
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <div className="size-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
+                <div className="flex items-center gap-2 text-sm overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                    <div className="flex shrink-0 items-center gap-1.5 text-muted-foreground whitespace-nowrap">
+                        <div className="size-6 shrink-0 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
                             <Check className="size-3" />
                         </div>
                         Jenis Undangan
                     </div>
-                    <ChevronRight className="size-4 text-muted-foreground" />
-                    <div className="flex items-center gap-1.5 font-medium text-primary">
-                        <div className="size-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                    <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+                    <div className="flex shrink-0 items-center gap-1.5 font-medium text-primary whitespace-nowrap">
+                        <div className="size-6 shrink-0 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
                             2
                         </div>
                         Tema & Paket
                     </div>
-                    <ChevronRight className="size-4 text-muted-foreground" />
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <div className="size-6 rounded-full border border-border flex items-center justify-center text-xs font-bold">
+                    <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+                    <div className="flex shrink-0 items-center gap-1.5 text-muted-foreground whitespace-nowrap">
+                        <div className="size-6 shrink-0 rounded-full border border-border flex items-center justify-center text-xs font-bold">
                             3
                         </div>
                         Detail Acara
@@ -386,7 +386,7 @@ export default function SelectTheme({ eventType, themes, packages }: Props) {
                                 className="w-full rounded-xl border border-border bg-background pl-9 pr-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
                             />
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                             {(['all', 'free', 'premium'] as const).map((f) => (
                                 <button
                                     key={f}
@@ -470,18 +470,18 @@ export default function SelectTheme({ eventType, themes, packages }: Props) {
                 </section>
 
                 {/* Actions */}
-                <div className="flex items-center justify-between border-t border-border/60 pt-4">
+                <div className="flex flex-col-reverse gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
                     <button
                         type="button"
                         onClick={() => router.visit('/customer/invitations/create')}
-                        className="inline-flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors sm:w-auto"
                     >
                         <ChevronLeft className="size-4" />
                         Kembali
                     </button>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-3">
                         {(!selectedTheme || !selectedPackage) && (
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-center text-xs text-muted-foreground sm:text-left">
                                 {!selectedTheme && !selectedPackage
                                     ? 'Pilih tema dan paket terlebih dahulu'
                                     : !selectedTheme
@@ -493,7 +493,7 @@ export default function SelectTheme({ eventType, themes, packages }: Props) {
                             type="button"
                             onClick={handleNext}
                             disabled={!canContinue}
-                            className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed sm:w-auto"
                         >
                             Lanjutkan
                             <ChevronRight className="size-4" />

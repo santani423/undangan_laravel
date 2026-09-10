@@ -257,9 +257,9 @@ export default function InvitationsIndex({ invitations }: Props) {
     return (
         <CustomerLayout breadcrumbs={breadcrumbs}>
             <Head title="Undangan Saya" />
-            <div className="flex flex-col gap-6 p-6">
+            <div className="flex flex-col gap-6 p-4 sm:p-6">
                 {/* Header */}
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-foreground text-2xl font-bold">Undangan Saya</h1>
                         <p className="text-muted-foreground mt-1 text-sm">
@@ -268,7 +268,7 @@ export default function InvitationsIndex({ invitations }: Props) {
                     </div>
                     <Link
                         href="/customer/invitations/create"
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors sm:w-auto"
                     >
                         <Plus className="size-4" />
                         Buat Undangan

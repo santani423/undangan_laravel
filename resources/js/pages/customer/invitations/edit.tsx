@@ -1096,7 +1096,7 @@ function LoveStoryTab({ entries, setEntries }: { entries: LoveStoryEntry[]; setE
                                     <p className="font-semibold text-sm text-foreground">Momen #{idx + 1}</p>
                                     <button type="button" onClick={() => removeEntry(entry.id)} className="text-xs text-destructive hover:underline">Hapus</button>
                                 </div>
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                     <div className="flex flex-col gap-1.5">
                                         <label className="text-xs font-medium text-foreground">Tahun / Periode</label>
                                         <input type="text" placeholder="cth. 2020" value={entry.year} onChange={(e) => updateEntry(entry.id, 'year', e.target.value)} className={inputCls} />
@@ -1105,11 +1105,11 @@ function LoveStoryTab({ entries, setEntries }: { entries: LoveStoryEntry[]; setE
                                         <label className="text-xs font-medium text-foreground">Judul Momen</label>
                                         <input type="text" placeholder="cth. Pertama Bertemu" value={entry.title} onChange={(e) => updateEntry(entry.id, 'title', e.target.value)} className={inputCls} />
                                     </div>
-                                    <div className="flex flex-col gap-1.5 col-span-2">
+                                    <div className="flex flex-col gap-1.5 sm:col-span-2">
                                         <label className="text-xs font-medium text-foreground">Cerita</label>
                                         <textarea rows={3} placeholder="Ceritakan momen ini..." value={entry.story} onChange={(e) => updateEntry(entry.id, 'story', e.target.value)} className={`${inputCls} resize-none`} />
                                     </div>
-                                    <div className="flex flex-col gap-1.5 col-span-2">
+                                    <div className="flex flex-col gap-1.5 sm:col-span-2">
                                         <label className="text-xs font-medium text-foreground">Foto (opsional)</label>
                                         {entry.photo ? (
                                             <div className="relative w-28 group">
@@ -1597,7 +1597,7 @@ function GuestsTab({
             )}
 
             {/* Stats mini cards */}
-            <div className="grid grid-cols-4 gap-3 sm:grid-cols-7">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
                 {[
                     { label: 'Total',      value: guestStats.total,        color: 'text-blue-500' },
                     { label: 'Hadir',      value: guestStats.attending,    color: 'text-emerald-500' },
@@ -1751,80 +1751,146 @@ function GuestsTab({
                         <p className="text-sm text-muted-foreground">Belum ada tamu.</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead className="bg-muted/40 border-b border-border">
-                                <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Nama</th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Kategori</th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Status</th>
-                                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase">Jml</th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Check-in</th>
-                                    <th className="px-4 py-3" />
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {guests.data.map((g) => (
-                                    <tr key={g.id} className="border-b border-border hover:bg-muted/20 transition-colors">
-                                        <td className="px-4 py-3">
-                                            <p className="font-medium text-foreground">{g.name}</p>
-                                            {g.email && <p className="text-xs text-muted-foreground">{g.email}</p>}
-                                            {g.phone_number && <p className="text-xs text-muted-foreground">{g.phone_number}</p>}
-                                        </td>
-                                        <td className="px-4 py-3 text-xs text-muted-foreground">{g.category ?? '—'}</td>
-                                        <td className="px-4 py-3">
-                                            <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${RSVP_CLASS[g.rsvp_status]}`}>
-                                                {RSVP_LABEL[g.rsvp_status]}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 text-center text-sm">{g.rsvp_headcount ?? 1}</td>
-                                        <td className="px-4 py-3">
-                                            {g.checked_in_at ? (
-                                                <span className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                                                    <CheckSquare className="size-3.5" />
-                                                    {new Date(g.checked_in_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                                                </span>
-                                            ) : (
-                                                <span className="text-xs text-muted-foreground">—</span>
-                                            )}
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <div className="flex items-center gap-1">
-                                                <button
-                                                    title={g.checked_in_at ? 'Batalkan Check-in' : 'Check-in'}
-                                                    onClick={() => handleCheckIn(g)}
-                                                    className={`p-1.5 rounded-lg transition-colors ${g.checked_in_at ? 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20' : 'text-muted-foreground hover:bg-muted'}`}
-                                                >
-                                                    <CheckSquare className="size-4" />
-                                                </button>
-                                                <button
-                                                    title={g.slug ? (copiedGuestId === g.id ? 'Link tersalin!' : 'Salin Link Undangan Tamu') : 'Tambahkan slug agar tamu memiliki link personal'}
-                                                    onClick={() => handleCopyLink(g)}
-                                                    disabled={!g.slug}
-                                                    className={`p-1.5 rounded-lg transition-colors ${
-                                                        !g.slug
-                                                            ? 'text-muted-foreground/30 cursor-not-allowed'
-                                                            : copiedGuestId === g.id
-                                                                ? 'text-emerald-600'
-                                                                : 'text-muted-foreground hover:bg-muted'
-                                                    }`}
-                                                >
-                                                    {copiedGuestId === g.id ? <Check className="size-4" /> : <Link2 className="size-4" />}
-                                                </button>
-                                                <button
-                                                    title="Hapus"
-                                                    onClick={() => handleDelete(g)}
-                                                    className="p-1.5 rounded-lg text-destructive hover:bg-destructive/5 transition-colors"
-                                                >
-                                                    <Trash2 className="size-4" />
-                                                </button>
-                                            </div>
-                                        </td>
+                    <>
+                        {/* Desktop / tablet table */}
+                        <div className="hidden md:block overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead className="bg-muted/40 border-b border-border">
+                                    <tr>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Nama</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Kategori</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Status</th>
+                                        <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase">Jml</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Check-in</th>
+                                        <th className="px-4 py-3" />
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    {guests.data.map((g) => (
+                                        <tr key={g.id} className="border-b border-border hover:bg-muted/20 transition-colors">
+                                            <td className="px-4 py-3">
+                                                <p className="font-medium text-foreground">{g.name}</p>
+                                                {g.email && <p className="text-xs text-muted-foreground">{g.email}</p>}
+                                                {g.phone_number && <p className="text-xs text-muted-foreground">{g.phone_number}</p>}
+                                            </td>
+                                            <td className="px-4 py-3 text-xs text-muted-foreground">{g.category ?? '—'}</td>
+                                            <td className="px-4 py-3">
+                                                <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${RSVP_CLASS[g.rsvp_status]}`}>
+                                                    {RSVP_LABEL[g.rsvp_status]}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3 text-center text-sm">{g.rsvp_headcount ?? 1}</td>
+                                            <td className="px-4 py-3">
+                                                {g.checked_in_at ? (
+                                                    <span className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                                        <CheckSquare className="size-3.5" />
+                                                        {new Date(g.checked_in_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-xs text-muted-foreground">—</span>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <div className="flex items-center gap-1">
+                                                    <button
+                                                        title={g.checked_in_at ? 'Batalkan Check-in' : 'Check-in'}
+                                                        onClick={() => handleCheckIn(g)}
+                                                        className={`p-1.5 rounded-lg transition-colors ${g.checked_in_at ? 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20' : 'text-muted-foreground hover:bg-muted'}`}
+                                                    >
+                                                        <CheckSquare className="size-4" />
+                                                    </button>
+                                                    <button
+                                                        title={g.slug ? (copiedGuestId === g.id ? 'Link tersalin!' : 'Salin Link Undangan Tamu') : 'Tambahkan slug agar tamu memiliki link personal'}
+                                                        onClick={() => handleCopyLink(g)}
+                                                        disabled={!g.slug}
+                                                        className={`p-1.5 rounded-lg transition-colors ${
+                                                            !g.slug
+                                                                ? 'text-muted-foreground/30 cursor-not-allowed'
+                                                                : copiedGuestId === g.id
+                                                                    ? 'text-emerald-600'
+                                                                    : 'text-muted-foreground hover:bg-muted'
+                                                        }`}
+                                                    >
+                                                        {copiedGuestId === g.id ? <Check className="size-4" /> : <Link2 className="size-4" />}
+                                                    </button>
+                                                    <button
+                                                        title="Hapus"
+                                                        onClick={() => handleDelete(g)}
+                                                        className="p-1.5 rounded-lg text-destructive hover:bg-destructive/5 transition-colors"
+                                                    >
+                                                        <Trash2 className="size-4" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Mobile card list */}
+                        <div className="md:hidden flex flex-col gap-3 p-3">
+                            {guests.data.map((g) => (
+                                <div key={g.id} className="rounded-2xl border border-border p-4 flex flex-col gap-2">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="min-w-0">
+                                            <p className="font-medium text-foreground truncate">{g.name}</p>
+                                            {g.email && <p className="text-xs text-muted-foreground truncate">{g.email}</p>}
+                                            {g.phone_number && <p className="text-xs text-muted-foreground truncate">{g.phone_number}</p>}
+                                        </div>
+                                        <span className={`shrink-0 inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${RSVP_CLASS[g.rsvp_status]}`}>
+                                            {RSVP_LABEL[g.rsvp_status]}
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                                        <span>Kategori: {g.category ?? '—'}</span>
+                                        <span>Jml: {g.rsvp_headcount ?? 1}</span>
+                                        {g.checked_in_at ? (
+                                            <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                                                <CheckSquare className="size-3.5" />
+                                                {new Date(g.checked_in_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                        ) : (
+                                            <span>Belum check-in</span>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center gap-1 pt-2 mt-1 border-t border-border/60">
+                                        <button
+                                            type="button"
+                                            title={g.checked_in_at ? 'Batalkan Check-in' : 'Check-in'}
+                                            onClick={() => handleCheckIn(g)}
+                                            className={`p-1.5 rounded-lg transition-colors ${g.checked_in_at ? 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20' : 'text-muted-foreground hover:bg-muted'}`}
+                                        >
+                                            <CheckSquare className="size-4" />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            title={g.slug ? (copiedGuestId === g.id ? 'Link tersalin!' : 'Salin Link Undangan Tamu') : 'Tambahkan slug agar tamu memiliki link personal'}
+                                            onClick={() => handleCopyLink(g)}
+                                            disabled={!g.slug}
+                                            className={`p-1.5 rounded-lg transition-colors ${
+                                                !g.slug
+                                                    ? 'text-muted-foreground/30 cursor-not-allowed'
+                                                    : copiedGuestId === g.id
+                                                        ? 'text-emerald-600'
+                                                        : 'text-muted-foreground hover:bg-muted'
+                                            }`}
+                                        >
+                                            {copiedGuestId === g.id ? <Check className="size-4" /> : <Link2 className="size-4" />}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            title="Hapus"
+                                            onClick={() => handleDelete(g)}
+                                            className="p-1.5 rounded-lg text-destructive hover:bg-destructive/5 transition-colors"
+                                        >
+                                            <Trash2 className="size-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </>
                 )}
 
                 {/* Pagination */}
@@ -1916,7 +1982,7 @@ function CommentsTab({
     return (
         <div className="flex flex-col gap-5">
             {/* Stats mini cards */}
-            <div className="grid grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
                 {[
                     { label: 'Total',         value: commentStats.total,    color: 'text-blue-500' },
                     { label: 'Ditampilkan',   value: commentStats.approved, color: 'text-emerald-500' },
@@ -2495,7 +2561,7 @@ function SettingsTab({
                         {/* Source selector */}
                         <div className="flex flex-col gap-2">
                             <label className="text-xs font-medium text-foreground">Sumber Musik</label>
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                 {([['library', 'Pilih dari Daftar'], ['upload', 'Upload File']] as const).map(([val, lbl]) => (
                                     <button
                                         key={val}
@@ -3609,10 +3675,10 @@ export default function InvitationsEdit({
     return (
         <CustomerLayout breadcrumbs={breadcrumbs}>
             <Head title={`Edit — ${invitation.title}`} />
-            <div className="flex flex-col gap-6 p-6">
+            <div className="flex flex-col gap-6 p-4 sm:p-6">
 
                 {/* Header */}
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                         <div className="flex items-center gap-3 mb-1">
                             <Link href="/customer/invitations" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -3626,9 +3692,9 @@ export default function InvitationsEdit({
                     </div>
 
                     {/* Status selector */}
-                    <div className="flex flex-col gap-1.5 shrink-0">
+                    <div className="flex flex-col gap-1.5 sm:shrink-0">
                         <label className="text-xs font-medium text-muted-foreground">Status Undangan</label>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                             {STATUS_OPTS.map((opt) => (
                                 <button
                                     key={opt.value}
@@ -3693,15 +3759,15 @@ export default function InvitationsEdit({
                 </div>
 
                 {/* Footer actions */}
-                <div className="flex items-center justify-between border-t border-border/60 pt-4 gap-3">
-                    <div className="flex gap-2">
+                <div className="flex flex-col-reverse gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-2 sm:flex-row">
                         {currentTabIndex > 0 && (
-                            <button type="button" onClick={() => setActiveTab(tabKeys[currentTabIndex - 1])} className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
+                            <button type="button" onClick={() => setActiveTab(tabKeys[currentTabIndex - 1])} className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors sm:w-auto">
                                 <ChevronLeft className="size-4" /> {resolveTabLabel(tabKeys[currentTabIndex - 1], eventType.name)}
                             </button>
                         )}
                         {currentTabIndex < tabKeys.length - 1 && (
-                            <button type="button" onClick={() => setActiveTab(tabKeys[currentTabIndex + 1])} className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
+                            <button type="button" onClick={() => setActiveTab(tabKeys[currentTabIndex + 1])} className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors sm:w-auto">
                                 {resolveTabLabel(tabKeys[currentTabIndex + 1], eventType.name)} <ChevronRight className="size-4" />
                             </button>
                         )}
@@ -3712,7 +3778,7 @@ export default function InvitationsEdit({
                             type="button"
                             onClick={handleSubmit}
                             disabled={submitting}
-                            className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors sm:w-auto"
                         >
                             {submitting ? <><Loader2 className="size-4 animate-spin" /> Menyimpan...</> : <><Save className="size-4" /> Simpan Perubahan</>}
                         </button>
