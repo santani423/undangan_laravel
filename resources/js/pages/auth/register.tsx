@@ -1,12 +1,14 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
+import GoogleAuthButton from '@/components/google-auth-button';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import AuthLayout from '@/layouts/auth-layout';
 
 interface RegisterForm {
@@ -17,6 +19,7 @@ interface RegisterForm {
 }
 
 export default function Register() {
+    const { flash } = usePage<{ flash?: { error?: string | null } }>().props;
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
@@ -34,6 +37,23 @@ export default function Register() {
     return (
         <AuthLayout title="Create an account" description="Enter your details below to create your account">
             <Head title="Register" />
+
+            {flash?.error && (
+                <div className="mb-4 rounded-md border border-destructive/50 bg-destructive/5 px-3 py-2 text-center text-sm text-destructive">
+                    {flash.error}
+                </div>
+            )}
+
+            <div className="mb-6">
+                <GoogleAuthButton intent="register" disabled={processing} />
+            </div>
+
+            <div className="relative mb-6 flex items-center">
+                <Separator className="flex-1" />
+                <span className="text-muted-foreground px-3 text-xs uppercase">Or</span>
+                <Separator className="flex-1" />
+            </div>
+
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
                     <div className="grid gap-2">

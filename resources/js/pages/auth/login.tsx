@@ -1,13 +1,15 @@
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
+import GoogleAuthButton from '@/components/google-auth-button';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import AuthLayout from '@/layouts/auth-layout';
 
 interface LoginForm {
@@ -29,6 +31,7 @@ interface LoginProps {
 }
 
 export default function Login({ status, canResetPassword, devAccounts = [] }: LoginProps) {
+    const { flash } = usePage<{ flash?: { error?: string | null } }>().props;
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -62,6 +65,22 @@ export default function Login({ status, canResetPassword, devAccounts = [] }: Lo
     return (
         <AuthLayout title="Log in to your account" description="Enter your email and password below to log in">
             <Head title="Log in" />
+
+            {flash?.error && (
+                <div className="mb-4 rounded-md border border-destructive/50 bg-destructive/5 px-3 py-2 text-center text-sm text-destructive">
+                    {flash.error}
+                </div>
+            )}
+
+            <div className="mb-6">
+                <GoogleAuthButton intent="login" disabled={processing} />
+            </div>
+
+            <div className="relative mb-6 flex items-center">
+                <Separator className="flex-1" />
+                <span className="text-muted-foreground px-3 text-xs uppercase">Or</span>
+                <Separator className="flex-1" />
+            </div>
 
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">

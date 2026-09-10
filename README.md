@@ -17,6 +17,8 @@ Platform undangan digital berbasis web yang dibangun dengan **Laravel 12** + **R
 - [Sistem Paket & Harga](#sistem-paket--harga)
 - [Sistem Pembayaran](#sistem-pembayaran)
 - [Autentikasi & Otorisasi](#autentikasi--otorisasi)
+- [Google OAuth Configuration](#google-oauth-configuration)
+- [Troubleshooting Google Login](#troubleshooting-google-login)
 - [Database](#database)
 - [Frontend — Panduan Penggunaan Template](#frontend--panduan-penggunaan-template)
 - [Komponen UI](#komponen-ui)
@@ -128,6 +130,11 @@ MIDTRANS_IS_PRODUCTION=false
 # WhatsApp (opsional)
 WA_API_URL=
 WA_API_TOKEN=
+
+# Google OAuth (Login/Register dengan Google) — lihat "Google OAuth Configuration"
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI="${APP_URL}/auth/google/callback"
 ```
 
 ---
@@ -392,6 +399,31 @@ Menggunakan Laravel Breeze dengan Inertia React. Route tersedia di:
 - `POST /forgot-password` — Kirim link reset
 - `GET /reset-password/{token}` — Form reset password
 
+### Login/Register dengan Google (OAuth 2.0)
+
+Selain email/password, pengguna dapat login atau mendaftar menggunakan akun Google lewat [Laravel Socialite](https://laravel.com/docs/socialite). Tombol **"Continue with Google"** tersedia di halaman `/login` dan `/register`.
+
+Route yang ditambahkan (di `routes/auth.php`, guest-only, sama seperti `/login` dan `/register`):
+- `GET /auth/google/redirect` — Mengarahkan pengguna ke consent screen Google (`route('auth.google')`)
+- `GET /auth/google/callback` — Menerima callback dari Google (`route('auth.google.callback')`)
+
+Alur akun:
+1. **Google ID sudah pernah login sebelumnya** → langsung login ke akun yang sama.
+2. **Belum pernah login dengan Google, tapi email sudah terdaftar (password) dan email Google tersebut sudah *verified*** → akun Google otomatis dihubungkan (linked) ke akun existing tersebut, lalu login. Ini mencegah duplikat akun.
+3. **Email Google belum diverifikasi Google, tapi cocok dengan akun existing** → **tidak** dihubungkan (mencegah account takeover), pengguna diarahkan kembali dengan pesan error dan disarankan login pakai password.
+4. **Email/Google ID benar-benar baru** → akun baru dibuat dengan role default `customer` (role admin/super_admin **tidak pernah** diberikan otomatis lewat Google login).
+
+Implementasi ada di:
+- `app/Http/Controllers/Auth/GoogleAuthController.php` — redirect & callback, error handling
+- `app/Services/Auth/GoogleAuthService.php` — logic pencarian/pembuatan/linking user
+- `app/Exceptions/Auth/GoogleAuthException.php` — error yang aman ditampilkan ke user
+
+Kolom tambahan pada tabel `users` (migration `2026_09_11_000001_add_google_oauth_columns_to_users_table`):
+- `google_id` (nullable, unique) — ID akun Google yang terhubung
+- `avatar` (nullable) — URL foto profil dari Google
+
+Lihat [Google OAuth Configuration](#google-oauth-configuration) untuk cara setup credential di Google Cloud Console.
+
 ### Role & Permission (Spatie)
 
 Role default yang di-seed:
@@ -419,6 +451,101 @@ $user->hasRole('super-admin'); // true/false
 # Assign permission ke role
 $role->givePermissionTo('edit themes');
 ```
+
+---
+
+## Google OAuth Configuration
+
+Ikuti langkah berikut untuk menghubungkan aplikasi ke Google agar fitur "Continue with Google" berfungsi. Buat credential **terpisah untuk setiap environment** (development, staging, production) — jangan pakai satu credential untuk semuanya.
+
+### Step 1 — Google Cloud Console
+
+Buka [Google Cloud Console](https://console.cloud.google.com/), lalu buat project baru atau pilih project yang sudah ada.
+
+### Step 2 — OAuth Consent Screen
+
+Buka **APIs & Services → OAuth consent screen**, lalu isi:
+- **App name** — nama aplikasi yang akan tampil ke pengguna saat login
+- **User support email**
+- **Developer contact information**
+
+Pilih tipe user type:
+- **Internal** — hanya untuk akun dalam satu Google Workspace organization (tidak relevan untuk aplikasi publik seperti ini)
+- **External** — untuk pengguna umum dengan akun Google apa pun (pilih ini untuk aplikasi publik)
+
+### Step 3 — Credentials
+
+Buka **APIs & Services → Credentials → Create Credentials → OAuth Client ID**.
+Pilih **Application type: Web application**.
+
+### Step 4 — Authorized JavaScript origins
+
+Isi sesuai domain tempat aplikasi berjalan:
+
+```
+# Development
+http://localhost:8000
+
+# Production
+https://example.com
+```
+
+### Step 5 — Authorized redirect URI
+
+URI ini **harus sama persis** dengan nilai `GOOGLE_REDIRECT_URI` di `.env` — perbedaan pada `http` vs `https`, domain, port, path, atau trailing slash akan menyebabkan error `redirect_uri_mismatch`.
+
+```
+# Development
+http://localhost:8000/auth/google/callback
+
+# Production
+https://example.com/auth/google/callback
+```
+
+### Konfigurasi `.env`
+
+Salin Client ID & Client Secret yang didapat dari Google Cloud Console ke `.env`:
+
+```env
+APP_URL=http://localhost:8000
+
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_REDIRECT_URI="${APP_URL}/auth/google/callback"
+```
+
+> Jangan pernah commit credential asli ke `.env.example` atau ke Git — `.env` sudah masuk `.gitignore`.
+
+Setelah mengubah `.env`, bersihkan config cache (terutama jika sebelumnya sempat menjalankan `config:cache`):
+
+```bash
+php artisan config:clear
+php artisan cache:clear
+```
+
+Jangan menjalankan `php artisan config:cache` sampai `.env` production sudah benar — config yang di-cache tidak akan membaca perubahan `.env` berikutnya sampai di-clear lagi.
+
+---
+
+## Troubleshooting Google Login
+
+**Error: `redirect_uri_mismatch`**
+Redirect URI di Google Cloud Console berbeda dengan `GOOGLE_REDIRECT_URI` di `.env`. Periksa: skema (http/https), domain, port, path, dan trailing slash — harus identik persis. Periksa juga `APP_URL` karena `GOOGLE_REDIRECT_URI` di `.env.example` diturunkan darinya.
+
+**Error: `invalid_client`**
+`GOOGLE_CLIENT_ID` atau `GOOGLE_CLIENT_SECRET` salah/kosong, atau OAuth Client di Google Cloud Console sudah dihapus/dinonaktifkan.
+
+**Error: "Login dengan Google dibatalkan"**
+Pengguna menekan tombol batal/deny di consent screen Google (`access_denied`) — bukan bug, cukup arahkan pengguna untuk mencoba lagi.
+
+**Error: "Sesi login Google sudah kedaluwarsa"**
+Socialite memvalidasi parameter `state` untuk mencegah CSRF; error ini muncul jika session hilang/berubah antara redirect dan callback. Periksa: konfigurasi session (cookie domain/`SESSION_DOMAIN`), apakah request lewat proxy/load balancer yang tidak meneruskan cookie dengan benar, dan pastikan `APP_URL` konsisten dengan domain yang benar-benar diakses browser.
+
+**Error: "akun Google Anda tidak memiliki alamat email yang dapat dibagikan"**
+Scope `email` ditolak pengguna, atau akun Google tersebut tidak memiliki email (jarang terjadi). Aplikasi sengaja menolak login tanpa email karena email dipakai sebagai kunci pencocokan akun.
+
+**Error: "Email Google Anda belum terverifikasi..."**
+Ini bukan bug — ini proteksi account-linking. Google melaporkan email tersebut belum verified, sehingga aplikasi menolak menghubungkannya ke akun password yang sudah ada (mencegah account takeover). Pengguna disarankan login dengan password, atau memverifikasi email tersebut langsung di Google.
 
 ---
 
