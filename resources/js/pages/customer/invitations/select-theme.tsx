@@ -68,6 +68,8 @@ interface Props {
     eventType: EventType;
     themes: Theme[];
     packages: PackageItem[];
+    preselectedThemeId?: number | null;
+    preselectedPackageId?: number | null;
 }
 
 function ThemeCard({
@@ -294,9 +296,19 @@ function PackageCard({
     );
 }
 
-export default function SelectTheme({ eventType, themes, packages }: Props) {
-    const [selectedTheme, setSelectedTheme] = useState<Theme | null>(null);
-    const [selectedPackage, setSelectedPackage] = useState<PackageItem | null>(null);
+export default function SelectTheme({ eventType, themes, packages, preselectedThemeId, preselectedPackageId }: Props) {
+    const [selectedTheme, setSelectedTheme] = useState<Theme | null>(
+        () => themes.find((t) => t.id === preselectedThemeId) ?? null,
+    );
+    const [selectedPackage, setSelectedPackage] = useState<PackageItem | null>(
+        () => packages.find((p) => p.id === preselectedPackageId) ?? null,
+    );
+    // A theme/package chosen before authentication (theme card, package
+    // card, or a tier picked on the landing page) starts "locked" — the
+    // customer already made that choice and shouldn't have to repeat it —
+    // but "Ganti" always lets them reopen the picker and change their mind.
+    const [themeLocked, setThemeLocked] = useState(!!preselectedThemeId);
+    const [packageLocked, setPackageLocked] = useState(!!preselectedPackageId);
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState<'all' | 'free' | 'premium'>('all');
     const [previewTheme, setPreviewTheme] = useState<Theme | null>(null);
@@ -374,6 +386,27 @@ export default function SelectTheme({ eventType, themes, packages }: Props) {
                         )}
                     </div>
 
+                    {themeLocked && selectedTheme ? (
+                        <div className="flex items-center gap-4 rounded-2xl border-2 border-primary/30 bg-primary/5 p-4">
+                            <div className="size-16 shrink-0 overflow-hidden rounded-xl bg-muted">
+                                {selectedTheme.thumbnail_url && (
+                                    <img src={selectedTheme.thumbnail_url} alt={selectedTheme.name} className="h-full w-full object-cover" />
+                                )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-sm text-muted-foreground">Tema yang sudah kamu pilih</p>
+                                <p className="font-semibold text-foreground truncate">{selectedTheme.name}</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setThemeLocked(false)}
+                                className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors"
+                            >
+                                Ganti
+                            </button>
+                        </div>
+                    ) : (
+                    <>
                     {/* Filter & Search */}
                     <div className="flex flex-col sm:flex-row gap-3">
                         <div className="relative flex-1">
@@ -426,11 +459,16 @@ export default function SelectTheme({ eventType, themes, packages }: Props) {
                                     key={theme.id}
                                     theme={theme}
                                     isSelected={selectedTheme?.id === theme.id}
-                                    onSelect={() => setSelectedTheme(theme)}
+                                    onSelect={() => {
+                                        setSelectedTheme(theme);
+                                        setThemeLocked(true);
+                                    }}
                                     onPreview={() => setPreviewTheme(theme)}
                                 />
                             ))}
                         </div>
+                    )}
+                    </>
                     )}
                 </section>
 
@@ -450,7 +488,24 @@ export default function SelectTheme({ eventType, themes, packages }: Props) {
                         )}
                     </div>
 
-                    {packages.length === 0 ? (
+                    {packageLocked && selectedPackage ? (
+                        <div className="flex items-center gap-4 rounded-2xl border-2 border-primary/30 bg-primary/5 p-4">
+                            <div className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                <Package className="size-6" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-sm text-muted-foreground">Paket yang sudah kamu pilih</p>
+                                <p className="font-semibold text-foreground truncate">{selectedPackage.label}</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setPackageLocked(false)}
+                                className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors"
+                            >
+                                Ganti
+                            </button>
+                        </div>
+                    ) : packages.length === 0 ? (
                         <div className="flex flex-col items-center justify-center gap-3 py-10 text-center">
                             <Package className="size-10 text-muted-foreground/40" />
                             <p className="text-muted-foreground text-sm">Belum ada paket tersedia.</p>
@@ -462,7 +517,10 @@ export default function SelectTheme({ eventType, themes, packages }: Props) {
                                     key={pkg.id}
                                     pkg={pkg}
                                     isSelected={selectedPackage?.id === pkg.id}
-                                    onSelect={() => setSelectedPackage(pkg)}
+                                    onSelect={() => {
+                                        setSelectedPackage(pkg);
+                                        setPackageLocked(true);
+                                    }}
                                 />
                             ))}
                         </div>

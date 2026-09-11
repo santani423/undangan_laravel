@@ -68,18 +68,36 @@ class InvitationController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $eventTypes = EventType::active()->orderBy('id')->get(['id', 'name', 'label', 'description', 'icon_path']);
 
+        $packageTier = $request->query('package_tier');
+
         return Inertia::render('customer/invitations/create', [
             'eventTypes' => $eventTypes,
+            // Carried over from a package-tier CTA on the landing page (no
+            // concrete event type chosen yet) so the next step can
+            // pre-select a package within this tier once jenis is known.
+            'packageTier' => in_array($packageTier, ['basic', 'premium', 'exclusive'], true) ? $packageTier : null,
         ]);
     }
 
     public function selectTheme(Request $request)
     {
+        // Entry points A (theme card) and B (package card) land here without
+        // an explicit event_type_id — it's derived from whichever of
+        // theme_id/package_id/package_tier was picked before authentication,
+        // re-validated the same way the post-auth redirect resolves it.
         $eventTypeId = $request->query('event_type_id');
+        if (! $eventTypeId) {
+            $derived = app(\App\Services\Onboarding\OnboardingContextResolver::class)->resolve(
+                $request->integer('theme_id') ?: null,
+                $request->integer('package_id') ?: null,
+                $request->query('package_tier'),
+            );
+            $eventTypeId = $derived['event_type_id'];
+        }
 
         $eventType = EventType::active()->findOrFail($eventTypeId, ['id', 'name', 'label']);
 
@@ -94,10 +112,25 @@ class InvitationController extends Controller
             ->with('features')
             ->get(['id', 'name', 'label', 'description', 'price', 'currency', 'billing_period', 'duration_days', 'max_gallery_uploads']);
 
+        // ── Preselection from an onboarding entry point (theme card, package
+        // card, or a package tier picked pre-auth on the landing page) —
+        // re-validated here against the themes/packages actually available
+        // for this event type, never trusted blindly from the query string.
+        $preselectedThemeId = $themes->firstWhere('id', $request->integer('theme_id'))?->id;
+        $preselectedPackageId = $packages->firstWhere('id', $request->integer('package_id'))?->id;
+
+        if (! $preselectedPackageId && in_array($request->query('package_tier'), ['basic', 'premium', 'exclusive'], true)) {
+            $preselectedPackageId = $packages
+                ->first(fn ($p) => Str::afterLast($p->name, '_') === $request->query('package_tier'))
+                ?->id;
+        }
+
         return Inertia::render('customer/invitations/select-theme', [
             'eventType' => $eventType,
             'themes'    => $themes,
             'packages'  => $packages,
+            'preselectedThemeId' => $preselectedThemeId,
+            'preselectedPackageId' => $preselectedPackageId,
         ]);
     }
 
@@ -171,6 +204,25 @@ class InvitationController extends Controller
 
             // ── Generate unique slug & derive title from event-type fields ─
             $eventType = EventType::findOrFail($request->input('event_type_id'));
+
+            // Theme/package are only checked for existence by StoreInvitationRequest;
+            // confirm here that both actually belong to the chosen event type, the
+            // same way updateTheme() does — a client could otherwise submit a
+            // mismatched theme_id/package_id (e.g. a Birthday theme under a
+            // Wedding event type) and have it silently accepted.
+            $theme = Theme::findOrFail($request->input('theme_id'));
+            if ($theme->event_type !== $eventType->name) {
+                throw ValidationException::withMessages([
+                    'theme_id' => 'Tema yang dipilih tidak sesuai dengan jenis undangan ini.',
+                ]);
+            }
+
+            if (! $pkg || $pkg->invitation_type !== $eventType->label) {
+                throw ValidationException::withMessages([
+                    'package_id' => 'Paket yang dipilih tidak sesuai dengan jenis undangan ini.',
+                ]);
+            }
+
             $title = $this->slugService()->resolveTitle($eventType->name, $fields);
             $slug = $this->resolveSlugForInvitation(
                 $request->input('slug'),

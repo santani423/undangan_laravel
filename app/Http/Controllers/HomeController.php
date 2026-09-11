@@ -19,7 +19,7 @@ class HomeController extends Controller
             'appName'      => AppSetting::get('app_name', config('app.name', 'Undesia')),
             'appTagline'   => AppSetting::get('app_tagline', 'Undangan Digital Modern & Eksklusif'),
             'features'     => $this->landing->topFeatures(),
-            'packageTiers' => $this->landing->packageTiers(),
+            'packagesByType' => $this->landing->packagesByType(),
             'themeSamples' => $this->landing->themeSamples(),
             'testimonials' => $this->landing->testimonials(),
             'stats'        => $this->landing->stats(),

@@ -4,10 +4,10 @@ import { ArrowRight, Heart, Sparkles } from 'lucide-react';
 
 interface LandingCtaProps {
     auth: Auth;
+    onCreateInvitation: () => void;
 }
 
-export default function LandingCta({ auth }: LandingCtaProps) {
-    const primaryHref = auth.user ? route('customer.invitations.create') : route('register');
+export default function LandingCta({ auth, onCreateInvitation }: LandingCtaProps) {
     const primaryLabel = auth.user ? 'Buat Undangan Baru' : 'Mulai Sekarang';
 
     return (
@@ -37,13 +37,14 @@ export default function LandingCta({ auth }: LandingCtaProps) {
                 </p>
 
                 <div className="mb-10 flex flex-col items-center justify-center gap-6 sm:flex-row">
-                    <Link
-                        href={primaryHref}
+                    <button
+                        type="button"
+                        onClick={onCreateInvitation}
                         className="group inline-flex min-w-[250px] items-center justify-center gap-2 rounded-full bg-white px-8 py-4 text-lg font-medium text-rose-600 shadow-2xl transition-all duration-300 hover:scale-105 hover:bg-rose-50"
                     >
                         {primaryLabel}
                         <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" />
-                    </Link>
+                    </button>
                     <Link
                         href={route('themes.index')}
                         className="inline-flex min-w-[250px] items-center justify-center rounded-full border-2 border-white bg-transparent px-8 py-4 text-lg font-medium text-white shadow-lg transition-all duration-300 hover:bg-white hover:text-rose-600"

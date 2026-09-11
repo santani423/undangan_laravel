@@ -14,9 +14,10 @@ interface NavItem {
 
 interface LandingHeaderProps {
     auth: Auth;
+    onCreateInvitation: () => void;
 }
 
-export default function LandingHeader({ auth }: LandingHeaderProps) {
+export default function LandingHeader({ auth, onCreateInvitation }: LandingHeaderProps) {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
 
@@ -76,26 +77,36 @@ export default function LandingHeader({ auth }: LandingHeaderProps) {
                     )}
                 </nav>
 
-                <div className="hidden lg:block">
+                <div className="hidden items-center gap-3 lg:flex">
                     {auth.user ? (
-                        <Link
-                            href={route('dashboard')}
-                            className="rounded-full bg-gradient-to-r from-rose-500 to-rose-400 px-6 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:from-rose-600 hover:to-rose-500 hover:shadow-lg"
-                        >
-                            Dashboard
-                        </Link>
+                        <>
+                            <Link
+                                href={route('customer.dashboard')}
+                                className="text-sm font-medium text-gray-700 transition-colors hover:text-rose-500"
+                            >
+                                Dashboard
+                            </Link>
+                            <button
+                                type="button"
+                                onClick={onCreateInvitation}
+                                className="rounded-full bg-gradient-to-r from-rose-500 to-rose-400 px-6 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:from-rose-600 hover:to-rose-500 hover:shadow-lg"
+                            >
+                                Buat Undangan
+                            </button>
+                        </>
                     ) : (
-                        <div className="flex items-center gap-3">
+                        <>
                             <Link href={route('login')} className="text-sm font-medium text-gray-700 transition-colors hover:text-rose-500">
                                 Masuk
                             </Link>
-                            <Link
-                                href={route('register')}
+                            <button
+                                type="button"
+                                onClick={onCreateInvitation}
                                 className="rounded-full bg-gradient-to-r from-rose-500 to-rose-400 px-6 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:from-rose-600 hover:to-rose-500 hover:shadow-lg"
                             >
-                                Daftar Gratis
-                            </Link>
-                        </div>
+                                Buat Undangan
+                            </button>
+                        </>
                     )}
                 </div>
 
@@ -127,29 +138,31 @@ export default function LandingHeader({ auth }: LandingHeaderProps) {
                                     </Link>
                                 ),
                             )}
-                            <div className="mt-4 border-t border-gray-100 pt-4">
+                            <div className="mt-4 flex flex-col gap-2 border-t border-gray-100 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsOpen(false);
+                                        onCreateInvitation();
+                                    }}
+                                    className="block rounded-full bg-gradient-to-r from-rose-500 to-rose-400 px-6 py-3 text-center text-sm font-semibold text-white shadow-md"
+                                >
+                                    Buat Undangan
+                                </button>
                                 {auth.user ? (
                                     <Link
-                                        href={route('dashboard')}
-                                        className="block rounded-full bg-gradient-to-r from-rose-500 to-rose-400 px-6 py-3 text-center text-sm font-semibold text-white shadow-md"
+                                        href={route('customer.dashboard')}
+                                        className="block rounded-full border border-gray-200 px-6 py-3 text-center text-sm font-semibold text-gray-700"
                                     >
                                         Dashboard
                                     </Link>
                                 ) : (
-                                    <div className="flex flex-col gap-2">
-                                        <Link
-                                            href={route('register')}
-                                            className="block rounded-full bg-gradient-to-r from-rose-500 to-rose-400 px-6 py-3 text-center text-sm font-semibold text-white shadow-md"
-                                        >
-                                            Daftar Gratis
-                                        </Link>
-                                        <Link
-                                            href={route('login')}
-                                            className="block rounded-full border border-gray-200 px-6 py-3 text-center text-sm font-semibold text-gray-700"
-                                        >
-                                            Masuk
-                                        </Link>
-                                    </div>
+                                    <Link
+                                        href={route('login')}
+                                        className="block rounded-full border border-gray-200 px-6 py-3 text-center text-sm font-semibold text-gray-700"
+                                    >
+                                        Masuk
+                                    </Link>
                                 )}
                             </div>
                         </div>

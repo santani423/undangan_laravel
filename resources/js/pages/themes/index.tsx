@@ -1,5 +1,6 @@
 ﻿import React, { useState, useMemo } from "react";
 import { Head, Link, usePage } from "@inertiajs/react";
+import { useAuthGate } from "@/hooks/use-auth-gate";
 
 interface ThemeItem {
     id: number;
@@ -50,7 +51,9 @@ function TierBadge({ theme }: { theme: ThemeItem }) {
     );
 }
 
-function ThemeCard({ theme }: { theme: ThemeItem }) {
+function ThemeCard({ theme, onCreate }: { theme: ThemeItem; onCreate: (themeId: number) => void }) {
+    const hasSample = theme.event_type === "wedding";
+
     return (
         <div className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
             <div
@@ -64,11 +67,6 @@ function ThemeCard({ theme }: { theme: ThemeItem }) {
                         <span className="text-4xl opacity-30">🎨</span>
                     </div>
                 )}
-                <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                    <button className="rounded-full bg-white px-5 py-2 text-sm font-semibold text-gray-800 shadow hover:bg-gray-50">
-                        Gunakan Template
-                    </button>
-                </div>
                 <div className="absolute left-3 top-3">
                     <TierBadge theme={theme} />
                 </div>
@@ -80,12 +78,39 @@ function ThemeCard({ theme }: { theme: ThemeItem }) {
                     <span className="text-sm font-bold text-gray-800">{formatPrice(theme.price)}</span>
                     <span className="text-xs text-gray-400">{theme.usage_count.toLocaleString("id-ID")}× dipakai</span>
                 </div>
+                <div className="mt-3 flex gap-2">
+                    {hasSample ? (
+                        <a
+                            href={`/preview/themes/wedding/${theme.slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-center text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                        >
+                            Sampel
+                        </a>
+                    ) : (
+                        <span
+                            className="flex-1 cursor-not-allowed rounded-lg border border-gray-100 px-3 py-1.5 text-center text-xs font-semibold text-gray-400"
+                            title="Sampel untuk tema ini segera hadir"
+                        >
+                            Segera Hadir
+                        </span>
+                    )}
+                    <button
+                        onClick={() => onCreate(theme.id)}
+                        className="flex-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+                    >
+                        Buat Undangan
+                    </button>
+                </div>
             </div>
         </div>
     );
 }
 
-function ThemeRow({ theme }: { theme: ThemeItem }) {
+function ThemeRow({ theme, onCreate }: { theme: ThemeItem; onCreate: (themeId: number) => void }) {
+    const hasSample = theme.event_type === "wedding";
+
     return (
         <div className="flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md">
             <div
@@ -109,9 +134,24 @@ function ThemeRow({ theme }: { theme: ThemeItem }) {
             <div className="text-right flex-shrink-0">
                 <p className="font-bold text-gray-800">{formatPrice(theme.price)}</p>
                 <p className="text-xs text-gray-400">{theme.usage_count.toLocaleString("id-ID")}× dipakai</p>
-                <button className="mt-2 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700">
-                    Gunakan
-                </button>
+                <div className="mt-2 flex gap-1.5">
+                    {hasSample && (
+                        <a
+                            href={`/preview/themes/wedding/${theme.slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                        >
+                            Sampel
+                        </a>
+                    )}
+                    <button
+                        onClick={() => onCreate(theme.id)}
+                        className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+                    >
+                        Buat Undangan
+                    </button>
+                </div>
             </div>
         </div>
     );
@@ -119,6 +159,10 @@ function ThemeRow({ theme }: { theme: ThemeItem }) {
 
 export default function ThemesIndex() {
     const { themes, auth } = usePage<PageProps>().props;
+    const { requireAuth, modal } = useAuthGate();
+
+    const handleCreate = (themeId: number) =>
+        requireAuth(route('customer.invitations.create.theme', { theme_id: themeId }), { themeId });
 
     const [search, setSearch] = useState("");
     const [filterCategory, setFilterCategory] = useState("");
@@ -167,19 +211,20 @@ export default function ThemesIndex() {
                     </nav>
                     <div className="flex items-center gap-2">
                         {auth?.user ? (
-                            <Link href="/dashboard" className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+                            <Link href="/customer" className="rounded-lg px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">
                                 Dashboard
                             </Link>
                         ) : (
-                            <>
-                                <Link href="/login" className="rounded-lg px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">
-                                    Masuk
-                                </Link>
-                                <Link href="/register" className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
-                                    Daftar
-                                </Link>
-                            </>
+                            <Link href="/login" className="rounded-lg px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">
+                                Masuk
+                            </Link>
                         )}
+                        <button
+                            onClick={() => requireAuth(route('customer.invitations.create'), {})}
+                            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+                        >
+                            Buat Undangan
+                        </button>
                     </div>
                 </div>
             </header>
@@ -269,11 +314,11 @@ export default function ThemesIndex() {
                     </div>
                 ) : viewMode === "grid" ? (
                     <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                        {filtered.map(theme => <ThemeCard key={theme.id} theme={theme} />)}
+                        {filtered.map(theme => <ThemeCard key={theme.id} theme={theme} onCreate={handleCreate} />)}
                     </div>
                 ) : (
                     <div className="flex flex-col gap-3">
-                        {filtered.map(theme => <ThemeRow key={theme.id} theme={theme} />)}
+                        {filtered.map(theme => <ThemeRow key={theme.id} theme={theme} onCreate={handleCreate} />)}
                     </div>
                 )}
             </main>
@@ -281,6 +326,8 @@ export default function ThemesIndex() {
             <footer className="border-t border-gray-100 bg-gray-50 py-8 text-center text-sm text-gray-400">
                 © 2026 Undesia · Semua hak dilindungi
             </footer>
+
+            {modal}
         </>
     );
 }

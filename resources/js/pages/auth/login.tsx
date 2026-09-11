@@ -28,11 +28,14 @@ interface LoginProps {
     status?: string;
     canResetPassword: boolean;
     devAccounts?: DevAccount[];
+    onboardingThemeId?: number | null;
+    onboardingPackageId?: number | null;
+    onboardingPackageTier?: string | null;
 }
 
-export default function Login({ status, canResetPassword, devAccounts = [] }: LoginProps) {
+export default function Login({ status, canResetPassword, devAccounts = [], onboardingThemeId, onboardingPackageId, onboardingPackageTier }: LoginProps) {
     const { flash } = usePage<{ flash?: { error?: string | null } }>().props;
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors, reset, transform } = useForm({
         email: '',
         password: '',
         remember: false,
@@ -57,6 +60,12 @@ export default function Login({ status, canResetPassword, devAccounts = [] }: Lo
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
+        transform((formData) => ({
+            ...formData,
+            onboarding_theme_id: onboardingThemeId ?? null,
+            onboarding_package_id: onboardingPackageId ?? null,
+            onboarding_package_tier: onboardingPackageTier ?? null,
+        }));
         post(route('login'), {
             onFinish: () => reset('password'),
         });
@@ -73,7 +82,13 @@ export default function Login({ status, canResetPassword, devAccounts = [] }: Lo
             )}
 
             <div className="mb-6">
-                <GoogleAuthButton intent="login" disabled={processing} />
+                <GoogleAuthButton
+                    intent="login"
+                    disabled={processing}
+                    themeId={onboardingThemeId ?? undefined}
+                    packageId={onboardingPackageId ?? undefined}
+                    packageTier={onboardingPackageTier ?? undefined}
+                />
             </div>
 
             <div className="relative mb-6 flex items-center">

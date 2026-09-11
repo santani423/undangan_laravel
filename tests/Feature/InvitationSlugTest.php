@@ -21,6 +21,7 @@ function makeBirthdayInvitationContext(): array
 
     $package = Package::create([
         'name' => 'birthday-basic',
+        'invitation_type' => 'ulang_tahun',
         'label' => 'Birthday Basic',
         'description' => 'Paket dasar ulang tahun',
         'price' => 0,

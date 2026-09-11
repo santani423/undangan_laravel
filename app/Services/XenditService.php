@@ -2,18 +2,25 @@
 
 namespace App\Services;
 
+use App\Models\PaymentGatewayConfig;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 class XenditService
 {
     private string $apiKey;
+    private string $webhookToken;
     private string $baseUrl;
 
     public function __construct()
     {
-        $this->apiKey  = config('xendit.api_key', '');
-        $this->baseUrl = rtrim(config('xendit.base_url', 'https://api.xendit.co'), '/');
+        // Credentials come from the admin-managed gateway config (DB), not .env —
+        // that's the source the Settings → Pembayaran page actually writes to.
+        $values = PaymentGatewayConfig::where('gateway_name', 'xendit')->first()?->config_extra['values'] ?? [];
+
+        $this->apiKey       = $values['api_key'] ?? '';
+        $this->webhookToken = $values['webhook_token'] ?? '';
+        $this->baseUrl      = rtrim(config('xendit.base_url', 'https://api.xendit.co'), '/');
     }
 
     /**
@@ -31,6 +38,12 @@ class XenditService
      */
     public function createInvoice(array $params): array
     {
+        if ($this->apiKey === '') {
+            throw new RuntimeException(
+                'API Key Xendit belum dikonfigurasi. Silakan isi di Admin → Settings → Pembayaran.'
+            );
+        }
+
         $params['currency'] ??= 'IDR';
 
         $response = Http::withBasicAuth($this->apiKey, '')
@@ -69,12 +82,10 @@ class XenditService
      */
     public function verifyWebhookToken(string $token): bool
     {
-        $webhookToken = config('xendit.webhook_token', '');
-
-        if ($webhookToken === '') {
+        if ($this->webhookToken === '') {
             return true; // No token configured — allow (log a warning in production)
         }
 
-        return hash_equals($webhookToken, $token);
+        return hash_equals($this->webhookToken, $token);
     }
 }

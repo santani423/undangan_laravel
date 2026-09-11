@@ -3,11 +3,13 @@
 namespace App\Services;
 
 use App\Models\AppSetting;
+use App\Models\EventType;
 use App\Models\Invitation;
 use App\Models\Package;
 use App\Models\PackageFeature;
 use App\Models\Testimonial;
 use App\Models\Theme;
+use App\Support\WhatsAppLink;
 use Illuminate\Support\Str;
 
 class LandingPageService
@@ -15,6 +17,34 @@ class LandingPageService
     private const WHATSAPP_PLACEHOLDER = '+62 812-0000-0000';
 
     private const WHATSAPP_FALLBACK = '+6285778674418';
+
+    /**
+     * event_types.label is inconsistently cased in the seed data ("Pernikahan"
+     * vs "ulang_tahun") because it doubles as the matching key against
+     * packages.invitation_type — it's not fit to show to a visitor as-is, so
+     * tab titles use this curated display name instead, keyed by the
+     * always-consistent event_types.name.
+     */
+    private const EVENT_TYPE_DISPLAY_LABELS = [
+        'wedding'       => 'Pernikahan',
+        'birthday'      => 'Ulang Tahun',
+        'khitanan'      => 'Khitanan',
+        'aqiqah'        => 'Aqiqah',
+        'gender_reveal' => 'Gender Reveal',
+        'syukuran'      => 'Syukuran',
+    ];
+
+    private const TIER_LABELS = [
+        'basic'     => 'Paket Dasar',
+        'premium'   => 'Paket Premium',
+        'exclusive' => 'Paket Eksklusif',
+    ];
+
+    private const TIER_ORDER = [
+        'basic'     => 0,
+        'premium'   => 1,
+        'exclusive' => 2,
+    ];
 
     /**
      * Order matters: tierBullets() takes the first 5 *enabled* entries, so
@@ -59,43 +89,48 @@ class LandingPageService
     }
 
     /**
-     * Simplified 3-tier marketing preview built from the real 18-package
-     * catalog (6 invitation types x 3 tiers). "pernikahan" is used as the
-     * representative type for feature bullets since it's the flagship
-     * use case; price_from is the true minimum across all types per tier.
+     * Real per-type package catalog, grouped by invitation type, for the
+     * landing page's "jenis undangan" tabs — unlike packageTiers() (one
+     * aggregated card per tier, price/features borrowed from a
+     * representative package), each package here is its own real row: its
+     * own price, its own features, and a real package_id the "Pilih Paket"
+     * CTA can carry straight into the wizard.
      *
-     * @return array<int, array{tier: string, label: string, price_from: int, is_popular: bool, features: array<int, string>}>
+     * @return array<int, array{event_type: string, label: string, packages: array<int, array{id: int, tier: string, tier_label: string, label: string, price: int, is_popular: bool, features: array<int, string>}>}>
      */
-    public function packageTiers(): array
+    public function packagesByType(): array
     {
-        $tierLabels = [
-            'basic'     => 'Paket Dasar',
-            'premium'   => 'Paket Premium',
-            'exclusive' => 'Paket Eksklusif',
-        ];
-
+        $eventTypes = EventType::active()->orderBy('id')->get(['id', 'name', 'label']);
         $packages = Package::active()->with('features')->get();
-        $result   = [];
 
-        foreach ($tierLabels as $tier => $label) {
-            $tierPackages = $packages->filter(fn (Package $p) => Str::afterLast($p->name, '_') === $tier);
+        return $eventTypes
+            ->map(function (EventType $eventType) use ($packages) {
+                $typePackages = $packages
+                    ->filter(fn (Package $p) => Str::lower($p->invitation_type) === Str::lower($eventType->label))
+                    ->sortBy(fn (Package $p) => self::TIER_ORDER[Str::afterLast($p->name, '_')] ?? 99)
+                    ->values();
 
-            if ($tierPackages->isEmpty()) {
-                continue;
-            }
+                return [
+                    'event_type' => $eventType->name,
+                    'label'      => self::EVENT_TYPE_DISPLAY_LABELS[$eventType->name] ?? $eventType->label,
+                    'packages'   => $typePackages->map(function (Package $p) {
+                        $tier = Str::afterLast($p->name, '_');
 
-            $representative = $tierPackages->firstWhere('invitation_type', 'pernikahan') ?? $tierPackages->first();
-
-            $result[] = [
-                'tier'       => $tier,
-                'label'      => $label,
-                'price_from' => (int) $tierPackages->min(fn (Package $p) => (float) $p->price),
-                'is_popular' => $tier === 'premium',
-                'features'   => $this->tierBullets($representative),
-            ];
-        }
-
-        return $result;
+                        return [
+                            'id'         => $p->id,
+                            'tier'       => $tier,
+                            'tier_label' => self::TIER_LABELS[$tier] ?? $p->label,
+                            'label'      => $p->label,
+                            'price'      => (int) $p->price,
+                            'is_popular' => $tier === 'premium',
+                            'features'   => $this->tierBullets($p),
+                        ];
+                    })->all(),
+                ];
+            })
+            ->filter(fn (array $group) => count($group['packages']) > 0)
+            ->values()
+            ->all();
     }
 
     /** @return array<int, string> */
@@ -133,6 +168,7 @@ class LandingPageService
             ->map(fn (Theme $theme) => [
                 'id'              => $theme->id,
                 'name'            => $theme->name,
+                'slug'            => $theme->slug,
                 'category'        => $theme->category,
                 'event_type'      => $theme->event_type,
                 'thumbnail'       => $theme->thumbnail_url,
@@ -177,15 +213,24 @@ class LandingPageService
     /** @return array{whatsapp: string, whatsapp_link: string, email: string, instagram: string, facebook: string} */
     public function contact(): array
     {
-        $phone     = trim((string) AppSetting::get('company_phone', ''));
-        $whatsapp  = ($phone === '' || $phone === self::WHATSAPP_PLACEHOLDER) ? self::WHATSAPP_FALLBACK : $phone;
-
         return [
-            'whatsapp'      => $whatsapp,
-            'whatsapp_link' => 'https://wa.me/'.preg_replace('/\D/', '', $whatsapp),
+            'whatsapp'      => self::adminWhatsappNumber(),
+            'whatsapp_link' => WhatsAppLink::build(self::adminWhatsappNumber()),
             'email'         => (string) AppSetting::get('company_email', 'halo@undesia.com'),
             'instagram'     => '@undesia.official',
             'facebook'      => 'UNDESIA Official',
         ];
+    }
+
+    /**
+     * The single source of truth for the admin's WhatsApp contact number,
+     * so no other part of the app hardcodes it. Falls back to a working
+     * number whenever the setting is empty or still the CMS placeholder.
+     */
+    public static function adminWhatsappNumber(): string
+    {
+        $phone = trim((string) AppSetting::get('company_phone', ''));
+
+        return ($phone === '' || $phone === self::WHATSAPP_PLACEHOLDER) ? self::WHATSAPP_FALLBACK : $phone;
     }
 }

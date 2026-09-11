@@ -276,6 +276,31 @@ function GatewayCard({ id, meta, data }: { id: GatewayId; meta: GatewayMeta; dat
         });
     }
 
+    // The header switch flips a real, persisted setting — unlike the rest of the
+    // card (fields/env/methods) which stay staged until "Simpan", so it saves
+    // immediately instead of leaving a misleadingly "on" toggle that silently
+    // reverts on refresh.
+    function handleToggleActive() {
+        const next = !enabled;
+        setEnabled(next);
+        setSaving(true);
+        router.patch(route('admin.settings.payment.gateway.update', { gateway: id }), {
+            is_active: next,
+            environment: env,
+            fields: fieldValues,
+            enabled_methods: Array.from(enabledMethods),
+        }, {
+            preserveScroll: true,
+            onError: () => setEnabled(!next),
+            onSuccess: () => setFieldValues((prev) => {
+                const merged = { ...prev };
+                meta.fields.forEach((f) => { if (f.secret) merged[f.key] = ''; });
+                return merged;
+            }),
+            onFinish: () => setSaving(false),
+        });
+    }
+
     return (
         <div className={`rounded-2xl border bg-card shadow-sm overflow-hidden transition-all ${enabled ? 'border-border/60' : 'border-border/30 opacity-70'}`}>
             {/* Header */}
@@ -293,8 +318,8 @@ function GatewayCard({ id, meta, data }: { id: GatewayId; meta: GatewayMeta; dat
                 </div>
                 <div className="flex items-center gap-3 shrink-0" onClick={(e) => e.stopPropagation()}>
                     {data.lastVerifiedAt && <span className="text-[10px] text-muted-foreground hidden lg:block">Sync: {data.lastVerifiedAt}</span>}
-                    <button role="switch" aria-checked={enabled} onClick={() => setEnabled(!enabled)}
-                        className={`relative inline-flex h-5 w-9 cursor-pointer rounded-full transition-colors focus:outline-none ${enabled ? 'bg-primary' : 'bg-border'}`}>
+                    <button role="switch" aria-checked={enabled} disabled={saving} onClick={handleToggleActive}
+                        className={`relative inline-flex h-5 w-9 cursor-pointer rounded-full transition-colors focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed ${enabled ? 'bg-primary' : 'bg-border'}`}>
                         <span className={`pointer-events-none inline-block size-4 rounded-full bg-white shadow-sm transition-transform mt-0.5 ${enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
                     </button>
                     {expanded ? <ChevronUp className="size-4 text-muted-foreground" /> : <ChevronDown className="size-4 text-muted-foreground" />}

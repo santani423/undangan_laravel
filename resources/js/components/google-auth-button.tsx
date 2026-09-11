@@ -7,16 +7,24 @@ import { Button } from '@/components/ui/button';
 interface GoogleAuthButtonProps {
     intent: 'login' | 'register';
     disabled?: boolean;
+    themeId?: number;
+    packageId?: number;
+    packageTier?: string;
 }
 
-export default function GoogleAuthButton({ intent, disabled }: GoogleAuthButtonProps) {
+export default function GoogleAuthButton({ intent, disabled, themeId, packageId, packageTier }: GoogleAuthButtonProps) {
     const [connecting, setConnecting] = useState(false);
 
     const handleClick = () => {
         // Guard against double-clicks kicking off multiple OAuth handshakes.
         if (connecting) return;
         setConnecting(true);
-        window.location.href = route('auth.google', { intent });
+        window.location.href = route('auth.google', {
+            intent,
+            ...(themeId ? { theme_id: themeId } : {}),
+            ...(packageId ? { package_id: packageId } : {}),
+            ...(packageTier ? { package_tier: packageTier } : {}),
+        });
     };
 
     return (

@@ -18,9 +18,15 @@ interface RegisterForm {
     password_confirmation: string;
 }
 
-export default function Register() {
+interface RegisterProps {
+    onboardingThemeId?: number | null;
+    onboardingPackageId?: number | null;
+    onboardingPackageTier?: string | null;
+}
+
+export default function Register({ onboardingThemeId, onboardingPackageId, onboardingPackageTier }: RegisterProps) {
     const { flash } = usePage<{ flash?: { error?: string | null } }>().props;
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors, reset, transform } = useForm({
         name: '',
         email: '',
         password: '',
@@ -29,6 +35,12 @@ export default function Register() {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
+        transform((formData) => ({
+            ...formData,
+            onboarding_theme_id: onboardingThemeId ?? null,
+            onboarding_package_id: onboardingPackageId ?? null,
+            onboarding_package_tier: onboardingPackageTier ?? null,
+        }));
         post(route('register'), {
             onFinish: () => reset('password', 'password_confirmation'),
         });
@@ -45,7 +57,13 @@ export default function Register() {
             )}
 
             <div className="mb-6">
-                <GoogleAuthButton intent="register" disabled={processing} />
+                <GoogleAuthButton
+                    intent="register"
+                    disabled={processing}
+                    themeId={onboardingThemeId ?? undefined}
+                    packageId={onboardingPackageId ?? undefined}
+                    packageTier={onboardingPackageTier ?? undefined}
+                />
             </div>
 
             <div className="relative mb-6 flex items-center">

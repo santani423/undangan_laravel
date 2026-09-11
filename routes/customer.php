@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Customer\CommentController;
+use App\Http\Controllers\Customer\DashboardController;
 use App\Http\Controllers\Customer\DigitalWalletController;
 use App\Http\Controllers\Customer\GuestBookController;
 use App\Http\Controllers\Customer\InvitationController;
@@ -12,7 +13,7 @@ use Inertia\Inertia;
 Route::prefix('customer')->name('customer.')->middleware(['auth'])->group(function () {
 
     // ─── Dashboard ────────────────────────────────────────────────────────────
-    Route::get('/', fn () => Inertia::render('customer/dashboard'))->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // ─── Undangan ─────────────────────────────────────────────────────────────
     Route::prefix('invitations')->name('invitations.')->group(function () {

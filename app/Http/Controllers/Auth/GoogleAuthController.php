@@ -6,6 +6,7 @@ use App\Exceptions\Auth\GoogleAuthException;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\Auth\GoogleAuthService;
+use App\Support\Auth\ResolvesPostAuthRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +17,8 @@ use Throwable;
 
 class GoogleAuthController extends Controller
 {
+    use ResolvesPostAuthRedirect;
+
     public function __construct(private readonly GoogleAuthService $googleAuthService) {}
 
     /**
@@ -23,7 +26,10 @@ class GoogleAuthController extends Controller
      *
      * `intent` (login|register) is remembered in the session purely so the
      * callback can send the user back to the page they started from if
-     * something goes wrong — it has no bearing on authentication itself.
+     * something goes wrong. The onboarding theme/package context (if any)
+     * is stashed the same way, since Google's redirect round-trip can't
+     * carry it any other way — it's re-validated against the database
+     * again in the callback, exactly like the email/password paths.
      */
     public function redirect(Request $request): RedirectResponse
     {
@@ -31,6 +37,12 @@ class GoogleAuthController extends Controller
             'google_auth_intent',
             $request->query('intent') === 'register' ? 'register' : 'login'
         );
+
+        $request->session()->put('google_auth_onboarding', [
+            'theme_id' => $request->integer('theme_id') ?: null,
+            'package_id' => $request->integer('package_id') ?: null,
+            'package_tier' => $request->query('package_tier') ?: null,
+        ]);
 
         return Socialite::driver('google')
             ->scopes(['openid', 'profile', 'email'])
@@ -47,6 +59,7 @@ class GoogleAuthController extends Controller
     {
         $intent = $request->session()->pull('google_auth_intent', 'login');
         $fallbackRoute = $intent === 'register' ? 'register' : 'login';
+        $onboarding = $request->session()->pull('google_auth_onboarding', []);
 
         if ($request->filled('error')) {
             // User declined consent on Google's screen, or Google reported
@@ -66,11 +79,12 @@ class GoogleAuthController extends Controller
             /** @var User $user */
             $user = Auth::user();
 
-            if ($user->hasRole('super_admin') || $user->hasRole('admin')) {
-                return redirect()->intended(route('admin.dashboard', absolute: false));
-            }
-
-            return redirect()->intended(route('customer.dashboard', absolute: false));
+            return $this->postAuthRedirect(
+                $user,
+                $onboarding['theme_id'] ?? null,
+                $onboarding['package_id'] ?? null,
+                $onboarding['package_tier'] ?? null,
+            );
         } catch (GoogleAuthException $e) {
             return redirect()->route($fallbackRoute)->with('error', $e->getMessage());
         } catch (InvalidStateException $e) {

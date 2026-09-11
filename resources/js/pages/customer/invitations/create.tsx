@@ -56,15 +56,17 @@ const eventTypeSelectedColors: Record<string, string> = {
 
 interface Props {
     eventTypes: EventType[];
+    packageTier?: 'basic' | 'premium' | 'exclusive' | null;
 }
 
-export default function InvitationsCreate({ eventTypes }: Props) {
+export default function InvitationsCreate({ eventTypes, packageTier }: Props) {
     const [selectedEventType, setSelectedEventType] = useState<EventType | null>(null);
 
     function handleNext() {
         if (!selectedEventType) return;
-        // lanjut ke step berikutnya (pilih tema), nanti diteruskan
-        router.visit(`/customer/invitations/create/theme?event_type_id=${selectedEventType.id}`);
+        // lanjut ke step berikutnya (pilih tema & paket)
+        const tierQuery = packageTier ? `&package_tier=${packageTier}` : '';
+        router.visit(`/customer/invitations/create/theme?event_type_id=${selectedEventType.id}${tierQuery}`);
     }
 
     return (

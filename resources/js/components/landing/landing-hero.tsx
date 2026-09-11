@@ -5,10 +5,10 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 interface LandingHeroProps {
     auth: Auth;
     appTagline: string;
+    onCreateInvitation: () => void;
 }
 
-export default function LandingHero({ auth, appTagline }: LandingHeroProps) {
-    const primaryHref = auth.user ? route('customer.invitations.create') : route('register');
+export default function LandingHero({ auth, appTagline, onCreateInvitation }: LandingHeroProps) {
     const primaryLabel = auth.user ? 'Buat Undangan Baru' : 'Buat Undangan Sekarang';
 
     return (
@@ -39,13 +39,14 @@ export default function LandingHero({ auth, appTagline }: LandingHeroProps) {
                 <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 sm:text-xl">{appTagline}</p>
 
                 <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                    <Link
-                        href={primaryHref}
+                    <button
+                        type="button"
+                        onClick={onCreateInvitation}
                         className="group inline-flex min-w-[250px] items-center justify-center gap-2 rounded-full bg-gradient-to-r from-rose-500 to-rose-400 px-8 py-4 text-base font-semibold text-white shadow-lg transition-all duration-300 hover:from-rose-600 hover:to-rose-500 hover:shadow-xl"
                     >
                         {primaryLabel}
                         <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-                    </Link>
+                    </button>
                     <Link
                         href={route('themes.index')}
                         className="inline-flex min-w-[250px] items-center justify-center rounded-full border-2 border-rose-300 bg-white px-8 py-4 text-base font-semibold text-rose-600 shadow-sm transition-all duration-300 hover:bg-rose-50"

@@ -5,17 +5,24 @@ export interface LandingFeature {
     description: string;
 }
 
-export interface LandingPackageTier {
-    tier: 'basic' | 'premium' | 'exclusive';
+export interface LandingPackageByType {
+    event_type: string;
     label: string;
-    price_from: number;
-    is_popular: boolean;
-    features: string[];
+    packages: {
+        id: number;
+        tier: 'basic' | 'premium' | 'exclusive';
+        tier_label: string;
+        label: string;
+        price: number;
+        is_popular: boolean;
+        features: string[];
+    }[];
 }
 
 export interface LandingThemeSample {
     id: number;
     name: string;
+    slug: string;
     category: string;
     event_type: string;
     thumbnail: string | null;
@@ -52,7 +59,7 @@ export interface WelcomePageProps {
     appName: string;
     appTagline: string;
     features: LandingFeature[];
-    packageTiers: LandingPackageTier[];
+    packagesByType: LandingPackageByType[];
     themeSamples: LandingThemeSample[];
     testimonials: LandingTestimonial[];
     stats: LandingStats;

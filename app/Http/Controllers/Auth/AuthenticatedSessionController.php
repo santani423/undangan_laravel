@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Support\Auth\ResolvesPostAuthRedirect;
 use Database\Seeders\Data\DevAccounts;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,6 +16,8 @@ use Inertia\Response;
 
 class AuthenticatedSessionController extends Controller
 {
+    use ResolvesPostAuthRedirect;
+
     /**
      * Show the login page.
      */
@@ -25,6 +28,9 @@ class AuthenticatedSessionController extends Controller
             'status' => $request->session()->get('status'),
             // Quick-login picker for seeded accounts — only exposed on non-production/debug envs.
             'devAccounts' => config('app.debug') ? $this->devAccounts() : [],
+            'onboardingThemeId' => $request->integer('theme_id') ?: null,
+            'onboardingPackageId' => $request->integer('package_id') ?: null,
+            'onboardingPackageTier' => $request->string('package_tier')->value() ?: null,
         ]);
     }
 
@@ -56,11 +62,12 @@ class AuthenticatedSessionController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        if ($user->hasRole('super_admin') || $user->hasRole('admin')) {
-            return redirect()->intended(route('admin.dashboard', absolute: false));
-        }
-
-        return redirect()->intended(route('customer.dashboard', absolute: false));
+        return $this->postAuthRedirect(
+            $user,
+            $request->integer('onboarding_theme_id') ?: null,
+            $request->integer('onboarding_package_id') ?: null,
+            $request->input('onboarding_package_tier') ?: null,
+        );
     }
 
     /**
