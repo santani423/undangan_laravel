@@ -2,7 +2,7 @@ import { buildInvitationPublicUrl, normalizeInvitationSlug } from '@/lib/invitat
 import { Check, Link2, Loader2, RefreshCcw, Sparkles, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-type SlugStatus = 'idle' | 'checking' | 'available' | 'taken' | 'empty' | 'error';
+export type SlugStatus = 'idle' | 'checking' | 'available' | 'taken' | 'empty' | 'error';
 
 interface SlugFieldProps {
     value: string;
@@ -16,6 +16,7 @@ interface SlugFieldProps {
     serverError?: string;
     label?: string;
     description?: string;
+    onStatusChange?: (status: SlugStatus) => void;
 }
 
 export default function SlugField({
@@ -30,6 +31,7 @@ export default function SlugField({
     serverError = '',
     label = 'Slug Undangan',
     description = 'Slug ini menjadi alamat publik yang bisa dibagikan ke tamu.',
+    onStatusChange,
 }: SlugFieldProps) {
     const [mode, setMode] = useState<'auto' | 'manual'>(startInAutoMode ? 'auto' : 'manual');
     const [status, setStatus] = useState<SlugStatus>(value ? 'idle' : 'empty');
@@ -41,6 +43,14 @@ export default function SlugField({
     useEffect(() => {
         onChangeRef.current = onChange;
     }, [onChange]);
+
+    const onStatusChangeRef = useRef(onStatusChange);
+    useEffect(() => {
+        onStatusChangeRef.current = onStatusChange;
+    }, [onStatusChange]);
+    useEffect(() => {
+        onStatusChangeRef.current?.(status);
+    }, [status]);
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -154,7 +164,10 @@ export default function SlugField({
                 : 'border-border focus:border-primary focus:ring-primary/20';
 
     return (
-        <section className="rounded-2xl border border-border bg-card p-5 flex flex-col gap-4 shadow-sm">
+        <section
+            className="rounded-2xl border border-border bg-card p-5 flex flex-col gap-4 shadow-sm"
+            data-invalid={!!serverError || status === 'taken'}
+        >
             <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
                     <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">

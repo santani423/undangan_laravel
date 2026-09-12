@@ -13,7 +13,7 @@ import {
     Search,
     Star,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/customer' },
@@ -51,6 +51,8 @@ interface PackageFeature {
     feature_value: string;
 }
 
+type PackageTier = 'basic' | 'premium' | 'exclusive';
+
 interface PackageItem {
     id: number;
     name: string;
@@ -62,6 +64,20 @@ interface PackageItem {
     duration_days: number | null;
     max_gallery_uploads: number | null;
     features: PackageFeature[];
+    tier: PackageTier;
+}
+
+const TIER_RANK: Record<PackageTier, number> = { basic: 0, premium: 1, exclusive: 2 };
+
+function themeTierRank(theme: Theme): number {
+    return theme.is_exclusive ? 2 : theme.is_premium ? 1 : 0;
+}
+
+// A package unlocks its own tier and everything below it — e.g. an exclusive
+// package includes premium and basic themes. Mirrors ensureThemeMatchesPackageTier()
+// on the backend (InvitationController), which enforces this same rule server-side.
+function isThemeUnlockedByPackage(theme: Theme, pkg: PackageItem): boolean {
+    return themeTierRank(theme) <= TIER_RANK[pkg.tier];
 }
 
 interface Props {
@@ -297,33 +313,45 @@ function PackageCard({
 }
 
 export default function SelectTheme({ eventType, themes, packages, preselectedThemeId, preselectedPackageId }: Props) {
-    const [selectedTheme, setSelectedTheme] = useState<Theme | null>(
-        () => themes.find((t) => t.id === preselectedThemeId) ?? null,
-    );
-    const [selectedPackage, setSelectedPackage] = useState<PackageItem | null>(
-        () => packages.find((p) => p.id === preselectedPackageId) ?? null,
-    );
+    const initialPackage = packages.find((p) => p.id === preselectedPackageId) ?? null;
+    const initialTheme = themes.find((t) => t.id === preselectedThemeId) ?? null;
+    // A theme preselected (e.g. from a pre-auth "theme card" entry point)
+    // only sticks if it's actually unlocked by the preselected package —
+    // otherwise the customer must pick a compatible one on this page.
+    const initialThemeValid = !initialTheme || !initialPackage || isThemeUnlockedByPackage(initialTheme, initialPackage);
+
+    const [selectedTheme, setSelectedTheme] = useState<Theme | null>(initialThemeValid ? initialTheme : null);
+    const [selectedPackage, setSelectedPackage] = useState<PackageItem | null>(initialPackage);
     // A theme/package chosen before authentication (theme card, package
     // card, or a tier picked on the landing page) starts "locked" — the
     // customer already made that choice and shouldn't have to repeat it —
     // but "Ganti" always lets them reopen the picker and change their mind.
-    const [themeLocked, setThemeLocked] = useState(!!preselectedThemeId);
+    const [themeLocked, setThemeLocked] = useState(!!preselectedThemeId && initialThemeValid);
     const [packageLocked, setPackageLocked] = useState(!!preselectedPackageId);
     const [search, setSearch] = useState('');
-    const [filter, setFilter] = useState<'all' | 'free' | 'premium'>('all');
     const [previewTheme, setPreviewTheme] = useState<Theme | null>(null);
 
-    const filtered = themes.filter((t) => {
-        const matchSearch =
-            search === '' ||
-            t.name.toLowerCase().includes(search.toLowerCase()) ||
-            (t.tags ?? []).some((tag) => tag.toLowerCase().includes(search.toLowerCase()));
-        const matchFilter =
-            filter === 'all' ||
-            (filter === 'free' && !t.is_premium && !t.is_exclusive) ||
-            (filter === 'premium' && (t.is_premium || t.is_exclusive));
-        return matchSearch && matchFilter;
-    });
+    // Package comes first: themes are scoped to whatever tier the selected
+    // package unlocks, so an incompatible combination can never be built in
+    // the UI (mirrors ensureThemeMatchesPackageTier() enforced server-side).
+    const compatibleThemes = selectedPackage
+        ? themes.filter((t) => isThemeUnlockedByPackage(t, selectedPackage))
+        : [];
+
+    // If the customer switches to a lower-tier package, drop a
+    // no-longer-unlocked theme so they must re-pick a compatible one.
+    useEffect(() => {
+        if (selectedTheme && selectedPackage && !isThemeUnlockedByPackage(selectedTheme, selectedPackage)) {
+            setSelectedTheme(null);
+            setThemeLocked(false);
+        }
+    }, [selectedPackage, selectedTheme]);
+
+    const filtered = compatibleThemes.filter((t) =>
+        search === '' ||
+        t.name.toLowerCase().includes(search.toLowerCase()) ||
+        (t.tags ?? []).some((tag) => tag.toLowerCase().includes(search.toLowerCase())),
+    );
 
     function handleNext() {
         if (!selectedTheme || !selectedPackage) return;
@@ -370,115 +398,13 @@ export default function SelectTheme({ eventType, themes, packages, preselectedTh
                     </div>
                 </div>
 
-                {/* ── Section: Pilih Tema ── */}
-                <section className="flex flex-col gap-4">
-                    <div className="flex items-center gap-2">
-                        <div className={`size-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                            selectedTheme ? 'bg-primary text-primary-foreground' : 'border-2 border-primary text-primary'
-                        }`}>
-                            {selectedTheme ? <Check className="size-3.5" /> : '1'}
-                        </div>
-                        <h2 className="font-semibold text-foreground">Pilih Tema</h2>
-                        {selectedTheme && (
-                            <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">
-                                {selectedTheme.name}
-                            </span>
-                        )}
-                    </div>
-
-                    {themeLocked && selectedTheme ? (
-                        <div className="flex items-center gap-4 rounded-2xl border-2 border-primary/30 bg-primary/5 p-4">
-                            <div className="size-16 shrink-0 overflow-hidden rounded-xl bg-muted">
-                                {selectedTheme.thumbnail_url && (
-                                    <img src={selectedTheme.thumbnail_url} alt={selectedTheme.name} className="h-full w-full object-cover" />
-                                )}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <p className="text-sm text-muted-foreground">Tema yang sudah kamu pilih</p>
-                                <p className="font-semibold text-foreground truncate">{selectedTheme.name}</p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setThemeLocked(false)}
-                                className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors"
-                            >
-                                Ganti
-                            </button>
-                        </div>
-                    ) : (
-                    <>
-                    {/* Filter & Search */}
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
-                            <input
-                                type="text"
-                                placeholder="Cari tema..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="w-full rounded-xl border border-border bg-background pl-9 pr-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
-                            />
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                            {(['all', 'free', 'premium'] as const).map((f) => (
-                                <button
-                                    key={f}
-                                    type="button"
-                                    onClick={() => setFilter(f)}
-                                    className={`rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${
-                                        filter === f
-                                            ? 'bg-primary text-primary-foreground'
-                                            : 'bg-muted text-muted-foreground hover:bg-muted/70'
-                                    }`}
-                                >
-                                    {f === 'all' ? 'Semua' : f === 'free' ? 'Gratis' : 'Premium'}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Theme Grid */}
-                    {filtered.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-                            <ImageOff className="size-10 text-muted-foreground/40" />
-                            <p className="text-muted-foreground text-sm">Tidak ada tema yang ditemukan.</p>
-                            {search && (
-                                <button
-                                    type="button"
-                                    onClick={() => setSearch('')}
-                                    className="text-primary text-sm hover:underline"
-                                >
-                                    Hapus pencarian
-                                </button>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                            {filtered.map((theme) => (
-                                <ThemeCard
-                                    key={theme.id}
-                                    theme={theme}
-                                    isSelected={selectedTheme?.id === theme.id}
-                                    onSelect={() => {
-                                        setSelectedTheme(theme);
-                                        setThemeLocked(true);
-                                    }}
-                                    onPreview={() => setPreviewTheme(theme)}
-                                />
-                            ))}
-                        </div>
-                    )}
-                    </>
-                    )}
-                </section>
-
                 {/* ── Section: Pilih Paket ── */}
                 <section className="flex flex-col gap-4">
                     <div className="flex items-center gap-2">
                         <div className={`size-6 rounded-full flex items-center justify-center text-xs font-bold ${
                             selectedPackage ? 'bg-primary text-primary-foreground' : 'border-2 border-primary text-primary'
                         }`}>
-                            {selectedPackage ? <Check className="size-3.5" /> : '2'}
+                            {selectedPackage ? <Check className="size-3.5" /> : '1'}
                         </div>
                         <h2 className="font-semibold text-foreground">Pilih Paket</h2>
                         {selectedPackage && (
@@ -527,6 +453,98 @@ export default function SelectTheme({ eventType, themes, packages, preselectedTh
                     )}
                 </section>
 
+                {/* ── Section: Pilih Tema ── */}
+                <section className="flex flex-col gap-4">
+                    <div className="flex items-center gap-2">
+                        <div className={`size-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                            selectedTheme ? 'bg-primary text-primary-foreground' : 'border-2 border-primary text-primary'
+                        }`}>
+                            {selectedTheme ? <Check className="size-3.5" /> : '2'}
+                        </div>
+                        <h2 className="font-semibold text-foreground">Pilih Tema</h2>
+                        {selectedTheme && (
+                            <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">
+                                {selectedTheme.name}
+                            </span>
+                        )}
+                    </div>
+
+                    {!selectedPackage ? (
+                        <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border py-16 text-center">
+                            <Package className="size-10 text-muted-foreground/40" />
+                            <p className="text-muted-foreground text-sm">Pilih paket terlebih dahulu untuk melihat tema yang tersedia.</p>
+                        </div>
+                    ) : themeLocked && selectedTheme ? (
+                        <div className="flex items-center gap-4 rounded-2xl border-2 border-primary/30 bg-primary/5 p-4">
+                            <div className="size-16 shrink-0 overflow-hidden rounded-xl bg-muted">
+                                {selectedTheme.thumbnail_url && (
+                                    <img src={selectedTheme.thumbnail_url} alt={selectedTheme.name} className="h-full w-full object-cover" />
+                                )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-sm text-muted-foreground">Tema yang sudah kamu pilih</p>
+                                <p className="font-semibold text-foreground truncate">{selectedTheme.name}</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setThemeLocked(false)}
+                                className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors"
+                            >
+                                Ganti
+                            </button>
+                        </div>
+                    ) : (
+                    <>
+                    <p className="text-xs text-muted-foreground -mt-2">
+                        Menampilkan tema yang tersedia untuk paket <span className="font-medium text-foreground">{selectedPackage.label}</span>.
+                    </p>
+                    {/* Search */}
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                        <input
+                            type="text"
+                            placeholder="Cari tema..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full rounded-xl border border-border bg-background pl-9 pr-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
+                        />
+                    </div>
+
+                    {/* Theme Grid */}
+                    {filtered.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+                            <ImageOff className="size-10 text-muted-foreground/40" />
+                            <p className="text-muted-foreground text-sm">Tidak ada tema yang ditemukan.</p>
+                            {search && (
+                                <button
+                                    type="button"
+                                    onClick={() => setSearch('')}
+                                    className="text-primary text-sm hover:underline"
+                                >
+                                    Hapus pencarian
+                                </button>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                            {filtered.map((theme) => (
+                                <ThemeCard
+                                    key={theme.id}
+                                    theme={theme}
+                                    isSelected={selectedTheme?.id === theme.id}
+                                    onSelect={() => {
+                                        setSelectedTheme(theme);
+                                        setThemeLocked(true);
+                                    }}
+                                    onPreview={() => setPreviewTheme(theme)}
+                                />
+                            ))}
+                        </div>
+                    )}
+                    </>
+                    )}
+                </section>
+
                 {/* Actions */}
                 <div className="flex flex-col-reverse gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
                     <button
@@ -540,11 +558,11 @@ export default function SelectTheme({ eventType, themes, packages, preselectedTh
                     <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-3">
                         {(!selectedTheme || !selectedPackage) && (
                             <p className="text-center text-xs text-muted-foreground sm:text-left">
-                                {!selectedTheme && !selectedPackage
-                                    ? 'Pilih tema dan paket terlebih dahulu'
-                                    : !selectedTheme
-                                    ? 'Pilih tema terlebih dahulu'
-                                    : 'Pilih paket terlebih dahulu'}
+                                {!selectedPackage && !selectedTheme
+                                    ? 'Pilih paket dan tema terlebih dahulu'
+                                    : !selectedPackage
+                                    ? 'Pilih paket terlebih dahulu'
+                                    : 'Pilih tema terlebih dahulu'}
                             </p>
                         )}
                         <button

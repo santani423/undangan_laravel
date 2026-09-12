@@ -1,11 +1,12 @@
 import ImageCropUpload, { compressImage } from '@/components/image-crop-upload';
 import { validateImageFile } from '@/lib/image-upload';
-import SlugField from '@/components/invitations/slug-field';
+import SlugField, { type SlugStatus } from '@/components/invitations/slug-field';
 import CustomerLayout from '@/layouts/customer-layout';
 import { normalizeInvitationSlug, resolveInvitationSlugBase, resolveInvitationSlugSourceLabel } from '@/lib/invitation-slug';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import {
+    AlertCircle,
     BookOpen,
     CalendarDays,
     Check,
@@ -141,17 +142,6 @@ function resolveVideoFieldLabel(eventTypeName: string): string {
 
 const DEFAULT_TABS: TabKey[] = ['info', 'gallery'];
 
-// Field keys whose values become the invitation title — must mirror
-// InvitationSlugService::TITLE_FIELD_MAP on the backend.
-const TITLE_FIELD_KEYS: Record<string, string[]> = {
-    wedding:       ['groom_name', 'bride_name'],
-    birthday:      ['child_name'],
-    khitanan:      ['child_name'],
-    aqiqah:        ['baby_name'],
-    gender_reveal: ['father_name', 'mother_name'],
-    syukuran:      ['host_name'],
-};
-
 const CHILD_ORDER_FIELD_KEYS = new Set(['groom_child_order', 'bride_child_order']);
 
 function isChildOrderFieldKey(fieldKey: string): boolean {
@@ -192,6 +182,164 @@ const WEDDING_TAB_FIELDS: Record<string, string[]> = {
     gallery: [],
     love_story: [],
 };
+
+// The dynamic fields shown on the "Penyelenggara" (host) tab — mirrors the hardcoded
+// filter used in renderTabContent's 'host' case.
+const HOST_TAB_FIELD_KEYS = ['host_name', 'host_photo', 'occasion', 'opening_message'];
+
+// Single source of truth for which dynamic fields live on which tab — used both to
+// render each tab's fields and to validate/route errors to the correct tab.
+function fieldsForTab(tabKey: TabKey, fields: EventTypeField[]): EventTypeField[] {
+    switch (tabKey) {
+        case 'couple':
+            return fields.filter((f) => WEDDING_TAB_FIELDS.couple.includes(f.field_key));
+        case 'host':
+            return fields.filter((f) => HOST_TAB_FIELD_KEYS.includes(f.field_key));
+        case 'info':
+            return fields;
+        default:
+            return [];
+    }
+}
+
+// ─── Field-level validation ─────────────────────────────────────────────────────
+// The backend applies almost no per-field-type validation for dynamic `field_values`
+// (only a Base64Image check for anything that looks like an uploaded image, plus a
+// fixed set of "title" fields that must be filled). So `is_required`/`field_type`
+// driven validation lives entirely on the frontend — this is the single place it's
+// implemented, reused by per-tab "Next" checks, the final Save check, and rendering.
+
+function isBlank(value: string): boolean {
+    return !value || !value.trim();
+}
+
+function isValidDateString(value: string): boolean {
+    return !Number.isNaN(Date.parse(value));
+}
+
+function isValidUrl(value: string): boolean {
+    try {
+        const url = new URL(value);
+        return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+        return false;
+    }
+}
+
+function isValidEmail(value: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function validateDynamicFields(fields: EventTypeField[], values: Record<string, string>): Record<string, string> {
+    const errors: Record<string, string> = {};
+
+    for (const field of fields) {
+        const rawValue = values[field.field_key] ?? '';
+
+        if (isChildOrderFieldKey(field.field_key)) {
+            const inputValue = getChildOrderInputValue(rawValue);
+            if (field.is_required && !inputValue) {
+                errors[field.field_key] = `${field.field_label} wajib diisi.`;
+                continue;
+            }
+            if (inputValue) {
+                const childOrder = Number.parseInt(inputValue, 10);
+                if (!Number.isInteger(childOrder) || childOrder < 1 || childOrder > 50) {
+                    errors[field.field_key] = `${field.field_label} harus berupa angka antara 1-50.`;
+                }
+            }
+            continue;
+        }
+
+        const blank = isBlank(rawValue);
+
+        if (field.is_required && blank) {
+            errors[field.field_key] = field.field_type === 'file'
+                ? `${field.field_label} wajib diunggah.`
+                : `${field.field_label} wajib diisi.`;
+            continue;
+        }
+
+        if (blank) continue;
+
+        switch (field.field_type) {
+            case 'select':
+                if (field.options && field.options.length > 0 && !field.options.includes(rawValue)) {
+                    errors[field.field_key] = `Pilih ${field.field_label.toLowerCase()} yang valid.`;
+                }
+                break;
+            case 'date':
+                if (!isValidDateString(rawValue)) {
+                    errors[field.field_key] = `${field.field_label} harus berupa tanggal yang valid.`;
+                }
+                break;
+            case 'number':
+                if (Number.isNaN(Number(rawValue))) {
+                    errors[field.field_key] = `${field.field_label} harus berupa angka.`;
+                }
+                break;
+            case 'email':
+                if (!isValidEmail(rawValue)) {
+                    errors[field.field_key] = `${field.field_label} harus berupa email yang valid.`;
+                }
+                break;
+            case 'url':
+                if (!isValidUrl(rawValue)) {
+                    errors[field.field_key] = `${field.field_label} harus berupa URL yang valid (diawali http:// atau https://).`;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    return errors;
+}
+
+function validateVideoUrl(value: string): string {
+    if (isBlank(value)) return '';
+    return isValidUrl(value) ? '' : 'Masukkan URL video yang valid (diawali http:// atau https://).';
+}
+
+function validateInvitationCode(code: string, required: boolean, isTaken: boolean): string {
+    if (required && isBlank(code)) return 'Kode undangan wajib diisi.';
+    if (!isBlank(code) && isTaken) return 'Kode undangan sudah digunakan, silakan pilih kode lain.';
+    return '';
+}
+
+type AcaraFieldErrors = Partial<Record<'name' | 'date' | 'location_name', string>>;
+
+function validateAcaraEvent(ev: { name: string; date: string; location_name: string }): AcaraFieldErrors {
+    const errors: AcaraFieldErrors = {};
+    if (isBlank(ev.name)) errors.name = 'Nama acara wajib diisi.';
+    if (isBlank(ev.date)) errors.date = 'Tanggal wajib diisi.';
+    else if (!isValidDateString(ev.date)) errors.date = 'Tanggal tidak valid.';
+    if (isBlank(ev.location_name)) errors.location_name = 'Nama lokasi wajib diisi.';
+    return errors;
+}
+
+function validateAcaraEvents<T extends { id: number; name: string; date: string; location_name: string }>(
+    events: T[],
+): Record<number, AcaraFieldErrors> {
+    const errors: Record<number, AcaraFieldErrors> = {};
+    for (const ev of events) {
+        const evErrors = validateAcaraEvent(ev);
+        if (Object.keys(evErrors).length > 0) errors[ev.id] = evErrors;
+    }
+    return errors;
+}
+
+function scrollToFirstError() {
+    requestAnimationFrame(() => {
+        const el = document.querySelector('[data-invalid="true"]');
+        if (!el) return;
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const focusable = el.matches('input, textarea, select')
+            ? (el as HTMLElement)
+            : el.querySelector<HTMLElement>('input, textarea, select');
+        focusable?.focus({ preventScroll: true });
+    });
+}
 
 // ─── Location Picker ──────────────────────────────────────────────────────────
 
@@ -732,16 +880,20 @@ function SummaryBar({ theme, pkg }: { theme: Theme; pkg: PackageItem }) {
     );
 }
 
-function FieldInput({ field, value, onChange }: {
+function FieldInput({ field, value, error, onChange }: {
     field: EventTypeField;
     value: string;
+    error?: string;
     onChange: (val: string) => void;
 }) {
     const isChildOrderField = isChildOrderFieldKey(field.field_key);
     const inputValue = isChildOrderField ? getChildOrderInputValue(value) : value;
     const base =
-        'w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none ' +
-        'focus:border-primary focus:ring-2 focus:ring-primary/20 transition';
+        'w-full rounded-xl border bg-background px-4 py-2.5 text-sm outline-none ' +
+        'focus:ring-2 transition ' +
+        (error
+            ? 'border-destructive focus:border-destructive focus:ring-destructive/20'
+            : 'border-border focus:border-primary focus:ring-primary/20');
 
     if (field.field_type === 'textarea') {
         return (
@@ -772,6 +924,7 @@ function FieldInput({ field, value, onChange }: {
                 label={field.field_label}
                 required={field.is_required}
                 helpText={field.help_text ?? undefined}
+                error={error}
                 aspectRatio={field.field_key === 'couple_photo' ? 4 / 3 : 1}
                 value={value || null}
                 onChange={(dataUrl) => onChange(dataUrl ?? '')}
@@ -779,9 +932,15 @@ function FieldInput({ field, value, onChange }: {
         );
     }
 
+    const inputType = field.field_type === 'date' ? 'date'
+        : field.field_type === 'email' ? 'email'
+        : field.field_type === 'url' ? 'url'
+        : (field.field_type === 'number' || isChildOrderField) ? 'number'
+        : 'text';
+
     return (
         <input
-            type={field.field_type === 'date' ? 'date' : (field.field_type === 'number' || isChildOrderField ? 'number' : 'text')}
+            type={inputType}
             placeholder={isChildOrderField ? 'Contoh: 1' : (field.placeholder ?? '')}
             value={inputValue}
             onChange={(e) => onChange(isChildOrderField ? getChildOrderInputValue(e.target.value) : e.target.value)}
@@ -845,9 +1004,10 @@ function AdditionalInfoSection({ items, setItems }: {
     );
 }
 
-function FieldGroup({ fields, values, onChange }: {
+function FieldGroup({ fields, values, errors = {}, onChange }: {
     fields: EventTypeField[];
     values: Record<string, string>;
+    errors?: Record<string, string>;
     onChange: (key: string, val: string) => void;
 }) {
     if (fields.length === 0) {
@@ -859,24 +1019,34 @@ function FieldGroup({ fields, values, onChange }: {
     }
     return (
         <div className="flex flex-col gap-5">
-            {fields.map((f) => (
-                <div key={f.id} className="flex flex-col gap-1.5">
-                    {f.field_type !== 'file' && (
-                        <label className="text-sm font-medium text-foreground">
-                            {f.field_label}
-                            {f.is_required && <span className="ml-1 text-destructive">*</span>}
-                        </label>
-                    )}
-                    <FieldInput
-                        field={f}
-                        value={values[f.field_key] ?? ''}
-                        onChange={(val) => onChange(f.field_key, val)}
-                    />
-                    {f.field_type !== 'file' && f.help_text && (
-                        <p className="text-xs text-muted-foreground">{f.help_text}</p>
-                    )}
-                </div>
-            ))}
+            {fields.map((f) => {
+                const error = errors[f.field_key];
+                return (
+                    <div key={f.id} className="flex flex-col gap-1.5" data-invalid={f.field_type !== 'file' && !!error}>
+                        {f.field_type !== 'file' && (
+                            <label className="text-sm font-medium text-foreground">
+                                {f.field_label}
+                                {f.is_required && <span className="ml-1 text-destructive">*</span>}
+                            </label>
+                        )}
+                        <FieldInput
+                            field={f}
+                            value={values[f.field_key] ?? ''}
+                            error={error}
+                            onChange={(val) => onChange(f.field_key, val)}
+                        />
+                        {f.field_type !== 'file' && error && (
+                            <p className="flex items-center gap-1 text-xs font-medium text-destructive">
+                                <AlertCircle className="size-3.5 shrink-0" />
+                                {error}
+                            </p>
+                        )}
+                        {f.field_type !== 'file' && !error && f.help_text && (
+                            <p className="text-xs text-muted-foreground">{f.help_text}</p>
+                        )}
+                    </div>
+                );
+            })}
         </div>
     );
 }
@@ -885,12 +1055,23 @@ function FieldGroup({ fields, values, onChange }: {
 
 type CodeStatus = 'idle' | 'checking' | 'available' | 'taken' | 'empty';
 
-function InvitationCodeInput({ value, onChange }: {
+function InvitationCodeInput({ value, error, onChange, onStatusChange }: {
     value: string;
+    error?: string;
     onChange: (val: string) => void;
+    onStatusChange?: (status: CodeStatus) => void;
 }) {
     const [status, setStatus]         = useState<CodeStatus>('idle');
     const debounceRef                 = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const onStatusChangeRef           = useRef(onStatusChange);
+
+    useEffect(() => {
+        onStatusChangeRef.current = onStatusChange;
+    }, [onStatusChange]);
+
+    useEffect(() => {
+        onStatusChangeRef.current?.(status);
+    }, [status]);
 
     const checkCode = useCallback((code: string) => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -918,13 +1099,14 @@ function InvitationCodeInput({ value, onChange }: {
         'w-full rounded-xl border bg-background px-4 py-2.5 text-sm outline-none ' +
         'focus:ring-2 transition pr-10 ';
 
+    const hasError = !!error || status === 'taken';
     const borderCls =
-        status === 'available' ? 'border-emerald-500 focus:border-emerald-500 focus:ring-emerald-200' :
-        status === 'taken'     ? 'border-destructive  focus:border-destructive  focus:ring-destructive/20' :
+        hasError                ? 'border-destructive  focus:border-destructive  focus:ring-destructive/20' :
+        status === 'available'  ? 'border-emerald-500 focus:border-emerald-500 focus:ring-emerald-200' :
         'border-border focus:border-primary focus:ring-primary/20';
 
     return (
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5" data-invalid={hasError}>
             <label className="text-sm font-medium text-foreground">
                 Kode Undangan <span className="ml-1 text-destructive">*</span>
             </label>
@@ -938,30 +1120,34 @@ function InvitationCodeInput({ value, onChange }: {
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sm">
                     {status === 'checking'  && <Loader2 className="size-4 animate-spin text-muted-foreground" />}
-                    {status === 'available' && <Check   className="size-4 text-emerald-500" />}
-                    {status === 'taken'     && <X       className="size-4 text-destructive" />}
+                    {status === 'available' && !hasError && <Check className="size-4 text-emerald-500" />}
+                    {hasError && <X className="size-4 text-destructive" />}
                 </div>
             </div>
-            <p className={`text-xs ${
+            <p className={`flex items-center gap-1 text-xs ${
+                hasError ? 'font-medium text-destructive' :
                 status === 'available' ? 'text-emerald-600 dark:text-emerald-400' :
-                status === 'taken'     ? 'text-destructive' :
                 'text-muted-foreground'
             }`}>
-                {status === 'available' && 'Kode tersedia'}
-                {status === 'taken'     && 'Kode sudah digunakan, coba yang lain'}
-                {(status === 'idle' || status === 'empty' || status === 'checking') &&
+                {hasError && <AlertCircle className="size-3.5 shrink-0" />}
+                {error ? error :
+                    status === 'taken' ? 'Kode sudah digunakan, coba yang lain' :
+                    status === 'available' ? 'Kode tersedia' :
                     'Kode ini akan menjadi URL undangan Anda. Hanya huruf kecil, angka, dan tanda -'}
             </p>
         </div>
     );
 }
 
-function CoupleTab({ fields, values, invitationCode, onFieldChange, onCodeChange }: {
+function CoupleTab({ fields, values, errors, invitationCode, codeError, onFieldChange, onCodeChange, onCodeStatusChange }: {
     fields: EventTypeField[];
     values: Record<string, string>;
+    errors?: Record<string, string>;
     invitationCode: string;
+    codeError?: string;
     onFieldChange: (key: string, val: string) => void;
     onCodeChange: (val: string) => void;
+    onCodeStatusChange?: (status: CodeStatus) => void;
 }) {
     const coupleFields = fields.filter((f) => WEDDING_TAB_FIELDS.couple.includes(f.field_key));
     const groomFields  = coupleFields.filter((f) => f.field_key.startsWith('groom'));
@@ -989,7 +1175,7 @@ function CoupleTab({ fields, values, invitationCode, onFieldChange, onCodeChange
                     <span className="size-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">♂</span>
                     Pengantin Pria
                 </h3>
-                <FieldGroup fields={groomFields} values={values} onChange={onFieldChange} />
+                <FieldGroup fields={groomFields} values={values} errors={errors} onChange={onFieldChange} />
             </section>
 
             <div className="border-t border-border" />
@@ -999,7 +1185,7 @@ function CoupleTab({ fields, values, invitationCode, onFieldChange, onCodeChange
                     <span className="size-6 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center text-xs font-bold">♀</span>
                     Pengantin Wanita
                 </h3>
-                <FieldGroup fields={brideFields} values={values} onChange={onFieldChange} />
+                <FieldGroup fields={brideFields} values={values} errors={errors} onChange={onFieldChange} />
             </section>
 
             {sharedFields.length > 0 && (
@@ -1007,7 +1193,7 @@ function CoupleTab({ fields, values, invitationCode, onFieldChange, onCodeChange
                     <div className="border-t border-border" />
                     <section>
                         <h3 className="font-semibold text-foreground mb-4">Lainnya</h3>
-                        <FieldGroup fields={sharedFields} values={values} onChange={onFieldChange} />
+                        <FieldGroup fields={sharedFields} values={values} errors={errors} onChange={onFieldChange} />
                     </section>
                 </>
             )}
@@ -1019,7 +1205,12 @@ function CoupleTab({ fields, values, invitationCode, onFieldChange, onCodeChange
                     <Heart className="size-4 text-primary" />
                     Kode Undangan
                 </h3>
-                <InvitationCodeInput value={invitationCode} onChange={onCodeChange} />
+                <InvitationCodeInput
+                    value={invitationCode}
+                    error={codeError}
+                    onChange={onCodeChange}
+                    onStatusChange={onCodeStatusChange}
+                />
             </section>
         </div>
     );
@@ -1051,9 +1242,11 @@ const EMPTY_ACARA_LOCATION = {
     maps_full_address: '',
 };
 
-function AcaraTab({ events, setEvents }: {
+function AcaraTab({ events, setEvents, errors = {}, onClearError }: {
     events: AcaraEvent[];
     setEvents: React.Dispatch<React.SetStateAction<AcaraEvent[]>>;
+    errors?: Record<number, AcaraFieldErrors>;
+    onClearError?: (id: number, field: keyof AcaraFieldErrors) => void;
 }) {
     const [locationPickerId, setLocationPickerId] = useState<number | null>(null);
 
@@ -1071,6 +1264,9 @@ function AcaraTab({ events, setEvents }: {
 
     function updateEvent<K extends keyof AcaraEvent>(id: number, key: K, val: AcaraEvent[K]) {
         setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, [key]: val } : e)));
+        if (key === 'name' || key === 'date' || key === 'location_name') {
+            onClearError?.(id, key);
+        }
     }
 
     function applyLocation(id: number, result: LocationResult) {
@@ -1106,7 +1302,12 @@ function AcaraTab({ events, setEvents }: {
                 </p>
             )}
 
-            {events.map((ev, idx) => (
+            {events.map((ev, idx) => {
+                const evErrors = errors[ev.id] ?? {};
+                const fieldCls = (hasError?: string) => hasError
+                    ? `${inputCls} border-destructive focus:border-destructive focus:ring-destructive/20`
+                    : inputCls;
+                return (
                 <div key={ev.id} className="rounded-2xl border border-border p-5 flex flex-col gap-4">
                     {/* Card header */}
                     <div className="flex items-center justify-between">
@@ -1122,7 +1323,7 @@ function AcaraTab({ events, setEvents }: {
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         {/* Nama Acara */}
-                        <div className="flex flex-col gap-1.5 sm:col-span-2">
+                        <div className="flex flex-col gap-1.5 sm:col-span-2" data-invalid={!!evErrors.name}>
                             <label className="text-sm font-medium text-foreground">
                                 Nama Acara <span className="text-destructive">*</span>
                             </label>
@@ -1131,12 +1332,18 @@ function AcaraTab({ events, setEvents }: {
                                 placeholder="cth. Akad Nikah"
                                 value={ev.name}
                                 onChange={(e) => updateEvent(ev.id, 'name', e.target.value)}
-                                className={inputCls}
+                                className={fieldCls(evErrors.name)}
                             />
+                            {evErrors.name && (
+                                <p className="flex items-center gap-1 text-xs font-medium text-destructive">
+                                    <AlertCircle className="size-3.5 shrink-0" />
+                                    {evErrors.name}
+                                </p>
+                            )}
                         </div>
 
                         {/* Tanggal */}
-                        <div className="flex flex-col gap-1.5">
+                        <div className="flex flex-col gap-1.5" data-invalid={!!evErrors.date}>
                             <label className="text-sm font-medium text-foreground">
                                 Tanggal <span className="text-destructive">*</span>
                             </label>
@@ -1144,8 +1351,14 @@ function AcaraTab({ events, setEvents }: {
                                 type="date"
                                 value={ev.date}
                                 onChange={(e) => updateEvent(ev.id, 'date', e.target.value)}
-                                className={inputCls}
+                                className={fieldCls(evErrors.date)}
                             />
+                            {evErrors.date && (
+                                <p className="flex items-center gap-1 text-xs font-medium text-destructive">
+                                    <AlertCircle className="size-3.5 shrink-0" />
+                                    {evErrors.date}
+                                </p>
+                            )}
                         </div>
 
                         {/* Waktu */}
@@ -1171,7 +1384,7 @@ function AcaraTab({ events, setEvents }: {
                         </div>
 
                         {/* Nama Lokasi */}
-                        <div className="flex flex-col gap-1.5 sm:col-span-2">
+                        <div className="flex flex-col gap-1.5 sm:col-span-2" data-invalid={!!evErrors.location_name}>
                             <label className="text-sm font-medium text-foreground">
                                 Nama Lokasi <span className="text-destructive">*</span>
                             </label>
@@ -1180,8 +1393,14 @@ function AcaraTab({ events, setEvents }: {
                                 placeholder="cth. Masjid Al-Ikhlas"
                                 value={ev.location_name}
                                 onChange={(e) => updateEvent(ev.id, 'location_name', e.target.value)}
-                                className={inputCls}
+                                className={fieldCls(evErrors.location_name)}
                             />
+                            {evErrors.location_name && (
+                                <p className="flex items-center gap-1 text-xs font-medium text-destructive">
+                                    <AlertCircle className="size-3.5 shrink-0" />
+                                    {evErrors.location_name}
+                                </p>
+                            )}
                         </div>
 
                         {/* Alamat Lengkap */}
@@ -1269,7 +1488,8 @@ function AcaraTab({ events, setEvents }: {
                         onConfirm={(result) => applyLocation(ev.id, result)}
                     />
                 </div>
-            ))}
+                );
+            })}
 
             <button
                 type="button"
@@ -1291,11 +1511,12 @@ interface GalleryItem {
     caption: string;
 }
 
-function GalleryTab({ items, setItems, maxUploads, videoUrl, onVideoUrlChange, videoFieldLabel }: {
+function GalleryTab({ items, setItems, maxUploads, videoUrl, videoUrlError, onVideoUrlChange, videoFieldLabel }: {
     items: GalleryItem[];
     setItems: React.Dispatch<React.SetStateAction<GalleryItem[]>>;
     maxUploads: number | null;
     videoUrl: string;
+    videoUrlError?: string;
     onVideoUrlChange: (value: string) => void;
     videoFieldLabel: string;
 }) {
@@ -1379,7 +1600,7 @@ function GalleryTab({ items, setItems, maxUploads, videoUrl, onVideoUrlChange, v
     return (
         <div className="flex flex-col gap-6">
             {/* Video */}
-            <div className="rounded-2xl border border-border bg-card p-4">
+            <div className="rounded-2xl border border-border bg-card p-4" data-invalid={!!videoUrlError}>
                 <div className="mb-3 flex items-start gap-3">
                     <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                         <Video className="size-4" />
@@ -1394,9 +1615,20 @@ function GalleryTab({ items, setItems, maxUploads, videoUrl, onVideoUrlChange, v
                     value={videoUrl}
                     onChange={(e) => onVideoUrlChange(e.target.value)}
                     placeholder="https://www.youtube.com/watch?v=..."
-                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className={`w-full rounded-xl border bg-background px-3 py-2 text-sm outline-none transition focus:ring-2 ${
+                        videoUrlError
+                            ? 'border-destructive focus:border-destructive focus:ring-destructive/20'
+                            : 'border-border focus:border-primary focus:ring-primary/20'
+                    }`}
                 />
-                <p className="mt-2 text-[11px] text-muted-foreground">Video akan tampil pada section Video jika fitur Video aktif di Pengaturan.</p>
+                {videoUrlError ? (
+                    <p className="mt-2 flex items-center gap-1 text-xs font-medium text-destructive">
+                        <AlertCircle className="size-3.5 shrink-0" />
+                        {videoUrlError}
+                    </p>
+                ) : (
+                    <p className="mt-2 text-[11px] text-muted-foreground">Video akan tampil pada section Video jika fitur Video aktif di Pengaturan.</p>
+                )}
             </div>
 
             {/* Counter + progress */}
@@ -1716,12 +1948,13 @@ function LoveStoryTab({ entries, setEntries }: {
     );
 }
 
-function GenericFieldTab({ fields, values, onChange }: {
+function GenericFieldTab({ fields, values, errors, onChange }: {
     fields: EventTypeField[];
     values: Record<string, string>;
+    errors?: Record<string, string>;
     onChange: (key: string, val: string) => void;
 }) {
-    return <FieldGroup fields={fields} values={values} onChange={onChange} />;
+    return <FieldGroup fields={fields} values={values} errors={errors} onChange={onChange} />;
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
@@ -1735,7 +1968,6 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
     const isLastTab  = currentTabIndex === tabKeys.length - 1;
 
     function goToPrevTab() { if (!isFirstTab) setActiveTab(tabKeys[currentTabIndex - 1]); }
-    function goToNextTab()  { if (!isLastTab)  setActiveTab(tabKeys[currentTabIndex + 1]); }
 
     const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
 
@@ -1751,9 +1983,17 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
     const [loveStoryEntries,  setLoveStoryEntries]  = useState<LoveStoryEntry[]>([]);
     const [additionalInfoItems, setAdditionalInfoItems] = useState<AdditionalInfoItem[]>([]);
     const [invitationCode,    setInvitationCode]    = useState('');
+    const [codeStatus,        setCodeStatus]        = useState<CodeStatus>('idle');
+    const [codeError,         setCodeError]         = useState('');
     const [slug,              setSlug]              = useState(() => resolveInvitationSlugBase(eventType.name, {}));
+    const [slugStatus,        setSlugStatus]        = useState<SlugStatus>('idle');
     const [slugError,         setSlugError]         = useState('');
     const [formError,         setFormError]         = useState('');
+    const [fieldErrors,       setFieldErrors]       = useState<Record<string, string>>({});
+    const [acaraErrors,       setAcaraErrors]       = useState<Record<number, AcaraFieldErrors>>({});
+    const [videoUrlError,     setVideoUrlError]     = useState('');
+
+    const hasCoupleTab = tabKeys.includes('couple');
 
     // Default acara date to the birthday date until the user manually overrides it
     const lastSyncedAcaraDateRef = useRef('');
@@ -1769,26 +2009,120 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
 
     function handleFieldChange(key: string, val: string) {
         setFieldValues((prev) => ({ ...prev, [key]: val }));
+        setFieldErrors((prev) => {
+            if (!prev[key]) return prev;
+            const next = { ...prev };
+            delete next[key];
+            return next;
+        });
+        if (key === 'couple_video_url') setVideoUrlError('');
     }
 
-    function missingTitleFieldLabels(): string[] {
-        const requiredKeys = TITLE_FIELD_KEYS[eventType.name] ?? [];
-        return requiredKeys
-            .filter((key) => !(fieldValues[key] ?? '').trim())
-            .map((key) => eventType.fields.find((f) => f.field_key === key)?.field_label ?? key);
+    function handleCodeChange(val: string) {
+        setInvitationCode(val);
+        setCodeError('');
+    }
+
+    function clearAcaraFieldError(id: number, field: keyof AcaraFieldErrors) {
+        setAcaraErrors((prev) => {
+            if (!prev[id]?.[field]) return prev;
+            const nextEntry = { ...prev[id] };
+            delete nextEntry[field];
+            const next = { ...prev };
+            if (Object.keys(nextEntry).length > 0) next[id] = nextEntry;
+            else delete next[id];
+            return next;
+        });
+    }
+
+    // ── Centralized per-tab validation — the single source of truth reused by
+    // "Next", direct tab clicks, and the final Save/Create attempt. ──────────
+    function validateTab(tabKey: TabKey): boolean {
+        let valid = true;
+
+        const dynamicFields = fieldsForTab(tabKey, eventType.fields);
+        if (dynamicFields.length > 0) {
+            const errs = validateDynamicFields(dynamicFields, fieldValues);
+            setFieldErrors((prev) => {
+                const next = { ...prev };
+                for (const f of dynamicFields) delete next[f.field_key];
+                return { ...next, ...errs };
+            });
+            if (Object.keys(errs).length > 0) valid = false;
+        }
+
+        if (tabKey === 'couple') {
+            const err = validateInvitationCode(invitationCode, hasCoupleTab, codeStatus === 'taken');
+            setCodeError(err);
+            if (err) valid = false;
+        }
+
+        if (tabKey === 'acara') {
+            const errs = validateAcaraEvents(acaraEvents);
+            setAcaraErrors(errs);
+            if (Object.keys(errs).length > 0) valid = false;
+        }
+
+        if (tabKey === 'gallery') {
+            const err = validateVideoUrl(fieldValues.couple_video_url ?? '');
+            setVideoUrlError(err);
+            if (err) valid = false;
+        }
+
+        return valid;
+    }
+
+    // Validates every tab strictly before `targetIndex` (in order), so a user can
+    // never skip ahead — via "Next", a direct tab click, or repeated clicks — past
+    // a step that still has invalid/required fields.
+    function attemptNavigateTo(targetKey: TabKey) {
+        const targetIndex = tabKeys.indexOf(targetKey);
+        if (targetIndex <= currentTabIndex) {
+            setActiveTab(targetKey);
+            return;
+        }
+        for (let i = 0; i < targetIndex; i++) {
+            if (!validateTab(tabKeys[i])) {
+                setActiveTab(tabKeys[i]);
+                scrollToFirstError();
+                return;
+            }
+        }
+        setActiveTab(targetKey);
+    }
+
+    function goToNextTab() {
+        if (!isLastTab) attemptNavigateTo(tabKeys[currentTabIndex + 1]);
+    }
+
+    function validateAllTabs(): TabKey | null {
+        let firstInvalidTab: TabKey | null = null;
+        for (const key of tabKeys) {
+            if (!validateTab(key) && !firstInvalidTab) firstInvalidTab = key;
+        }
+        return firstInvalidTab;
     }
 
     function handleSubmit() {
-        const missing = missingTitleFieldLabels();
-        if (missing.length > 0) {
-            setFormError(`Mohon lengkapi terlebih dahulu: ${missing.join(', ')}.`);
-            setActiveTab(tabKeys[0]);
+        if (submitting) return;
+
+        const firstInvalidTab = validateAllTabs();
+
+        const normalizedSlug = normalizeInvitationSlug(slug);
+        const slugMissing = !normalizedSlug;
+        const slugTaken = slugStatus === 'taken';
+        if (slugMissing) setSlugError('Slug wajib diisi.');
+        else if (slugTaken) setSlugError('Slug sudah digunakan, silakan pilih slug lain.');
+
+        if (firstInvalidTab || slugMissing || slugTaken) {
+            if (firstInvalidTab) setActiveTab(firstInvalidTab);
+            setFormError('Mohon periksa kembali data yang belum lengkap atau tidak valid pada form.');
+            scrollToFirstError();
             return;
         }
 
         setFormError('');
         setSubmitting(true);
-        const normalizedSlug = normalizeInvitationSlug(slug);
         router.post('/customer/invitations', {
             event_type_id:    eventType.id,
             theme_id:         theme.id,
@@ -1796,9 +2130,7 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
             invitation_code:  invitationCode || null,
             slug:             normalizedSlug,
             field_values:     normalizeFieldValuesForSubmit(fieldValues),
-            acara_events:  acaraEvents
-                .filter((ev) => ev.name.trim() && ev.date.trim())
-                .map((ev) => ({
+            acara_events: acaraEvents.map((ev) => ({
                 name:             ev.name,
                 date:             ev.date,
                 time_start:       ev.time_start,
@@ -1826,14 +2158,73 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
             })),
         }, {
             onError: (errors) => {
-                if (errors.slug) {
-                    setSlugError(String(errors.slug));
-                }
-                const fieldErrors = Object.entries(errors).filter(([key]) => key.startsWith('field_values.'));
-                if (fieldErrors.length > 0) {
-                    setFormError(String(fieldErrors[0][1]));
-                    setActiveTab(tabKeys[0]);
-                }
+                const newFieldErrors: Record<string, string> = {};
+                const newAcaraErrors: Record<number, AcaraFieldErrors> = {};
+                let newSlugError = '';
+                let newCodeError = '';
+                let newVideoUrlError = '';
+                const bannerMessages: string[] = [];
+                const touchedTabs = new Set<TabKey>();
+
+                Object.entries(errors).forEach(([key, rawMsg]) => {
+                    const msg = Array.isArray(rawMsg) ? String(rawMsg[0]) : String(rawMsg);
+
+                    if (key === 'slug') { newSlugError = msg; return; }
+                    if (key === 'invitation_code') {
+                        newCodeError = msg;
+                        if (hasCoupleTab) touchedTabs.add('couple');
+                        return;
+                    }
+
+                    const fieldMatch = key.match(/^field_values\.(.+)$/);
+                    if (fieldMatch) {
+                        const fieldKey = fieldMatch[1];
+                        newFieldErrors[fieldKey] = msg;
+                        if (fieldKey === 'couple_video_url') {
+                            newVideoUrlError = msg;
+                            touchedTabs.add('gallery');
+                        }
+                        tabKeys.forEach((t) => {
+                            if (fieldsForTab(t, eventType.fields).some((f) => f.field_key === fieldKey)) touchedTabs.add(t);
+                        });
+                        return;
+                    }
+
+                    const acaraMatch = key.match(/^acara_events\.(\d+)\.(\w+)$/);
+                    if (acaraMatch) {
+                        const ev = acaraEvents[Number(acaraMatch[1])];
+                        const sub = acaraMatch[2];
+                        if (ev && (sub === 'name' || sub === 'date' || sub === 'location_name')) {
+                            newAcaraErrors[ev.id] = { ...newAcaraErrors[ev.id], [sub]: msg };
+                        } else {
+                            bannerMessages.push(msg);
+                        }
+                        touchedTabs.add('acara');
+                        return;
+                    }
+
+                    if (key.startsWith('gallery_items.'))   { touchedTabs.add('gallery');    bannerMessages.push(msg); return; }
+                    if (key.startsWith('love_story.'))      { touchedTabs.add('love_story');  bannerMessages.push(msg); return; }
+                    if (key.startsWith('additional_info.')) { touchedTabs.add('info');        bannerMessages.push(msg); return; }
+
+                    bannerMessages.push(msg);
+                });
+
+                if (Object.keys(newFieldErrors).length > 0) setFieldErrors((prev) => ({ ...prev, ...newFieldErrors }));
+                if (Object.keys(newAcaraErrors).length > 0) setAcaraErrors((prev) => ({ ...prev, ...newAcaraErrors }));
+                if (newSlugError) setSlugError(newSlugError);
+                if (newCodeError) setCodeError(newCodeError);
+                if (newVideoUrlError) setVideoUrlError(newVideoUrlError);
+
+                const firstErrorTab = tabKeys.find((t) => touchedTabs.has(t));
+                if (firstErrorTab) setActiveTab(firstErrorTab);
+
+                setFormError(
+                    bannerMessages.length > 0
+                        ? bannerMessages.join(' ')
+                        : 'Beberapa data belum valid. Periksa kembali field yang ditandai merah.',
+                );
+                scrollToFirstError();
             },
             onFinish: () => setSubmitting(false),
         });
@@ -1846,13 +2237,23 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                     <CoupleTab
                         fields={eventType.fields}
                         values={fieldValues}
+                        errors={fieldErrors}
                         invitationCode={invitationCode}
+                        codeError={codeError}
                         onFieldChange={handleFieldChange}
-                        onCodeChange={setInvitationCode}
+                        onCodeChange={handleCodeChange}
+                        onCodeStatusChange={setCodeStatus}
                     />
                 );
             case 'acara':
-                return <AcaraTab events={acaraEvents} setEvents={setAcaraEvents} />;
+                return (
+                    <AcaraTab
+                        events={acaraEvents}
+                        setEvents={setAcaraEvents}
+                        errors={acaraErrors}
+                        onClearError={clearAcaraFieldError}
+                    />
+                );
             case 'gallery':
                 return (
                     <GalleryTab
@@ -1860,6 +2261,7 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                         setItems={setGalleryItems}
                         maxUploads={pkg.max_gallery_uploads}
                         videoUrl={fieldValues.couple_video_url ?? ''}
+                        videoUrlError={videoUrlError}
                         onVideoUrlChange={(value) => handleFieldChange('couple_video_url', value)}
                         videoFieldLabel={resolveVideoFieldLabel(eventType.name)}
                     />
@@ -1869,7 +2271,7 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
             case 'info':
                 return (
                     <div className="flex flex-col gap-8">
-                        <GenericFieldTab fields={eventType.fields} values={fieldValues} onChange={handleFieldChange} />
+                        <GenericFieldTab fields={fieldsForTab('info', eventType.fields)} values={fieldValues} errors={fieldErrors} onChange={handleFieldChange} />
                         <div className="border-t border-border" />
                         <AdditionalInfoSection items={additionalInfoItems} setItems={setAdditionalInfoItems} />
                     </div>
@@ -1877,10 +2279,9 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
             case 'host':
                 return (
                     <GenericFieldTab
-                        fields={eventType.fields.filter((f) =>
-                            ['host_name', 'host_photo', 'occasion', 'opening_message'].includes(f.field_key),
-                        )}
+                        fields={fieldsForTab('host', eventType.fields)}
                         values={fieldValues}
+                        errors={fieldErrors}
                         onChange={handleFieldChange}
                     />
                 );
@@ -1888,6 +2289,14 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                 return null;
         }
     }
+
+    const tabsWithErrors = new Set<TabKey>();
+    for (const t of tabKeys) {
+        if (fieldsForTab(t, eventType.fields).some((f) => fieldErrors[f.field_key])) tabsWithErrors.add(t);
+    }
+    if (hasCoupleTab && codeError) tabsWithErrors.add('couple');
+    if (Object.keys(acaraErrors).length > 0) tabsWithErrors.add('acara');
+    if (videoUrlError) tabsWithErrors.add('gallery');
 
     return (
         <CustomerLayout breadcrumbs={breadcrumbs}>
@@ -1933,11 +2342,12 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                 <div className="flex gap-1 border-b border-border overflow-x-auto">
                     {tabKeys.map((key) => {
                         const tab = TAB_DEFINITIONS[key];
+                        const hasError = tabsWithErrors.has(key);
                         return (
                             <button
                                 key={key}
                                 type="button"
-                                onClick={() => setActiveTab(key)}
+                                onClick={() => attemptNavigateTo(key)}
                                 className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors -mb-px ${
                                     activeTab === key
                                         ? 'border-primary text-primary'
@@ -1946,6 +2356,12 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                             >
                                 {tab.icon}
                                 {resolveTabLabel(key, eventType.name)}
+                                {hasError && (
+                                    <span
+                                        title="Ada data yang belum lengkap atau tidak valid"
+                                        className="inline-flex size-1.5 shrink-0 rounded-full bg-destructive"
+                                    />
+                                )}
                             </button>
                         );
                     })}
@@ -1973,6 +2389,7 @@ export default function CreateDetail({ eventType, theme, package: pkg }: Props) 
                     checkUrl="/customer/invitations/check-slug"
                     disabled={submitting}
                     serverError={slugError}
+                    onStatusChange={setSlugStatus}
                 />
 
                 {/* Actions */}

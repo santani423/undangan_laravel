@@ -21,6 +21,7 @@ interface Props {
     label: string;
     required?: boolean;
     helpText?: string;
+    error?: string;
     aspectRatio?: number;   // default 1 (square)
     value: string | null;   // base64 data URL hasil crop
     onChange: (dataUrl: string | null) => void;
@@ -100,6 +101,7 @@ export default function ImageCropUpload({
     label,
     required = false,
     helpText,
+    error,
     aspectRatio = 1,
     value,
     onChange,
@@ -164,7 +166,7 @@ export default function ImageCropUpload({
     return (
         <>
             {/* ── Field UI ── */}
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5" data-invalid={!!error}>
                 <label className="text-sm font-medium text-foreground">
                     {label}
                     {required && <span className="ml-1 text-destructive">*</span>}
@@ -176,7 +178,7 @@ export default function ImageCropUpload({
                         <img
                             src={value}
                             alt={label}
-                            className="w-36 h-36 rounded-2xl object-cover border border-border shadow-sm"
+                            className={`w-36 h-36 rounded-2xl object-cover border shadow-sm ${error ? 'border-destructive' : 'border-border'}`}
                         />
                         <div className="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                             <button
@@ -202,7 +204,9 @@ export default function ImageCropUpload({
                     <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="flex flex-col items-center justify-center gap-2 w-36 h-36 rounded-2xl border-2 border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors"
+                        className={`flex flex-col items-center justify-center gap-2 w-36 h-36 rounded-2xl border-2 border-dashed text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors ${
+                            error ? 'border-destructive text-destructive' : 'border-border'
+                        }`}
                     >
                         <ImageIcon className="size-7" />
                         <span className="text-xs font-medium">Upload Foto</span>
@@ -217,7 +221,8 @@ export default function ImageCropUpload({
                     onChange={handleFileChange}
                 />
 
-                {helpText && <p className="text-xs text-muted-foreground">{helpText}</p>}
+                {helpText && !error && <p className="text-xs text-muted-foreground">{helpText}</p>}
+                {error && <p className="text-xs font-medium text-destructive">{error}</p>}
             </div>
 
             {/* ── Crop Modal ── */}

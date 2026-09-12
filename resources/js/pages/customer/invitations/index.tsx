@@ -41,6 +41,9 @@ interface Invitation {
     created_at: string;
     expires_at: string | null;
     guests_count: number;
+    // The couple's photo for weddings, or the child/central figure's photo
+    // for other event types — whichever the customer actually uploaded.
+    photo_url: string | null;
     theme: InvitationTheme | null;
     event_type: InvitationEventType | null;
     package: InvitationPackage | null;
@@ -147,7 +150,9 @@ function CardMenu({ invitation }: { invitation: Invitation }) {
 function InvitationCard({ invitation }: { invitation: Invitation }) {
     const theme = invitation.theme;
 
-    const thumbnail = theme?.thumbnail_url ? (
+    const thumbnail = invitation.photo_url ? (
+        <img src={invitation.photo_url} alt={displayCode(invitation)} className="h-full w-full object-cover" />
+    ) : theme?.thumbnail_url ? (
         <img src={theme.thumbnail_url} alt={theme.name} className="h-full w-full object-cover" />
     ) : (
         <div

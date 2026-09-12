@@ -26,43 +26,69 @@ use Inertia\Response;
 
 class InvitationController extends Controller
 {
+    // The photo that best represents each event type on the invitation list —
+    // the couple for weddings, otherwise the child/central figure the event
+    // is about. Tried in order; the first one actually uploaded wins.
+    private const FEATURED_PHOTO_FIELD_KEYS = [
+        'wedding'       => ['couple_photo', 'groom_photo', 'bride_photo'],
+        'birthday'      => ['child_photo'],
+        'khitanan'      => ['child_photo'],
+        'aqiqah'        => ['baby_photo'],
+        'gender_reveal' => ['parents_photo'],
+        'syukuran'      => ['host_photo'],
+    ];
+
     public function index(): Response
     {
-        $invitations = Invitation::with(['theme', 'eventType', 'package', 'events'])
+        $invitations = Invitation::with(['theme', 'eventType', 'package', 'events', 'contents'])
             ->where('user_id', auth()->id())
             ->withCount('guests')
             ->latest()
             ->get()
-            ->map(fn ($inv) => [
-                'id'              => $inv->id,
-                'slug'            => $inv->slug,
-                'invitation_code' => $inv->invitation_code,
-                'title'           => $inv->title,
-                'status'          => $inv->status,
-                'is_public'       => $inv->is_public,
-                'created_at'      => $inv->created_at->toDateString(),
-                'expires_at'      => $inv->expires_at?->toDateString(),
-                'guests_count'    => $inv->guests_count,
-                'theme' => $inv->theme ? [
-                    'name'            => $inv->theme->name,
-                    'thumbnail_url'   => $inv->theme->thumbnail_url,
-                    'color_primary'   => $inv->theme->color_primary,
-                    'color_secondary' => $inv->theme->color_secondary,
-                    'is_premium'      => $inv->theme->is_premium,
-                    'is_exclusive'    => $inv->theme->is_exclusive,
-                ] : null,
-                'event_type' => $inv->eventType ? [
-                    'name'  => $inv->eventType->name,
-                    'label' => $inv->eventType->label,
-                ] : null,
-                'package' => $inv->package ? [
-                    'label'          => $inv->package->label,
-                    'billing_period' => $inv->package->billing_period,
-                    'price'          => $inv->package->price,
-                ] : null,
-                'first_event_date' => $inv->events->first()?->event_date?->toDateString(),
-            ]);
-        // dd($invitations);
+            ->map(function ($inv) {
+                $photoUrl = null;
+                foreach (self::FEATURED_PHOTO_FIELD_KEYS[$inv->eventType?->name] ?? [] as $key) {
+                    $content = $inv->contents->firstWhere('content_key', $key);
+                    if ($content && $content->content_value) {
+                        $photoUrl = $content->content_type === 'path'
+                            ? Storage::disk('public')->url($content->content_value)
+                            : $content->content_value;
+                        break;
+                    }
+                }
+
+                return [
+                    'id'              => $inv->id,
+                    'slug'            => $inv->slug,
+                    'invitation_code' => $inv->invitation_code,
+                    'title'           => $inv->title,
+                    'status'          => $inv->status,
+                    'is_public'       => $inv->is_public,
+                    'created_at'      => $inv->created_at->toDateString(),
+                    'expires_at'      => $inv->expires_at?->toDateString(),
+                    'guests_count'    => $inv->guests_count,
+                    'photo_url'       => $photoUrl,
+                    'theme' => $inv->theme ? [
+                        'name'            => $inv->theme->name,
+                        'thumbnail_url'   => $inv->theme->thumbnail_url,
+                        'color_primary'   => $inv->theme->color_primary,
+                        'color_secondary' => $inv->theme->color_secondary,
+                        'is_premium'      => $inv->theme->is_premium,
+                        'is_exclusive'    => $inv->theme->is_exclusive,
+                    ] : null,
+                    'event_type' => $inv->eventType ? [
+                        'name'  => $inv->eventType->name,
+                        'label' => $inv->eventType->label,
+                    ] : null,
+                    'package' => $inv->package ? [
+                        'label'          => $inv->package->label,
+                        'billing_period' => $inv->package->billing_period,
+                        'price'          => $inv->package->price,
+                    ] : null,
+                    'first_event_date' => $inv->events->first()?->event_date?->toDateString(),
+                ];
+            });
+
         return Inertia::render('customer/invitations/index', [
             'invitations' => $invitations,
         ]);
@@ -110,7 +136,15 @@ class InvitationController extends Controller
         $packages = Package::active()
             ->where('invitation_type', $eventType->label)
             ->with('features')
-            ->get(['id', 'name', 'label', 'description', 'price', 'currency', 'billing_period', 'duration_days', 'max_gallery_uploads']);
+            ->get(['id', 'name', 'label', 'description', 'price', 'currency', 'billing_period', 'duration_days', 'max_gallery_uploads'])
+            // A package's tier (basic/premium/exclusive) — parsed from its
+            // "{invitation_type}_{tier}" name, same convention already used
+            // by OnboardingContextResolver — tells the frontend which themes
+            // (by is_premium/is_exclusive) that package unlocks.
+            ->map(function (Package $pkg) {
+                $pkg->tier = $this->packageTier($pkg);
+                return $pkg;
+            });
 
         // ── Preselection from an onboarding entry point (theme card, package
         // card, or a package tier picked pre-auth on the landing page) —
@@ -217,11 +251,17 @@ class InvitationController extends Controller
                 ]);
             }
 
-            if (! $pkg || $pkg->invitation_type !== $eventType->label) {
+            // Case-insensitive: matches the collation-based comparison selectTheme()
+            // already relies on when it queries packages by $eventType->label (e.g.
+            // "Pernikahan" vs a seeded "pernikahan") — a strict `!==` here rejected
+            // every correctly-picked wedding/khitanan/aqiqah package.
+            if (! $pkg || ! $eventType->label || Str::lower($pkg->invitation_type ?? '') !== Str::lower($eventType->label)) {
                 throw ValidationException::withMessages([
                     'package_id' => 'Paket yang dipilih tidak sesuai dengan jenis undangan ini.',
                 ]);
             }
+
+            $this->ensureThemeMatchesPackageTier($theme, $pkg);
 
             $title = $this->slugService()->resolveTitle($eventType->name, $fields);
             $slug = $this->resolveSlugForInvitation(
@@ -969,6 +1009,10 @@ class InvitationController extends Controller
             abort_if($theme->event_type !== $invitation->eventType->name, 422, 'Tema tidak kompatibel dengan jenis acara ini.');
         }
 
+        if ($invitation->package) {
+            $this->ensureThemeMatchesPackageTier($theme, $invitation->package);
+        }
+
         $oldThemeId = $invitation->theme_id;
 
         $invitation->update(['theme_id' => $theme->id]);
@@ -995,6 +1039,43 @@ class InvitationController extends Controller
             ])
             ->filter(fn ($item) => $item['label'] !== '' || $item['value'] !== '')
             ->values();
+    }
+
+    // ── Theme/package tier compatibility ────────────────────────────────────
+    // A theme's tier is its is_premium/is_exclusive flags; a package's tier is
+    // parsed from its "{invitation_type}_{tier}" name (the same convention
+    // OnboardingContextResolver and selectTheme() already rely on). A package
+    // unlocks its own tier and everything below it — e.g. an exclusive
+    // package includes premium and basic themes.
+
+    private function packageTier(Package $package): string
+    {
+        $tier = Str::afterLast($package->name, '_');
+
+        return in_array($tier, ['basic', 'premium', 'exclusive'], true) ? $tier : 'basic';
+    }
+
+    private function tierRank(string $tier): int
+    {
+        return match ($tier) {
+            'exclusive' => 2,
+            'premium'   => 1,
+            default     => 0,
+        };
+    }
+
+    private function themeTierRank(Theme $theme): int
+    {
+        return $theme->is_exclusive ? 2 : ($theme->is_premium ? 1 : 0);
+    }
+
+    private function ensureThemeMatchesPackageTier(Theme $theme, Package $package): void
+    {
+        if ($this->themeTierRank($theme) > $this->tierRank($this->packageTier($package))) {
+            throw ValidationException::withMessages([
+                'theme_id' => 'Tema yang dipilih memerlukan paket yang lebih tinggi. Silakan pilih paket yang sesuai atau ganti tema.',
+            ]);
+        }
     }
 
     private function slugService(): InvitationSlugService

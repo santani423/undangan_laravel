@@ -24,7 +24,12 @@ class PaymentGatewayConfigSeeder extends Seeder
                 'gateway_name' => 'xendit',
                 'gateway_type' => 'payment',
                 'config_extra' => [
-                    'values' => [],
+                    'values' => [
+                        'api_key' => 'xnd_development_NaPl1Nfl8Uvz5McTyAXMCl6gOrJzakxTcCE64ZYdcG6H8mubm1zC8CFIVaUC8',
+                        'public_key' => 'xnd_public_development_NYh9gFPTe8eCoLBlmdZSw9djgwzZqkqW1kHpVyFTmtx2EmuUwC7doK5dsG1ucs',
+                        'webhook_token' => 'NEX4boqbuvsxZb0qBv272CF9D6F8hkJqzhN1hpFCkK1Zxlrt',
+                        'callback_url' => 'https://undesia.com/api/webhooks/xendit',
+                    ],
                     'enabled_methods' => [],
                 ],
                 'is_active' => false,
