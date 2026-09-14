@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\EventTypeController;
 use App\Http\Controllers\Admin\Settings\PackageController;
 use App\Http\Controllers\Admin\Settings\PaymentSettingController;
 use App\Http\Controllers\Admin\Themes\ThemeController;
@@ -30,7 +31,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
 
     // ─── Konten Platform ─────────────────────────────────────────────────────
     Route::prefix('event-types')->name('event-types.')->group(function () {
-        Route::get('/', fn () => Inertia::render('admin/event-types/index'))->name('index');
+        Route::get('/', [EventTypeController::class, 'index'])->name('index');
+        Route::post('/', [EventTypeController::class, 'store'])->name('store');
+        Route::patch('/{eventType}/toggle', [EventTypeController::class, 'toggle'])->name('toggle');
+        Route::patch('/{eventType}', [EventTypeController::class, 'update'])->name('update');
+        Route::delete('/{eventType}', [EventTypeController::class, 'destroy'])->name('destroy');
     });
 
     Route::prefix('themes')->name('themes.')->group(function () {

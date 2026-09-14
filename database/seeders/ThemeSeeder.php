@@ -39,7 +39,7 @@ class ThemeSeeder extends Seeder
         return [
             
             [
-                'name'            => 'Emerald & Gold',
+                'name'            => 'Wedding Theme 01',
                 'slug'            => 'wedding_theme_01',
                 'description'     => 'Nuansa hijau hutan dan emas yang elegan dengan sentuhan botani.',
                 'category'        => 'Klasik',
@@ -55,7 +55,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Golden Ivory',
+                'name'            => 'Wedding Theme 02',
                 'slug'            => 'wedding_theme_02',
                 'description'     => 'Nuansa gold dan ivory yang mewah dengan sentuhan floral elegan.',
                 'category'        => 'Klasik',
@@ -69,7 +69,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Romantic Blush',
+                'name'            => 'Wedding Theme 03',
                 'slug'            => 'wedding_theme_03',
                 'description'     => 'Nuansa blush rose dan emas dengan gaya script romantis.',
                 'category'        => 'Romantis',
@@ -83,7 +83,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'              => 'Royal Maroon',
+                'name'              => 'Wedding Theme 06',
                 'slug'              => 'wedding_theme_06',
                 'description'       => 'Tema pernikahan klasik dengan palet cream, gold, dan maroon yang mewah.',
                 'category'          => 'Klasik',
@@ -99,7 +99,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'       => 0,
             ],
             [
-                'name'            => 'Blossom Garden',
+                'name'            => 'Wedding Theme 07',
                 'slug'            => 'wedding_theme_07',
                 'description'     => 'Tema floral romantis dengan palet warna pastel lembut.',
                 'category'        => 'Floral',
@@ -113,7 +113,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 342,
             ],
             [
-                'name'            => 'Rustic Charm',
+                'name'            => 'Wedding Theme 08',
                 'slug'            => 'wedding_theme_08',
                 'description'     => 'Nuansa rustic yang hangat dan natural.',
                 'category'        => 'Rustic',
@@ -127,7 +127,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 189,
             ],
             [
-                'name'            => 'Sunset Romance',
+                'name'            => 'Wedding Theme 04',
                 'slug'            => 'wedding_theme_04',
                 'description'     => 'Nuansa senja ungu dan peach yang romantis untuk pasangan yang jatuh cinta.',
                 'category'        => 'Romantis',
@@ -141,7 +141,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Ivory Lace',
+                'name'            => 'Wedding Theme 05',
                 'slug'            => 'wedding_theme_05',
                 'description'     => 'Keanggunan ivory dan renda emas dengan sentuhan klasik yang mewah.',
                 'category'        => 'Klasik',
@@ -155,7 +155,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Tropical Paradise',
+                'name'            => 'Wedding Theme 09',
                 'slug'            => 'wedding_theme_09',
                 'description'     => 'Kesegaran daun tropis dan bunga putih untuk pernikahan di alam terbuka.',
                 'category'        => 'Tropis',
@@ -169,7 +169,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Midnight Elegance',
+                'name'            => 'Wedding Theme 10',
                 'slug'            => 'wedding_theme_10',
                 'description'     => 'Nuansa navy dan silver yang megah untuk pernikahan malam hari.',
                 'category'        => 'Elegan',
@@ -183,7 +183,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Lavender Dreams',
+                'name'            => 'Wedding Theme 11',
                 'slug'            => 'wedding_theme_11',
                 'description'     => 'Nuansa lavender lembut yang menenangkan dengan sentuhan putih bersih.',
                 'category'        => 'Romantis',
@@ -197,7 +197,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Autumn Harvest',
+                'name'            => 'Wedding Theme 12',
                 'slug'            => 'wedding_theme_12',
                 'description'     => 'Palet terakota dan cokelat hangat terinspirasi musim gugur.',
                 'category'        => 'Rustic',
@@ -211,7 +211,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Minimalist White',
+                'name'            => 'Wedding Theme 13',
                 'slug'            => 'wedding_theme_13',
                 'description'     => 'Desain bersih dan simpel dengan palet putih dan abu-abu.',
                 'category'        => 'Minimalis',
@@ -225,7 +225,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Boho Chic',
+                'name'            => 'Wedding Theme 14',
                 'slug'            => 'wedding_theme_14',
                 'description'     => 'Gaya boho santai dengan terracotta dan sage yang natural.',
                 'category'        => 'Rustic',
@@ -239,7 +239,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Vintage Rose',
+                'name'            => 'Wedding Theme 15',
                 'slug'            => 'wedding_theme_15',
                 'description'     => 'Nuansa rose vintage dan cream dengan sentuhan nostalgia.',
                 'category'        => 'Romantis',
@@ -253,7 +253,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Ocean Breeze',
+                'name'            => 'Wedding Theme 16',
                 'slug'            => 'wedding_theme_16',
                 'description'     => 'Kesegaran biru laut dan putih untuk pernikahan bertema pantai.',
                 'category'        => 'Modern',
@@ -267,7 +267,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Garden Party',
+                'name'            => 'Wedding Theme 17',
                 'slug'            => 'wedding_theme_17',
                 'description'     => 'Taman hijau dengan bunga pink yang ceria dan segar.',
                 'category'        => 'Floral',
@@ -281,7 +281,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Champagne Gold',
+                'name'            => 'Wedding Theme 18',
                 'slug'            => 'wedding_theme_18',
                 'description'     => 'Kemewahan champagne dan emas untuk pernikahan yang berkelas.',
                 'category'        => 'Mewah',
@@ -295,7 +295,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Forest Wedding',
+                'name'            => 'Wedding Theme 19',
                 'slug'            => 'wedding_theme_19',
                 'description'     => 'Nuansa hutan hijau tua dan krem yang tenang dan natural.',
                 'category'        => 'Alam',
@@ -309,7 +309,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Sakura Blossom',
+                'name'            => 'Wedding Theme 20',
                 'slug'            => 'wedding_theme_20',
                 'description'     => 'Kelopak sakura pink lembut berguguran dengan latar putih bersih.',
                 'category'        => 'Floral',
@@ -330,7 +330,7 @@ class ThemeSeeder extends Seeder
         return [
             
             [
-                'name'            => 'Birthday Party',
+                'name'            => 'Birthday Theme 01',
                 'slug'            => 'birthday_theme_01',
                 'description'     => 'Pesta ulang tahun ceria penuh balon, confetti, dan kue untuk si kecil.',
                 'category'        => 'Ceria',
@@ -344,7 +344,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Magical Birthday',
+                'name'            => 'Birthday Theme 02',
                 'slug'            => 'birthday_theme_02',
                 'description'     => 'Dunia fantasi istana, pelangi, dan unicorn yang penuh keajaiban.',
                 'category'        => 'Fantasi',
@@ -358,7 +358,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Pesta Hutan Beruang',
+                'name'            => 'Birthday Theme 03',
                 'slug'            => 'birthday_theme_03',
                 'description'     => 'Pesta ulang tahun bertema hutan dengan beruang kecil, madu, dan lebah yang lucu.',
                 'category'        => 'Ceria',
@@ -372,7 +372,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Pesta Kucing Manis',
+                'name'            => 'Birthday Theme 04',
                 'slug'            => 'birthday_theme_04',
                 'description'     => 'Pesta ulang tahun tema kucing manis dengan nuansa pastel pink, ungu, dan mint.',
                 'category'        => 'Ceria',
@@ -386,7 +386,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Kue Bertingkat',
+                'name'            => 'Birthday Theme 05',
                 'slug'            => 'birthday_theme_05',
                 'description'     => 'Pesta ulang tahun malam bernuansa ungu gelap dengan animasi kue tiga tingkat yang tersusun sampai lilinnya menyala.',
                 'category'        => 'Elegan',
@@ -400,7 +400,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Balapan Gokart',
+                'name'            => 'Birthday Theme 06',
                 'slug'            => 'birthday_theme_06',
                 'description'     => 'Pesta ulang tahun tema balapan gokart dengan animasi lampu start menyala dan mobil balap melaju masuk lintasan.',
                 'category'        => 'Ceria',
@@ -414,7 +414,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Pahlawan Mendarat',
+                'name'            => 'Birthday Theme 07',
                 'slug'            => 'birthday_theme_07',
                 'description'     => 'Pesta ulang tahun bergaya komik superhero dengan animasi pahlawan mendarat, ledakan debu, dan gelembung suara.',
                 'category'        => 'Ceria',
@@ -428,7 +428,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Ekspedisi Safari',
+                'name'            => 'Birthday Theme 08',
                 'slug'            => 'birthday_theme_08',
                 'description'     => 'Pesta ulang tahun tema safari dengan animasi jip melaju dan jerapah, zebra, singa, gajah, serta monyet bermunculan dari balik rumput.',
                 'category'        => 'Ceria',
@@ -442,7 +442,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Studio Kartun',
+                'name'            => 'Birthday Theme 09',
                 'slug'            => 'birthday_theme_09',
                 'description'     => 'Pesta ulang tahun tema televisi retro dengan animasi TV menyala dan berganti saluran menampilkan kucing pahlawan, robot, alien, dan bintang ulang tahun.',
                 'category'        => 'Ceria',
@@ -456,7 +456,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Starry Night',
+                'name'            => 'Birthday Theme 10',
                 'slug'            => 'birthday_theme_10',
                 'description'     => 'Minimalis dengan sentuhan bintang dan langit malam.',
                 'category'        => 'Minimalis',
@@ -470,7 +470,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 156,
             ],
             [
-                'name'            => 'Space Adventure',
+                'name'            => 'Birthday Theme 11',
                 'slug'            => 'birthday_theme_11',
                 'description'     => 'Petualangan luar angkasa dengan roket, planet, dan bintang-bintang.',
                 'category'        => 'Fantasi',
@@ -484,7 +484,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Under the Sea',
+                'name'            => 'Birthday Theme 12',
                 'slug'            => 'birthday_theme_12',
                 'description'     => 'Dunia bawah laut ceria dengan ikan-ikan dan terumbu karang warna-warni.',
                 'category'        => 'Ceria',
@@ -498,7 +498,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Unicorn Dream',
+                'name'            => 'Birthday Theme 13',
                 'slug'            => 'birthday_theme_13',
                 'description'     => 'Dunia unicorn penuh warna pastel dan kilau magis.',
                 'category'        => 'Fantasi',
@@ -512,7 +512,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Dino Explorer',
+                'name'            => 'Birthday Theme 14',
                 'slug'            => 'birthday_theme_14',
                 'description'     => 'Petualangan seru bersama dinosaurus di hutan purba.',
                 'category'        => 'Ceria',
@@ -526,7 +526,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Princess Castle',
+                'name'            => 'Birthday Theme 15',
                 'slug'            => 'birthday_theme_15',
                 'description'     => 'Istana kerajaan yang megah untuk putri kecil tersayang.',
                 'category'        => 'Fantasi',
@@ -540,7 +540,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Candy Land',
+                'name'            => 'Birthday Theme 16',
                 'slug'            => 'birthday_theme_16',
                 'description'     => 'Negeri permen manis dengan warna pink dan mint yang menggemaskan.',
                 'category'        => 'Ceria',
@@ -554,7 +554,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Jungle Safari Jr',
+                'name'            => 'Birthday Theme 17',
                 'slug'            => 'birthday_theme_17',
                 'description'     => 'Hutan rimba ceria dengan hewan-hewan lucu bersahabat.',
                 'category'        => 'Ceria',
@@ -568,7 +568,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Football Fever',
+                'name'            => 'Birthday Theme 18',
                 'slug'            => 'birthday_theme_18',
                 'description'     => 'Serunya lapangan sepak bola untuk si jagoan kecil.',
                 'category'        => 'Ceria',
@@ -582,7 +582,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Art & Paint',
+                'name'            => 'Birthday Theme 19',
                 'slug'            => 'birthday_theme_19',
                 'description'     => 'Coretan cat warna-warni yang ceria dan penuh kreativitas.',
                 'category'        => 'Ceria',
@@ -596,7 +596,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Sweet Sixteen',
+                'name'            => 'Birthday Theme 20',
                 'slug'            => 'birthday_theme_20',
                 'description'     => 'Elegan rose gold untuk perayaan ulang tahun manis ke-16.',
                 'category'        => 'Elegan',
@@ -616,7 +616,7 @@ class ThemeSeeder extends Seeder
     {
         return [
             [
-                'name'            => 'Sky Blue Junior',
+                'name'            => 'Khitanan Theme 03',
                 'slug'            => 'khitanan_theme_03',
                 'description'     => 'Tema biru langit segar yang cocok untuk khitanan anak.',
                 'category'        => 'Minimalis',
@@ -630,7 +630,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 174,
             ],
             [
-                'name'            => 'Little Hero',
+                'name'            => 'Khitanan Theme 01',
                 'slug'            => 'khitanan_theme_01',
                 'description'     => 'Tema superhero yang seru dan energik untuk sang jagoan cilik.',
                 'category'        => 'Ceria',
@@ -644,7 +644,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Little Prince',
+                'name'            => 'Khitanan Theme 02',
                 'slug'            => 'khitanan_theme_02',
                 'description'     => 'Nuansa kerajaan yang elegan dan playful untuk pangeran kecil.',
                 'category'        => 'Mewah',
@@ -658,7 +658,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Golden Sarung',
+                'name'            => 'Khitanan Theme 04',
                 'slug'            => 'khitanan_theme_04',
                 'description'     => 'Nuansa emas dan hijau tua dengan motif sarung khas Nusantara.',
                 'category'        => 'Islami',
@@ -672,7 +672,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Kaligrafi Emas',
+                'name'            => 'Khitanan Theme 05',
                 'slug'            => 'khitanan_theme_05',
                 'description'     => 'Ornamen kaligrafi emas di atas latar hitam yang berwibawa.',
                 'category'        => 'Islami',
@@ -686,7 +686,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Ksatria Cilik',
+                'name'            => 'Khitanan Theme 06',
                 'slug'            => 'khitanan_theme_06',
                 'description'     => 'Nuansa biru navy dan perak untuk sang ksatria kecil pemberani.',
                 'category'        => 'Ceria',
@@ -700,7 +700,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Pangeran Berkuda',
+                'name'            => 'Khitanan Theme 07',
                 'slug'            => 'khitanan_theme_07',
                 'description'     => 'Nuansa kerajaan cokelat dan emas bergaya pangeran berkuda.',
                 'category'        => 'Mewah',
@@ -714,7 +714,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Bola Dunia',
+                'name'            => 'Khitanan Theme 08',
                 'slug'            => 'khitanan_theme_08',
                 'description'     => 'Serunya lapangan sepak bola hijau untuk sang jagoan.',
                 'category'        => 'Ceria',
@@ -728,7 +728,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Petualang Cilik',
+                'name'            => 'Khitanan Theme 09',
                 'slug'            => 'khitanan_theme_09',
                 'description'     => 'Semangat petualangan hijau army dan cokelat untuk si jagoan cilik.',
                 'category'        => 'Ceria',
@@ -742,7 +742,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Bintang Kecil',
+                'name'            => 'Khitanan Theme 10',
                 'slug'            => 'khitanan_theme_10',
                 'description'     => 'Langit malam biru tua bertabur bintang kuning yang minimalis.',
                 'category'        => 'Minimalis',
@@ -756,7 +756,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Robot Canggih',
+                'name'            => 'Khitanan Theme 11',
                 'slug'            => 'khitanan_theme_11',
                 'description'     => 'Nuansa futuristik abu metalik dan biru dengan tema robot.',
                 'category'        => 'Modern',
@@ -770,7 +770,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Kapten Bahari',
+                'name'            => 'Khitanan Theme 12',
                 'slug'            => 'khitanan_theme_12',
                 'description'     => 'Nuansa laut biru dan putih bergaya kapten kapal pemberani.',
                 'category'        => 'Ceria',
@@ -784,7 +784,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Rajawali Muda',
+                'name'            => 'Khitanan Theme 13',
                 'slug'            => 'khitanan_theme_13',
                 'description'     => 'Gagah dan mewah dengan nuansa cokelat dan emas rajawali.',
                 'category'        => 'Mewah',
@@ -798,7 +798,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Pesawat Terbang',
+                'name'            => 'Khitanan Theme 14',
                 'slug'            => 'khitanan_theme_14',
                 'description'     => 'Serunya menjelajah angkasa dengan pesawat di langit biru cerah.',
                 'category'        => 'Ceria',
@@ -812,7 +812,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Khitan Berkah',
+                'name'            => 'Khitanan Theme 15',
                 'slug'            => 'khitanan_theme_15',
                 'description'     => 'Nuansa islami hijau dan emas yang penuh keberkahan.',
                 'category'        => 'Islami',
@@ -826,7 +826,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Ksatria Padang Pasir',
+                'name'            => 'Khitanan Theme 16',
                 'slug'            => 'khitanan_theme_16',
                 'description'     => 'Nuansa krem dan cokelat bergaya padang pasir yang islami.',
                 'category'        => 'Islami',
@@ -840,7 +840,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Juara Kecil',
+                'name'            => 'Khitanan Theme 17',
                 'slug'            => 'khitanan_theme_17',
                 'description'     => 'Nuansa merah dan emas bergaya piala juara untuk sang pemenang.',
                 'category'        => 'Ceria',
@@ -854,7 +854,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Modern Navy',
+                'name'            => 'Khitanan Theme 18',
                 'slug'            => 'khitanan_theme_18',
                 'description'     => 'Desain modern minimalis dengan palet navy dan putih.',
                 'category'        => 'Minimalis',
@@ -868,7 +868,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Zamrud Muslim',
+                'name'            => 'Khitanan Theme 19',
                 'slug'            => 'khitanan_theme_19',
                 'description'     => 'Nuansa hijau zamrud dan emas dengan ornamen islami elegan.',
                 'category'        => 'Islami',
@@ -882,7 +882,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Sang Juara',
+                'name'            => 'Khitanan Theme 20',
                 'slug'            => 'khitanan_theme_20',
                 'description'     => 'Nuansa biru dan perak yang gagah untuk sang juara sejati.',
                 'category'        => 'Elegan',
@@ -903,7 +903,7 @@ class ThemeSeeder extends Seeder
         return [
             
             [
-                'name'            => 'Little Safari',
+                'name'            => 'Aqiqah Theme 01',
                 'slug'            => 'aqiqah_theme_01',
                 'description'     => 'Petualangan safari yang playful dengan hewan-hewan lucu.',
                 'category'        => 'Modern',
@@ -917,7 +917,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Cute Baby',
+                'name'            => 'Aqiqah Theme 02',
                 'slug'            => 'aqiqah_theme_02',
                 'description'     => 'Bayi lucu di antara awan dan bintang dengan nuansa pastel lembut.',
                 'category'        => 'Minimalis',
@@ -931,7 +931,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Baby Bloom',
+                'name'            => 'Aqiqah Theme 03',
                 'slug'            => 'aqiqah_theme_03',
                 'description'     => 'Manis dan lembut untuk menyambut buah hati.',
                 'category'        => 'Floral',
@@ -945,7 +945,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 198,
             ],
             [
-                'name'            => 'Little Star',
+                'name'            => 'Aqiqah Theme 04',
                 'slug'            => 'aqiqah_theme_04',
                 'description'     => 'Bintang kecil yang bersinar untuk sang buah hati.',
                 'category'        => 'Minimalis',
@@ -959,7 +959,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 154,
             ],
             [
-                'name'            => 'Aqua Marine',
+                'name'            => 'Aqiqah Theme 05',
                 'slug'            => 'aqiqah_theme_05',
                 'description'     => 'Kesegaran laut dengan warna biru toska jernih.',
                 'category'        => 'Modern',
@@ -973,7 +973,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 88,
             ],
             [
-                'name'            => 'Bismillah Blossom',
+                'name'            => 'Aqiqah Theme 06',
                 'slug'            => 'aqiqah_theme_06',
                 'description'     => 'Ornamen islami dengan bunga lembut yang penuh berkah.',
                 'category'        => 'Islami',
@@ -987,7 +987,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 112,
             ],
             [
-                'name'            => 'Angel Cloud',
+                'name'            => 'Aqiqah Theme 07',
                 'slug'            => 'aqiqah_theme_07',
                 'description'     => 'Desain premium eksklusif dengan nuansa awan putih yang suci.',
                 'category'        => 'Mewah',
@@ -1001,7 +1001,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 28,
             ],
             [
-                'name'            => 'Teddy Bear Soft',
+                'name'            => 'Aqiqah Theme 08',
                 'slug'            => 'aqiqah_theme_08',
                 'description'     => 'Boneka beruang lembut dengan nuansa cokelat pastel yang hangat.',
                 'category'        => 'Minimalis',
@@ -1015,7 +1015,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Little Lamb',
+                'name'            => 'Aqiqah Theme 09',
                 'slug'            => 'aqiqah_theme_09',
                 'description'     => 'Domba kecil yang lucu dengan nuansa putih dan biru pastel islami.',
                 'category'        => 'Islami',
@@ -1029,7 +1029,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Moon & Star',
+                'name'            => 'Aqiqah Theme 10',
                 'slug'            => 'aqiqah_theme_10',
                 'description'     => 'Langit malam biru tua bertabur emas untuk buah hati tersayang.',
                 'category'        => 'Islami',
@@ -1043,7 +1043,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Duck Pond',
+                'name'            => 'Aqiqah Theme 11',
                 'slug'            => 'aqiqah_theme_11',
                 'description'     => 'Kolam bebek kuning yang ceria dan menggemaskan.',
                 'category'        => 'Ceria',
@@ -1057,7 +1057,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Peekaboo Bunny',
+                'name'            => 'Aqiqah Theme 12',
                 'slug'            => 'aqiqah_theme_12',
                 'description'     => 'Kelinci kecil menggemaskan dengan nuansa pink pastel lembut.',
                 'category'        => 'Ceria',
@@ -1071,7 +1071,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Garden Bloom',
+                'name'            => 'Aqiqah Theme 13',
                 'slug'            => 'aqiqah_theme_13',
                 'description'     => 'Taman bunga mint dan pink yang segar untuk sang buah hati.',
                 'category'        => 'Floral',
@@ -1085,7 +1085,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Little Prince Aqiqah',
+                'name'            => 'Aqiqah Theme 14',
                 'slug'            => 'aqiqah_theme_14',
                 'description'     => 'Nuansa biru dan emas kerajaan untuk pangeran kecil.',
                 'category'        => 'Mewah',
@@ -1099,7 +1099,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Sweet Cloud',
+                'name'            => 'Aqiqah Theme 15',
                 'slug'            => 'aqiqah_theme_15',
                 'description'     => 'Awan putih lembut melayang di langit biru pastel yang menenangkan.',
                 'category'        => 'Minimalis',
@@ -1113,7 +1113,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Rose Petal',
+                'name'            => 'Aqiqah Theme 16',
                 'slug'            => 'aqiqah_theme_16',
                 'description'     => 'Kelopak mawar pink lembut dengan sentuhan putih yang manis.',
                 'category'        => 'Floral',
@@ -1127,7 +1127,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Golden Berkah',
+                'name'            => 'Aqiqah Theme 17',
                 'slug'            => 'aqiqah_theme_17',
                 'description'     => 'Nuansa emas dan putih yang penuh berkah untuk buah hati.',
                 'category'        => 'Islami',
@@ -1141,7 +1141,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Mint Fresh',
+                'name'            => 'Aqiqah Theme 18',
                 'slug'            => 'aqiqah_theme_18',
                 'description'     => 'Kesegaran mint dan putih dengan desain modern yang bersih.',
                 'category'        => 'Modern',
@@ -1155,7 +1155,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Sunshine Baby',
+                'name'            => 'Aqiqah Theme 19',
                 'slug'            => 'aqiqah_theme_19',
                 'description'     => 'Kehangatan mentari kuning cerah menyambut buah hati.',
                 'category'        => 'Ceria',
@@ -1169,7 +1169,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Ivory Angel',
+                'name'            => 'Aqiqah Theme 20',
                 'slug'            => 'aqiqah_theme_20',
                 'description'     => 'Kemewahan ivory dan emas dengan sentuhan malaikat kecil suci.',
                 'category'        => 'Mewah',
@@ -1190,7 +1190,7 @@ class ThemeSeeder extends Seeder
         return [
             
             [
-                'name'            => 'Pink vs Blue',
+                'name'            => 'Gender Reveal Theme 01',
                 'slug'            => 'gender_reveal_theme_01',
                 'description'     => 'Duel warna pink dan biru yang seru untuk momen penantian jenis kelamin.',
                 'category'        => 'Ceria',
@@ -1204,7 +1204,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Little Adventure',
+                'name'            => 'Gender Reveal Theme 02',
                 'slug'            => 'gender_reveal_theme_02',
                 'description'     => 'Petualangan balon udara dan pegunungan untuk momen "Boy or Girl?".',
                 'category'        => 'Modern',
@@ -1218,7 +1218,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Starlit Night',
+                'name'            => 'Gender Reveal Theme 03',
                 'slug'            => 'gender_reveal_theme_03',
                 'description'     => 'Langit malam bertabur bintang dan rembulan untuk menantikan bintang kecil kami.',
                 'category'        => 'Elegan',
@@ -1232,7 +1232,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Pink or Blue',
+                'name'            => 'Gender Reveal Theme 04',
                 'slug'            => 'gender_reveal_theme_04',
                 'description'     => 'Klasik pink dan biru untuk reveal jenis kelamin si kecil.',
                 'category'        => 'Ceria',
@@ -1246,7 +1246,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 267,
             ],
             [
-                'name'            => 'Balloon Fiesta',
+                'name'            => 'Gender Reveal Theme 05',
                 'slug'            => 'gender_reveal_theme_05',
                 'description'     => 'Semarak balon warna-warni untuk momen pengungkapan.',
                 'category'        => 'Ceria',
@@ -1260,7 +1260,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 183,
             ],
             [
-                'name'            => 'Confetti Surprise',
+                'name'            => 'Gender Reveal Theme 06',
                 'slug'            => 'gender_reveal_theme_06',
                 'description'     => 'Kejutan konfeti yang meriah dan penuh warna.',
                 'category'        => 'Ceria',
@@ -1274,7 +1274,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 142,
             ],
             [
-                'name'            => 'Sweet Reveal',
+                'name'            => 'Gender Reveal Theme 07',
                 'slug'            => 'gender_reveal_theme_07',
                 'description'     => 'Manis dan elegan untuk mengumumkan jenis kelamin bayi.',
                 'category'        => 'Floral',
@@ -1288,7 +1288,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 94,
             ],
             [
-                'name'            => 'Galaxy Reveal',
+                'name'            => 'Gender Reveal Theme 08',
                 'slug'            => 'gender_reveal_theme_08',
                 'description'     => 'Desain eksklusif bertema galaksi yang memukau.',
                 'category'        => 'Modern',
@@ -1302,7 +1302,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 37,
             ],
             [
-                'name'            => 'He or She',
+                'name'            => 'Gender Reveal Theme 09',
                 'slug'            => 'gender_reveal_theme_09',
                 'description'     => 'Pertanyaan seru laki-laki atau perempuan dengan warna pink dan biru pastel.',
                 'category'        => 'Ceria',
@@ -1316,7 +1316,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Little Feet',
+                'name'            => 'Gender Reveal Theme 10',
                 'slug'            => 'gender_reveal_theme_10',
                 'description'     => 'Jejak kaki kecil mungil dengan nuansa krem pastel yang lembut.',
                 'category'        => 'Minimalis',
@@ -1330,7 +1330,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Rainbow Surprise',
+                'name'            => 'Gender Reveal Theme 11',
                 'slug'            => 'gender_reveal_theme_11',
                 'description'     => 'Kejutan pelangi warna-warni yang ceria dan penuh semangat.',
                 'category'        => 'Ceria',
@@ -1344,7 +1344,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Twinkle Reveal',
+                'name'            => 'Gender Reveal Theme 12',
                 'slug'            => 'gender_reveal_theme_12',
                 'description'     => 'Kilauan bintang emas di langit malam yang elegan.',
                 'category'        => 'Elegan',
@@ -1358,7 +1358,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Blooming Reveal',
+                'name'            => 'Gender Reveal Theme 13',
                 'slug'            => 'gender_reveal_theme_13',
                 'description'     => 'Bunga bermekaran hijau dan pink untuk momen pengungkapan.',
                 'category'        => 'Floral',
@@ -1372,7 +1372,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Sweet Surprise',
+                'name'            => 'Gender Reveal Theme 14',
                 'slug'            => 'gender_reveal_theme_14',
                 'description'     => 'Kejutan manis pink dan putih yang romantis.',
                 'category'        => 'Romantis',
@@ -1386,7 +1386,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Boy or Girl Safari',
+                'name'            => 'Gender Reveal Theme 15',
                 'slug'            => 'gender_reveal_theme_15',
                 'description'     => 'Petualangan safari hijau dan kuning menanti jenis kelamin si kecil.',
                 'category'        => 'Modern',
@@ -1400,7 +1400,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Cloud Nine',
+                'name'            => 'Gender Reveal Theme 16',
                 'slug'            => 'gender_reveal_theme_16',
                 'description'     => 'Awan putih melayang di langit biru yang tenang dan minimalis.',
                 'category'        => 'Minimalis',
@@ -1414,7 +1414,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Popping Confetti',
+                'name'            => 'Gender Reveal Theme 17',
                 'slug'            => 'gender_reveal_theme_17',
                 'description'     => 'Ledakan konfeti warna-warni yang meriah dan penuh kejutan.',
                 'category'        => 'Ceria',
@@ -1428,7 +1428,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Golden Reveal',
+                'name'            => 'Gender Reveal Theme 18',
                 'slug'            => 'gender_reveal_theme_18',
                 'description'     => 'Kemewahan emas dan putih untuk momen pengungkapan yang berkelas.',
                 'category'        => 'Mewah',
@@ -1442,7 +1442,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Stork Delivery',
+                'name'            => 'Gender Reveal Theme 19',
                 'slug'            => 'gender_reveal_theme_19',
                 'description'     => 'Burung bangau membawa kabar bahagia dengan nuansa biru dan putih.',
                 'category'        => 'Ceria',
@@ -1456,7 +1456,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Baby Bubble',
+                'name'            => 'Gender Reveal Theme 20',
                 'slug'            => 'gender_reveal_theme_20',
                 'description'     => 'Gelembung pastel pelangi yang menggemaskan dan playful.',
                 'category'        => 'Ceria',
@@ -1476,7 +1476,7 @@ class ThemeSeeder extends Seeder
     {
         return [
             [
-                'name'            => 'Warm Gathering',
+                'name'            => 'Syukuran Theme 01',
                 'slug'            => 'syukuran_theme_01',
                 'description'     => 'Kehangatan kebersamaan dengan warna tanah yang nyaman.',
                 'category'        => 'Rustic',
@@ -1490,7 +1490,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 221,
             ],
             [
-                'name'            => 'Sandy Shore',
+                'name'            => 'Syukuran Theme 02',
                 'slug'            => 'syukuran_theme_02',
                 'description'     => 'Nuansa pantai dengan gradasi pasir dan laut.',
                 'category'        => 'Alam',
@@ -1504,7 +1504,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 84,
             ],
             [
-                'name'            => 'Alhamdulillah',
+                'name'            => 'Syukuran Theme 03',
                 'slug'            => 'syukuran_theme_03',
                 'description'     => 'Nuansa islami syukuran dengan ornamen kaligrafi yang indah.',
                 'category'        => 'Islami',
@@ -1518,7 +1518,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 309,
             ],
             [
-                'name'            => 'Golden Blessing',
+                'name'            => 'Syukuran Theme 04',
                 'slug'            => 'syukuran_theme_04',
                 'description'     => 'Syukuran istimewa dengan sentuhan emas yang berkelas.',
                 'category'        => 'Mewah',
@@ -1532,7 +1532,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 156,
             ],
             [
-                'name'            => 'Barakah Garden',
+                'name'            => 'Syukuran Theme 05',
                 'slug'            => 'syukuran_theme_05',
                 'description'     => 'Taman penuh berkah dengan ornamen bunga islami eksklusif.',
                 'category'        => 'Islami',
@@ -1546,7 +1546,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 44,
             ],
             [
-                'name'            => 'Berkah Melimpah',
+                'name'            => 'Syukuran Theme 06',
                 'slug'            => 'syukuran_theme_06',
                 'description'     => 'Nuansa hijau tosca dan emas yang menggambarkan berkah melimpah.',
                 'category'        => 'Islami',
@@ -1560,7 +1560,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Rezeki Barokah',
+                'name'            => 'Syukuran Theme 07',
                 'slug'            => 'syukuran_theme_07',
                 'description'     => 'Kemewahan emas dan cream yang menggambarkan rezeki barokah.',
                 'category'        => 'Mewah',
@@ -1574,7 +1574,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Kebun Syukur',
+                'name'            => 'Syukuran Theme 08',
                 'slug'            => 'syukuran_theme_08',
                 'description'     => 'Kebun hijau daun yang segar dan penuh rasa syukur.',
                 'category'        => 'Alam',
@@ -1588,7 +1588,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Nur Illahi',
+                'name'            => 'Syukuran Theme 09',
                 'slug'            => 'syukuran_theme_09',
                 'description'     => 'Cahaya putih dan emas yang menggambarkan nur illahi.',
                 'category'        => 'Islami',
@@ -1602,7 +1602,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Terima Kasih',
+                'name'            => 'Syukuran Theme 10',
                 'slug'            => 'syukuran_theme_10',
                 'description'     => 'Kehangatan cokelat dan cream sebagai ungkapan terima kasih.',
                 'category'        => 'Rustic',
@@ -1616,7 +1616,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Cahaya Hati',
+                'name'            => 'Syukuran Theme 11',
                 'slug'            => 'syukuran_theme_11',
                 'description'     => 'Kuning cerah dan putih yang menggambarkan cahaya hati yang tulus.',
                 'category'        => 'Islami',
@@ -1630,7 +1630,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Damai Sejahtera',
+                'name'            => 'Syukuran Theme 12',
                 'slug'            => 'syukuran_theme_12',
                 'description'     => 'Biru muda dan putih yang menenangkan dan minimalis.',
                 'category'        => 'Minimalis',
@@ -1644,7 +1644,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Rumah Berkah',
+                'name'            => 'Syukuran Theme 13',
                 'slug'            => 'syukuran_theme_13',
                 'description'     => 'Cokelat tua dan krem yang hangat menggambarkan rumah berkah.',
                 'category'        => 'Rustic',
@@ -1658,7 +1658,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Anggun Syukuran',
+                'name'            => 'Syukuran Theme 14',
                 'slug'            => 'syukuran_theme_14',
                 'description'     => 'Maroon dan emas yang anggun dan berkelas.',
                 'category'        => 'Elegan',
@@ -1672,7 +1672,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Bunga Rampai',
+                'name'            => 'Syukuran Theme 15',
                 'slug'            => 'syukuran_theme_15',
                 'description'     => 'Rangkaian bunga pink dan hijau yang segar dan ceria.',
                 'category'        => 'Floral',
@@ -1686,7 +1686,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Cahaya Ramadhan',
+                'name'            => 'Syukuran Theme 16',
                 'slug'            => 'syukuran_theme_16',
                 'description'     => 'Hijau tua dan emas dengan ornamen islami yang syahdu.',
                 'category'        => 'Islami',
@@ -1700,7 +1700,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Panen Raya',
+                'name'            => 'Syukuran Theme 17',
                 'slug'            => 'syukuran_theme_17',
                 'description'     => 'Kuning dan hijau yang menggambarkan syukur atas panen raya.',
                 'category'        => 'Alam',
@@ -1714,7 +1714,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Kilau Emas',
+                'name'            => 'Syukuran Theme 18',
                 'slug'            => 'syukuran_theme_18',
                 'description'     => 'Kemewahan emas dan putih yang berkilau dan istimewa.',
                 'category'        => 'Mewah',
@@ -1728,7 +1728,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Embun Pagi',
+                'name'            => 'Syukuran Theme 19',
                 'slug'            => 'syukuran_theme_19',
                 'description'     => 'Hijau mint dan putih yang segar seperti embun pagi.',
                 'category'        => 'Modern',
@@ -1742,7 +1742,7 @@ class ThemeSeeder extends Seeder
                 'usage_count'     => 0,
             ],
             [
-                'name'            => 'Sujud Syukur',
+                'name'            => 'Syukuran Theme 20',
                 'slug'            => 'syukuran_theme_20',
                 'description'     => 'Hijau dan emas yang khidmat menggambarkan sujud syukur.',
                 'category'        => 'Islami',
