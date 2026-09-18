@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('user_id')->unique()->constrained('users')->cascadeOnDelete();
             $table->string('phone_number', 20)->nullable();
             $table->string('whatsapp_token', 255)->nullable();
-            $table->json('notification_preferences')->default('{"email":true,"whatsapp":true}');
+            $table->json('notification_preferences')->default(new \Illuminate\Database\Query\Expression("('{\"email\":true,\"whatsapp\":true}')"));
             $table->string('language', 10)->default('id');
             $table->string('timezone', 50)->default('Asia/Jakarta');
             $table->string('profile_photo_url', 500)->nullable();
