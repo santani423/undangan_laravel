@@ -2,8 +2,9 @@ import { DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSep
 import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { type User } from '@/types';
-import { Link } from '@inertiajs/react';
-import { LogOut, UserCircle } from 'lucide-react';
+import { Link, router } from '@inertiajs/react';
+import { LoaderCircle, LogOut, UserCircle } from 'lucide-react';
+import { useState } from 'react';
 
 interface UserMenuContentProps {
     user: User;
@@ -11,6 +12,30 @@ interface UserMenuContentProps {
 
 export function UserMenuContent({ user }: UserMenuContentProps) {
     const cleanup = useMobileNavigation();
+    const [loggingOut, setLoggingOut] = useState(false);
+
+    // Logout is a POST followed by a redirect to the landing page, so it can take
+    // a few seconds on a slow connection. Keep the menu open and show progress so
+    // it doesn't look like the click did nothing.
+    const handleLogout = (event: Event) => {
+        event.preventDefault();
+
+        if (loggingOut) {
+            return;
+        }
+
+        router.post(
+            route('logout'),
+            {},
+            {
+                onStart: () => setLoggingOut(true),
+                onFinish: () => {
+                    setLoggingOut(false);
+                    cleanup();
+                },
+            },
+        );
+    };
 
     return (
         <>
@@ -29,11 +54,9 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-                <Link className="block w-full" method="post" href={route('logout')} as="button" onClick={cleanup}>
-                    <LogOut className="mr-2" />
-                    Keluar
-                </Link>
+            <DropdownMenuItem onSelect={handleLogout} disabled={loggingOut} className="w-full cursor-pointer">
+                {loggingOut ? <LoaderCircle className="mr-2 animate-spin" /> : <LogOut className="mr-2" />}
+                {loggingOut ? 'Sedang keluar...' : 'Keluar'}
             </DropdownMenuItem>
         </>
     );

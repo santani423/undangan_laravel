@@ -47,15 +47,16 @@ class PackageSeeder extends Seeder
         ],
     ];
 
-    // ─── Harga per jenis per tier ─────────────────────────────────────────────
+    // ─── Harga per jenis per tier: [harga jual, harga coret] ──────────────────
+    // Paket basic (Mulai) tetap gratis (Rp 0) tetapi tetap memiliki harga coret.
 
     private array $pricing = [
-        'pernikahan'   => ['basic' => 0, 'premium' => 59000, 'exclusive' => 99000],
-        'ulang_tahun'  => ['basic' =>  0, 'premium' => 59000, 'exclusive' => 99000],
-        'khitanan'     => ['basic' => 0, 'premium' => 59000, 'exclusive' => 99000],
-        'aqiqah'       => ['basic' =>  0, 'premium' => 59000, 'exclusive' => 99000],
-        'gender_reveal'=> ['basic' => 0, 'premium' => 59000, 'exclusive' => 99000],
-        'syukuran'     => ['basic' =>  0, 'premium' => 59000, 'exclusive' => 99000],
+        'pernikahan'    => ['basic' => [0, 49000], 'premium' => [79000, 149000], 'exclusive' => [149000, 299000]],
+        'ulang_tahun'   => ['basic' => [0, 29000], 'premium' => [49000, 99000],  'exclusive' => [99000, 199000]],
+        'khitanan'      => ['basic' => [0, 35000], 'premium' => [59000, 119000], 'exclusive' => [119000, 229000]],
+        'aqiqah'        => ['basic' => [0, 35000], 'premium' => [65000, 129000], 'exclusive' => [125000, 249000]],
+        'gender_reveal' => ['basic' => [0, 25000], 'premium' => [45000, 89000],  'exclusive' => [89000, 179000]],
+        'syukuran'      => ['basic' => [0, 29000], 'premium' => [55000, 109000], 'exclusive' => [109000, 219000]],
     ];
 
     // ─── Label & deskripsi per jenis per tier ─────────────────────────────────
@@ -361,7 +362,8 @@ class PackageSeeder extends Seeder
                         'invitation_type' => $type,
                         'label'           => $this->meta[$type][$tier]['label'],
                         'description'     => $this->meta[$type][$tier]['description'],
-                        'price'           => $this->pricing[$type][$tier],
+                        'price'           => $this->pricing[$type][$tier][0],
+                        'original_price'  => $this->pricing[$type][$tier][1],
                         'currency'        => 'IDR',
                         'is_active'       => true,
                         'display_order'   => $displayOrder,
