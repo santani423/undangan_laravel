@@ -6,11 +6,12 @@ use App\Http\Controllers\Customer\DigitalWalletController;
 use App\Http\Controllers\Customer\GuestBookController;
 use App\Http\Controllers\Customer\InvitationController;
 use App\Http\Controllers\Customer\PaymentController;
+use App\Http\Controllers\Customer\ProfileController;
 use App\Http\Controllers\Customer\TransactionController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::prefix('customer')->name('customer.')->middleware(['auth'])->group(function () {
+Route::prefix('customer')->name('customer.')->middleware(['auth', 'area:customer'])->group(function () {
 
     // ─── Dashboard ────────────────────────────────────────────────────────────
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -101,7 +102,7 @@ Route::prefix('customer')->name('customer.')->middleware(['auth'])->group(functi
 
     // ─── Profil ───────────────────────────────────────────────────────────────
     Route::prefix('profile')->name('profile.')->group(function () {
-        Route::get('/', fn () => Inertia::render('customer/profile/index'))->name('index');
-        Route::patch('/', fn () => abort(501))->name('update');
+        Route::get('/', [ProfileController::class, 'index'])->name('index');
+        Route::patch('/', [ProfileController::class, 'update'])->name('update');
     });
 });

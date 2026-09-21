@@ -14,6 +14,7 @@ export interface LandingPackageByType {
         tier_label: string;
         label: string;
         price: number;
+        original_price: number | null;
         is_popular: boolean;
         features: string[];
     }[];

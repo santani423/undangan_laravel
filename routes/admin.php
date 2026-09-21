@@ -9,7 +9,7 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'area:admin'])->group(function () {
 
     // ─── Dashboard ───────────────────────────────────────────────────────────
     Route::get('/', fn () => Inertia::render('admin/dashboard'))->name('dashboard');

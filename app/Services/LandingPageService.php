@@ -122,6 +122,9 @@ class LandingPageService
                             'tier_label' => self::TIER_LABELS[$tier] ?? $p->label,
                             'label'      => $p->label,
                             'price'      => (int) $p->price,
+                            'original_price' => $p->original_price !== null && (float) $p->original_price > (float) $p->price
+                                ? (int) $p->original_price
+                                : null,
                             'is_popular' => $tier === 'premium',
                             'features'   => $this->tierBullets($p),
                         ];

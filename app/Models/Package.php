@@ -13,6 +13,7 @@ class Package extends Model
         'label',
         'description',
         'price',
+        'original_price',
         'currency',
         'billing_period',
         'duration_days',
@@ -27,6 +28,7 @@ class Package extends Model
     {
         return [
             'price'         => 'decimal:2',
+            'original_price' => 'decimal:2',
             'is_active'     => 'boolean',
             'display_order' => 'integer',
             'duration_days'       => 'integer',

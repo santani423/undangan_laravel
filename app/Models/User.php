@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -45,6 +46,13 @@ class User extends Authenticatable
         return $this->hasOne(UserProfile::class);
     }
 
+    public function displayAvatar(): ?string
+    {
+        $path = $this->profile()->value('profile_photo_url');
+
+        return $path ? Storage::disk('public')->url($path) : $this->avatar;
+    }
+
     public function invitations(): HasMany
     {
         return $this->hasMany(Invitation::class);
@@ -73,6 +81,35 @@ class User extends Authenticatable
     public function testimonials(): HasMany
     {
         return $this->hasMany(Testimonial::class);
+    }
+
+    /**
+     * Which area of the app this user belongs to: "admin" (super_admin/admin),
+     * "customer", or null when the user holds no recognised role.
+     */
+    public function area(): ?string
+    {
+        if ($this->hasAnyRole(['super_admin', 'admin'])) {
+            return 'admin';
+        }
+
+        if ($this->hasRole('customer')) {
+            return 'customer';
+        }
+
+        return null;
+    }
+
+    /**
+     * Route name of the dashboard matching the user's role.
+     */
+    public function dashboardRoute(): ?string
+    {
+        return match ($this->area()) {
+            'admin' => 'admin.dashboard',
+            'customer' => 'customer.dashboard',
+            default => null,
+        };
     }
 
     // Scopes

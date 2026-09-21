@@ -4,6 +4,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvitationPublicController;
 use App\Http\Controllers\WeddingThemePreviewController;
 use App\Models\Theme;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -57,8 +58,13 @@ Route::prefix('preview/themes/wedding')->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
+    // Generic entry point: send each user to the dashboard for their role.
+    Route::get('dashboard', function (Request $request) {
+        $route = $request->user()->dashboardRoute();
+
+        abort_if($route === null, 403);
+
+        return redirect()->route($route);
     })->name('dashboard');
 });
 

@@ -76,6 +76,14 @@ export default function LandingPackages({ packagesByType, whatsappLink, onSelect
                             <CardHeader className="pb-4 text-center">
                                 <CardTitle className="mb-2 font-serif text-2xl font-bold text-gray-800">{pkg.tier_label}</CardTitle>
                                 <div className="mb-2">
+                                    {pkg.original_price !== null && pkg.original_price > pkg.price && (
+                                        <div className="mb-1 flex items-center justify-center gap-2">
+                                            <span className="text-lg text-gray-400 line-through">{formatRupiah(pkg.original_price)}</span>
+                                            <Badge className="border-transparent bg-rose-100 text-rose-600">
+                                                Hemat {Math.round(((pkg.original_price - pkg.price) / pkg.original_price) * 100)}%
+                                            </Badge>
+                                        </div>
+                                    )}
                                     {pkg.price === 0 ? (
                                         <div className="bg-gradient-to-r from-rose-600 to-rose-500 bg-clip-text text-4xl font-bold text-transparent">
                                             Gratis

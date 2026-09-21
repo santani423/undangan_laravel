@@ -53,6 +53,7 @@ export interface PackageData {
     label: string;
     description: string;
     price: number;
+    original_price: number | null;
     currency: string;
     billing_period: string;
     duration_days: number;
@@ -162,6 +163,7 @@ interface EditState {
     label: string;
     description: string;
     price: string;
+    original_price: string;
     billing_period: string;
     duration_days: string;
     trial_days: string;
@@ -180,6 +182,7 @@ function pkgToEditState(pkg: PackageData): EditState {
         label:               pkg.label,
         description:         pkg.description,
         price:               String(pkg.price),
+        original_price:      pkg.original_price != null ? String(pkg.original_price) : '',
         billing_period:      pkg.billing_period,
         duration_days:       String(pkg.duration_days),
         trial_days:          String(pkg.trial_days),
@@ -397,6 +400,7 @@ function EditPackageModal({ pkg, onClose }: { pkg: PackageData; onClose: () => v
                 label:               form.label,
                 description:         form.description,
                 price:               form.price,
+                original_price:      form.original_price,
                 billing_period:      form.billing_period,
                 duration_days:       form.duration_days,
                 trial_days:          form.trial_days,
@@ -526,6 +530,13 @@ function EditPackageModal({ pkg, onClose }: { pkg: PackageData; onClose: () => v
                                     error={errors.billing_period}
                                 />
                             </div>
+                            <InputField
+                                label="Harga Coret (opsional)" type="number"
+                                value={form.original_price} onChange={(v) => set('original_price', v)}
+                                min={0} suffix="IDR" placeholder="Kosongkan jika tidak ada"
+                                hint="Harga sebelum diskon, tampil dicoret di landing page. Harus lebih besar dari Harga."
+                                error={errors.original_price}
+                            />
                             <SectionLabel label="Trial & Masa Aktif" />
                             <div className={`rounded-lg border px-3 py-2.5 text-xs flex items-start gap-2 ${
                                 trialDays > 0
@@ -674,7 +685,7 @@ function EditPackageModal({ pkg, onClose }: { pkg: PackageData; onClose: () => v
 
 const defaultAdd: AddState = {
     name: '', invitation_type: '', label: '', description: '',
-    price: '0', billing_period: 'month',
+    price: '0', original_price: '', billing_period: 'month',
     duration_days: '90', trial_days: '0',
     max_gallery_uploads: '0',
     is_active: true, display_order: '',
@@ -703,6 +714,7 @@ function AddPackageModal({ onClose }: { onClose: () => void }) {
                 label:               form.label,
                 description:         form.description,
                 price:               form.price,
+                original_price:      form.original_price,
                 billing_period:      form.billing_period,
                 duration_days:       form.duration_days,
                 trial_days:          form.trial_days,
@@ -793,6 +805,14 @@ function AddPackageModal({ onClose }: { onClose: () => void }) {
                                 ]}
                             />
                         </div>
+
+                        <InputField
+                            label="Harga Coret (opsional)" type="number"
+                            value={form.original_price} onChange={(v) => set('original_price', v)}
+                            min={0} suffix="IDR" placeholder="Kosongkan jika tidak ada"
+                            hint="Harga sebelum diskon, tampil dicoret di landing page. Harus lebih besar dari Harga."
+                            error={errors.original_price}
+                        />
 
                         <SectionLabel label="Pengaturan Trial & Aktivasi" />
 
@@ -1083,6 +1103,9 @@ function PackageTierCard({
 
             {/* Price */}
             <div className="px-4 pt-3 pb-2 border-b border-border/30">
+                {pkg.original_price != null && pkg.original_price > pkg.price && (
+                    <p className="text-xs text-muted-foreground line-through">{formatRp(pkg.original_price)}</p>
+                )}
                 <p className="text-xl font-bold text-foreground">{formatRp(pkg.price)}</p>
                 <p className="text-[11px] text-muted-foreground">
                     {pkg.billing_period === 'month' ? 'per bulan' : pkg.billing_period === 'year' ? 'per tahun' : 'sekali bayar'}
