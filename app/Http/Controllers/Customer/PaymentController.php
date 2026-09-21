@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use RuntimeException;
 use Throwable;
 
 class PaymentController extends Controller
@@ -273,17 +274,10 @@ class PaymentController extends Controller
                 'currency' => $package->currency ?? 'IDR',
             ]);
         } catch (Throwable $e) {
-            $message = $e->getMessage();
-
-            // Detect permission error and give actionable guidance
-            if (str_contains($message, 'forbidden') || str_contains($message, 'permission')) {
-                $message = 'API Key Xendit tidak memiliki izin untuk membuat Invoice. '
-                    .'Silakan masuk ke Dashboard Xendit → Settings → API Keys, '
-                    .'lalu aktifkan permission "Money-In" / "Invoice" pada API key Anda, kemudian coba lagi.';
-            }
+            report($e);
 
             return redirect()->route('customer.invitations.payment', $invitation->slug)
-                ->with('error', $message);
+                ->with('error', $this->paymentErrorMessage($e));
         }
 
         // ── Step 2: Persist to DB only after Xendit succeeds ─────────────
@@ -457,6 +451,36 @@ class PaymentController extends Controller
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
+
+    /**
+     * Error text shown on the payment page. With APP_DEBUG=true the real
+     * exception (class, message, file:line) is shown so failures can be
+     * diagnosed from the UI; otherwise only messages we wrote ourselves
+     * (XenditService throws plain RuntimeException) reach the customer, and
+     * anything else (cURL, SQL, ...) is replaced by a generic message.
+     */
+    private function paymentErrorMessage(Throwable $e): string
+    {
+        $message = $e->getMessage();
+
+        if (config('app.debug')) {
+            $file = str_replace('\\', '/', Str::after($e->getFile(), base_path().DIRECTORY_SEPARATOR));
+
+            return sprintf('[%s] %s (%s:%d)', class_basename($e), $message, $file, $e->getLine());
+        }
+
+        // Detect permission error and give actionable guidance
+        if (str_contains($message, 'forbidden') || str_contains($message, 'permission')) {
+            return 'API Key Xendit tidak memiliki izin untuk membuat Invoice. '
+                .'Silakan masuk ke Dashboard Xendit → Settings → API Keys, '
+                .'lalu aktifkan permission "Money-In" / "Invoice" pada API key Anda, kemudian coba lagi.';
+        }
+
+        // Exact class match: QueryException etc. also extend RuntimeException.
+        return $e::class === RuntimeException::class
+            ? $message
+            : 'Pembayaran gagal diproses. Silakan coba lagi atau hubungi admin.';
+    }
 
     private function generateInvoiceNumber(int $userId): string
     {

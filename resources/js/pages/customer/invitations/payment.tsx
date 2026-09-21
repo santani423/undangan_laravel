@@ -296,7 +296,7 @@ export default function InvitationPayment({ invitation, package: pkg, transactio
                 {flash?.error && (
                     <div className="flex items-start gap-3 rounded-xl bg-red-50 border border-red-200 p-4 text-red-700 text-sm dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
                         <AlertCircle className="size-4 mt-0.5 shrink-0" />
-                        {flash.error}
+                        <span className="min-w-0 break-words">{flash.error}</span>
                     </div>
                 )}
                 {flash?.info && (
