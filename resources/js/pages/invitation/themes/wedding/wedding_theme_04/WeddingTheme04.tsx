@@ -136,7 +136,6 @@ export default function WeddingTheme04({ invitation, visitor, greeting }: Weddin
                             <div className="wt4-overlay-greeting">
                                 <p className="wt4-overlay-greeting-title">{greeting?.title ?? 'Kepada Bapak/Ibu/Saudara/i'}</p>
                                 <p className="wt4-overlay-guest-name">{coverGuestName}</p>
-                                {guestName && greeting?.guestLabel && <p className="wt4-overlay-guest-label">{greeting.guestLabel}</p>}
                             </div>
                         )}
                         {greetingEnabled && greeting?.message && <p className="wt4-overlay-message">{greeting.message}</p>}

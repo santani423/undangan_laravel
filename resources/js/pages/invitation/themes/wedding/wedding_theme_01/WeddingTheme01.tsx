@@ -126,7 +126,6 @@ export default function WeddingTheme01({ invitation, visitor, greeting }: Weddin
                             <>
                                 <p className="wt1-overlay-greeting-title">{greeting?.title ?? 'Kepada Yth.'}</p>
                                 <p className="wt1-overlay-guest-name">{coverGuestName}</p>
-                                {guestName && greeting?.guestLabel && <p className="wt1-overlay-guest-label">{greeting.guestLabel}</p>}
                             </>
                         )}
                         {greetingEnabled && greeting?.message && <p className="wt1-overlay-message">{greeting.message}</p>}

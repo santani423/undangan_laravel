@@ -646,8 +646,8 @@ html:has(.wt1-root) {
 }
 .wt1-timeline-photo {
     width: 100%;
-    height: 80px;
-    border-radius: 4px;
+    aspect-ratio: 1 / 1;
+    border-radius: 6px;
     margin-bottom: 12px;
     background-size: cover;
     background-position: center;

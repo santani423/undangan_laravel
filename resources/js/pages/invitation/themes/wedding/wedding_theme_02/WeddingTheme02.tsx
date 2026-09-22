@@ -175,7 +175,6 @@ export default function WeddingTheme02({ invitation, visitor, greeting }: Weddin
                             <>
                                 <p className="wt2-cover-to">{greeting?.title ?? 'Kepada Yth.'}</p>
                                 <p className="wt2-cover-guest">{coverGuestName}</p>
-                                {guestName && greeting?.guestLabel && <p className="wt2-cover-guest-label">{greeting.guestLabel}</p>}
                             </>
                         )}
                         {greetingEnabled && greeting?.message && <p className="wt2-cover-message">{greeting.message}</p>}

@@ -209,7 +209,6 @@ export default function WeddingTheme12({ invitation, visitor, greeting }: Weddin
                             <div className="wt12-cover-greeting wt12-fade-in wt12-delay-3">
                                 <p className="wt12-cover-greeting-title">{greeting?.title ?? 'Kepada Yth.'}</p>
                                 <p className="wt12-cover-guest-name">{coverGuestName}</p>
-                                {guestName && greeting?.guestLabel && <p className="wt12-cover-guest-label">{greeting.guestLabel}</p>}
                             </div>
                         )}
                         {greetingEnabled && greeting?.message && (

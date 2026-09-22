@@ -148,7 +148,6 @@ export default function WeddingBase({ invitation, visitor, greeting }: WeddingBa
                         <div className="wb-overlay-greeting">
                             <p className="wb-overlay-greeting-title">{greeting?.title ?? 'Kepada Yth.'}</p>
                             <p className="wb-overlay-guest-name">{coverGuestName}</p>
-                            {guestName && greeting?.guestLabel && <p className="wb-overlay-guest-label">{greeting.guestLabel}</p>}
                         </div>
                     )}
                     {greetingEnabled && greeting?.message && (

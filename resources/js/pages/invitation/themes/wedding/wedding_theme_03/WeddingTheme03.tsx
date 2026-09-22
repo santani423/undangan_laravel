@@ -198,7 +198,6 @@ function CoverSection({
                     <div className="wt3-cover-guest-box">
                         <p className="wt3-cover-to">{valueText(greeting?.title, 'Kepada Yth.')}</p>
                         <p className="wt3-cover-guest">{displayGuest}</p>
-                        {guestName && greeting?.guestLabel && <p className="wt3-cover-guest-label">{greeting.guestLabel}</p>}
                     </div>
                 )}
 

@@ -331,7 +331,6 @@ export default function WeddingTheme11({ invitation, visitor, greeting }: Weddin
                             <div className="wt11-cover-guest">
                                 <span className="wt11-cover-guest-title">{greeting?.title ?? 'Kepada Yth.'}</span>
                                 <strong className="wt11-cover-guest-name">{coverGuestName}</strong>
-                                {guestName && greeting?.guestLabel && <span className="wt11-cover-guest-label">{greeting.guestLabel}</span>}
                             </div>
                         )}
                         {greetingEnabled && greeting?.message && <p className="wt11-cover-guest-message">{greeting.message}</p>}

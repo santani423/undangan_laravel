@@ -147,7 +147,6 @@ export default function WeddingTheme08({ invitation, visitor, greeting }: Weddin
                             <>
                                 <p className="wt8-cv-greet-title">{greeting?.title ?? 'Kepada Yth.'}</p>
                                 <p className="wt8-cv-guest-name">{coverGuestName}</p>
-                                {guestName && greeting?.guestLabel && <p className="wt8-cv-guest-label">{greeting.guestLabel}</p>}
                             </>
                         )}
                         {greetingEnabled && greeting?.message && <p className="wt8-cv-message">{greeting.message}</p>}
