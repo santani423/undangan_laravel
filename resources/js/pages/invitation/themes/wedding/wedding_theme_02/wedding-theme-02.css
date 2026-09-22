@@ -27,7 +27,7 @@ html { scroll-behavior: smooth; }
 .wt2-root h1, .wt2-root h2, .wt2-root h3, .wt2-root h4 { font-family: 'Cormorant Garamond', serif; }
 .wt2-root img { display: block; max-width: 100%; }
 .wt2-root a { text-decoration: none; color: inherit; }
-.wt2-root button { cursor: pointer; border: none; background: none; font-family: inherit; }
+.wt2-root button { cursor: pointer; font-family: inherit; }
 
 /* ── Utility ─────────────────────────────────────────────────────────────────── */
 .wt2-container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
@@ -57,7 +57,7 @@ html { scroll-behavior: smooth; }
 .wt2-btn-outline {
   display: inline-block; padding: 12px 36px; border: 1.5px solid var(--wt2-gold); color: var(--wt2-gold);
   font-size: .7rem; font-weight: 600; letter-spacing: .18em; text-transform: uppercase;
-  border-radius: 40px; transition: all .3s;
+  border-radius: 40px; transition: all .3s; background: transparent;
 }
 .wt2-btn-outline:hover { background: var(--wt2-gold); color: var(--wt2-white); transform: translateY(-2px); }
 
@@ -189,6 +189,7 @@ html { scroll-behavior: smooth; }
 .wt2-event-card-map-btn {
   display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; border: 1px solid var(--wt2-gold);
   border-radius: 30px; color: var(--wt2-gold-lt); font-size: .65rem; letter-spacing: .15em; text-transform: uppercase; transition: all .3s;
+  background: transparent;
 }
 .wt2-event-card-map-btn:hover { background: var(--wt2-gold); color: var(--wt2-white); }
 
@@ -242,7 +243,7 @@ html { scroll-behavior: smooth; }
 }
 .wt2-gallery-item:hover .wt2-gallery-overlay { opacity: 1; }
 .wt2-gallery-filter-bar { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; }
-.wt2-filter-btn { padding: 8px 20px; border-radius: 30px; border: 1px solid var(--wt2-gold); color: var(--wt2-gold); font-size: .65rem; letter-spacing: .1em; text-transform: uppercase; transition: all .25s; }
+.wt2-filter-btn { padding: 8px 20px; border-radius: 30px; border: 1px solid var(--wt2-gold); color: var(--wt2-gold); font-size: .65rem; letter-spacing: .1em; text-transform: uppercase; transition: all .25s; background: transparent; }
 .wt2-filter-btn-active { background: var(--wt2-gold); color: var(--wt2-white); }
 
 /* ── Video ───────────────────────────────────────────────────────────────────── */

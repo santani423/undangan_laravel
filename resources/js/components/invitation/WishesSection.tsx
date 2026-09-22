@@ -170,7 +170,7 @@ export default function WishesSection({
                                 className={styles.messageInput}
                             />
                             <button type="submit" disabled={submitting} className={styles.submitBtn}>
-                                {submitting ? 'Mengirim...' : 'Kirim Ucapan ✨'}
+                                {submitting ? 'Mengirim...' : 'Kirim Ucapan'}
                             </button>
                         </form>
                     </div>
