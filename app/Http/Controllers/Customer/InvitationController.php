@@ -467,6 +467,7 @@ class InvitationController extends Controller
         // Field values — convert stored paths to public URLs
         $fieldValues = [];
         $additionalInfo = [];
+        $dressCodeColors = [];
         foreach ($invitation->contents as $content) {
             if (str_starts_with($content->content_key, 'love_story_')) {
                 continue;
@@ -478,6 +479,16 @@ class InvitationController extends Controller
                         'id'    => $i,
                         'label' => $item['label'] ?? '',
                         'value' => $item['value'] ?? '',
+                    ])
+                    ->all();
+                continue;
+            }
+            if ($content->content_key === 'dress_code_colors') {
+                $dressCodeColors = collect(json_decode($content->content_value ?? '[]', true) ?: [])
+                    ->values()
+                    ->map(fn ($item) => [
+                        'name' => $item['name'] ?? '',
+                        'hex'  => $item['hex'] ?? '',
                     ])
                     ->all();
                 continue;
@@ -673,6 +684,7 @@ class InvitationController extends Controller
             'package'      => $invitation->package,
             'fieldValues'        => $fieldValues,
             'additionalInfo'     => $additionalInfo,
+            'dressCodeColors'    => $dressCodeColors,
             'acaraEvents'        => $acaraEvents,
             'galleryItems'       => $galleryItems,
             'loveStory'          => $loveStory,
@@ -769,6 +781,17 @@ class InvitationController extends Controller
                 $invitation->contents()->updateOrCreate(
                     ['content_key' => 'additional_info_items'],
                     ['content_value' => $additionalInfo->toJson(), 'content_type' => 'json'],
+                );
+            }
+
+            // ── Dress code colors — replace ─────────────────────────────
+            $dressCodeColors = $this->normalizedDressCodeColors($request->input('dress_code_colors', []));
+            if ($dressCodeColors->isEmpty()) {
+                $invitation->contents()->where('content_key', 'dress_code_colors')->delete();
+            } else {
+                $invitation->contents()->updateOrCreate(
+                    ['content_key' => 'dress_code_colors'],
+                    ['content_value' => $dressCodeColors->toJson(), 'content_type' => 'json'],
                 );
             }
 
@@ -1039,6 +1062,17 @@ class InvitationController extends Controller
                 'value' => trim((string) ($item['value'] ?? '')),
             ])
             ->filter(fn ($item) => $item['label'] !== '' || $item['value'] !== '')
+            ->values();
+    }
+
+    private function normalizedDressCodeColors(array $items): \Illuminate\Support\Collection
+    {
+        return collect($items)
+            ->map(fn ($item) => [
+                'name' => trim((string) ($item['name'] ?? '')),
+                'hex'  => trim((string) ($item['hex'] ?? '')),
+            ])
+            ->filter(fn ($item) => $item['name'] !== '' || $item['hex'] !== '')
             ->values();
     }
 

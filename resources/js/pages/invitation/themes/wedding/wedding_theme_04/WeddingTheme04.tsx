@@ -202,8 +202,7 @@ export default function WeddingTheme04({ invitation, visitor, greeting }: Weddin
                 {greetingEnabled && invitation.openingQuote && (
                     <section className="wt4-greeting">
                         <div className="wt4-narrow wt4-anim-up">
-                            <p className="wt4-bismillah">Bismillahirrahmanirrahim</p>
-                            <p className="wt4-quran-verse">{invitation.openingQuote}</p>
+                            <p className="wt4-bismillah">{invitation.openingQuote}</p> 
                         </div>
                     </section>
                 )}

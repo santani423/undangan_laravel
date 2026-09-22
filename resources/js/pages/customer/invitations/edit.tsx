@@ -33,6 +33,7 @@ import {
     Music2,
     Navigation,
     Paintbrush,
+    Palette,
     Pause,
     Play,
     Plus,
@@ -122,6 +123,11 @@ interface AdditionalInfoItem {
     id: number;
     label: string;
     value: string;
+}
+
+interface DressCodeColorData {
+    name: string;
+    hex: string;
 }
 
 interface AcaraEventData {
@@ -233,6 +239,7 @@ interface Props {
     package:             PackageItem;
     fieldValues:         Record<string, string>;
     additionalInfo:      AdditionalInfoItem[];
+    dressCodeColors:     DressCodeColorData[];
     acaraEvents:         AcaraEventData[];
     galleryItems:        GalleryItemData[];
     loveStory:           LoveStoryData[];
@@ -805,6 +812,68 @@ function AdditionalInfoSection({ items, setItems }: { items: AdditionalInfoItem[
             </div>
             <button type="button" onClick={addItem} className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border py-3 text-sm font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors">
                 + Tambah Informasi
+            </button>
+        </div>
+    );
+}
+
+// ─── Dress Code Section ────────────────────────────────────────────────────────
+
+interface DressCodeColorItem {
+    id: number;
+    name: string;
+    hex: string;
+}
+
+const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/;
+
+function DressCodeSection({ items, setItems }: { items: DressCodeColorItem[]; setItems: React.Dispatch<React.SetStateAction<DressCodeColorItem[]>> }) {
+    const inputCls = 'w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition';
+
+    function addItem() { setItems((prev) => [...prev, { id: Date.now() + Math.random(), name: '', hex: '#C9A96A' }]); }
+    function updateItem(id: number, key: 'name' | 'hex', val: string) { setItems((prev) => prev.map((i) => i.id === id ? { ...i, [key]: val } : i)); }
+    function removeItem(id: number) { setItems((prev) => prev.filter((i) => i.id !== id)); }
+
+    return (
+        <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+                <Palette className="size-4 text-primary" />
+                <div>
+                    <h3 className="font-semibold text-foreground text-sm">Dress Code</h3>
+                    <p className="text-xs text-muted-foreground">Palet warna pakaian yang disarankan untuk tamu (opsional). Kosongkan semua untuk menyembunyikan bagian ini di undangan.</p>
+                </div>
+            </div>
+            {items.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Belum ada warna dress code.</p>}
+            <div className="flex flex-col gap-3">
+                {items.map((item, idx) => (
+                    <div key={item.id} className="rounded-2xl border border-border p-4 flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                            <p className="text-xs font-medium text-muted-foreground">Warna #{idx + 1}</p>
+                            <button type="button" onClick={() => removeItem(item.id)} className="text-xs text-destructive hover:underline">Hapus</button>
+                        </div>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-xs font-medium text-foreground">Nama Warna</label>
+                                <input type="text" placeholder="cth. Dusty Blue" value={item.name} onChange={(e) => updateItem(item.id, 'name', e.target.value)} className={inputCls} />
+                            </div>
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-xs font-medium text-foreground">Warna</label>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="color"
+                                        value={HEX_COLOR_RE.test(item.hex) ? item.hex : '#C9A96A'}
+                                        onChange={(e) => updateItem(item.id, 'hex', e.target.value)}
+                                        className="size-10 rounded-lg border border-border cursor-pointer shrink-0"
+                                    />
+                                    <input type="text" placeholder="#C9A96A" value={item.hex} onChange={(e) => updateItem(item.id, 'hex', e.target.value)} className={`${inputCls} font-mono`} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+            <button type="button" onClick={addItem} className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border py-3 text-sm font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors">
+                + Tambah Warna
             </button>
         </div>
     );
@@ -3471,6 +3540,7 @@ export default function InvitationsEdit({
     package: pkg,
     fieldValues: initFieldValues,
     additionalInfo: initAdditionalInfo,
+    dressCodeColors: initDressCodeColors,
     acaraEvents: initAcaraEvents,
     galleryItems: initGallery,
     loveStory: initLoveStory,
@@ -3574,6 +3644,15 @@ export default function InvitationsEdit({
         }))
     );
 
+    // Dress code colors
+    const [dressCodeColors, setDressCodeColors] = useState<DressCodeColorItem[]>(() =>
+        (initDressCodeColors ?? []).map((item) => ({
+            id:   Date.now() + Math.random(),
+            name: item.name,
+            hex:  item.hex,
+        }))
+    );
+
     function handleFieldChange(key: string, val: string) {
         setFieldValues((prev) => ({ ...prev, [key]: val }));
     }
@@ -3611,6 +3690,9 @@ export default function InvitationsEdit({
                 label: item.label,
                 value: item.value,
             })),
+            dress_code_colors: dressCodeColors
+                .map((item) => ({ name: item.name.trim(), hex: item.hex.trim() }))
+                .filter((item) => item.name !== '' || item.hex !== ''),
         }, {
             onSuccess: () => { setShowSuccess(true); },
             onFinish:  () => setSubmitting(false),
@@ -3623,7 +3705,17 @@ export default function InvitationsEdit({
             case 'couple':
                 return <CoupleTab fields={eventType.fields} values={fieldValues} onChange={handleFieldChange} />;
             case 'acara':
-                return <AcaraTab events={acaraEvents} setEvents={setAcaraEvents} />;
+                return (
+                    <div className="flex flex-col gap-8">
+                        <AcaraTab events={acaraEvents} setEvents={setAcaraEvents} />
+                        {eventType.name === 'wedding' && (
+                            <>
+                                <div className="border-t border-border" />
+                                <DressCodeSection items={dressCodeColors} setItems={setDressCodeColors} />
+                            </>
+                        )}
+                    </div>
+                );
             case 'gallery':
                 return (
                     <GalleryTab

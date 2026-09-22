@@ -42,6 +42,9 @@ class UpdateInvitationRequest extends FormRequest
             'additional_info'                 => 'nullable|array',
             'additional_info.*.label'         => 'nullable|string|max:255',
             'additional_info.*.value'         => 'nullable|string|max:1000',
+            'dress_code_colors'               => 'nullable|array',
+            'dress_code_colors.*.name'        => 'nullable|string|max:100',
+            'dress_code_colors.*.hex'         => ['nullable', 'string', 'max:9', 'regex:/^#[0-9A-Fa-f]{3,8}$/'],
         ];
     }
 }
