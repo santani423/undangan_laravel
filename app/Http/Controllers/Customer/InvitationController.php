@@ -749,9 +749,9 @@ class InvitationController extends Controller
                     $oldContent = $invitation->contents()->where('content_key', $key)->value('content_value');
                     $storedValue = \App\Services\UploadService::uploadBase64Image($value, "invitations/{$invitation->id}/content", $oldContent);
                     $contentType = 'path';
-                } elseif (str_starts_with((string) $value, '/storage/')) {
-                    // Existing URL — strip prefix to get storage path
-                    $storedValue = ltrim(str_replace('/storage/', '', $value), '/');
+                } elseif (str_contains((string) $value, '/storage/')) {
+                    // Existing URL (relative "/storage/..." or absolute via APP_URL) — strip to storage path
+                    $storedValue = ltrim(Str::after((string) $value, '/storage/'), '/');
                     $contentType = 'path';
                 }
 
@@ -884,9 +884,10 @@ class InvitationController extends Controller
                         'content_value' => $photoPath,
                         'content_type'  => 'path',
                     ]);
-                } elseif (!empty($photoVal) && str_starts_with($photoVal, '/storage/')) {
-                    // Existing photo — re-save reference
-                    $storedPath = ltrim(str_replace('/storage/', '', $photoVal), '/');
+                } elseif (!empty($photoVal) && str_contains($photoVal, '/storage/')) {
+                    // Existing photo — re-save reference (photoVal may be a relative
+                    // "/storage/..." path or an absolute URL built from APP_URL)
+                    $storedPath = ltrim(Str::after($photoVal, '/storage/'), '/');
                     GalleryPhoto::create([
                         'invitation_id' => $invitation->id,
                         'file_path'     => $storedPath,

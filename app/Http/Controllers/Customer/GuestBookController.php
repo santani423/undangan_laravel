@@ -148,8 +148,8 @@ class GuestBookController extends Controller
             $oldBackgroundImage = $invitation->contents()->where('content_key', 'guestbook_background_image')->value('content_value');
             if (str_starts_with($backgroundImage, 'data:image/')) {
                 $backgroundImage = \App\Services\UploadService::uploadBase64Image($backgroundImage, "invitations/{$invitation->id}/guest-book", $oldBackgroundImage);
-            } elseif (str_starts_with($backgroundImage, '/storage/')) {
-                $backgroundImage = ltrim(str_replace('/storage/', '', $backgroundImage), '/');
+            } elseif (str_contains($backgroundImage, '/storage/')) {
+                $backgroundImage = ltrim(Str::after($backgroundImage, '/storage/'), '/');
             }
         } catch (\RuntimeException $e) {
             throw ValidationException::withMessages([
