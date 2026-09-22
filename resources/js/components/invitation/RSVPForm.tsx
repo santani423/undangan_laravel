@@ -36,7 +36,7 @@ const DEFAULT_LABELS = {
     name: 'Nama Lengkap *',
     guests: 'Jumlah Tamu',
     attendance: 'Konfirmasi Kehadiran *',
-    attending: '✓ Insya Allah Hadir',
+    attending: '✓Akan Hadir',
     notAttending: '✕ Tidak Dapat Hadir',
     maybe: '? Masih Belum Pasti',
     message: 'Pesan / Doa',

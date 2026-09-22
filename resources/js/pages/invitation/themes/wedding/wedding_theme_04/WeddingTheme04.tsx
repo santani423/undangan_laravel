@@ -2,7 +2,7 @@ import Countdown from '@/components/invitation/Countdown';
 import DigitalWalletSection from '@/components/invitation/DigitalWalletSection';
 import GallerySection from '@/components/invitation/GallerySection';
 import GuestQrCode from '@/components/invitation/GuestQrCode';
-import MusicPlayer from '@/components/invitation/MusicPlayer';
+import MusicPlayer, { type MusicPlayerHandle } from '@/components/invitation/MusicPlayer';
 import RSVPForm from '@/components/invitation/RSVPForm';
 import Toast, { useToast } from '@/components/invitation/Toast';
 import WishesSection from '@/components/invitation/WishesSection';
@@ -17,15 +17,6 @@ interface WeddingTheme04Props {
 }
 
 const EVENT_ICONS = ['🕌', '🏛️', '🎊', '🌸', '⭐', '🎶'];
-
-const NAV_LINKS = [
-    { href: '#wt4-home', label: 'Home' },
-    { href: '#wt4-couple', label: 'Couple' },
-    { href: '#wt4-event', label: 'Acara' },
-    { href: '#wt4-story', label: 'Story' },
-    { href: '#wt4-gallery', label: 'Galeri' },
-    { href: '#wt4-rsvp', label: 'RSVP' },
-];
 
 function addToCalendar(ev: WeddingInvitation['events'][0]) {
     const start = (ev.date || '').replace(/-/g, '') + 'T' + (ev.time || '080000').replace(/:/g, '') + '00Z';
@@ -72,6 +63,7 @@ export default function WeddingTheme04({ invitation, visitor, greeting }: Weddin
     const [opened, setOpened] = useState(!coverEnabled);
     const [showBackTop, setShowBackTop] = useState(false);
     const mainRef = useRef<HTMLDivElement>(null);
+    const musicPlayerRef = useRef<MusicPlayerHandle>(null);
     const { toast, showToast, clearToast } = useToast();
 
     // Scroll-triggered animations
@@ -91,7 +83,12 @@ export default function WeddingTheme04({ invitation, visitor, greeting }: Weddin
         return () => window.removeEventListener('scroll', handler);
     }, []);
 
-    const openInvitation = () => setOpened(true);
+    const openInvitation = () => {
+        setOpened(true);
+        // Called synchronously from the click handler so the browser treats
+        // it as a direct result of the user's gesture and allows autoplay.
+        if (invitation.music?.autoplay) musicPlayerRef.current?.play();
+    };
 
     const isEnabled = (key: keyof typeof features) => features[key] !== false;
 
@@ -156,17 +153,6 @@ export default function WeddingTheme04({ invitation, visitor, greeting }: Weddin
                         </button>
                     </div>
                 </div>
-            )}
-
-            {/* ── Floating Navigation ───────────────────────────────────────────── */}
-            {opened && (
-                <nav className="wt4-nav" aria-label="Navigasi section">
-                    {NAV_LINKS.map((link) => (
-                        <a key={link.href} href={link.href}>
-                            {link.label}
-                        </a>
-                    ))}
-                </nav>
             )}
 
             {/* ── Main Content ────────────────────────────────────────────────────── */}
@@ -586,6 +572,7 @@ export default function WeddingTheme04({ invitation, visitor, greeting }: Weddin
             {/* ── Music Player ──────────────────────────────────────────────────── */}
             {isEnabled('music') && invitation.music?.url && (
                 <MusicPlayer
+                    ref={musicPlayerRef}
                     url={invitation.music.url}
                     autoplay={invitation.music.autoplay}
                     loop={invitation.music.loop}

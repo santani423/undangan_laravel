@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
 interface MusicPlayerProps {
     url: string;
@@ -9,14 +9,15 @@ interface MusicPlayerProps {
     buttonClassName?: string;
 }
 
-export default function MusicPlayer({
-    url,
-    autoplay = false,
-    loop = true,
-    triggerPlay = false,
-    buttonStyle,
-    buttonClassName = '',
-}: MusicPlayerProps) {
+export interface MusicPlayerHandle {
+    play: () => void;
+    pause: () => void;
+}
+
+const MusicPlayer = forwardRef<MusicPlayerHandle, MusicPlayerProps>(function MusicPlayer(
+    { url, autoplay = false, loop = true, triggerPlay = false, buttonStyle, buttonClassName = '' },
+    ref,
+) {
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const [playing, setPlaying] = useState(false);
     const [volume] = useState(0.35);
@@ -35,9 +36,37 @@ export default function MusicPlayer({
         };
     }, [url]);
 
+    // Exposes an imperative play() so callers can start playback synchronously
+    // from within a real click handler (e.g. the "Buka Undangan" button),
+    // which browsers require for autoplay to be allowed.
+    useImperativeHandle(ref, () => ({
+        play: () => {
+            audioRef.current?.play().then(() => setPlaying(true)).catch(() => {});
+        },
+        pause: () => {
+            audioRef.current?.pause();
+            setPlaying(false);
+        },
+    }));
+
     useEffect(() => {
         if (!triggerPlay || !autoplay || !audioRef.current) return;
-        audioRef.current.play().then(() => setPlaying(true)).catch(() => {});
+        const audio = audioRef.current;
+
+        const resume = () => {
+            audio.play().then(() => setPlaying(true)).catch(() => {});
+        };
+
+        audio.play().then(() => setPlaying(true)).catch(() => {
+            // Browser blocked the deferred autoplay call (common on mobile); resume on the next tap.
+            document.addEventListener('click', resume, { once: true });
+            document.addEventListener('touchstart', resume, { once: true });
+        });
+
+        return () => {
+            document.removeEventListener('click', resume);
+            document.removeEventListener('touchstart', resume);
+        };
     }, [triggerPlay, autoplay]);
 
     useEffect(() => {
@@ -84,4 +113,6 @@ export default function MusicPlayer({
             {playing ? '⏸' : '▶'}
         </button>
     );
-}
+});
+
+export default MusicPlayer;

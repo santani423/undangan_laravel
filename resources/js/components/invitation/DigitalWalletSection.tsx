@@ -219,10 +219,12 @@ export default function DigitalWalletSection({
                                             src={w.qrisQrUrl}
                                             alt={`QRIS ${w.label}`}
                                             style={{
-                                                width: '80px',
-                                                height: '80px',
+                                                width: '160px',
+                                                height: '160px',
+                                                maxWidth: '100%',
                                                 objectFit: 'contain',
                                                 display: 'block',
+                                                margin: '0 auto',
                                                 borderRadius: '6px',
                                                 border: '2px solid rgba(0,0,0,0.08)',
                                             }}
