@@ -176,7 +176,10 @@ img {
   z-index: 9999;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 40px 0;
   transition: opacity 1.2s cubic-bezier(0.82, 0.085, 0.395, 0.895), visibility 1.2s;
 }
 
