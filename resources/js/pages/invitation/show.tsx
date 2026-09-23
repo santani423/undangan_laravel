@@ -225,7 +225,10 @@ function resolveThemeComponent(themeSlug: string, invitation: InvitationData, vi
 
 const DEFAULT_FAVICON = '/favicon.svg';
 
+// Fallback for older cached responses that predate the server-computed `ogImage` field.
 function getFaviconUrl(invitation: InvitationData): string {
+    if (invitation.ogImage) return invitation.ogImage;
+
     switch (invitation.type) {
         case 'wedding': {
             const w = invitation as WeddingInvitation;
@@ -250,7 +253,10 @@ export default function InvitationShow({ invitation, themeSlug, visitor }: Props
     const faviconUrl = getFaviconUrl(invitation);
 
     useEffect(() => {
-        // Remove existing favicons
+        // Keeps the favicon correct if the client ever renders a different invitation
+        // without a full page reload. The initial load's favicon and Open Graph tags
+        // (what WhatsApp/Facebook/Telegram crawlers read) are rendered server-side in
+        // app.blade.php, since those crawlers don't execute this JavaScript.
         document.querySelectorAll('link[rel~="icon"]').forEach((el) => el.remove());
         const link = document.createElement('link');
         link.rel = 'icon';

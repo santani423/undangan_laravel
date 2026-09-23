@@ -63,13 +63,60 @@ class InvitationPublicController extends Controller
             }
             $data['guestSlug'] = $guest->slug;
         }
-    // dd($theme);
+
+        $data['ogImage']       = $this->resolveOgImage($data);
+        $data['ogDescription'] = $this->resolveOgDescription($data);
+        $data['ogUrl']         = $request->fullUrl();
+
         return Inertia::render('invitation/show', [
             'invitation' => $data,
             'themeSlug'  => $theme->slug,
             'visitor'    => $visitor,
-            
+
         ]);
+    }
+
+    /**
+     * Pick the best available photo to use as the social share (Open Graph) image
+     * and favicon, since crawlers like WhatsApp's only read the initial server HTML.
+     */
+    private function resolveOgImage(array $data): ?string
+    {
+        $candidates = [
+            $data['celebrantPhoto'] ?? null,
+            $data['couplePhoto']    ?? null,
+            $data['groomPhoto']     ?? null,
+            $data['bridePhoto']     ?? null,
+            $data['childPhoto']     ?? null,
+            $data['babyPhoto']      ?? null,
+            $data['parentsPhoto']   ?? null,
+            $data['hostPhoto']      ?? null,
+        ];
+
+        foreach ($candidates as $candidate) {
+            if (! empty($candidate)) {
+                return $candidate;
+            }
+        }
+
+        if (! empty($data['gallery'][0]['url'])) {
+            return $data['gallery'][0]['url'];
+        }
+
+        return null;
+    }
+
+    private function resolveOgDescription(array $data): string
+    {
+        if (! empty($data['greeting']['message'])) {
+            return \Illuminate\Support\Str::limit(strip_tags($data['greeting']['message']), 160);
+        }
+
+        if (! empty($data['mainDateFormatted'])) {
+            return "Anda diundang pada {$data['mainDateFormatted']}. Buka undangan ini untuk info lengkap acara.";
+        }
+
+        return 'Anda diundang! Silakan buka undangan digital ini untuk info lengkap acara.';
     }
 
     private function resolveContentUrl(Invitation $invitation, string $key): string

@@ -70,6 +70,9 @@ interface InvitationBase {
     guestName: string;
     countdownDate: string; // "YYYY-MM-DDTHH:mm:ss"
     pageTitle: string;
+    ogImage?: string | null;
+    ogDescription?: string;
+    ogUrl?: string;
     mainDateFormatted: string;
     events: InvitationEvent[];
     gallery: GalleryItem[]; 
