@@ -1431,6 +1431,22 @@ button {
     text-underline-offset: 4px;
 }
 
+.wt5-envelope-card__qr {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.wt5-envelope-card__qr-label {
+    margin: 0;
+    color: var(--wt5-muted);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
 .wt5-envelope-card__actions {
     position: relative;
     display: grid;

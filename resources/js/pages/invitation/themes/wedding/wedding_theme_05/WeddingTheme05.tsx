@@ -1,3 +1,4 @@
+import GuestQrCode from '@/components/invitation/GuestQrCode';
 import type { BankAccount, DigitalWallet, Greeting, InvitationEvent, LoveStoryItem, WeddingInvitation } from '@/types/invitation';
 import {
     CalendarDays,
@@ -1064,6 +1065,16 @@ export default function WeddingTheme05({ invitation, visitor, greeting }: Theme0
                                     <p className="wt5-envelope-card__guest-label">{data.greeting.guestLabel}</p>
                                     <p className="wt5-envelope-card__guest-name">{data.guestDisplayName}</p>
                                 </div>
+                                {data.guestQrData ? (
+                                    <div className="wt5-envelope-card__qr">
+                                        <GuestQrCode
+                                            data={data.guestQrData}
+                                            size={104}
+                                            style={{ borderRadius: '10px', border: '3px solid rgba(197, 160, 89, 0.5)' }}
+                                        />
+                                        <p className="wt5-envelope-card__qr-label">QR Check-in Tamu</p>
+                                    </div>
+                                ) : null}
                                 <div className="wt5-envelope-card__actions">
                                     <button type="button" className="wt5-btn wt5-btn--primary wt5-btn--full" onClick={openInvitation}>
                                         {data.greeting.buttonText}
