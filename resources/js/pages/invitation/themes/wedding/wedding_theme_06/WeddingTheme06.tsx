@@ -1321,29 +1321,24 @@ export default function WeddingTheme06({ invitation, visitor, greeting }: Weddin
                     <div className="wt6-container">
                         <SectionHeading eyebrow="Tuntunan Busana" title="Dress Code" />
                         <div className="wt6-dress-wrap wt6-anim-up">
-                            <div className="wt6-dress-copy">
-                                <p className="wt6-section-subtitle wt6-section-subtitle--left">
-                                    Kami mengundang Bapak/Ibu/Saudara/i untuk mengenakan busana rapi dan sopan dengan palet warna berikut, agar
-                                    keharmonisan warna tetap terjaga di sepanjang acara.
-                                </p>
-                                <div className="wt6-swatches">
-                                    {data.dressCodes.map((dressCode, index) => (
-                                        <div key={`${dressCode.name}-${index}`} className="wt6-swatch">
-                                            <span className="wt6-swatch-chip" style={{ background: dressCode.hex }} />
-                                            <p className="wt6-swatch-name">{dressCode.name}</p>
-                                            <p className="wt6-swatch-hex">{dressCode.hex}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                                <ul className="wt6-dress-notes">
-                                    <li>Hindari warna putih penuh, khusus untuk kedua mempelai.</li>
-                                    <li>Disarankan busana formal atau semi-formal.</li>
-                                    <li>Nyaman digunakan untuk duduk lesehan maupun berdiri lama.</li>
-                                </ul>
+                            <p className="wt6-section-subtitle">
+                                Kami mengundang Bapak/Ibu/Saudara/i untuk mengenakan busana rapi dan sopan dengan palet warna berikut, agar
+                                keharmonisan warna tetap terjaga di sepanjang acara.
+                            </p>
+                            <div className="wt6-swatches">
+                                {data.dressCodes.map((dressCode, index) => (
+                                    <div key={`${dressCode.name}-${index}`} className="wt6-swatch">
+                                        <span className="wt6-swatch-chip" style={{ background: dressCode.hex }} />
+                                        <p className="wt6-swatch-name">{dressCode.name}</p>
+                                        <p className="wt6-swatch-hex">{dressCode.hex}</p>
+                                    </div>
+                                ))}
                             </div>
-                            <div className="wt6-dress-illustration">
-                                <span className="wt6-dress-ornament" />
-                            </div>
+                            <ul className="wt6-dress-notes">
+                                <li>Hindari warna putih penuh, khusus untuk kedua mempelai.</li>
+                                <li>Disarankan busana formal atau semi-formal.</li>
+                                <li>Nyaman digunakan untuk duduk lesehan maupun berdiri lama.</li>
+                            </ul>
                         </div>
                     </div>
                 </section>

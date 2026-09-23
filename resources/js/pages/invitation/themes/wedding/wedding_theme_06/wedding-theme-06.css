@@ -1327,24 +1327,20 @@ ul {
 }
 
 .wt6-dress-wrap {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 380px);
-  gap: 24px;
-  align-items: stretch;
-  padding: 30px;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 36px;
   border-radius: var(--wt6-radius-xl);
   border: 1px solid rgba(201, 168, 122, 0.24);
   background: rgba(255, 253, 249, 0.86);
   box-shadow: var(--wt6-shadow-card);
-}
-
-.wt6-dress-copy {
-  min-width: 0;
+  text-align: center;
 }
 
 .wt6-swatches {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 18px;
   margin-top: 22px;
 }
@@ -1378,9 +1374,11 @@ ul {
 }
 
 .wt6-dress-notes {
-  margin-top: 22px;
+  max-width: 520px;
+  margin: 22px auto 0;
   display: grid;
   gap: 12px;
+  text-align: left;
 }
 
 .wt6-dress-notes li {
@@ -1400,27 +1398,6 @@ ul {
   height: 8px;
   border-radius: 50%;
   background: var(--wt6-gold);
-}
-
-.wt6-dress-illustration {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 320px;
-  overflow: hidden;
-  border-radius: var(--wt6-radius-xl);
-  border: 1px solid rgba(201, 168, 122, 0.2);
-  background:
-    linear-gradient(180deg, rgba(239, 230, 218, 0.65) 0%, rgba(255, 253, 249, 0.9) 100%);
-}
-
-.wt6-dress-ornament {
-  width: 250px;
-  height: 250px;
-  background: url('./assets/decor/rose-round.png') center / contain no-repeat;
-  filter: drop-shadow(0 10px 24px rgba(59, 46, 36, 0.08));
-  animation: wt6-float 7s ease-in-out infinite;
 }
 
 .wt6-gift-tabs {
@@ -2108,8 +2085,7 @@ ul {
   .wt6-hero-inner,
   .wt6-form-wrap,
   .wt6-wishes-layout,
-  .wt6-address-wrap,
-  .wt6-dress-wrap {
+  .wt6-address-wrap {
     grid-template-columns: 1fr;
   }
 
@@ -2327,15 +2303,6 @@ ul {
 
   .wt6-gallery-grid {
     columns: 1;
-  }
-
-  .wt6-dress-illustration {
-    min-height: 240px;
-  }
-
-  .wt6-dress-ornament {
-    width: 200px;
-    height: 200px;
   }
 
   .wt6-gift-grid,
