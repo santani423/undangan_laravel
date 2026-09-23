@@ -13,44 +13,22 @@ import type {
     WishItem,
 } from '@/types/invitation';
 import {
-    BookHeart,
-    CalendarDays,
     ChevronLeft,
     ChevronRight,
     Clock3,
     Copy,
-    Gift,
     Heart,
-    Images,
     MapPin,
-    Menu,
-    MessageCircleHeart,
     Music2,
     Pause,
     Send,
-    Sparkles,
-    Users,
     X,
-    type LucideIcon,
 } from 'lucide-react';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import './wedding-theme-07.css';
 
 type AttendanceValue = 'hadir' | 'tidak_hadir' | 'ragu';
 type ToastVariant = 'success' | 'error' | 'info';
-type NavSectionId =
-    | 'cover'
-    | 'hero'
-    | 'couple'
-    | 'event'
-    | 'address'
-    | 'love-story'
-    | 'gallery'
-    | 'dresscode'
-    | 'gift'
-    | 'rsvp'
-    | 'wishes'
-    | 'closing';
 
 interface Theme07Props {
     invitation?: Partial<WeddingInvitation>;
@@ -78,12 +56,6 @@ interface Theme07WishFormState {
 }
 
 type Theme07Wish = WishItem;
-
-interface Theme07NavItem {
-    id: NavSectionId;
-    label: string;
-    icon: LucideIcon;
-}
 
 const STORAGE_KEYS = {
     rsvp: 'wt7-rsvp-submissions',
@@ -629,7 +601,7 @@ function EventCard({
 
 function WishCard({ item }: { item: Theme07Wish }) {
     return (
-        <article className="wt7-wish-item wt7-reveal">
+        <article className="wt7-wish-item">
             <div className="wt7-wish-head">
                 <div>
                     <h4 className="wt7-wish-name">{item.name}</h4>
@@ -755,16 +727,10 @@ function buildWishDefaults(name = ''): Theme07WishFormState {
     };
 }
 
-function filterNavItems(items: Theme07NavItem[], visibility: Record<NavSectionId, boolean>): Theme07NavItem[] {
-    return items.filter((item) => visibility[item.id]);
-}
-
 export default function WeddingTheme07({ invitation, visitor, greeting }: Theme07Props) {
     const data = normalizeInvitation(invitation, greeting);
     const guestName = textValue(visitor, data.guestName || DEFAULT_GUEST_NAME);
     const [hasOpened, setHasOpened] = useState(!data.features?.cover);
-    const [navOpen, setNavOpen] = useState(false);
-    const [navScrolled, setNavScrolled] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
     const [copiedGiftValue, setCopiedGiftValue] = useState<string | null>(null);
     const [toast, setToast] = useState<Theme07Toast | null>(null);
@@ -800,43 +766,6 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
 
     const primaryEvent = data.events[0];
     const countdownTarget = data.countdownDate || (primaryEvent ? buildCountdownTarget(data) : new Date().toISOString());
-    const visibleNavItems = filterNavItems(
-        [
-            { id: 'couple', label: 'Mempelai', icon: Users },
-            { id: 'event', label: 'Acara', icon: CalendarDays },
-            { id: 'address', label: 'Lokasi', icon: MapPin },
-            { id: 'love-story', label: 'Kisah Kami', icon: BookHeart },
-            { id: 'gallery', label: 'Galeri', icon: Images },
-            { id: 'gift', label: 'Amplop Digital', icon: Gift },
-            { id: 'rsvp', label: 'RSVP', icon: MessageCircleHeart },
-            { id: 'wishes', label: 'Ucapan', icon: Sparkles },
-        ],
-        {
-            cover: feature.cover,
-            hero: true,
-            couple: feature.couple,
-            event: feature.event,
-            address: feature.location,
-            'love-story': feature.loveStory,
-            gallery: feature.gallery,
-            dresscode: Boolean(data.dressCodes.length),
-            gift: feature.gift,
-            rsvp: feature.rsvp,
-            wishes: feature.wishes,
-            closing: feature.footer,
-        },
-    );
-
-    useEffect(() => {
-        const handleScroll = () => setNavScrolled(window.scrollY > window.innerHeight * 0.7);
-        handleScroll();
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        window.addEventListener('resize', handleScroll, { passive: true });
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-            window.removeEventListener('resize', handleScroll);
-        };
-    }, []);
 
     useEffect(() => {
         if (!hasOpened) return;
@@ -861,12 +790,12 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
 
     useEffect(() => {
         if (typeof document === 'undefined') return;
-        const shouldLock = !hasOpened || navOpen || lightboxIndex !== null;
+        const shouldLock = !hasOpened || lightboxIndex !== null;
         document.body.classList.toggle('wt7-no-scroll', shouldLock);
         return () => {
             document.body.classList.remove('wt7-no-scroll');
         };
-    }, [hasOpened, navOpen, lightboxIndex]);
+    }, [hasOpened, lightboxIndex]);
 
     useEffect(() => {
         const endpoint = data.wishesEndpoint;
@@ -949,7 +878,6 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
 
     const handleOpenInvitation = async () => {
         setHasOpened(true);
-        setNavOpen(false);
         if (feature.music && data.music?.url && data.music.autoplay) {
             try {
                 await audioRef.current?.play();
@@ -1206,34 +1134,6 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
             )}
 
             <div className={`wt7-main${hasOpened || !feature.cover ? ' wt7-main--visible' : ''}`} aria-hidden={feature.cover && !hasOpened}>
-                <nav className={`wt7-nav${navScrolled ? ' wt7-nav--scrolled' : ''}`} aria-label="Navigasi bagian undangan">
-                    <div className="wt7-nav-inner">
-                        <button type="button" className="wt7-nav-brand" onClick={() => setNavOpen(false)}>
-                            <span className="wt7-script">A&amp;T</span>
-                        </button>
-                        <button
-                            type="button"
-                            className="wt7-nav-toggle"
-                            aria-expanded={navOpen}
-                            aria-label={navOpen ? 'Tutup menu' : 'Buka menu'}
-                            onClick={() => setNavOpen((current) => !current)}
-                        >
-                            {navOpen ? <X size={20} /> : <Menu size={20} />}
-                        </button>
-                        <div className={`wt7-nav-links${navOpen ? ' wt7-nav-links--open' : ''}`}>
-                            {visibleNavItems.map((item) => {
-                                const Icon = item.icon;
-                                return (
-                                    <a key={item.id} href={`#${item.id}`} onClick={() => setNavOpen(false)}>
-                                        <Icon size={14} />
-                                        <span>{item.label}</span>
-                                    </a>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </nav>
-
                 <header id="hero" className="wt7-hero">
                     <CornerOrnament position="tl" />
                     <CornerOrnament position="br" />
