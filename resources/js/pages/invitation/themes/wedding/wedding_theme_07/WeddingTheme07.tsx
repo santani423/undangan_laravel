@@ -1585,7 +1585,18 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
                             <p className="wt7-closing-source wt7-reveal wt7-delay-1">QS. Ar-Ruum : 21</p>
 
                             <div className="wt7-closing-emblem wt7-reveal wt7-delay-2">
-                                <CoupleIllustration className="wt7-closing-illustration" />
+                                {heroPhoto ? (
+                                    <div className="wt7-closing-photo-frame">
+                                        <img
+                                            className="wt7-closing-photo"
+                                            src={heroPhoto}
+                                            alt={`${data.groomNickname} & ${data.brideNickname}`}
+                                            loading="lazy"
+                                        />
+                                    </div>
+                                ) : (
+                                    <CoupleIllustration className="wt7-closing-illustration" />
+                                )}
                                 <h2 className="wt7-closing-names">
                                     <span className="wt7-script">{data.groomNickname}</span>
                                     <span className="wt7-closing-amp wt7-script">&amp;</span>
