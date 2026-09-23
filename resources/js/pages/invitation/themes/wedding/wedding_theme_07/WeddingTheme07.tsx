@@ -87,7 +87,6 @@ interface Theme07NavItem {
 
 const STORAGE_KEYS = {
     rsvp: 'wt7-rsvp-submissions',
-    wishes: 'wt7-wishes',
 } as const;
 
 const WISHES_PAGE_SIZE = 5;
@@ -357,6 +356,27 @@ function formatWishDate(date: string): string {
         month: 'long',
         year: 'numeric',
     });
+}
+
+function normalizeWish(raw: Record<string, unknown>): Theme07Wish {
+    return {
+        name: textValue(raw.name ?? raw.guest_name, 'Tamu Undangan'),
+        message: textValue(raw.message ?? raw.comment_text, ''),
+        date: textValue(raw.date ?? raw.approved_at ?? raw.created_at, ''),
+    };
+}
+
+async function fetchWishesPayload(endpoint: string, pageNum: number): Promise<{ wishes: Theme07Wish[]; lastPage: number | null } | null> {
+    try {
+        const response = await fetch(`${endpoint}?page=${pageNum}`, { headers: { Accept: 'application/json' } });
+        if (!response.ok) return null;
+
+        const payload = await response.json();
+        const wishes: Theme07Wish[] = Array.isArray(payload.wishes) ? payload.wishes.map(normalizeWish) : [];
+        return { wishes, lastPage: typeof payload.last_page === 'number' ? payload.last_page : null };
+    } catch {
+        return null;
+    }
 }
 
 function normalizeTime(time: string): string {
@@ -750,7 +770,10 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
     const [toast, setToast] = useState<Theme07Toast | null>(null);
     const [audioPlaying, setAudioPlaying] = useState(false);
     const [wishEntries, setWishEntries] = useState<Theme07Wish[]>(DEMO_WISHES);
-    const [wishVisibleCount, setWishVisibleCount] = useState(WISHES_PAGE_SIZE);
+    const [wishSource, setWishSource] = useState<'demo' | 'server'>('demo');
+    const [wishPage, setWishPage] = useState(1);
+    const [hasMoreServerWishes, setHasMoreServerWishes] = useState(false);
+    const [wishLoadingMore, setWishLoadingMore] = useState(false);
     const [rsvpForm, setRsvpForm] = useState<Theme07RsvpState>(() => buildRsvpDefaults(guestName !== DEFAULT_GUEST_NAME ? guestName : ''));
     const [wishForm, setWishForm] = useState<Theme07WishFormState>(() => buildWishDefaults(guestName !== DEFAULT_GUEST_NAME ? guestName : ''));
     const [rsvpErrors, setRsvpErrors] = useState<Partial<Record<keyof Theme07RsvpState, string>>>({});
@@ -846,12 +869,25 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
     }, [hasOpened, navOpen, lightboxIndex]);
 
     useEffect(() => {
-        const storedWishes = readLocalArray<Theme07Wish>(STORAGE_KEYS.wishes);
-        if (storedWishes.length > 0) {
-            setWishEntries([...storedWishes, ...DEMO_WISHES]);
-            setWishVisibleCount(WISHES_PAGE_SIZE);
-        }
-    }, []);
+        const endpoint = data.wishesEndpoint;
+        if (!endpoint) return;
+
+        let alive = true;
+
+        (async () => {
+            const result = await fetchWishesPayload(endpoint, 1);
+            if (!alive || !result) return;
+
+            setWishEntries(result.wishes);
+            setWishSource('server');
+            setWishPage(1);
+            setHasMoreServerWishes(result.lastPage ? 1 < result.lastPage : result.wishes.length >= WISHES_PAGE_SIZE);
+        })();
+
+        return () => {
+            alive = false;
+        };
+    }, [data.wishesEndpoint]);
 
     useEffect(() => {
         const audio = audioRef.current;
@@ -1031,39 +1067,70 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
         setWishErrors(nextErrors);
         if (Object.keys(nextErrors).length > 0) return;
 
+        const trimmedName = wishForm.name.trim();
+        const trimmedMessage = wishForm.message.trim();
         const nextWish: Theme07Wish = {
-            name: wishForm.name.trim(),
-            message: wishForm.message.trim(),
+            name: trimmedName,
+            message: trimmedMessage,
             date: new Date().toISOString(),
         };
 
-        const stored = readLocalArray<Theme07Wish>(STORAGE_KEYS.wishes);
-        writeLocalArray(STORAGE_KEYS.wishes, [nextWish, ...stored]);
-        setWishEntries((current) => [nextWish, ...current]);
-        setWishVisibleCount((current) => Math.max(current, WISHES_PAGE_SIZE));
-
+        let posted = false;
         if (data.wishesEndpoint) {
             try {
-                await fetch(data.wishesEndpoint, {
+                const response = await fetch(data.wishesEndpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         Accept: 'application/json',
                         'X-Requested-With': 'XMLHttpRequest',
                     },
-                    body: JSON.stringify(nextWish),
+                    body: JSON.stringify({ name: trimmedName, message: trimmedMessage }),
                 });
+                posted = response.ok;
             } catch {
-                // Local persistence is the fallback when an API is not available.
+                posted = false;
             }
+        }
+
+        const refreshed = posted && data.wishesEndpoint ? await fetchWishesPayload(data.wishesEndpoint, 1) : null;
+        if (refreshed) {
+            setWishEntries(refreshed.wishes);
+            setWishSource('server');
+            setWishPage(1);
+            setHasMoreServerWishes(refreshed.lastPage ? 1 < refreshed.lastPage : refreshed.wishes.length >= WISHES_PAGE_SIZE);
+        } else {
+            setWishEntries((current) => [nextWish, ...current]);
+            setWishPage(1);
         }
 
         showToast('Ucapan berhasil terkirim.', 'success');
         setWishForm(buildWishDefaults(guestName !== DEFAULT_GUEST_NAME ? guestName : ''));
     };
 
-    const visibleWishes = wishEntries.slice(0, wishVisibleCount);
-    const hasMoreWishes = wishVisibleCount < wishEntries.length;
+    const loadMoreWishes = async () => {
+        if (wishSource === 'server') {
+            if (!data.wishesEndpoint || !hasMoreServerWishes || wishLoadingMore) return;
+
+            setWishLoadingMore(true);
+            const nextPage = wishPage + 1;
+            const result = await fetchWishesPayload(data.wishesEndpoint, nextPage);
+            if (result) {
+                setWishEntries((current) => [...current, ...result.wishes]);
+                setWishPage(nextPage);
+                setHasMoreServerWishes(result.lastPage ? nextPage < result.lastPage : result.wishes.length >= WISHES_PAGE_SIZE);
+            } else {
+                setHasMoreServerWishes(false);
+            }
+            setWishLoadingMore(false);
+            return;
+        }
+
+        setWishPage((current) => current + 1);
+    };
+
+    const visibleWishes = wishSource === 'server' ? wishEntries : wishEntries.slice(0, wishPage * WISHES_PAGE_SIZE);
+    const canLoadMoreWishes = wishSource === 'server' ? hasMoreServerWishes : wishPage * WISHES_PAGE_SIZE < wishEntries.length;
     const heroSubtitle = textValue(data.greeting.message, DEFAULT_GREETING.message || '');
     const venueEvent = data.events[0];
     const heroPhoto = textValue(data.couplePhoto) || textValue(data.groomPhoto) || textValue(data.bridePhoto);
@@ -1582,15 +1649,19 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
                                 {visibleWishes.map((item, index) => (
                                     <WishCard key={`${item.name}-${item.date}-${index}`} item={item} />
                                 ))}
+                                {visibleWishes.length === 0 && (
+                                    <p className="wt7-wish-empty">Belum ada ucapan. Jadilah yang pertama mengirimkan doa.</p>
+                                )}
                             </div>
 
-                            {hasMoreWishes && (
+                            {canLoadMoreWishes && (
                                 <button
                                     type="button"
                                     className="wt7-btn wt7-btn--outline wt7-wishes-load-more"
-                                    onClick={() => setWishVisibleCount((current) => current + WISHES_PAGE_SIZE)}
+                                    onClick={loadMoreWishes}
+                                    disabled={wishLoadingMore}
                                 >
-                                    Muat Ucapan Lainnya
+                                    {wishLoadingMore ? 'Memuat...' : 'Muat Ucapan Lainnya'}
                                 </button>
                             )}
                         </div>

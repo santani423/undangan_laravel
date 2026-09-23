@@ -1558,34 +1558,12 @@ p {
   color: var(--wt7-ink);
 }
 
-.wt7-wish-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 92px;
-  padding: 4px 12px;
-  border-radius: 999px;
-  background: rgba(234, 242, 251, 0.9);
-  color: var(--wt7-primary);
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.wt7-wish-badge--attend {
-  background: rgba(234, 242, 251, 0.92);
-  color: var(--wt7-primary);
-}
-
-.wt7-wish-badge--decline {
-  background: rgba(231, 201, 198, 0.24);
-  color: var(--wt7-blush-deep);
-}
-
-.wt7-wish-badge--maybe {
-  background: rgba(191, 217, 240, 0.32);
+.wt7-wish-empty {
+  text-align: center;
+  font-size: 13px;
+  font-style: italic;
   color: var(--wt7-navy-soft);
+  padding: 12px 0;
 }
 
 .wt7-wishes-load-more {
