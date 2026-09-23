@@ -208,24 +208,26 @@ function resolveThemeComponent(themeSlug: string, invitation: InvitationData, vi
     }
 }
 
+const DEFAULT_FAVICON = '/logo.svg';
+
 function getFaviconUrl(invitation: InvitationData): string {
     switch (invitation.type) {
         case 'wedding': {
             const w = invitation as WeddingInvitation;
-            return w.couplePhoto || w.groomPhoto || w.bridePhoto || '';
+            return w.couplePhoto || w.groomPhoto || w.bridePhoto || DEFAULT_FAVICON;
         }
         case 'birthday':
-            return (invitation as BirthdayInvitation).celebrantPhoto || '';
+            return (invitation as BirthdayInvitation).celebrantPhoto || DEFAULT_FAVICON;
         case 'khitanan':
-            return (invitation as KhitananInvitation).childPhoto || '';
+            return (invitation as KhitananInvitation).childPhoto || DEFAULT_FAVICON;
         case 'aqiqah':
-            return (invitation as AqiqahInvitation).babyPhoto || '';
+            return (invitation as AqiqahInvitation).babyPhoto || DEFAULT_FAVICON;
         case 'gender_reveal':
-            return (invitation as GenderRevealInvitation).parentsPhoto || '';
+            return (invitation as GenderRevealInvitation).parentsPhoto || DEFAULT_FAVICON;
         case 'syukuran':
-            return (invitation as SyukuranInvitation).hostPhoto || '';
+            return (invitation as SyukuranInvitation).hostPhoto || DEFAULT_FAVICON;
         default:
-            return '';
+            return DEFAULT_FAVICON;
     }
 }
 
@@ -233,7 +235,6 @@ export default function InvitationShow({ invitation, themeSlug, visitor }: Props
     const faviconUrl = getFaviconUrl(invitation);
 
     useEffect(() => {
-        if (!faviconUrl) return;
         // Remove existing favicons
         document.querySelectorAll('link[rel~="icon"]').forEach((el) => el.remove());
         const link = document.createElement('link');
