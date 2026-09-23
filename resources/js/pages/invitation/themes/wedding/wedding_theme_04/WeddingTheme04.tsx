@@ -539,14 +539,14 @@ export default function WeddingTheme04({ invitation, visitor, greeting }: Weddin
                 )}
 
                 {/* ── CLOSING VERSE ─────────────────────────────────────────────── */}
-                {invitation.openingQuote && (
+                {/* {invitation.openingQuote && (
                     <section className="wt4-verse-section">
                         <div className="wt4-narrow wt4-anim-up">
                             <p>&ldquo;Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan-pasangan dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya.&rdquo;</p>
                             <span>QS. Ar-Rum: 21</span>
                         </div>
                     </section>
-                )}
+                )} */}
 
                 {/* ── CLOSING ───────────────────────────────────────────────────── */}
                 <section id="wt4-closing" className="wt4-closing-section">

@@ -818,6 +818,10 @@ html:has(.wt4-root) {
     background: var(--wt4-white);
     box-shadow: var(--wt4-shadow);
 }
+.wt4-form-card form {
+    display: grid;
+    gap: 14px;
+}
 .wt4-form-label {
     display: grid;
     gap: 6px;

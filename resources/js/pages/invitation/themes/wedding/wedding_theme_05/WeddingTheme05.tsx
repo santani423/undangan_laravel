@@ -19,30 +19,16 @@ import {
     Quote,
     Send,
     Sparkles,
-    Users,
     WalletCards,
     X,
     type LucideIcon,
 } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
 import './wedding-theme-05.css';
 
 type AttendanceValue = 'Hadir' | 'Tidak Hadir';
 type GiftTab = 'bank' | 'ewallet';
 type ToastVariant = 'success' | 'error' | 'info';
-type NavSectionId =
-    | 'hero'
-    | 'verse'
-    | 'couple'
-    | 'events'
-    | 'location'
-    | 'story'
-    | 'gallery'
-    | 'dresscode'
-    | 'gift'
-    | 'rsvp'
-    | 'wishes'
-    | 'closing';
 
 interface Theme05Props {
     invitation?: Partial<WeddingInvitation>;
@@ -327,19 +313,6 @@ const DEFAULT_WISHES: WishEntry[] = [
         message: 'Barakallahu laka wa baraka alaika. Semoga pernikahan kalian menjadi awal yang indah.',
         date: '2026-07-05T08:20:00+07:00',
     },
-];
-
-const SECTION_NAV: Array<{ id: NavSectionId; label: string; Icon: LucideIcon }> = [
-    { id: 'hero', label: 'Beranda', Icon: Sparkles },
-    { id: 'couple', label: 'Mempelai', Icon: Users },
-    { id: 'events', label: 'Acara', Icon: CalendarDays },
-    { id: 'location', label: 'Lokasi', Icon: MapPin },
-    { id: 'story', label: 'Kisah', Icon: Quote },
-    { id: 'gallery', label: 'Galeri', Icon: ImageIcon },
-    { id: 'dresscode', label: 'Busana', Icon: Leaf },
-    { id: 'gift', label: 'Gift', Icon: Gift },
-    { id: 'rsvp', label: 'RSVP', Icon: Send },
-    { id: 'wishes', label: 'Ucapan', Icon: MessageCircleHeart },
 ];
 
 const WISH_AVATAR_COLORS = ['#3b6b35', '#c5a059', '#8a9a86', '#a0b8c0', '#bc6c25', '#6f8f63'];
@@ -767,9 +740,7 @@ export default function WeddingTheme05({ invitation, visitor, greeting }: Theme0
     const data = useMemo(() => resolveTheme05Data(invitation, visitor, greeting), [invitation, visitor, greeting]);
     const contentRef = useRef<HTMLElement | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
-    const navButtonsRef = useRef<Map<NavSectionId, HTMLButtonElement | null>>(new Map());
     const [opened, setOpened] = useState(!data.coverEnabled);
-    const [activeSection, setActiveSection] = useState<NavSectionId>('hero');
     const [toast, setToast] = useState<ToastState | null>(null);
     const [isMusicPlaying, setIsMusicPlaying] = useState(false);
     const [activeGiftTab, setActiveGiftTab] = useState<GiftTab>(data.bankAccounts.length > 0 ? 'bank' : 'ewallet');
@@ -839,13 +810,6 @@ export default function WeddingTheme05({ invitation, visitor, greeting }: Theme0
         }
     }
 
-    function handleNavigate(sectionId: NavSectionId) {
-        const element = document.getElementById(sectionId);
-        if (!element) return;
-        setActiveSection(sectionId);
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
     function handleExternalNavigate(url: string) {
         if (!url) return;
         openExternal(url);
@@ -892,23 +856,8 @@ export default function WeddingTheme05({ invitation, visitor, greeting }: Theme0
 
         revealTargets.forEach((target) => revealObserver.observe(target));
 
-        const sectionTargets = Array.from(root.querySelectorAll<HTMLElement>('[data-section-id]'));
-        const sectionObserver = new IntersectionObserver(
-            (entries) => {
-                const visible = entries
-                    .filter((entry) => entry.isIntersecting)
-                    .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-                const sectionId = visible?.target instanceof HTMLElement ? (visible.target.dataset.sectionId as NavSectionId | undefined) : undefined;
-                if (sectionId) setActiveSection(sectionId);
-            },
-            { root, threshold: [0.2, 0.35, 0.55, 0.75] },
-        );
-
-        sectionTargets.forEach((target) => sectionObserver.observe(target));
-
         return () => {
             revealObserver.disconnect();
-            sectionObserver.disconnect();
         };
     }, [opened, wishes.length]);
 
@@ -958,24 +907,6 @@ export default function WeddingTheme05({ invitation, visitor, greeting }: Theme0
             setWishForm((current) => (current.name ? current : { ...current, name: data.guestDisplayName }));
         }
     }, [data.guestDisplayName, data.guestName]);
-
-    const visibleNavItems = SECTION_NAV.filter((item) => {
-        const visibilityMap: Record<NavSectionId, boolean> = {
-            hero: true,
-            verse: data.greetingEnabled,
-            couple: data.coupleEnabled,
-            events: data.eventEnabled,
-            location: data.locationEnabled,
-            story: data.storyEnabled,
-            gallery: data.galleryEnabled,
-            dresscode: data.dresscodeEnabled,
-            gift: data.giftEnabled,
-            rsvp: data.rsvpEnabled,
-            wishes: data.wishesEnabled,
-            closing: data.footerEnabled,
-        };
-        return visibilityMap[item.id];
-    });
 
     const currentGalleryItem = lightboxIndex === null ? null : data.gallery[lightboxIndex] ?? null;
 
@@ -1108,32 +1039,37 @@ export default function WeddingTheme05({ invitation, visitor, greeting }: Theme0
             ) : null}
 
             <div className={`wt5-overlay${opened ? ' wt5-overlay--opened' : ''}`} aria-hidden={opened}>
-                <div className="wt5-envelope-shell" onClick={openInvitation} role="presentation">
-                    <div className={`wt5-envelope${opened ? ' wt5-envelope--open' : ''}`}>
-                        <div className="wt5-envelope-flap wt5-envelope-flap--top" />
-                        <div className="wt5-envelope-flap wt5-envelope-flap--left" />
-                        <div className="wt5-envelope-flap wt5-envelope-flap--right" />
-                        <div className="wt5-envelope-flap wt5-envelope-flap--bottom" />
+                <div className="wt5-overlay-inner">
+                    <div className="wt5-overlay-heading">
+                        <p className="wt5-overlay-heading__eyebrow">{data.greeting.title}</p>
+                        <h1 className="wt5-overlay-heading__names">
+                            {data.groomNickname} &amp; {data.brideNickname}
+                        </h1>
+                        <p className="wt5-overlay-heading__subtitle">{data.mainTitle}</p>
+                    </div>
 
-                        <button type="button" className="wt5-envelope-seal" aria-label="Buka undangan" onClick={openInvitation}>
-                            <Heart size={18} fill="currentColor" />
-                        </button>
+                    <div className="wt5-envelope-shell" onClick={openInvitation} role="presentation">
+                        <div className={`wt5-envelope${opened ? ' wt5-envelope--open' : ''}`}>
+                            <div className="wt5-envelope-flap wt5-envelope-flap--top" />
+                            <div className="wt5-envelope-flap wt5-envelope-flap--left" />
+                            <div className="wt5-envelope-flap wt5-envelope-flap--right" />
+                            <div className="wt5-envelope-flap wt5-envelope-flap--bottom" />
 
-                        <div className="wt5-envelope-card">
-                            <div className="wt5-envelope-card__copy">
-                                <p className="wt5-envelope-card__eyebrow">{data.greeting.title}</p>
-                                <h1 className="wt5-envelope-card__title">
-                                    {data.groomNickname} &amp; {data.brideNickname}
-                                </h1>
-                                <p className="wt5-envelope-card__subtitle">{data.mainTitle}</p>
-                                <p className="wt5-envelope-card__guest-label">{data.greeting.guestLabel}</p>
-                                <p className="wt5-envelope-card__guest-name">{data.guestDisplayName}</p>
-                            </div>
-                            <div className="wt5-envelope-card__actions">
-                                <button type="button" className="wt5-btn wt5-btn--primary wt5-btn--full" onClick={openInvitation}>
-                                    {data.greeting.buttonText}
-                                </button>
-                                <p className="wt5-envelope-card__hint">Klik segel atau tombol untuk membuka undangan</p>
+                            <button type="button" className="wt5-envelope-seal" aria-label="Buka undangan" onClick={openInvitation}>
+                                <Heart size={18} fill="currentColor" />
+                            </button>
+
+                            <div className="wt5-envelope-card">
+                                <div className="wt5-envelope-card__copy">
+                                    <p className="wt5-envelope-card__guest-label">{data.greeting.guestLabel}</p>
+                                    <p className="wt5-envelope-card__guest-name">{data.guestDisplayName}</p>
+                                </div>
+                                <div className="wt5-envelope-card__actions">
+                                    <button type="button" className="wt5-btn wt5-btn--primary wt5-btn--full" onClick={openInvitation}>
+                                        {data.greeting.buttonText}
+                                    </button>
+                                    <p className="wt5-envelope-card__hint">Klik segel atau tombol untuk membuka undangan</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1141,7 +1077,11 @@ export default function WeddingTheme05({ invitation, visitor, greeting }: Theme0
             </div>
 
             <div className="wt5-shell">
-                <aside className="wt5-cover-panel" aria-hidden={!opened}>
+                <aside
+                    className="wt5-cover-panel"
+                    aria-hidden={!opened}
+                    style={{ '--wt5-cover-bg': `url(${data.heroPhoto})` } as CSSProperties}
+                >
                     <div className="wt5-cover-panel__frame">
                         <p className="wt5-cover-panel__eyebrow">The Wedding Of</p>
                         <h2 className="wt5-cover-panel__names">
@@ -1161,7 +1101,12 @@ export default function WeddingTheme05({ invitation, visitor, greeting }: Theme0
                 </aside>
 
                 <main ref={contentRef} className={`wt5-main${opened ? ' wt5-main--opened' : ''}`}>
-                    <section id="hero" data-section-id="hero" className="wt5-section wt5-section--hero">
+                    <section
+                        id="hero"
+                        data-section-id="hero"
+                        className="wt5-section wt5-section--hero"
+                        style={{ '--wt5-hero-bg': `url(${data.heroPhoto})` } as CSSProperties}
+                    >
                         <img className="wt5-decor wt5-decor--tl" src={ASSETS.leaf1} alt="" aria-hidden="true" />
                         <img className="wt5-decor wt5-decor--br" src={ASSETS.leaf3} alt="" aria-hidden="true" />
                         <div className="wt5-container wt5-container--narrow">
@@ -1630,31 +1575,6 @@ export default function WeddingTheme05({ invitation, visitor, greeting }: Theme0
                     {isMusicPlaying ? <Pause size={18} /> : <Music2 size={18} />}
                 </button>
             ) : null}
-
-            <nav className={`wt5-dotnav${opened ? ' is-visible' : ''}`} aria-label="Navigasi bagian undangan">
-                {visibleNavItems.map((item) => {
-                    const Icon = item.Icon;
-                    return (
-                        <button
-                            key={item.id}
-                            ref={(node) => {
-                                navButtonsRef.current.set(item.id, node);
-                            }}
-                            type="button"
-                            className={`wt5-dotnav__item${activeSection === item.id ? ' is-active' : ''}`}
-                            onClick={() => handleNavigate(item.id)}
-                            aria-current={activeSection === item.id ? 'page' : undefined}
-                            title={item.label}
-                        >
-                            <span className="wt5-dotnav__dot" />
-                            <span className="wt5-dotnav__label">
-                                <Icon size={14} />
-                                {item.label}
-                            </span>
-                        </button>
-                    );
-                })}
-            </nav>
 
             {toast ? (
                 <div className={`wt5-toast wt5-toast--${toast.variant}`} role="status" aria-live="polite">
