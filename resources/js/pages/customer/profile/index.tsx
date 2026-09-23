@@ -1,3 +1,4 @@
+import AppearanceTabs from '@/components/appearance-tabs';
 import InputError from '@/components/input-error';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -275,6 +276,12 @@ export default function ProfileIndex({ profile }: { profile: Profile }) {
                                     Terima notifikasi lewat WhatsApp
                                 </label>
                             </div>
+                        </div>
+
+                        <div className={cardClass}>
+                            <h2 className="text-foreground mb-1 text-base font-semibold">Tampilan</h2>
+                            <p className="text-muted-foreground mb-4 text-sm">Atur mode tampilan terang atau gelap untuk akun Anda.</p>
+                            <AppearanceTabs />
                         </div>
 
                         <div className="flex items-center gap-4">

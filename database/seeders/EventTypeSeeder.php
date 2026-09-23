@@ -19,7 +19,7 @@ class EventTypeSeeder extends Seeder
             ],
             [
                 'name' => 'birthday',
-                'label' => 'ulang_tahun',
+                'label' => 'Ulang Tahun',
                 'description' => 'Undangan pesta ulang tahun',
                 'icon_path' => 'icons/birthday.svg',
                 'is_active' => true,
@@ -40,7 +40,7 @@ class EventTypeSeeder extends Seeder
             ],
             [
                 'name' => 'gender_reveal',
-                'label' => 'gender_reveal',
+                'label' => 'Gender Reveal',
                 'description' => 'Undangan pesta gender reveal',
                 'icon_path' => 'icons/gender_reveal.svg',
                 'is_active' => true,

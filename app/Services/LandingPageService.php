@@ -106,7 +106,7 @@ class LandingPageService
         return $eventTypes
             ->map(function (EventType $eventType) use ($packages) {
                 $typePackages = $packages
-                    ->filter(fn (Package $p) => Str::lower($p->invitation_type) === Str::lower($eventType->label))
+                    ->filter(fn (Package $p) => $p->invitation_type === $eventType->invitationType())
                     ->sortBy(fn (Package $p) => self::TIER_ORDER[Str::afterLast($p->name, '_')] ?? 99)
                     ->values();
 

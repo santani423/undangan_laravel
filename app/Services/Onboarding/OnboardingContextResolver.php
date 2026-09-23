@@ -15,9 +15,10 @@ use App\Models\Theme;
  * or a price.
  *
  * Theme and Package don't share a foreign key: Theme.event_type is matched
- * against EventType.name, Package.invitation_type against EventType.label
- * (the same string-matching convention already used by
- * InvitationController::selectTheme()).
+ * against EventType.name, Package.invitation_type against
+ * EventType::INVITATION_TYPES[name] (the same mapping
+ * InvitationController::selectTheme() and store() use — label is display
+ * text only and isn't safe to match against invitation_type's slug).
  */
 class OnboardingContextResolver
 {
@@ -42,7 +43,7 @@ class OnboardingContextResolver
         if ($packageId) {
             $package = Package::active()->find($packageId);
             if ($package) {
-                $eventType = EventType::active()->where('label', $package->invitation_type)->first();
+                $eventType = EventType::findActiveByInvitationType($package->invitation_type);
                 if ($eventType && ($context['event_type_id'] === null || $context['event_type_id'] === $eventType->id)) {
                     $context['package_id'] = $package->id;
                     $context['event_type_id'] = $eventType->id;

@@ -134,7 +134,7 @@ class InvitationController extends Controller
             ->get(['id', 'name', 'slug', 'description', 'thumbnail_url', 'preview_image_url', 'color_primary', 'color_secondary', 'is_premium', 'is_exclusive', 'price', 'tags', 'usage_count']);
 
         $packages = Package::active()
-            ->where('invitation_type', $eventType->label)
+            ->where('invitation_type', $eventType->invitationType())
             ->with('features')
             ->get(['id', 'name', 'label', 'description', 'price', 'currency', 'billing_period', 'duration_days', 'max_gallery_uploads'])
             // A package's tier (basic/premium/exclusive) — parsed from its
@@ -251,11 +251,10 @@ class InvitationController extends Controller
                 ]);
             }
 
-            // Case-insensitive: matches the collation-based comparison selectTheme()
-            // already relies on when it queries packages by $eventType->label (e.g.
-            // "Pernikahan" vs a seeded "pernikahan") — a strict `!==` here rejected
-            // every correctly-picked wedding/khitanan/aqiqah package.
-            if (! $pkg || ! $eventType->label || Str::lower($pkg->invitation_type ?? '') !== Str::lower($eventType->label)) {
+            // Matched via EventType::INVITATION_TYPES, not $eventType->label —
+            // label is free-form display text (e.g. "Ulang Tahun") and isn't
+            // guaranteed to equal invitation_type's slug ("ulang_tahun").
+            if (! $pkg || ! $eventType->invitationType() || $pkg->invitation_type !== $eventType->invitationType()) {
                 throw ValidationException::withMessages([
                     'package_id' => 'Paket yang dipilih tidak sesuai dengan jenis undangan ini.',
                 ]);
