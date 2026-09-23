@@ -58,11 +58,16 @@ img {
 }
 
 /* Scrollbar */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-teal) transparent;
+}
+
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-cream);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: var(--primary-teal);
