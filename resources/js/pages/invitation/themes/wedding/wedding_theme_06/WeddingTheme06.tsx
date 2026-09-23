@@ -1057,7 +1057,7 @@ export default function WeddingTheme06({ invitation, visitor, greeting }: Weddin
                             <div className="wt6-cover-qr">
                                 <GuestQrCode
                                     data={data.guestQrData}
-                                    size={120}
+                                    size={180}
                                     style={{ borderRadius: '10px', border: '3px solid rgba(184,145,46,0.42)' }}
                                 />
                                 <p className="wt6-cover-qr-label">QR Check-in Tamu</p>
