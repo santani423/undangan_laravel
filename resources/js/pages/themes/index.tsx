@@ -13,7 +13,6 @@ interface ThemeItem {
     color_secondary: string;
     is_premium: boolean;
     is_exclusive: boolean;
-    price: number;
     usage_count: number;
     tags: string[];
 }
@@ -22,11 +21,6 @@ interface PageProps {
     themes: ThemeItem[];
     auth?: { user?: { name: string } };
     [key: string]: unknown;
-}
-
-function formatPrice(price: number): string {
-    if (price === 0) return "Gratis";
-    return "Rp " + price.toLocaleString("id-ID");
 }
 
 function TierBadge({ theme }: { theme: ThemeItem }) {
@@ -74,8 +68,7 @@ function ThemeCard({ theme, onCreate }: { theme: ThemeItem; onCreate: (themeId: 
             <div className="p-4">
                 <h3 className="font-semibold text-gray-900">{theme.name}</h3>
                 <p className="mt-0.5 text-xs text-gray-500">{theme.category} · {theme.event_type}</p>
-                <div className="mt-3 flex items-center justify-between">
-                    <span className="text-sm font-bold text-gray-800">{formatPrice(theme.price)}</span>
+                <div className="mt-3 flex items-center justify-end">
                     <span className="text-xs text-gray-400">{theme.usage_count.toLocaleString("id-ID")}× dipakai</span>
                 </div>
                 <div className="mt-3 flex gap-2">
@@ -132,7 +125,6 @@ function ThemeRow({ theme, onCreate }: { theme: ThemeItem; onCreate: (themeId: n
                 </div>
             </div>
             <div className="text-right flex-shrink-0">
-                <p className="font-bold text-gray-800">{formatPrice(theme.price)}</p>
                 <p className="text-xs text-gray-400">{theme.usage_count.toLocaleString("id-ID")}× dipakai</p>
                 <div className="mt-2 flex gap-1.5">
                     {hasSample && (

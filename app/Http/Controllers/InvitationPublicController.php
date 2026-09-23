@@ -52,10 +52,11 @@ class InvitationPublicController extends Controller
         $theme = $invitation->theme;
         abort_if(! $theme, 404, 'Tema undangan tidak tersedia.');
 
-        $guest = Guest::where('invitation_id', $invitation->id)
-            ->where('slug', $visitor)
-            ->first();
-            // dd($visitor);
+        $guest = $visitor
+            ? Guest::where('invitation_id', $invitation->id)
+                ->where('slug', $visitor)
+                ->first()
+            : null;
         $data = $this->buildData($invitation, $theme->event_type, $guest ? $guest->name : ($visitor ?? ''));
         if ($guest) {
             if (! empty($guest->qr_code_data)) {

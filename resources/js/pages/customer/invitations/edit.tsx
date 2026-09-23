@@ -1324,7 +1324,7 @@ function ThemeCard({
             {/* Info */}
             <div className="p-3">
                 <p className="font-semibold text-foreground text-sm leading-tight line-clamp-1">{theme.name}</p>
-                <div className="flex items-center justify-between mt-1.5">
+                <div className="flex items-center mt-1.5">
                     {/* Color swatches */}
                     <div className="flex gap-1">
                         <div className="size-3.5 rounded-full border border-white/50 shadow-sm ring-1 ring-border/40"
@@ -1332,11 +1332,6 @@ function ThemeCard({
                         <div className="size-3.5 rounded-full border border-white/50 shadow-sm ring-1 ring-border/40"
                             style={{ background: theme.color_secondary ?? theme.color_primary ?? '#d1d5db' }} />
                     </div>
-                    <span className="text-[10px] text-muted-foreground">
-                        {theme.price > 0
-                            ? `Rp ${theme.price.toLocaleString('id-ID')}`
-                            : 'Gratis'}
-                    </span>
                 </div>
             </div>
         </div>

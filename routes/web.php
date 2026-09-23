@@ -28,7 +28,6 @@ Route::get('themes', function () {
             'color_secondary' => $t->color_secondary,
             'is_premium'      => $t->is_premium,
             'is_exclusive'    => $t->is_exclusive,
-            'price'           => $t->price,
             'usage_count'     => $t->usage_count,
             'tags'            => $t->tags ?? [],
         ]);
