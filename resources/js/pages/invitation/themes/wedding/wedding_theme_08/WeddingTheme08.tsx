@@ -127,39 +127,50 @@ export default function WeddingTheme08({ invitation, visitor, greeting }: Weddin
                     <span className="wt8-cvf wt8-cvf-tr">🌸</span>
                     <span className="wt8-cvf wt8-cvf-bl">🌺</span>
                     <span className="wt8-cvf wt8-cvf-br">🌺</span>
-                    <div className="wt8-cv-wrap">
-                        <p className="wt8-cv-sub">— Walimatul &apos;Ursy —</p>
-                        <div className="wt8-cv-walimah">Undangan Pernikahan</div>
-                        <div className="wt8-cv-names">
-                            {invitation.groomNickname} &amp; {invitation.brideNickname}
-                        </div>
-                        <CoupleIllustration className="wt8-cv-couple wt8-float" />
-                        <div className="wt8-cv-date">{invitation.mainDateFormatted}</div>
-                        <p className="wt8-cv-inv">
-                            Tanpa mengurangi rasa hormat kami mengundang
-                            <br />
-                            Bapak / Ibu / Saudara(i)
-                            <br />
-                            untuk menghadiri pernikahan putra putri kami
-                        </p>
-
-                        {greetingEnabled && coverGuestName && (
-                            <>
-                                <p className="wt8-cv-greet-title">{greeting?.title ?? 'Kepada Yth.'}</p>
-                                <p className="wt8-cv-guest-name">{coverGuestName}</p>
-                            </>
-                        )}
-                        {greetingEnabled && greeting?.message && <p className="wt8-cv-message">{greeting.message}</p>}
-                        {invitation.guestQrData && (
-                            <div className="wt8-cv-qr-wrap">
-                                <GuestQrCode data={invitation.guestQrData} size={120} className="wt8-cv-qr" />
-                                <p className="wt8-cv-qr-label">QR Check-in Tamu</p>
+                    <div className="wt8-cover-inner">
+                        <div className="wt8-cv-wrap">
+                            <p className="wt8-cv-sub">— Walimatul &apos;Ursy —</p>
+                            <div className="wt8-cv-walimah">Undangan Pernikahan</div>
+                            <div className="wt8-cv-names">
+                                {invitation.groomNickname} &amp; {invitation.brideNickname}
                             </div>
-                        )}
+                            {heroPhoto ? (
+                                <div className="wt8-cv-photo-wrap wt8-float">
+                                    <img src={heroPhoto} alt="Foto Pasangan" className="wt8-cv-photo-img" />
+                                </div>
+                            ) : (
+                                <CoupleIllustration className="wt8-cv-couple wt8-float" />
+                            )}
+                            <div className="wt8-cv-date">{invitation.mainDateFormatted}</div>
+                            <p className="wt8-cv-inv">
+                                Tanpa mengurangi rasa hormat kami mengundang
+                                <br />
+                                Bapak / Ibu / Saudara(i)
+                                <br />
+                                untuk menghadiri pernikahan putra putri kami
+                            </p>
 
-                        <button className="wt8-btn-open" onClick={openInvitation}>
-                            💌 {greeting?.buttonText ?? "Buka Undangan"}
-                        </button>
+                            {greetingEnabled && coverGuestName && (
+                                <>
+                                    <p className="wt8-cv-greet-title">{greeting?.title ?? 'Kepada Yth.'}</p>
+                                    <p className="wt8-cv-guest-name">{coverGuestName}</p>
+                                </>
+                            )}
+                            {greetingEnabled && greeting?.message && <p className="wt8-cv-message">{greeting.message}</p>}
+                            {invitation.guestQrData && (
+                                <div className="wt8-cv-qr-wrap">
+                                    <GuestQrCode data={invitation.guestQrData} size={120} className="wt8-cv-qr" />
+                                    <p className="wt8-cv-qr-label">QR Check-in Tamu</p>
+                                </div>
+                            )}
+
+                            <button className="wt8-btn-open" onClick={openInvitation}>
+                                💌 {greeting?.buttonText ?? "Buka Undangan"}
+                            </button>
+                        </div>
+                    </div>
+                    <div className="wt8-cv-scrollhint" aria-hidden="true">
+                        <span>↓</span>
                     </div>
                 </div>
             )}

@@ -43,20 +43,27 @@ html:has(.wt8-root) {
     inset: 0;
     z-index: 9990;
     background: linear-gradient(155deg, #ffd6e7 0%, #fea1c8 45%, #f76c9a 100%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
     text-align: center;
     transition:
         opacity 1.2s ease,
         transform 1.2s ease;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
 }
 .wt8-cover.wt8-hidden {
     opacity: 0;
     pointer-events: none;
     transform: scale(1.08);
+}
+.wt8-cover-inner {
+    position: relative;
+    z-index: 1;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 .wt8-cvf {
     position: absolute;
@@ -120,6 +127,22 @@ html:has(.wt8-root) {
     display: block;
     animation: wt8fi 1.2s 0.6s ease both;
     filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.2));
+}
+.wt8-cv-photo-wrap {
+    width: min(190px, 52vw);
+    aspect-ratio: 3 / 4;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    border: 4px solid rgba(255, 255, 255, 0.75);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+    margin: 1rem auto 1.2rem;
+    overflow: hidden;
+    animation: wt8fi 1.2s 0.6s ease both;
+}
+.wt8-cv-photo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 .wt8-cv-date {
     font-family: var(--wt8-font-serif);
@@ -203,6 +226,22 @@ html:has(.wt8-root) {
 .wt8-btn-open:hover {
     background: #fff;
     color: var(--wt8-pink-x);
+}
+.wt8-cv-scrollhint {
+    position: absolute;
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+    z-index: 2;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 1.2rem;
+    pointer-events: none;
+    animation: wt8float 2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+    .wt8-cv-scrollhint {
+        animation: none;
+    }
 }
 
 /* ── MUSIC BUTTON ──────────────────────────────────────────────────────── */
