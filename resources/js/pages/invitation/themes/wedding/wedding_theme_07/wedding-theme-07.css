@@ -1302,8 +1302,10 @@ p {
 .wt7-gift-card {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: 18px;
-  padding: 22px;
+  padding: 26px 22px;
   border-radius: var(--wt7-radius-lg);
   background: rgba(255, 255, 255, 0.98);
   box-shadow: var(--wt7-shadow-card);
@@ -1312,8 +1314,9 @@ p {
 
 .wt7-gift-card-copy {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
 }
 
 .wt7-gift-card-logo {
@@ -1356,8 +1359,24 @@ p {
   color: var(--wt7-navy-soft);
 }
 
+.wt7-gift-card-qr {
+  display: flex;
+  justify-content: center;
+}
+
+.wt7-gift-card-qr img {
+  width: 168px;
+  height: 168px;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 1px solid rgba(143, 176, 214, 0.28);
+  background: #fff;
+  padding: 8px;
+}
+
 .wt7-gift-copy {
-  align-self: flex-start;
+  align-self: center;
 }
 
 .wt7-form {
@@ -1740,10 +1759,6 @@ p {
   .wt7-lightbox-nav {
     width: 42px;
     height: 42px;
-  }
-
-  .wt7-gift-card-copy {
-    align-items: flex-start;
   }
 
   .wt7-gift-card-number {

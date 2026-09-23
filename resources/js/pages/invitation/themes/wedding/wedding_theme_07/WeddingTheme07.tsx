@@ -626,6 +626,7 @@ function GiftCard({
     const value = isBank ? item.accountNumber : item.accountNumber;
     const label = isBank ? item.bankName : item.provider || item.label;
     const owner = item.accountName;
+    const qrisUrl = 'qrisQrUrl' in item ? item.qrisQrUrl : null;
 
     return (
         <article className="wt7-gift-card">
@@ -637,6 +638,11 @@ function GiftCard({
                     <p className="wt7-gift-card-name">a.n. {owner}</p>
                 </div>
             </div>
+            {qrisUrl && (
+                <div className="wt7-gift-card-qr">
+                    <img src={qrisUrl} alt={`QRIS ${label}`} loading="lazy" />
+                </div>
+            )}
             <button type="button" className="wt7-btn wt7-btn--outline wt7-btn--sm wt7-gift-copy" onClick={() => onCopy(value)}>
                 <Copy size={15} />
                 <span>{copiedValue === value ? 'Tersalin' : 'Salin'}</span>
