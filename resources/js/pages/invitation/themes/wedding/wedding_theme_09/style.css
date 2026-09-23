@@ -1616,6 +1616,105 @@ footer a {
   .right-panel {
     /* For active spacing above the sticky/bottom mobile bar which turns to sticky bottom bar for desktop width */
   }
+
+  section {
+    padding: 100px 60px;
+  }
+
+  .section-header {
+    margin-bottom: 56px;
+  }
+
+  .section-header .subtitle {
+    font-size: clamp(2.5rem, 3.2vw, 3.4rem);
+  }
+
+  .section-header .title {
+    font-size: clamp(1.8rem, 2.2vw, 2.6rem);
+  }
+
+  .hero-content .bismillah-img {
+    width: clamp(150px, 10vw, 210px);
+  }
+
+  .hero-content .wedding-logo {
+    font-size: clamp(0.8rem, 1vw, 1rem);
+  }
+
+  .hero-content .wedding-names {
+    font-size: clamp(4.5rem, 6vw, 6.5rem);
+  }
+
+  .hero-content .wedding-frame {
+    width: clamp(280px, 22vw, 380px);
+    height: clamp(280px, 22vw, 380px);
+  }
+
+  .hero-content .wedding-date {
+    font-size: clamp(1.2rem, 1.6vw, 1.6rem);
+  }
+
+  .quote-text {
+    max-width: clamp(500px, 45vw, 700px);
+    font-size: clamp(0.9rem, 1.1vw, 1.1rem);
+  }
+
+  .greeting-card {
+    max-width: clamp(500px, 45vw, 700px);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .couple-photo-container {
+    width: clamp(200px, 16vw, 280px);
+    height: clamp(200px, 16vw, 280px);
+  }
+
+  .couple-profile h3 {
+    font-size: clamp(1.6rem, 2vw, 2.1rem);
+  }
+
+  .couple-profile .fullname,
+  .couple-profile .parents,
+  .couple-profile .bio {
+    font-size: clamp(0.85rem, 1vw, 1rem);
+  }
+
+  .couple-profile .bio {
+    max-width: clamp(320px, 30vw, 480px);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .couple-divider {
+    font-size: clamp(3rem, 4vw, 4rem);
+  }
+
+  .couples-grid {
+    gap: clamp(50px, 6vw, 90px);
+  }
+
+  .event-box {
+    padding: clamp(30px, 3vw, 44px) clamp(20px, 4vw, 48px);
+  }
+
+  .event-icon {
+    width: clamp(50px, 5vw, 68px);
+    height: clamp(50px, 5vw, 68px);
+    font-size: clamp(1.3rem, 1.6vw, 1.7rem);
+  }
+
+  .event-box h3 {
+    font-size: clamp(1.4rem, 1.8vw, 1.8rem);
+  }
+
+  .event-details {
+    font-size: clamp(0.9rem, 1vw, 1.05rem);
+  }
+
+  .event-details li strong {
+    font-size: clamp(1.1rem, 1.2vw, 1.3rem);
+  }
 }
 
 @media (max-width: 1023px) {
