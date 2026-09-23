@@ -1224,19 +1224,10 @@ export default function WeddingTheme09({ invitation, visitor, greeting }: Theme0
                         <div className="ornament-corner-bl" />
 
                         <div className="reveal">
-                            <div className="quote-text">
-                                "{data.openingQuote}"
-                                <div className="quote-author">(QS. Ar-Ruum: 21)</div>
-                            </div>
+                             
 
                             <div className="greeting-card">
-                                <p style={{ fontWeight: 600, fontSize: '1.1rem', color: 'var(--primary-teal-dark)', marginBottom: '15px' }}>
-                                    Assalamualaikum Warahmatullahi Wabarakatuh
-                                </p>
-                                <p>
-                                    Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud menyelenggarakan resepsi pernikahan putra-putri kami
-                                    yang tercinta:
-                                </p>
+                                {data.openingQuote}
                             </div>
                         </div>
                     </section>
