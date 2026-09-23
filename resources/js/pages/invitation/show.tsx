@@ -208,7 +208,7 @@ function resolveThemeComponent(themeSlug: string, invitation: InvitationData, vi
     }
 }
 
-const DEFAULT_FAVICON = '/logo.svg';
+const DEFAULT_FAVICON = '/favicon.svg';
 
 function getFaviconUrl(invitation: InvitationData): string {
     switch (invitation.type) {
