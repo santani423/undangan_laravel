@@ -1064,7 +1064,6 @@ export default function WeddingTheme06({ invitation, visitor, greeting }: Weddin
                             </div>
                         )}
                         <button type="button" className="wt6-btn wt6-btn--cover" onClick={openInvitation}>
-                            <Sparkles size={16} strokeWidth={1.8} />
                             {textValue(greeting?.buttonText || data.greeting?.buttonText, 'Buka Undangan')}
                         </button>
                     </div>
