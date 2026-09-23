@@ -833,10 +833,14 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
     );
 
     useEffect(() => {
-        const handleScroll = () => setNavScrolled(window.scrollY > 32);
+        const handleScroll = () => setNavScrolled(window.scrollY > window.innerHeight * 0.7);
         handleScroll();
         window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => window.removeEventListener('scroll', handleScroll);
+        window.addEventListener('resize', handleScroll, { passive: true });
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('resize', handleScroll);
+        };
     }, []);
 
     useEffect(() => {
@@ -1094,6 +1098,7 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
     const hasMoreWishes = wishVisibleCount < wishEntries.length;
     const heroSubtitle = textValue(data.greeting.message, DEFAULT_GREETING.message || '');
     const venueEvent = data.events[0];
+    const heroPhoto = textValue(data.couplePhoto) || textValue(data.groomPhoto) || textValue(data.bridePhoto);
 
     return (
         <div className="wt7-root">
@@ -1206,7 +1211,16 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
                         </h1>
                         <div className="wt7-hero-illustration-wrap wt7-reveal wt7-delay-2">
                             <div className="wt7-hero-illustration-frame">
-                                <CoupleIllustration className="wt7-hero-illustration" />
+                                {heroPhoto ? (
+                                    <img
+                                        className="wt7-hero-illustration"
+                                        src={heroPhoto}
+                                        alt={`${data.groomNickname} & ${data.brideNickname}`}
+                                        loading="eager"
+                                    />
+                                ) : (
+                                    <CoupleIllustration className="wt7-hero-illustration wt7-hero-illustration--svg" />
+                                )}
                             </div>
                         </div>
                         <p className="wt7-hero-date wt7-reveal wt7-delay-2">{data.mainDateFormatted}</p>
