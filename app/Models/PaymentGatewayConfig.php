@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -39,6 +40,22 @@ class PaymentGatewayConfig extends Model
             'configured_at' => 'datetime',
             'last_verified_at' => 'datetime',
         ];
+    }
+
+    /**
+     * config_extra decrypted safely. Reading it directly throws DecryptException
+     * whenever the stored ciphertext doesn't match the current APP_KEY (e.g. the
+     * key was rotated without re-saving gateway credentials) — that must never
+     * bubble up into a 500 on the customer payment page or lock the admin out of
+     * Settings → Pembayaran, since re-saving there is the only way to recover.
+     */
+    public function configExtraSafe(): array
+    {
+        try {
+            return $this->config_extra ?? [];
+        } catch (DecryptException) {
+            return [];
+        }
     }
 
     public function configuredBy(): BelongsTo

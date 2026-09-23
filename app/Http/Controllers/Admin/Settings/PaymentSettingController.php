@@ -78,7 +78,7 @@ class PaymentSettingController extends Controller
                 ]);
             }
 
-            $extra = $row->config_extra ?? [];
+            $extra = $row->configExtraSafe();
             $values = $extra['values'] ?? [];
             $enabledMethods = $extra['enabled_methods'] ?? [];
 
@@ -141,7 +141,7 @@ class PaymentSettingController extends Controller
         $row = PaymentGatewayConfig::firstOrNew(['gateway_name' => $gateway]);
         $row->gateway_type ??= 'payment';
 
-        $existingValues = $row->config_extra['values'] ?? [];
+        $existingValues = $row->configExtraSafe()['values'] ?? [];
         $newValues = [];
         foreach ($spec['fields'] as $key) {
             $isSecret = in_array($key, $spec['secret_fields'], true);
@@ -158,7 +158,7 @@ class PaymentSettingController extends Controller
         $oldValues = [
             'is_active' => (bool) $row->is_active,
             'is_test_mode' => (bool) $row->is_test_mode,
-            'enabled_methods' => $row->config_extra['enabled_methods'] ?? [],
+            'enabled_methods' => $row->configExtraSafe()['enabled_methods'] ?? [],
         ];
 
         $row->is_active = $validated['is_active'];

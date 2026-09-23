@@ -57,7 +57,7 @@ class PaymentController extends Controller
         $gatewayActive = (bool) $xenditGateway?->is_active;
 
         $globalEnabled = AppSetting::get('payment_enabled_methods', []);
-        $gatewayEnabled = $xenditGateway?->config_extra['enabled_methods'] ?? [];
+        $gatewayEnabled = $xenditGateway?->configExtraSafe()['enabled_methods'] ?? [];
         $gatewayFine = collect($gatewayEnabled)->flatMap(fn ($c) => self::COARSE_TO_FINE[$c] ?? [])->all();
 
         $active = array_intersect(array_keys(self::XENDIT_METHODS), $globalEnabled, $gatewayFine);
@@ -87,8 +87,9 @@ class PaymentController extends Controller
         $gatewayActive = (bool) $manualGateway?->is_active;
 
         $globalEnabled = AppSetting::get('payment_enabled_methods', []);
-        $gatewayMethods = $manualGateway?->config_extra['enabled_methods'] ?? [];
-        $values = $manualGateway?->config_extra['values'] ?? [];
+        $manualExtra = $manualGateway?->configExtraSafe() ?? [];
+        $gatewayMethods = $manualExtra['enabled_methods'] ?? [];
+        $values = $manualExtra['values'] ?? [];
 
         $available = $gatewayActive
             && in_array('transfer_bank', $globalEnabled, true)

@@ -16,7 +16,7 @@ class XenditService
     {
         // Credentials come from the admin-managed gateway config (DB), not .env —
         // that's the source the Settings → Pembayaran page actually writes to.
-        $values = PaymentGatewayConfig::where('gateway_name', 'xendit')->first()?->config_extra['values'] ?? [];
+        $values = PaymentGatewayConfig::where('gateway_name', 'xendit')->first()?->configExtraSafe()['values'] ?? [];
 
         $this->apiKey       = $values['api_key'] ?? '';
         $this->webhookToken = $values['webhook_token'] ?? '';
