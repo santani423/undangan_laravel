@@ -163,10 +163,10 @@ class PaymentSettingController extends Controller
 
         $row->is_active = $validated['is_active'];
         $row->is_test_mode = $validated['environment'] === 'sandbox';
-        $row->config_extra = [
+        $row->setConfigExtraSafely([
             'values' => $newValues,
             'enabled_methods' => array_values(array_intersect($validated['enabled_methods'] ?? [], $spec['methods'])),
-        ];
+        ]);
         $row->configured_at = now();
         $row->configured_by_user_id = $request->user()->id;
         $row->save();

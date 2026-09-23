@@ -58,6 +58,23 @@ class PaymentGatewayConfig extends Model
         }
     }
 
+    /**
+     * Overwrite config_extra without tripping save()'s dirty-check. Eloquent's
+     * change detection for 'encrypted' casts decrypts BOTH the new and the
+     * previously-stored ciphertext to compare them, so re-saving over an
+     * un-decryptable value (see configExtraSafe()) throws mid-save even though
+     * we're replacing it wholesale. Dropping the stale entry from $original
+     * makes it unconditionally "dirty" so save() writes the new value without
+     * ever touching the corrupted one.
+     */
+    public function setConfigExtraSafely(array $value): static
+    {
+        $this->config_extra = $value;
+        unset($this->original['config_extra']);
+
+        return $this;
+    }
+
     public function configuredBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'configured_by_user_id');
