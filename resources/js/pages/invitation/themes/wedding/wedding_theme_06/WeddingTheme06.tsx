@@ -427,7 +427,7 @@ function normalizeInvitation(invitation?: Partial<WeddingInvitation>): WeddingIn
         music,
         events: invitation?.events?.length ? (invitation.events as Theme06Event[]) : DEMO_INVITATION.events,
         gallery: invitation?.gallery?.length ? invitation.gallery : DEMO_INVITATION.gallery,
-        bankAccounts: invitation?.bankAccounts?.length ? invitation.bankAccounts : DEMO_INVITATION.bankAccounts,
+        bankAccounts: invitation?.bankAccounts ?? DEMO_INVITATION.bankAccounts,
         digitalWallets: invitation?.digitalWallets?.length ? invitation.digitalWallets : DEMO_INVITATION.digitalWallets,
         loveStory: invitation?.loveStory?.length ? invitation.loveStory : DEMO_INVITATION.loveStory,
         dressCodes: invitation?.dressCodes?.length ? invitation.dressCodes : DEMO_INVITATION.dressCodes,
