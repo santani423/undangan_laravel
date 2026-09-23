@@ -1427,44 +1427,46 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
                     </section>
                 )}
 
-                <section id="dresscode" className="wt7-section">
-                    <div className="wt7-container">
-                        <SectionHeading
-                            eyebrow="Dress Code"
-                            title="Busana Tamu Undangan"
-                            subtitle="Kami mengundang Bapak/Ibu/Saudara(i) untuk mengenakan busana muslim/muslimah dengan nuansa warna berikut."
-                        />
+                {data.dressCodes.length > 0 && (
+                    <section id="dresscode" className="wt7-section">
+                        <div className="wt7-container">
+                            <SectionHeading
+                                eyebrow="Dress Code"
+                                title="Busana Tamu Undangan"
+                                subtitle="Kami mengundang Bapak/Ibu/Saudara(i) untuk mengenakan busana dengan nuansa warna berikut, agar dokumentasi kita senada dan serasi."
+                            />
 
-                        <div className="wt7-dress-panel wt7-reveal">
-                            <div className="wt7-dress-icons">
-                                <div className="wt7-dress-icon">
-                                    <Users size={30} />
-                                    <span>Busana Muslim/Muslimah</span>
-                                </div>
-                                <div className="wt7-dress-icon">
-                                    <Sparkles size={30} />
-                                    <span>Warna Senada Tema</span>
-                                </div>
-                                <div className="wt7-dress-icon">
-                                    <Heart size={30} />
-                                    <span>Sopan & Rapi</span>
-                                </div>
-                            </div>
-
-                            <div className="wt7-palette-grid">
-                                {data.dressCodes.map((item) => (
-                                    <div key={item.name} className="wt7-palette-swatch">
-                                        <span className="wt7-palette-dot" style={{ background: item.hex }} />
-                                        <span>{item.name}</span>
+                            <div className="wt7-dress-panel wt7-reveal">
+                                <div className="wt7-dress-icons">
+                                    <div className="wt7-dress-icon">
+                                        <Users size={30} />
+                                        <span>Sesuai Palet Warna</span>
                                     </div>
-                                ))}
+                                    <div className="wt7-dress-icon">
+                                        <Sparkles size={30} />
+                                        <span>Warna Senada Tema</span>
+                                    </div>
+                                    <div className="wt7-dress-icon">
+                                        <Heart size={30} />
+                                        <span>Sopan & Rapi</span>
+                                    </div>
+                                </div>
+
+                                <div className="wt7-palette-grid">
+                                    {data.dressCodes.map((item) => (
+                                        <div key={item.name} className="wt7-palette-swatch">
+                                            <span className="wt7-palette-dot" style={{ background: item.hex }} />
+                                            <span>{item.name}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <p className="wt7-dress-note">
+                                    Disarankan menghindari warna putih polos, karena akan dikenakan oleh kedua mempelai.
+                                </p>
                             </div>
-                            <p className="wt7-dress-note">
-                                Disarankan menghindari warna putih polos, karena akan dikenakan oleh kedua mempelai.
-                            </p>
                         </div>
-                    </div>
-                </section>
+                    </section>
+                )}
 
                 {feature.gift && (data.bankAccounts.length > 0 || data.digitalWallets.length > 0) && (
                     <section id="gift" className="wt7-section wt7-section--soft">
