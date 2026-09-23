@@ -749,7 +749,6 @@ export default function WeddingTheme09({ invitation, visitor, greeting }: Theme0
     const wishesListRef = useRef<HTMLDivElement | null>(null);
 
     const heroPhoto = normalizeText(data.couplePhoto, normalizeText(data.groomPhoto, normalizeText(data.bridePhoto, ASSETS.hero)));
-    const coverPhoto = ASSETS.cover;
     const coverGuest = guestName || data.greeting?.guestLabel || 'Tamu Undangan';
     const firstEvent = data.events[0];
     const addressEvent = data.events[1] ?? data.events[0];
@@ -1089,12 +1088,12 @@ export default function WeddingTheme09({ invitation, visitor, greeting }: Theme0
                         <div className="flower-corner-bl" />
 
                         <p className="intro-text">The Wedding Of</p>
-                        <div style={{ width: '100%', borderRadius: '8px', overflow: 'hidden', marginBottom: '20px', border: '2px solid var(--accent-gold)' }}>
-                            <img src={coverPhoto} alt={`${data.groomNickname} & ${data.brideNickname} Cover`} style={{ width: '100%', height: 'auto' }} />
-                        </div>
-
-                        <div className="cover-couple-photo">
-                            <img src={heroPhoto} alt={`${data.groomNickname} & ${data.brideNickname}`} />
+                        <div style={{ width: '100%', aspectRatio: '1 / 1', borderRadius: '8px', overflow: 'hidden', marginBottom: '20px', border: '2px solid var(--accent-gold)' }}>
+                            <img
+                                src={heroPhoto}
+                                alt={`${data.groomNickname} & ${data.brideNickname}`}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
                         </div>
 
                         <p className="guest-title">{data.greeting?.title ?? DEFAULT_GREETING.title}</p>
