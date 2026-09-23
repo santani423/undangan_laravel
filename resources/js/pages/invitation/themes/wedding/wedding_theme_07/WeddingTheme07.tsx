@@ -1,4 +1,5 @@
 import Countdown from '@/components/invitation/Countdown';
+import GuestQrCode from '@/components/invitation/GuestQrCode';
 import Toast from '@/components/invitation/Toast';
 import type {
     BankAccount,
@@ -1120,14 +1121,42 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
                             <span className="wt7-cover-guest-label">{textValue(data.greeting.guestLabel, DEFAULT_GUEST_LABEL)}</span>
                             <strong className="wt7-cover-guest-name">{guestName}</strong>
                         </div>
-                        <div className="wt7-cover-illustration">
-                            <CoupleIllustration className="wt7-cover-illustration-svg" />
+                        <div className="wt7-cover-photos">
+                            <div className="wt7-cover-photo-frame">
+                                {data.groomPhoto ? (
+                                    <img className="wt7-cover-photo" src={data.groomPhoto} alt={data.groomFullName} loading="eager" />
+                                ) : (
+                                    <div className="wt7-cover-photo wt7-cover-photo--fallback">
+                                        <span>{data.groomInitials}</span>
+                                    </div>
+                                )}
+                            </div>
+                            <Heart className="wt7-cover-photos-heart" size={18} strokeWidth={1.8} />
+                            <div className="wt7-cover-photo-frame">
+                                {data.bridePhoto ? (
+                                    <img className="wt7-cover-photo" src={data.bridePhoto} alt={data.brideFullName} loading="eager" />
+                                ) : (
+                                    <div className="wt7-cover-photo wt7-cover-photo--fallback">
+                                        <span>{data.brideInitials}</span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                         <h1 className="wt7-cover-names">
                             <span className="wt7-script">{data.groomNickname}</span>
                             <span className="wt7-cover-amp wt7-script">&amp;</span>
                             <span className="wt7-script">{data.brideNickname}</span>
                         </h1>
+                        {data.guestQrData && (
+                            <div className="wt7-cover-qr">
+                                <GuestQrCode
+                                    data={data.guestQrData}
+                                    size={140}
+                                    className="wt7-cover-qr-code"
+                                />
+                                <p className="wt7-cover-qr-label">QR Check-in Tamu</p>
+                            </div>
+                        )}
                         <button type="button" className="wt7-btn wt7-btn--primary wt7-cover-cta" onClick={handleOpenInvitation}>
                             <span>{textValue(data.greeting.buttonText, 'Buka Undangan')}</span>
                             <ChevronRight size={16} />
