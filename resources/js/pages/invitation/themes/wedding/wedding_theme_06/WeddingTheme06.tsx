@@ -619,7 +619,6 @@ function WishBoard({ endpoint, allowComments, onToast }: WishBoardProps) {
     const [loadingMore, setLoadingMore] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [name, setName] = useState('');
-    const [attendance, setAttendance] = useState<WishAttendance>('hadir');
     const [message, setMessage] = useState('');
 
     useEffect(() => {
@@ -702,7 +701,7 @@ function WishBoard({ endpoint, allowComments, onToast }: WishBoardProps) {
 
         const newWish: Theme06Wish = {
             name: trimmedName,
-            attendance,
+            attendance: 'hadir',
             message: trimmedMessage,
             date: new Date().toISOString(),
         };
@@ -730,7 +729,6 @@ function WishBoard({ endpoint, allowComments, onToast }: WishBoardProps) {
             setWishes((prev) => [newWish, ...prev]);
             setPage(1);
             setName('');
-            setAttendance('hadir');
             setMessage('');
             setSubmitting(false);
             onToast('Ucapan berhasil dikirim.');
@@ -755,32 +753,6 @@ function WishBoard({ endpoint, allowComments, onToast }: WishBoardProps) {
                                 placeholder="Nama Anda"
                                 className="wt6-wish-input"
                             />
-                        </div>
-
-                        <div className="wt6-form-row">
-                            <label className="wt6-form-label">Kehadiran</label>
-                            <div className="wt6-radio-group">
-                                <label className={`wt6-radio-pill${attendance === 'hadir' ? ' is-checked' : ''}`}>
-                                    <input
-                                        type="radio"
-                                        name="attendance"
-                                        value="hadir"
-                                        checked={attendance === 'hadir'}
-                                        onChange={() => setAttendance('hadir')}
-                                    />
-                                    Hadir
-                                </label>
-                                <label className={`wt6-radio-pill${attendance === 'tidak_hadir' ? ' is-checked' : ''}`}>
-                                    <input
-                                        type="radio"
-                                        name="attendance"
-                                        value="tidak_hadir"
-                                        checked={attendance === 'tidak_hadir'}
-                                        onChange={() => setAttendance('tidak_hadir')}
-                                    />
-                                    Tidak Hadir
-                                </label>
-                            </div>
                         </div>
 
                         <div className="wt6-form-row">
