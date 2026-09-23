@@ -1431,17 +1431,16 @@ button {
     text-underline-offset: 4px;
 }
 
-.wt5-envelope-card__qr {
-    position: relative;
+.wt5-overlay-qr {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 8px;
 }
 
-.wt5-envelope-card__qr-label {
+.wt5-overlay-qr__label {
     margin: 0;
-    color: var(--wt5-muted);
+    color: rgba(255, 255, 255, 0.68);
     font-size: 0.68rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -1463,7 +1462,7 @@ button {
 .wt5-envelope-shell {
     position: relative;
     width: min(360px, calc(100vw - 36px));
-    height: min(440px, calc(100vh - 230px));
+    height: min(440px, calc(100vh - 380px));
     cursor: pointer;
     perspective: 1300px;
 }
