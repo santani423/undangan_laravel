@@ -37,21 +37,21 @@ const eventTypeIcons: Record<string, React.ReactNode> = {
 };
 
 const eventTypeColors: Record<string, string> = {
-    wedding: 'bg-pink-50 text-pink-600 border-pink-200 hover:border-pink-400 hover:bg-pink-100',
-    birthday: 'bg-yellow-50 text-yellow-600 border-yellow-200 hover:border-yellow-400 hover:bg-yellow-100',
-    khitanan: 'bg-blue-50 text-blue-600 border-blue-200 hover:border-blue-400 hover:bg-blue-100',
-    aqiqah: 'bg-green-50 text-green-600 border-green-200 hover:border-green-400 hover:bg-green-100',
-    gender_reveal: 'bg-purple-50 text-purple-600 border-purple-200 hover:border-purple-400 hover:bg-purple-100',
-    syukuran: 'bg-orange-50 text-orange-600 border-orange-200 hover:border-orange-400 hover:bg-orange-100',
+    wedding: 'bg-pink-50 text-pink-600 border-pink-200 hover:border-pink-400 hover:bg-pink-100 dark:bg-pink-950/40 dark:text-pink-400 dark:border-pink-900 dark:hover:border-pink-700 dark:hover:bg-pink-950/70',
+    birthday: 'bg-yellow-50 text-yellow-600 border-yellow-200 hover:border-yellow-400 hover:bg-yellow-100 dark:bg-yellow-950/40 dark:text-yellow-400 dark:border-yellow-900 dark:hover:border-yellow-700 dark:hover:bg-yellow-950/70',
+    khitanan: 'bg-blue-50 text-blue-600 border-blue-200 hover:border-blue-400 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-900 dark:hover:border-blue-700 dark:hover:bg-blue-950/70',
+    aqiqah: 'bg-green-50 text-green-600 border-green-200 hover:border-green-400 hover:bg-green-100 dark:bg-green-950/40 dark:text-green-400 dark:border-green-900 dark:hover:border-green-700 dark:hover:bg-green-950/70',
+    gender_reveal: 'bg-purple-50 text-purple-600 border-purple-200 hover:border-purple-400 hover:bg-purple-100 dark:bg-purple-950/40 dark:text-purple-400 dark:border-purple-900 dark:hover:border-purple-700 dark:hover:bg-purple-950/70',
+    syukuran: 'bg-orange-50 text-orange-600 border-orange-200 hover:border-orange-400 hover:bg-orange-100 dark:bg-orange-950/40 dark:text-orange-400 dark:border-orange-900 dark:hover:border-orange-700 dark:hover:bg-orange-950/70',
 };
 
 const eventTypeSelectedColors: Record<string, string> = {
-    wedding: 'border-pink-500 bg-pink-50 ring-2 ring-pink-300',
-    birthday: 'border-yellow-500 bg-yellow-50 ring-2 ring-yellow-300',
-    khitanan: 'border-blue-500 bg-blue-50 ring-2 ring-blue-300',
-    aqiqah: 'border-green-500 bg-green-50 ring-2 ring-green-300',
-    gender_reveal: 'border-purple-500 bg-purple-50 ring-2 ring-purple-300',
-    syukuran: 'border-orange-500 bg-orange-50 ring-2 ring-orange-300',
+    wedding: 'border-pink-500 bg-pink-50 text-pink-600 ring-2 ring-pink-300 dark:bg-pink-950/60 dark:text-pink-300 dark:ring-pink-800',
+    birthday: 'border-yellow-500 bg-yellow-50 text-yellow-600 ring-2 ring-yellow-300 dark:bg-yellow-950/60 dark:text-yellow-300 dark:ring-yellow-800',
+    khitanan: 'border-blue-500 bg-blue-50 text-blue-600 ring-2 ring-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:ring-blue-800',
+    aqiqah: 'border-green-500 bg-green-50 text-green-600 ring-2 ring-green-300 dark:bg-green-950/60 dark:text-green-300 dark:ring-green-800',
+    gender_reveal: 'border-purple-500 bg-purple-50 text-purple-600 ring-2 ring-purple-300 dark:bg-purple-950/60 dark:text-purple-300 dark:ring-purple-800',
+    syukuran: 'border-orange-500 bg-orange-50 text-orange-600 ring-2 ring-orange-300 dark:bg-orange-950/60 dark:text-orange-300 dark:ring-orange-800',
 };
 
 interface Props {
@@ -106,7 +106,7 @@ export default function InvitationsCreate({ eventTypes, packageTier }: Props) {
                         {eventTypes.map((type) => {
                             const isSelected = selectedEventType?.id === type.id;
                             const baseColor = eventTypeColors[type.name] ?? 'bg-muted text-muted-foreground border-border hover:border-foreground/30 hover:bg-muted/70';
-                            const selectedColor = eventTypeSelectedColors[type.name] ?? 'border-foreground ring-2 ring-foreground/20';
+                            const selectedColor = eventTypeSelectedColors[type.name] ?? 'border-foreground bg-muted text-foreground ring-2 ring-foreground/20';
 
                             return (
                                 <button
