@@ -22,7 +22,6 @@ import {
     Gift,
     Heart,
     Images,
-    Landmark,
     MapPin,
     Menu,
     MessageCircleHeart,
@@ -31,7 +30,6 @@ import {
     Send,
     Sparkles,
     Users,
-    WalletCards,
     X,
     type LucideIcon,
 } from 'lucide-react';
@@ -39,7 +37,6 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import './wedding-theme-07.css';
 
 type AttendanceValue = 'hadir' | 'tidak_hadir' | 'ragu';
-type GiftTab = 'bank' | 'ewallet';
 type ToastVariant = 'success' | 'error' | 'info';
 type NavSectionId =
     | 'cover'
@@ -77,13 +74,10 @@ interface Theme07RsvpState {
 
 interface Theme07WishFormState {
     name: string;
-    attendance: AttendanceValue;
     message: string;
 }
 
-interface Theme07Wish extends WishItem {
-    attendance: AttendanceValue;
-}
+type Theme07Wish = WishItem;
 
 interface Theme07NavItem {
     id: NavSectionId;
@@ -99,7 +93,6 @@ const STORAGE_KEYS = {
 const WISHES_PAGE_SIZE = 5;
 const DEFAULT_GUEST_NAME = 'Tamu Undangan';
 const DEFAULT_GUEST_LABEL = 'Kepada Yth. Bapak/Ibu/Saudara(i)';
-const DEFAULT_GIFT_TAB: GiftTab = 'bank';
 const DEFAULT_GREETING: Greeting = {
     title: 'Tanpa mengurangi rasa hormat',
     guestLabel: DEFAULT_GUEST_LABEL,
@@ -218,37 +211,31 @@ const DEMO_EWALLETS: DigitalWallet[] = [
 const DEMO_WISHES: Theme07Wish[] = [
     {
         name: 'Dedi & Keluarga',
-        attendance: 'hadir',
         message: 'Selamat menempuh hidup baru Ambra & Tika. Semoga menjadi keluarga yang sakinah, mawaddah, warahmah.',
         date: '2026-08-20T09:12:00+07:00',
     },
     {
         name: 'Nur Aisyah',
-        attendance: 'hadir',
         message: 'Barakallahu laka wa baraka alaika. Bahagia selalu untuk kalian berdua.',
         date: '2026-08-21T14:40:00+07:00',
     },
     {
         name: 'Fikri Ramadhan',
-        attendance: 'tidak_hadir',
         message: 'Maaf belum bisa hadir, tapi doa terbaik selalu menyertai kalian.',
         date: '2026-08-22T18:05:00+07:00',
     },
     {
         name: 'Sinta Maharani',
-        attendance: 'hadir',
         message: 'Semoga cinta dan kebahagiaan kalian selalu bertumbuh setiap hari.',
         date: '2026-08-23T10:25:00+07:00',
     },
     {
         name: 'Rizky & Keluarga',
-        attendance: 'ragu',
         message: 'Doa terbaik untuk acara yang lancar, hangat, dan penuh keberkahan.',
         date: '2026-08-24T19:55:00+07:00',
     },
     {
         name: 'Maya Salsabila',
-        attendance: 'hadir',
         message: 'Semoga menjadi rumah tangga yang penuh ketenangan dan cinta.',
         date: '2026-08-25T08:20:00+07:00',
     },
@@ -396,18 +383,6 @@ function buildCalendarUrl(event: InvitationEvent): string {
 
 function formatAccountNumber(value: string): string {
     return value.replace(/(\d{4})(?=\d)/g, '$1 ');
-}
-
-function getAttendanceLabel(value: AttendanceValue): string {
-    if (value === 'hadir') return 'Hadir';
-    if (value === 'tidak_hadir') return 'Tidak Hadir';
-    return 'Masih Ragu';
-}
-
-function getAttendanceTone(value: AttendanceValue): string {
-    if (value === 'hadir') return 'wt7-wish-badge--attend';
-    if (value === 'tidak_hadir') return 'wt7-wish-badge--decline';
-    return 'wt7-wish-badge--maybe';
 }
 
 function readLocalArray<T>(key: string): T[] {
@@ -640,7 +615,6 @@ function WishCard({ item }: { item: Theme07Wish }) {
                     <h4 className="wt7-wish-name">{item.name}</h4>
                     <p className="wt7-wish-date">{formatWishDate(item.date)}</p>
                 </div>
-                <span className={`wt7-wish-badge ${getAttendanceTone(item.attendance)}`}>{getAttendanceLabel(item.attendance)}</span>
             </div>
             <p className="wt7-wish-message">{item.message}</p>
         </article>
@@ -757,7 +731,6 @@ function buildRsvpDefaults(name = ''): Theme07RsvpState {
 function buildWishDefaults(name = ''): Theme07WishFormState {
     return {
         name,
-        attendance: 'hadir',
         message: '',
     };
 }
@@ -773,7 +746,6 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
     const [navOpen, setNavOpen] = useState(false);
     const [navScrolled, setNavScrolled] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-    const [activeGiftTab, setActiveGiftTab] = useState<GiftTab>(DEFAULT_GIFT_TAB);
     const [copiedGiftValue, setCopiedGiftValue] = useState<string | null>(null);
     const [toast, setToast] = useState<Theme07Toast | null>(null);
     const [audioPlaying, setAudioPlaying] = useState(false);
@@ -1055,16 +1027,12 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
         if (!wishForm.message.trim()) {
             nextErrors.message = 'Ucapan atau doa tidak boleh kosong.';
         }
-        if (!wishForm.attendance) {
-            nextErrors.attendance = 'Pilih status kehadiran.';
-        }
 
         setWishErrors(nextErrors);
         if (Object.keys(nextErrors).length > 0) return;
 
         const nextWish: Theme07Wish = {
             name: wishForm.name.trim(),
-            attendance: wishForm.attendance,
             message: wishForm.message.trim(),
             date: new Date().toISOString(),
         };
@@ -1437,20 +1405,7 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
                             />
 
                             <div className="wt7-dress-panel wt7-reveal">
-                                <div className="wt7-dress-icons">
-                                    <div className="wt7-dress-icon">
-                                        <Users size={30} />
-                                        <span>Sesuai Palet Warna</span>
-                                    </div>
-                                    <div className="wt7-dress-icon">
-                                        <Sparkles size={30} />
-                                        <span>Warna Senada Tema</span>
-                                    </div>
-                                    <div className="wt7-dress-icon">
-                                        <Heart size={30} />
-                                        <span>Sopan & Rapi</span>
-                                    </div>
-                                </div>
+                                
 
                                 <div className="wt7-palette-grid">
                                     {data.dressCodes.map((item) => (
@@ -1468,7 +1423,7 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
                     </section>
                 )}
 
-                {feature.gift && (data.bankAccounts.length > 0 || data.digitalWallets.length > 0) && (
+                {feature.gift && data.digitalWallets.length > 0 && (
                     <section id="gift" className="wt7-section wt7-section--soft">
                         <div className="wt7-geo-bg" aria-hidden="true" />
                         <div className="wt7-container">
@@ -1478,31 +1433,12 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
                                 subtitle="Doa restu Bapak/Ibu/Saudara(i) adalah karunia yang berharga bagi kami."
                             />
 
-                            <div className="wt7-gift-tabs wt7-reveal">
-                                <button type="button" className={`wt7-gift-tab${activeGiftTab === 'bank' ? ' wt7-gift-tab--active' : ''}`} onClick={() => setActiveGiftTab('bank')}>
-                                    <Landmark size={16} />
-                                    <span>Transfer Bank</span>
-                                </button>
-                                <button type="button" className={`wt7-gift-tab${activeGiftTab === 'ewallet' ? ' wt7-gift-tab--active' : ''}`} onClick={() => setActiveGiftTab('ewallet')}>
-                                    <WalletCards size={16} />
-                                    <span>E-Wallet</span>
-                                </button>
-                            </div>
-
                             <div className="wt7-gift-panels wt7-reveal">
-                                {activeGiftTab === 'bank' ? (
-                                    <div className="wt7-gift-grid">
-                                        {data.bankAccounts.map((item) => (
-                                            <GiftCard key={`${item.bankName}-${item.accountNumber}`} item={item} onCopy={handleCopyGift} copiedValue={copiedGiftValue} />
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="wt7-gift-grid">
-                                        {data.digitalWallets.map((item) => (
-                                            <GiftCard key={`${item.provider}-${item.accountNumber}`} item={item} onCopy={handleCopyGift} copiedValue={copiedGiftValue} />
-                                        ))}
-                                    </div>
-                                )}
+                                <div className="wt7-gift-grid">
+                                    {data.digitalWallets.map((item) => (
+                                        <GiftCard key={`${item.provider}-${item.accountNumber}`} item={item} onCopy={handleCopyGift} copiedValue={copiedGiftValue} />
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </section>
@@ -1621,29 +1557,6 @@ export default function WeddingTheme07({ invitation, visitor, greeting }: Theme0
                                         className="wt7-input"
                                     />
                                     {wishErrors.name && <p className="wt7-field-error">{wishErrors.name}</p>}
-                                </div>
-
-                                <div className="wt7-form-split">
-                                    <div className="wt7-field">
-                                        <label htmlFor="wt7-wish-attendance">Kehadiran</label>
-                                        <select
-                                            id="wt7-wish-attendance"
-                                            value={wishForm.attendance}
-                                            onChange={(event) =>
-                                                setWishForm((current) => ({
-                                                    ...current,
-                                                    attendance: event.target.value as AttendanceValue,
-                                                }))
-                                            }
-                                            className="wt7-select"
-                                        >
-                                            <option value="hadir">Hadir</option>
-                                            <option value="tidak_hadir">Tidak Hadir</option>
-                                            <option value="ragu">Masih Ragu</option>
-                                        </select>
-                                        {wishErrors.attendance && <p className="wt7-field-error">{wishErrors.attendance}</p>}
-                                    </div>
-                                    <div />
                                 </div>
 
                                 <div className="wt7-field">
