@@ -543,24 +543,7 @@ export default function WeddingTheme08({ invitation, visitor, greeting }: Weddin
                                         <div className="wt8-dc-lbl">{dc.name}</div>
                                     </div>
                                 ))}
-                            </div>
-                            <div className="wt8-dc-cards">
-                                <div className="wt8-dc-card" data-anim="left">
-                                    <div className="wt8-dc-icon">👔</div>
-                                    <div className="wt8-dc-title">Pria</div>
-                                    <div className="wt8-dc-desc">Baju koko / kemeja formal, celana panjang, peci / songkok. Hindari warna hitam pekat.</div>
-                                </div>
-                                <div className="wt8-dc-card" data-anim="">
-                                    <div className="wt8-dc-icon">👗</div>
-                                    <div className="wt8-dc-title">Wanita</div>
-                                    <div className="wt8-dc-desc">Gamis / kebaya sopan, hijab rapi. Busana tertutup dan elegan sesuai syariat Islam.</div>
-                                </div>
-                                <div className="wt8-dc-card" data-anim="right">
-                                    <div className="wt8-dc-icon">🚫</div>
-                                    <div className="wt8-dc-title">Hindari</div>
-                                    <div className="wt8-dc-desc">Pakaian kasual, warna putih polos (khusus mempelai), dan busana yang tidak sopan.</div>
-                                </div>
-                            </div>
+                            </div> 
                         </div>
                     </section>
                 )}
@@ -720,9 +703,9 @@ export default function WeddingTheme08({ invitation, visitor, greeting }: Weddin
                             <strong>
                                 {invitation.groomNickname} &amp; {invitation.brideNickname}
                             </strong>{' '}
-                            — Walimatul &apos;Ursy {invitation.mainDateFormatted}
+                              {invitation.mainDateFormatted}
                         </p>
-                        <p className="wt8-footer-sub">Digital Wedding Invitation</p>
+                        <p className="wt8-footer-sub">Undesia</p>
                     </footer>
                 )}
             </div>

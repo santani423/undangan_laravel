@@ -1,4 +1,5 @@
 import Countdown from '@/components/invitation/Countdown';
+import GuestQrCode from '@/components/invitation/GuestQrCode';
 import type { Greeting, InvitationEvent, WeddingInvitation } from '@/types/invitation';
 import {
     BookHeart,
@@ -1092,6 +1093,10 @@ export default function WeddingTheme09({ invitation, visitor, greeting }: Theme0
                             <img src={coverPhoto} alt={`${data.groomNickname} & ${data.brideNickname} Cover`} style={{ width: '100%', height: 'auto' }} />
                         </div>
 
+                        <div className="cover-couple-photo">
+                            <img src={heroPhoto} alt={`${data.groomNickname} & ${data.brideNickname}`} />
+                        </div>
+
                         <p className="guest-title">{data.greeting?.title ?? DEFAULT_GREETING.title}</p>
                         <div className="guest-name">{guestDisplayName}</div>
 
@@ -1099,6 +1104,13 @@ export default function WeddingTheme09({ invitation, visitor, greeting }: Theme0
                             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '20px', lineHeight: 1.4 }}>
                                 {data.greeting?.message ?? DEFAULT_GREETING.message}
                             </p>
+                        )}
+
+                        {data.guestQrData && (
+                            <div className="cover-qr-wrap">
+                                <GuestQrCode data={data.guestQrData} size={120} className="cover-qr" />
+                                <p className="cover-qr-label">QR Check-in Tamu</p>
+                            </div>
                         )}
 
                         <button className="btn-open" onClick={openInvitation} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
