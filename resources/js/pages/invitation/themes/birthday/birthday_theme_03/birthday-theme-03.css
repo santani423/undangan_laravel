@@ -32,13 +32,17 @@ html:has(.bt3-root) {
     position: fixed;
     inset: 0;
     z-index: 9999;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     background:
         radial-gradient(circle at 20% 0%, #23604f 0%, transparent 55%),
         radial-gradient(circle at 85% 15%, #1e5745 0%, transparent 50%),
         var(--bt3-pine);
     display: flex;
     align-items: center;
+    align-items: safe center;
     justify-content: center;
     padding: 24px;
     transition:
