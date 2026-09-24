@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gender Reveal — Undangan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pink:#f4a7bb; --pink-soft:#fde4ea; --pink-deep:#d9678a;
+    --blue:#9cc7ec; --blue-soft:#e2f0fb; --blue-deep:#4f8cc4;
+    --cream:#fffaf5; --ink:#3d3346; --muted:#7b6f85; --card:#ffffff;
+    --line:rgba(61,51,70,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Nunito',sans-serif;color:var(--ink);background:var(--cream);line-height:1.6;overflow-x:hidden}
+  h1,h2,h3,.serif{font-family:'Fraunces',serif;font-weight:600;line-height:1.15}
+  section{padding:88px 20px;position:relative}
+  .wrap{max-width:720px;margin:0 auto;text-align:center}
+  .eyebrow{font-size:.8rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:700}
+
+  /* ===== Cover ===== */
+  #cover{position:fixed;inset:0;z-index:50;display:grid;place-items:center;text-align:center;padding:24px;
+    background:linear-gradient(135deg,var(--pink-soft) 0%,var(--pink-soft) 50%,var(--blue-soft) 50%,var(--blue-soft) 100%);
+    transition:transform .9s cubic-bezier(.7,0,.3,1),opacity .9s}
+  #cover.hide{transform:translateY(-100%);opacity:0;pointer-events:none}
+  #cover .box{background:rgba(255,255,255,.85);backdrop-filter:blur(6px);border-radius:28px;padding:44px 32px;max-width:420px;box-shadow:0 20px 60px rgba(61,51,70,.12)}
+  #cover h1{font-size:clamp(2rem,7vw,2.8rem);margin:12px 0 6px}
+  #cover .guest{margin:22px 0 26px;color:var(--muted)}
+  #cover .guest b{display:block;font-size:1.25rem;color:var(--ink);font-family:'Fraunces',serif;margin-top:4px}
+  .btn{display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;font:700 1rem 'Nunito',sans-serif;
+    padding:14px 28px;border-radius:999px;color:#fff;background:linear-gradient(90deg,var(--pink-deep),var(--blue-deep));
+    box-shadow:0 8px 24px rgba(79,140,196,.3);transition:transform .2s}
+  .btn:hover{transform:translateY(-2px)}
+  .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+
+  /* ===== Hero ===== */
+  #hero{min-height:100vh;display:grid;place-items:center;overflow:hidden;
+    background:radial-gradient(circle at 15% 20%,var(--pink-soft),transparent 45%),radial-gradient(circle at 85% 80%,var(--blue-soft),transparent 45%),var(--cream)}
+  #hero h1{font-size:clamp(2.6rem,10vw,5rem);margin:14px 0}
+  #hero h1 .he{color:var(--blue-deep);font-style:italic}
+  #hero h1 .she{color:var(--pink-deep);font-style:italic}
+  #hero p.lead{font-size:1.1rem;color:var(--muted);max-width:480px;margin:0 auto}
+  .balloon{position:absolute;width:64px;height:80px;border-radius:50% 50% 48% 48%;opacity:.85;animation:float 7s ease-in-out infinite}
+  .balloon::after{content:"";position:absolute;left:50%;top:100%;width:1px;height:70px;background:rgba(61,51,70,.25)}
+  .balloon.p{background:var(--pink)} .balloon.b{background:var(--blue)}
+  @keyframes float{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-24px) rotate(3deg)}}
+  .scroll-hint{margin-top:40px;font-size:.85rem;color:var(--muted);animation:bob 2s infinite}
+  @keyframes bob{50%{transform:translateY(6px)}}
+
+  /* ===== Parents ===== */
+  #parents{background:#fff}
+  .parents{display:flex;justify-content:center;align-items:center;gap:28px;flex-wrap:wrap;margin-top:32px}
+  .parent{flex:1 1 200px;max-width:260px}
+  .avatar{width:120px;height:120px;border-radius:50%;margin:0 auto 14px;display:grid;place-items:center;font:600 2.4rem 'Fraunces',serif;color:#fff}
+  .parent:first-child .avatar{background:linear-gradient(135deg,var(--blue),var(--blue-deep))}
+  .parent:last-child .avatar{background:linear-gradient(135deg,var(--pink),var(--pink-deep))}
+  .parent h3{font-size:1.4rem}
+  .parent p{color:var(--muted);font-size:.95rem}
+  .amp{font:italic 400 3rem 'Fraunces',serif;color:var(--pink-deep)}
+
+  /* ===== Event ===== */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:32px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px 18px}
+  .card .ic{font-size:1.8rem}
+  .card h3{font-size:1.1rem;margin:8px 0 4px}
+  .card p{color:var(--muted);font-size:.95rem}
+  .countdown{display:flex;justify-content:center;gap:12px;margin-top:36px;flex-wrap:wrap}
+  .cd{min-width:78px;padding:14px 8px;border-radius:16px;background:#fff;border:1px solid var(--line)}
+  .cd b{display:block;font:600 2rem 'Fraunces',serif;font-variant-numeric:tabular-nums}
+  .cd span{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .map-link{display:inline-block;margin-top:24px;color:var(--blue-deep);font-weight:700}
+
+  /* ===== Vote ===== */
+  #vote{background:linear-gradient(180deg,#fff,var(--cream))}
+  .vote-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:28px}
+  .vote-btn{border:2px solid transparent;border-radius:22px;padding:26px 12px;cursor:pointer;font:700 1.1rem 'Nunito';transition:.2s}
+  .vote-btn .emo{font-size:2.4rem;display:block}
+  .vote-btn.boy{background:var(--blue-soft);color:var(--blue-deep)}
+  .vote-btn.girl{background:var(--pink-soft);color:var(--pink-deep)}
+  .vote-btn.sel.boy{border-color:var(--blue-deep)} .vote-btn.sel.girl{border-color:var(--pink-deep)}
+  .bar{display:flex;height:14px;border-radius:99px;overflow:hidden;margin-top:22px;background:var(--line)}
+  .bar i{display:block;transition:width .6s}
+  .bar .bb{background:var(--blue)} .bar .gg{background:var(--pink)}
+  .bar-lbl{display:flex;justify-content:space-between;font-size:.9rem;color:var(--muted);margin-top:8px}
+
+  /* ===== Reveal ===== */
+  #reveal{background:var(--ink);color:#fff}
+  #reveal .eyebrow{color:rgba(255,255,255,.6)}
+  #reveal h2{font-size:clamp(2rem,6vw,3rem);margin:10px 0}
+  .scratch{position:relative;width:min(320px,100%);aspect-ratio:1;margin:30px auto 0;border-radius:50%;overflow:hidden;touch-action:none}
+  .scratch .result{position:absolute;inset:0;display:grid;place-items:center;font:600 2.2rem 'Fraunces',serif;background:var(--result-bg,#fff);color:var(--result-ink,var(--ink))}
+  .scratch canvas{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair}
+  .reveal-note{margin-top:16px;color:rgba(255,255,255,.65);font-size:.9rem}
+
+  /* ===== RSVP ===== */
+  form{display:grid;gap:14px;margin-top:28px;text-align:left}
+  label{font-weight:700;font-size:.9rem}
+  input,select,textarea{width:100%;margin-top:6px;padding:13px 16px;border-radius:14px;border:1px solid var(--line);font:400 1rem 'Nunito';background:#fff;color:var(--ink)}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--blue);border-color:transparent}
+  .wishes{margin-top:36px;display:grid;gap:12px;text-align:left}
+  .wish{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 18px}
+  .wish b{display:block}
+  .wish small{color:var(--muted)}
+
+  footer{text-align:center;padding:48px 20px;color:var(--muted);font-size:.9rem;background:#fff}
+  footer .serif{font-size:1.4rem;color:var(--ink)}
+
+  /* music toggle */
+  #music{position:fixed;right:16px;bottom:16px;z-index:40;width:48px;height:48px;border-radius:50%;border:none;background:#fff;box-shadow:0 6px 20px rgba(0,0,0,.15);font-size:1.3rem;cursor:pointer}
+
+  .reveal-in{opacity:0;transform:translateY(24px);transition:opacity .8s,transform .8s}
+  .reveal-in.on{opacity:1;transform:none}
+  .confetti{position:fixed;top:-10px;width:10px;height:14px;z-index:60;pointer-events:none;animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ======================================================
+     UBAH DATA UNDANGAN DI BAGIAN CONFIG (paling bawah, <script>)
+     ====================================================== -->
+
+<div id="cover">
+  <div class="box">
+    <div class="eyebrow">Undangan</div>
+    <h1>Gender Reveal Party</h1>
+    <p class="serif" style="font-style:italic;color:var(--muted)">He or She?</p>
+    <div class="guest">Kepada Yth. Bapak/Ibu/Saudara/i<b id="guestName">Tamu Undangan</b></div>
+    <button class="btn" id="openBtn">✉️ Buka Undangan</button>
+  </div>
+</div>
+
+<section id="hero">
+  <span class="balloon p" style="left:6%;top:14%"></span>
+  <span class="balloon b" style="right:8%;top:22%;animation-delay:1.2s"></span>
+  <span class="balloon b" style="left:12%;bottom:18%;animation-delay:2.4s;transform:scale(.8)"></span>
+  <span class="balloon p" style="right:14%;bottom:12%;animation-delay:.6s"></span>
+  <div class="wrap reveal-in">
+    <div class="eyebrow">Kami mengundang Anda</div>
+    <h1><span class="he">He</span> or <span class="she">She</span>?</h1>
+    <p class="lead" id="heroText"></p>
+    <div class="scroll-hint">↓ gulir ke bawah</div>
+  </div>
+</section>
+
+<section id="parents">
+  <div class="wrap reveal-in">
+    <div class="eyebrow">Calon Orang Tua</div>
+    <h2 style="font-size:2rem;margin-top:8px">Dengan penuh sukacita</h2>
+    <div class="parents">
+      <div class="parent"><div class="avatar" id="dadInit"></div><h3 id="dadName"></h3><p id="dadInfo"></p></div>
+      <div class="amp">&amp;</div>
+      <div class="parent"><div class="avatar" id="momInit"></div><h3 id="momName"></h3><p id="momInfo"></p></div>
+    </div>
+  </div>
+</section>
+
+<section id="event">
+  <div class="wrap reveal-in">
+    <div class="eyebrow">Save the Date</div>
+    <h2 style="font-size:2rem;margin-top:8px">Detail Acara</h2>
+    <div class="cards">
+      <div class="card"><div class="ic">📅</div><h3>Tanggal</h3><p id="evDate"></p></div>
+      <div class="card"><div class="ic">⏰</div><h3>Waktu</h3><p id="evTime"></p></div>
+      <div class="card"><div class="ic">📍</div><h3>Lokasi</h3><p id="evPlace"></p></div>
+    </div>
+    <div class="card" style="margin-top:16px"><div class="ic">👕</div><h3>Dress Code</h3><p id="evDress"></p></div>
+    <div class="countdown" aria-live="polite">
+      <div class="cd"><b id="d">0</b><span>Hari</span></div>
+      <div class="cd"><b id="h">0</b><span>Jam</span></div>
+      <div class="cd"><b id="m">0</b><span>Menit</span></div>
+      <div class="cd"><b id="s">0</b><span>Detik</span></div>
+    </div>
+    <a class="map-link" id="mapLink" target="_blank" rel="noopener">Lihat lokasi di Google Maps →</a>
+  </div>
+</section>
+
+<section id="vote">
+  <div class="wrap reveal-in">
+    <div class="eyebrow">Team Mana Kamu?</div>
+    <h2 style="font-size:2rem;margin-top:8px">Tebak Jenis Kelamin Baby</h2>
+    <div class="vote-row">
+      <button class="vote-btn boy" data-v="boy"><span class="emo">💙</span>Team Boy</button>
+      <button class="vote-btn girl" data-v="girl"><span class="emo">💗</span>Team Girl</button>
+    </div>
+    <div class="bar"><i class="bb" id="barB"></i><i class="gg" id="barG"></i></div>
+    <div class="bar-lbl"><span id="lblB"></span><span id="lblG"></span></div>
+  </div>
+</section>
+
+<section id="reveal">
+  <div class="wrap reveal-in">
+    <div class="eyebrow">The Big Moment</div>
+    <h2>Gosok untuk Mengungkap!</h2>
+    <p style="color:rgba(255,255,255,.7)" id="revealSub"></p>
+    <div class="scratch" id="scratch">
+      <div class="result" id="resultTxt"></div>
+      <canvas id="scratchCanvas"></canvas>
+    </div>
+    <p class="reveal-note" id="revealNote">Gosok lingkaran di atas dengan jari / mouse ✨</p>
+  </div>
+</section>
+
+<section id="rsvp">
+  <div class="wrap reveal-in" style="max-width:520px">
+    <div class="eyebrow">RSVP</div>
+    <h2 style="font-size:2rem;margin-top:8px">Konfirmasi Kehadiran</h2>
+    <form id="rsvpForm">
+      <label>Nama<input name="nama" required placeholder="Nama lengkap"></label>
+      <label>Kehadiran
+        <select name="hadir"><option>Hadir</option><option>Tidak Hadir</option><option>Masih Ragu</option></select>
+      </label>
+      <label>Ucapan &amp; Doa<textarea name="ucapan" rows="3" placeholder="Tulis ucapan untuk calon baby…"></textarea></label>
+      <button class="btn" type="submit" style="justify-content:center">Kirim</button>
+    </form>
+    <div class="wishes" id="wishes"></div>
+  </div>
+</section>
+
+<footer>
+  <p>Terima kasih atas doa dan kehadirannya</p>
+  <p class="serif" id="footNames" style="margin-top:6px"></p>
+</footer>
+
+<button id="music" aria-label="Putar musik" hidden>🎵</button>
+<audio id="bgm" loop></audio>
+
+<script>
+/* =========================================================
+   CONFIG — ubah bagian ini sesuai acara Anda
+   ========================================================= */
+const CONFIG = {
+  ayah:  { nama: "Andi Pratama", info: "Calon Ayah" },
+  ibu:   { nama: "Sari Wulandari", info: "Calon Ibu" },
+  pesan: "Sebentar lagi keluarga kecil kami akan bertambah. Mari hadir dan rayakan momen spesial untuk mengetahui apakah si kecil laki-laki atau perempuan!",
+  tanggal: "2026-11-15T15:00:00+07:00",   // format ISO
+  waktuTeks: "15.00 – 18.00 WIB",
+  lokasi: "Taman Cerria, Jl. Melati No. 12, Jakarta Selatan",
+  maps: "https://maps.google.com/?q=Jakarta",
+  dressCode: "Pakai biru jika tebak Boy 💙, pink jika tebak Girl 💗",
+  hasil: "girl",           // "boy" atau "girl" — hasil yang muncul saat digosok
+  musik: "",               // URL file mp3 (opsional)
+};
+/* ========================================================= */
+
+const $ = id => document.getElementById(id);
+
+// Nama tamu dari URL: ?to=Budi+Santoso
+const to = new URLSearchParams(location.search).get("to");
+if (to) $("guestName").textContent = to;
+
+// Isi konten
+$("heroText").textContent = CONFIG.pesan;
+$("dadName").textContent = CONFIG.ayah.nama; $("dadInfo").textContent = CONFIG.ayah.info;
+$("momName").textContent = CONFIG.ibu.nama;  $("momInfo").textContent = CONFIG.ibu.info;
+$("dadInit").textContent = CONFIG.ayah.nama[0]; $("momInit").textContent = CONFIG.ibu.nama[0];
+const ev = new Date(CONFIG.tanggal);
+$("evDate").textContent = ev.toLocaleDateString("id-ID",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+$("evTime").textContent = CONFIG.waktuTeks;
+$("evPlace").textContent = CONFIG.lokasi;
+$("evDress").textContent = CONFIG.dressCode;
+$("mapLink").href = CONFIG.maps;
+$("footNames").textContent = CONFIG.ayah.nama.split(" ")[0] + " & " + CONFIG.ibu.nama.split(" ")[0];
+$("revealSub").textContent = "Penasaran? Coba ungkap sekarang, atau tunggu di hari acara 😉";
+
+// Cover
+const bgm = $("bgm");
+if (CONFIG.musik){ bgm.src = CONFIG.musik; $("music").hidden = false; }
+$("openBtn").onclick = () => {
+  $("cover").classList.add("hide");
+  document.body.style.overflow = "";
+  if (CONFIG.musik) bgm.play().catch(()=>{});
+};
+document.body.style.overflow = "hidden";
+$("music").onclick = () => { bgm.paused ? bgm.play() : bgm.pause(); $("music").textContent = bgm.paused ? "🔇" : "🎵"; };
+
+// Animasi masuk
+const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add("on")), {threshold:.15});
+document.querySelectorAll(".reveal-in").forEach(el => io.observe(el));
+
+// Countdown
+function tick(){
+  let diff = Math.max(0, ev - new Date());
+  const d = Math.floor(diff/864e5); diff%=864e5;
+  const h = Math.floor(diff/36e5);  diff%=36e5;
+  const m = Math.floor(diff/6e4);   const s = Math.floor(diff%6e4/1e3);
+  $("d").textContent=d; $("h").textContent=h; $("m").textContent=m; $("s").textContent=s;
+}
+tick(); setInterval(tick,1000);
+
+// Voting (contoh data awal, disimpan di memori halaman)
+let votes = { boy: 12, girl: 15 }, myVote = null;
+function renderVotes(){
+  const t = votes.boy + votes.girl, pb = Math.round(votes.boy/t*100);
+  $("barB").style.width = pb+"%"; $("barG").style.width = (100-pb)+"%";
+  $("lblB").textContent = `Boy ${pb}% (${votes.boy})`; $("lblG").textContent = `Girl ${100-pb}% (${votes.girl})`;
+}
+document.querySelectorAll(".vote-btn").forEach(b => b.onclick = () => {
+  if (myVote) votes[myVote]--;
+  myVote = b.dataset.v; votes[myVote]++;
+  document.querySelectorAll(".vote-btn").forEach(x => x.classList.toggle("sel", x === b));
+  renderVotes();
+});
+renderVotes();
+
+// Scratch-to-reveal
+const isBoy = CONFIG.hasil === "boy";
+const res = $("resultTxt");
+res.innerHTML = isBoy ? "It's a<br>Boy! 💙" : "It's a<br>Girl! 💗";
+res.style.textAlign = "center";
+res.style.setProperty("--result-bg", isBoy ? "var(--blue-soft)" : "var(--pink-soft)");
+res.style.setProperty("--result-ink", isBoy ? "var(--blue-deep)" : "var(--pink-deep)");
+
+const cv = $("scratchCanvas"), ctx = cv.getContext("2d");
+let revealed = false;
+function paintCover(){
+  const r = cv.getBoundingClientRect(), dpr = devicePixelRatio || 1;
+  cv.width = r.width*dpr; cv.height = r.height*dpr; ctx.scale(dpr,dpr);
+  const g = ctx.createLinearGradient(0,0,r.width,r.height);
+  g.addColorStop(0,"#f4a7bb"); g.addColorStop(.5,"#e8d5f0"); g.addColorStop(1,"#9cc7ec");
+  ctx.fillStyle = g; ctx.fillRect(0,0,r.width,r.height);
+  ctx.fillStyle = "#fff"; ctx.font = "600 28px Fraunces, serif"; ctx.textAlign = "center";
+  ctx.fillText("? ? ?", r.width/2, r.height/2+10);
+  ctx.globalCompositeOperation = "destination-out";
+}
+paintCover();
+let down = false;
+function scratch(e){
+  if (!down || revealed) return;
+  const r = cv.getBoundingClientRect();
+  const p = e.touches ? e.touches[0] : e;
+  ctx.beginPath(); ctx.arc(p.clientX-r.left, p.clientY-r.top, 22, 0, Math.PI*2); ctx.fill();
+  checkReveal();
+}
+let checks = 0;
+function checkReveal(){
+  if (++checks % 8) return;
+  const data = ctx.getImageData(0,0,cv.width,cv.height).data;
+  let clear = 0; for (let i=3;i<data.length;i+=64) if (data[i]===0) clear++;
+  if (clear/(data.length/64) > .5){
+    revealed = true; cv.style.transition="opacity .6s"; cv.style.opacity=0;
+    $("revealNote").textContent = isBoy ? "Selamat! Baby boy sedang dalam perjalanan 💙" : "Selamat! Baby girl sedang dalam perjalanan 💗";
+    confetti();
+  }
+}
+["mousedown","touchstart"].forEach(t => cv.addEventListener(t, e => { down = true; scratch(e); }, {passive:true}));
+["mouseup","mouseleave","touchend"].forEach(t => cv.addEventListener(t, () => down = false));
+["mousemove","touchmove"].forEach(t => cv.addEventListener(t, scratch, {passive:true}));
+
+function confetti(){
+  const colors = isBoy ? ["#9cc7ec","#4f8cc4","#e2f0fb","#fff"] : ["#f4a7bb","#d9678a","#fde4ea","#fff"];
+  for (let i=0;i<120;i++){
+    const c = document.createElement("i"); c.className = "confetti";
+    c.style.left = Math.random()*100+"vw";
+    c.style.background = colors[i%colors.length];
+    c.style.animationDuration = 2.5+Math.random()*2.5+"s";
+    c.style.animationDelay = Math.random()*.8+"s";
+    document.body.appendChild(c); setTimeout(()=>c.remove(),6000);
+  }
+}
+
+// RSVP (tampil di halaman; sambungkan ke backend/Google Form bila perlu)
+const wishes = [
+  { nama:"Rina", hadir:"Hadir", ucapan:"Semoga ibu dan baby sehat selalu! Team Girl 💗" },
+  { nama:"Dimas", hadir:"Hadir", ucapan:"Feeling-ku cowok nih 💙 Sehat terus ya!" },
+];
+function renderWishes(){
+  $("wishes").innerHTML = "";
+  wishes.slice().reverse().forEach(w => {
+    const d = document.createElement("div"); d.className = "wish";
+    const b = document.createElement("b"); b.textContent = w.nama;
+    const s = document.createElement("small"); s.textContent = w.hadir;
+    const p = document.createElement("p"); p.textContent = w.ucapan;
+    d.append(b, s, p); $("wishes").appendChild(d);
+  });
+}
+$("rsvpForm").onsubmit = e => {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  wishes.push({ nama:f.get("nama"), hadir:f.get("hadir"), ucapan:f.get("ucapan") || "—" });
+  renderWishes(); e.target.reset();
+};
+renderWishes();
+</script>
+</body>
+</html>
