@@ -37,7 +37,10 @@ html:has(.bt8-root) {
     position: fixed;
     inset: 0;
     z-index: 9999;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     background-color: #2f2419;
     background-image:
         radial-gradient(circle at 50% 15%, #6b5335 0, transparent 60%),
@@ -47,6 +50,7 @@ html:has(.bt8-root) {
         16px 16px;
     display: flex;
     align-items: center;
+    align-items: safe center;
     justify-content: center;
     padding: 24px;
     transition:

@@ -36,13 +36,17 @@ html:has(.bt5-root) {
     position: fixed;
     inset: 0;
     z-index: 9999;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     background:
         radial-gradient(circle at 15% 5%, rgba(255, 200, 71, 0.18) 0, transparent 45%),
         radial-gradient(circle at 88% 70%, rgba(79, 209, 165, 0.16) 0, transparent 45%),
         var(--bt5-malam);
     display: flex;
     align-items: center;
+    align-items: safe center;
     justify-content: center;
     padding: 24px;
     transition:

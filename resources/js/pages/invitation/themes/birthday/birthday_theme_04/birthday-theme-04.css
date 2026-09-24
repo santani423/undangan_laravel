@@ -34,10 +34,14 @@ html:has(.bt4-root) {
     position: fixed;
     inset: 0;
     z-index: 9999;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     background: linear-gradient(180deg, #ffd3e6 0%, var(--bt4-sugar) 100%);
     display: flex;
     align-items: center;
+    align-items: safe center;
     justify-content: center;
     padding: 24px;
     transition:

@@ -36,7 +36,10 @@ html:has(.bt7-root) {
     position: fixed;
     inset: 0;
     z-index: 9999;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     background-color: var(--bt7-indigo-tua);
     background-image:
         radial-gradient(circle at 50% 20%, var(--bt7-indigo-2) 0, transparent 55%),
@@ -46,6 +49,7 @@ html:has(.bt7-root) {
         12px 12px;
     display: flex;
     align-items: center;
+    align-items: safe center;
     justify-content: center;
     padding: 24px;
     transition:

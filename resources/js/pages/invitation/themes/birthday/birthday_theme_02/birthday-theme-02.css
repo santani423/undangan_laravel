@@ -32,13 +32,17 @@ html:has(.bt2-root) {
     position: fixed;
     inset: 0;
     z-index: 9999;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     background:
         radial-gradient(circle at 20% 10%, rgba(255, 215, 106, 0.22) 0%, transparent 45%),
         radial-gradient(circle at 85% 80%, rgba(138, 217, 240, 0.2) 0%, transparent 45%),
         linear-gradient(160deg, var(--bt2-dark) 0%, var(--bt2-dark-2) 55%, #4a2f7a 100%);
     display: flex;
     align-items: center;
+    align-items: safe center;
     justify-content: center;
     padding: 24px;
     transition:
