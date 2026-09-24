@@ -285,7 +285,7 @@ export default function AqiqahTheme05({ invitation, visitor, greeting }: AqiqahT
 
             {/* ── Opening Overlay ────────────────────────────────────────────────── */}
             {coverEnabled && (
-                <div className={`aq5-overlay${opened ? 'aq5-hide' : ''}`}>
+                <div className={`aq5-overlay${opened ? ' aq5-hide' : ''}`}>
                     <div className="aq5-overlay-decor" aria-hidden="true">
                         <svg className="aq5-overlay-crown aq5-overlay-crown-1" viewBox="0 0 40 30">
                             <use href="#aq5-crown" />
@@ -336,7 +336,7 @@ export default function AqiqahTheme05({ invitation, visitor, greeting }: AqiqahT
             )}
 
             {/* ── Main Content ────────────────────────────────────────────────────── */}
-            <div ref={mainRef} className={`aq5-main${opened ? 'aq5-main-visible' : ''}`}>
+            <div ref={mainRef} className={`aq5-main${opened ? ' aq5-main-visible' : ''}`}>
                 {/* ── HERO ──────────────────────────────────────────────────────── */}
                 <header className="aq5-hero">
                     <svg className="aq5-pennants" viewBox="0 0 400 60" preserveAspectRatio="none" aria-hidden="true">
