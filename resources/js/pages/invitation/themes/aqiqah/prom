@@ -1,0 +1,11 @@
+Tolong convert file HTML ini jadi tema aqiqah baru mengikuti pola AqiqahTheme01.tsx.
+
+1. File HTML: [lampirkan/paste isi HTML, atau kasih path filenya]
+2. Nama tema: aqiqah_theme_03 (atau sebutkan nomor/nama lain)
+3. Prefix CSS class: aq3- (biar tidak bentrok, kalau tidak disebut saya pilihkan sendiri)
+4. Assets: [kalau ada gambar/font custom di HTML, sebutkan lokasinya atau saya pakai placeholder]
+5. Fungsi yang WAJIB tetap jalan: cover/opening, countdown, RSVP form, galeri foto, 
+   amplop digital, ucapan & doa, music player, back-to-top, animasi scroll
+   → (coret yang tidak perlu / tambah kalau ada fitur lain di HTML aslinya)
+6. Data dinamis: pakai field yang sudah ada di AqiqahInvitation, atau ada field baru 
+   yang perlu ditambahkan ke tipe (misal galeri kategori, video, dst)?

@@ -1,0 +1,358 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Little Princess Aqiqah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;1,6..96,400;1,6..96,500&family=Lexend+Deca:wght@300;400;500;600&family=Parisienne&display=swap">
+<style>
+:root{
+  --blush:#fbe3ea; --rose:#e3849f; --rose-d:#b9557a; --plum:#6e2a48; --rosegold:#c8917b; --rg-2:#ecc4b3; --lilac:#ece3f8;
+  --white:#fffafb; --paper:#ffffff; --ink:#43283a; --muted:#8a6a7c; --line:#f1d4de;
+  --script:"Parisienne", "Brush Script MT", cursive;
+  --serif:"Bodoni Moda", Didot, Georgia, serif;
+  --sans:"Lexend Deca", "Segoe UI", system-ui, sans-serif;
+  --arab:"Amiri", "Traditional Arabic", serif;
+  color-scheme: light;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+[hidden]{display:none!important}
+body{margin:0; color:var(--ink); font-family:var(--sans); font-weight:400; font-size:16px; line-height:1.7; background-color:var(--blush);
+  background-image:radial-gradient(60% 40% at 0% 0%, rgba(236,227,248,.9), transparent 70%), radial-gradient(60% 40% at 100% 100%, rgba(236,227,248,.9), transparent 70%);
+  background-attachment:fixed; overflow-x:hidden}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--rose-d); outline-offset:3px; border-radius:6px}
+.col{max-width:470px; margin:0 auto; padding-inline:18px}
+.eyebrow{font-family:var(--serif); font-style:italic; font-size:17px; color:var(--rose-d); margin:0}
+h2{font-family:var(--serif); font-weight:500; font-size:28px; line-height:1.25; margin:6px 0 0; color:var(--plum); text-wrap:balance}
+.script{font-family:var(--script); font-weight:400}
+
+/* petals */
+#petals{position:fixed; inset:0; pointer-events:none; z-index:3; overflow:hidden}
+#petals i{position:absolute; top:-20px; width:12px; height:10px; background:#f5a8bd; border-radius:12px 0 12px 0; opacity:.75}
+
+/* HERO */
+.hero{position:relative; text-align:center; padding-block:54px 60px; overflow:hidden}
+.sakura{position:absolute; width:250px; height:170px; pointer-events:none}
+.sk-tl{top:-18px; left:-46px}
+.sk-tr{top:-18px; right:-46px; transform:scaleX(-1)}
+.hero .col{position:relative}
+.bism{font-family:var(--arab); font-size:25px; color:var(--plum); margin:48px 0 0; line-height:1.6}
+.tagline{display:inline-block; margin-top:4px; font-size:12px; letter-spacing:.3em; text-transform:uppercase; color:var(--rosegold); font-weight:500}
+.oval{position:relative; width:min(230px,62vw); max-width:100%; aspect-ratio:4/5; margin:66px auto 0}
+.oval .lace{position:absolute; inset:-14px; border-radius:50%;
+  background:radial-gradient(circle, var(--paper) 6px, transparent 6.5px) 0 0/16px 16px; -webkit-mask:radial-gradient(closest-side, transparent 92%, #000 93%); mask:radial-gradient(closest-side, transparent 92%, #000 93%)}
+.oval .rim{position:absolute; inset:0; border-radius:50%; padding:8px; background:linear-gradient(160deg,var(--rg-2),var(--rosegold) 60%,var(--rg-2)); box-shadow:0 18px 36px rgba(110,42,72,.2)}
+.oval .inner{width:100%; height:100%; border-radius:50%; overflow:hidden; background:linear-gradient(180deg,#fff,var(--lilac))}
+.oval img{width:100%; height:100%; object-fit:cover; display:block}
+.oval .placeholder{width:100%; height:100%; display:grid; place-items:center}
+.oval .placeholder svg{width:78%; height:auto}
+.tiara{position:absolute; left:50%; top:-54px; width:120px; transform:translateX(-50%); filter:drop-shadow(0 4px 6px rgba(110,42,72,.2))}
+.bow{position:absolute; left:50%; bottom:-20px; width:80px; transform:translateX(-50%)}
+.hero .pre{font-family:var(--serif); font-style:italic; font-size:18px; color:var(--muted); margin:36px 0 0}
+.hero h1{font-family:var(--script); font-weight:400; font-size:clamp(52px,15vw,74px); line-height:1.1; margin:2px 0 0; color:var(--plum)}
+.hero .binti{font-size:13px; letter-spacing:.22em; text-transform:uppercase; color:var(--rosegold); margin:4px 0 0; font-weight:500}
+.dateline{display:flex; justify-content:center; align-items:center; gap:14px; margin-top:18px; font-family:var(--serif)}
+.dateline span{font-size:14px; letter-spacing:.16em; text-transform:uppercase; color:var(--plum)}
+.dateline b{font-weight:500; font-size:40px; line-height:1; color:var(--rose-d); padding-inline:14px; border-inline:1px solid var(--rosegold); font-variant-numeric:tabular-nums}
+.guest{margin:26px auto 0; max-width:300px; background:rgba(255,255,255,.75); border:1px solid var(--line); border-radius:999px; padding:12px 22px}
+.guest small{display:block; font-size:12px; color:var(--muted)}
+.guest strong{display:block; font-family:var(--serif); font-weight:500; font-size:22px; line-height:1.3; color:var(--plum)}
+.cta{display:inline-flex; align-items:center; gap:8px; margin-top:22px; text-decoration:none; font-size:14px; font-weight:500; letter-spacing:.14em; text-transform:uppercase; color:#fff;
+  background:linear-gradient(180deg,var(--rose),var(--rose-d)); padding:13px 28px; border-radius:99px; box-shadow:0 10px 24px rgba(185,85,122,.35); transition:transform .2s}
+.cta:hover{transform:translateY(-2px)}
+
+/* lace cards */
+main{padding-block:10px 20px}
+.card{position:relative; background:var(--paper); margin:44px auto 0; max-width:430px; padding:40px 24px 36px; text-align:center; border-radius:6px; box-shadow:0 16px 34px rgba(110,42,72,.08)}
+.card::before,.card::after{content:""; position:absolute; left:0; right:0; height:12px;
+  background:radial-gradient(circle at 50% 0, var(--paper) 8px, transparent 8.5px) 0 0/18px 12px repeat-x}
+.card::before{top:-11px; transform:scaleY(-1)}
+.card::after{bottom:-11px}
+.card .heart{display:block; width:20px; height:18px; margin:0 auto 6px}
+.arabic{font-family:var(--arab); font-size:25px; line-height:2; color:var(--plum); margin:12px 0 0}
+blockquote{margin:10px 0 0; font-family:var(--serif); font-style:italic; font-size:19px; line-height:1.55}
+.src{font-size:13px; color:var(--muted); margin:8px 0 0}
+.lead{max-width:34ch; margin:18px auto 0}
+.flourish{display:block; width:150px; height:24px; margin:18px auto 0}
+
+.princess-name{font-family:var(--script); font-size:48px; line-height:1.15; color:var(--plum); margin:10px 0 0}
+.kid-binti{font-size:13px; letter-spacing:.18em; text-transform:uppercase; color:var(--rosegold); margin:0}
+.meaning{margin:18px auto 0; max-width:320px; background:var(--blush); border-radius:18px; padding:14px 16px}
+.meaning p{margin:0}
+.meaning .t{font-family:var(--serif); font-style:italic; color:var(--rose-d)}
+.parents{margin-top:20px}
+.parents .who{font-family:var(--serif); font-weight:500; font-size:21px; line-height:1.4; color:var(--plum); margin:4px 0 0}
+.parents .who i{color:var(--rose); padding-inline:4px}
+
+.event{background:linear-gradient(180deg,#fff,#fff6f9)}
+.date-card{display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px; margin-top:22px}
+.date-card .side{font-family:var(--serif); font-size:13px; letter-spacing:.2em; text-transform:uppercase; color:var(--plum); padding-block:10px; border-block:1px solid var(--rg-2)}
+.date-card .num{font-family:var(--serif); font-weight:500; font-size:66px; line-height:1; color:var(--rose-d); font-variant-numeric:tabular-nums}
+.date-card + .yr{font-family:var(--serif); letter-spacing:.3em; font-size:14px; color:var(--muted); margin:6px 0 0}
+.where{margin-top:18px}
+.where p{margin:0}
+.where .time{display:inline-block; background:var(--lilac); color:var(--plum); border-radius:99px; padding:3px 16px; font-weight:500; margin-bottom:10px}
+.actions{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:18px}
+.btn{flex:1 1 auto; display:inline-flex; justify-content:center; text-decoration:none; cursor:pointer; font:500 13px var(--sans); letter-spacing:.04em;
+  padding:10px 14px; border-radius:99px; border:1px solid var(--rose-d); background:var(--paper); color:var(--rose-d)}
+.btn.solid{background:var(--rose-d); color:#fff}
+.btn:hover{background:var(--blush)} .btn.solid:hover{background:var(--plum)}
+.note{font-size:13px; color:var(--muted); min-height:1.4em; margin:8px 0 0}
+.count{display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-top:14px}
+.count div{background:var(--blush); border-radius:50% 50% 14px 14px / 34% 34% 14px 14px; padding:14px 2px 10px}
+.count b{display:block; font-family:var(--serif); font-weight:500; font-size:26px; color:var(--plum); font-variant-numeric:tabular-nums}
+.count span{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+.past{margin:16px 0 0; font-family:var(--serif); font-style:italic; font-size:18px; color:var(--rose-d)}
+
+form{margin-top:20px; display:grid; gap:14px; text-align:left}
+label{display:block; font-size:13px; font-weight:500; margin-bottom:6px; color:var(--plum)}
+input[type=text],select,textarea{width:100%; font:inherit; font-size:15px; color:var(--ink); background:#fff7f9; border:1px solid var(--line); border-radius:14px; padding:12px 14px}
+textarea{min-height:100px; resize:vertical}
+.seg{display:flex; gap:8px; flex-wrap:wrap}
+.seg label{margin:0; flex:1 1 130px}
+.seg input{position:absolute; opacity:0; pointer-events:none}
+.seg span{display:block; text-align:center; padding:11px; border-radius:14px; border:1px solid var(--line); background:#fff7f9; cursor:pointer; font-size:14px}
+.seg input:checked + span{background:var(--rose-d); border-color:var(--rose-d); color:#fff}
+.seg input:focus-visible + span{outline:2px solid var(--plum); outline-offset:2px}
+.send{border:0; cursor:pointer; font:500 14px var(--sans); letter-spacing:.14em; text-transform:uppercase; color:#fff; background:linear-gradient(180deg,var(--rose),var(--rose-d)); padding:14px; border-radius:99px}
+.err{margin:0; font-size:13px; min-height:1.2em; color:#a8324f}
+.hint{font-size:14px; color:var(--muted); margin:8px 0 0}
+.family{font-family:var(--serif); font-weight:500; font-size:22px; line-height:1.4; color:var(--plum); margin:6px 0 0}
+footer{text-align:center; padding-block:36px 44px; font-size:11px; letter-spacing:.14em; color:var(--muted)}
+
+@media (max-width:370px){ .date-card .num{font-size:52px} .count b{font-size:21px} .sakura{width:200px; height:136px} }
+@media (prefers-reduced-motion:no-preference){
+  #petals i{animation:petal linear infinite}
+  @keyframes petal{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(30px,25vh) rotate(90deg)}50%{transform:translate(-10px,50vh) rotate(200deg)}75%{transform:translate(35px,75vh) rotate(280deg)}100%{transform:translate(0,105vh) rotate(360deg)}}
+  .tiara .gem{animation:sp 2s ease-in-out infinite alternate} .tiara .gem:nth-of-type(2){animation-delay:-1s}
+  @keyframes sp{from{opacity:.5}to{opacity:1}}
+}
+@media (prefers-reduced-motion:reduce){ #petals{display:none} }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs><linearGradient id="rg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6dccf"/><stop offset=".55" stop-color="#c8917b"/><stop offset="1" stop-color="#a86f5c"/></linearGradient></defs>
+  <symbol id="sakura" viewBox="-20 -30 270 180"><path d="M0 0C70 20 140 50 230 110" fill="none" stroke="#8a5a5a" stroke-width="3.5" stroke-linecap="round"/><path d="M110 38C120 60 118 80 108 96" fill="none" stroke="#8a5a5a" stroke-width="2" stroke-linecap="round"/><path d="M60 16C80 0 96 -6 112 -4" fill="none" stroke="#8a5a5a" stroke-width="2" stroke-linecap="round"/><g transform="translate(26.7 11.5) rotate(67)" fill="#f7b7c8"><ellipse cx="0" cy="-8.0" rx="5.4" ry="8.0" transform="rotate(0)"/><ellipse cx="0" cy="-8.0" rx="5.4" ry="8.0" transform="rotate(72)"/><ellipse cx="0" cy="-8.0" rx="5.4" ry="8.0" transform="rotate(144)"/><ellipse cx="0" cy="-8.0" rx="5.4" ry="8.0" transform="rotate(216)"/><ellipse cx="0" cy="-8.0" rx="5.4" ry="8.0" transform="rotate(288)"/><circle r="2.9" fill="#fff4c9"/></g><g transform="translate(56.9 21.6) rotate(6)" fill="#f39bb4"><ellipse cx="0" cy="-6.4" rx="4.3" ry="6.4" transform="rotate(0)"/><ellipse cx="0" cy="-6.4" rx="4.3" ry="6.4" transform="rotate(72)"/><ellipse cx="0" cy="-6.4" rx="4.3" ry="6.4" transform="rotate(144)"/><ellipse cx="0" cy="-6.4" rx="4.3" ry="6.4" transform="rotate(216)"/><ellipse cx="0" cy="-6.4" rx="4.3" ry="6.4" transform="rotate(288)"/><circle r="2.3" fill="#fff4c9"/></g><g transform="translate(76.3 27.7) rotate(69)" fill="#f7b7c8"><ellipse cx="0" cy="-6.3" rx="4.3" ry="6.3" transform="rotate(0)"/><ellipse cx="0" cy="-6.3" rx="4.3" ry="6.3" transform="rotate(72)"/><ellipse cx="0" cy="-6.3" rx="4.3" ry="6.3" transform="rotate(144)"/><ellipse cx="0" cy="-6.3" rx="4.3" ry="6.3" transform="rotate(216)"/><ellipse cx="0" cy="-6.3" rx="4.3" ry="6.3" transform="rotate(288)"/><circle r="2.3" fill="#fff4c9"/></g><g transform="translate(112.9 34.3) rotate(35)" fill="#f39bb4"><ellipse cx="0" cy="-6.3" rx="4.2" ry="6.3" transform="rotate(0)"/><ellipse cx="0" cy="-6.3" rx="4.2" ry="6.3" transform="rotate(72)"/><ellipse cx="0" cy="-6.3" rx="4.2" ry="6.3" transform="rotate(144)"/><ellipse cx="0" cy="-6.3" rx="4.2" ry="6.3" transform="rotate(216)"/><ellipse cx="0" cy="-6.3" rx="4.2" ry="6.3" transform="rotate(288)"/><circle r="2.2" fill="#fff4c9"/></g><g transform="translate(149.3 62.7) rotate(9)" fill="#f39bb4"><ellipse cx="0" cy="-6.1" rx="4.1" ry="6.1" transform="rotate(0)"/><ellipse cx="0" cy="-6.1" rx="4.1" ry="6.1" transform="rotate(72)"/><ellipse cx="0" cy="-6.1" rx="4.1" ry="6.1" transform="rotate(144)"/><ellipse cx="0" cy="-6.1" rx="4.1" ry="6.1" transform="rotate(216)"/><ellipse cx="0" cy="-6.1" rx="4.1" ry="6.1" transform="rotate(288)"/><circle r="2.2" fill="#fff4c9"/></g><g transform="translate(179.7 76.6) rotate(0)" fill="#f39bb4"><ellipse cx="0" cy="-6.0" rx="4.1" ry="6.0" transform="rotate(0)"/><ellipse cx="0" cy="-6.0" rx="4.1" ry="6.0" transform="rotate(72)"/><ellipse cx="0" cy="-6.0" rx="4.1" ry="6.0" transform="rotate(144)"/><ellipse cx="0" cy="-6.0" rx="4.1" ry="6.0" transform="rotate(216)"/><ellipse cx="0" cy="-6.0" rx="4.1" ry="6.0" transform="rotate(288)"/><circle r="2.1" fill="#fff4c9"/></g><g transform="translate(219.9 108.6) rotate(21)" fill="#fbd0dc"><ellipse cx="0" cy="-6.1" rx="4.1" ry="6.1" transform="rotate(0)"/><ellipse cx="0" cy="-6.1" rx="4.1" ry="6.1" transform="rotate(72)"/><ellipse cx="0" cy="-6.1" rx="4.1" ry="6.1" transform="rotate(144)"/><ellipse cx="0" cy="-6.1" rx="4.1" ry="6.1" transform="rotate(216)"/><ellipse cx="0" cy="-6.1" rx="4.1" ry="6.1" transform="rotate(288)"/><circle r="2.2" fill="#fff4c9"/></g><g transform="translate(105.8 91.2) rotate(26)" fill="#f39bb4"><ellipse cx="0" cy="-8.3" rx="5.6" ry="8.3" transform="rotate(0)"/><ellipse cx="0" cy="-8.3" rx="5.6" ry="8.3" transform="rotate(72)"/><ellipse cx="0" cy="-8.3" rx="5.6" ry="8.3" transform="rotate(144)"/><ellipse cx="0" cy="-8.3" rx="5.6" ry="8.3" transform="rotate(216)"/><ellipse cx="0" cy="-8.3" rx="5.6" ry="8.3" transform="rotate(288)"/><circle r="2.9" fill="#fff4c9"/></g><g transform="translate(117.3 -0.9) rotate(49)" fill="#fbd0dc"><ellipse cx="0" cy="-8.6" rx="5.8" ry="8.6" transform="rotate(0)"/><ellipse cx="0" cy="-8.6" rx="5.8" ry="8.6" transform="rotate(72)"/><ellipse cx="0" cy="-8.6" rx="5.8" ry="8.6" transform="rotate(144)"/><ellipse cx="0" cy="-8.6" rx="5.8" ry="8.6" transform="rotate(216)"/><ellipse cx="0" cy="-8.6" rx="5.8" ry="8.6" transform="rotate(288)"/><circle r="3.0" fill="#fff4c9"/></g><g transform="translate(110.3 70.6) rotate(33)" fill="#f7b7c8"><ellipse cx="0" cy="-8.5" rx="5.7" ry="8.5" transform="rotate(0)"/><ellipse cx="0" cy="-8.5" rx="5.7" ry="8.5" transform="rotate(72)"/><ellipse cx="0" cy="-8.5" rx="5.7" ry="8.5" transform="rotate(144)"/><ellipse cx="0" cy="-8.5" rx="5.7" ry="8.5" transform="rotate(216)"/><ellipse cx="0" cy="-8.5" rx="5.7" ry="8.5" transform="rotate(288)"/><circle r="3.0" fill="#fff4c9"/></g><g transform="translate(88.0 9.1) rotate(43)" fill="#f7b7c8"><ellipse cx="0" cy="-7.4" rx="5.0" ry="7.4" transform="rotate(0)"/><ellipse cx="0" cy="-7.4" rx="5.0" ry="7.4" transform="rotate(72)"/><ellipse cx="0" cy="-7.4" rx="5.0" ry="7.4" transform="rotate(144)"/><ellipse cx="0" cy="-7.4" rx="5.0" ry="7.4" transform="rotate(216)"/><ellipse cx="0" cy="-7.4" rx="5.0" ry="7.4" transform="rotate(288)"/><circle r="2.6" fill="#fff4c9"/></g><circle cx="83.7" cy="26.3" r="3.5" fill="#f7b7c8"/><circle cx="78.0" cy="31.3" r="3.5" fill="#f7b7c8"/><circle cx="40.7" cy="0.1" r="3.5" fill="#f7b7c8"/><circle cx="169.8" cy="58.9" r="3.5" fill="#f7b7c8"/><circle cx="168.1" cy="74.6" r="3.5" fill="#f7b7c8"/><circle cx="13.6" cy="0.5" r="3.5" fill="#f7b7c8"/></symbol>
+  <symbol id="sakura2" viewBox="-20 -30 270 180"><path d="M0 0C70 20 140 50 230 110" fill="none" stroke="#8a5a5a" stroke-width="3.5" stroke-linecap="round"/><path d="M110 38C120 60 118 80 108 96" fill="none" stroke="#8a5a5a" stroke-width="2" stroke-linecap="round"/><path d="M60 16C80 0 96 -6 112 -4" fill="none" stroke="#8a5a5a" stroke-width="2" stroke-linecap="round"/><g transform="translate(24.8 5.6) rotate(0)" fill="#fbd0dc"><ellipse cx="0" cy="-6.0" rx="4.1" ry="6.0" transform="rotate(0)"/><ellipse cx="0" cy="-6.0" rx="4.1" ry="6.0" transform="rotate(72)"/><ellipse cx="0" cy="-6.0" rx="4.1" ry="6.0" transform="rotate(144)"/><ellipse cx="0" cy="-6.0" rx="4.1" ry="6.0" transform="rotate(216)"/><ellipse cx="0" cy="-6.0" rx="4.1" ry="6.0" transform="rotate(288)"/><circle r="2.1" fill="#fff4c9"/></g><g transform="translate(52.8 23.6) rotate(70)" fill="#f7b7c8"><ellipse cx="0" cy="-5.8" rx="3.9" ry="5.8" transform="rotate(0)"/><ellipse cx="0" cy="-5.8" rx="3.9" ry="5.8" transform="rotate(72)"/><ellipse cx="0" cy="-5.8" rx="3.9" ry="5.8" transform="rotate(144)"/><ellipse cx="0" cy="-5.8" rx="3.9" ry="5.8" transform="rotate(216)"/><ellipse cx="0" cy="-5.8" rx="3.9" ry="5.8" transform="rotate(288)"/><circle r="2.1" fill="#fff4c9"/></g><g transform="translate(83.6 22.9) rotate(54)" fill="#f39bb4"><ellipse cx="0" cy="-8.5" rx="5.8" ry="8.5" transform="rotate(0)"/><ellipse cx="0" cy="-8.5" rx="5.8" ry="8.5" transform="rotate(72)"/><ellipse cx="0" cy="-8.5" rx="5.8" ry="8.5" transform="rotate(144)"/><ellipse cx="0" cy="-8.5" rx="5.8" ry="8.5" transform="rotate(216)"/><ellipse cx="0" cy="-8.5" rx="5.8" ry="8.5" transform="rotate(288)"/><circle r="3.0" fill="#fff4c9"/></g><g transform="translate(108.0 34.9) rotate(8)" fill="#ee8aa7"><ellipse cx="0" cy="-6.0" rx="4.1" ry="6.0" transform="rotate(0)"/><ellipse cx="0" cy="-6.0" rx="4.1" ry="6.0" transform="rotate(72)"/><ellipse cx="0" cy="-6.0" rx="4.1" ry="6.0" transform="rotate(144)"/><ellipse cx="0" cy="-6.0" rx="4.1" ry="6.0" transform="rotate(216)"/><ellipse cx="0" cy="-6.0" rx="4.1" ry="6.0" transform="rotate(288)"/><circle r="2.1" fill="#fff4c9"/></g><g transform="translate(147.8 64.6) rotate(26)" fill="#f39bb4"><ellipse cx="0" cy="-8.4" rx="5.7" ry="8.4" transform="rotate(0)"/><ellipse cx="0" cy="-8.4" rx="5.7" ry="8.4" transform="rotate(72)"/><ellipse cx="0" cy="-8.4" rx="5.7" ry="8.4" transform="rotate(144)"/><ellipse cx="0" cy="-8.4" rx="5.7" ry="8.4" transform="rotate(216)"/><ellipse cx="0" cy="-8.4" rx="5.7" ry="8.4" transform="rotate(288)"/><circle r="3.0" fill="#fff4c9"/></g><g transform="translate(180.9 76.2) rotate(34)" fill="#f39bb4"><ellipse cx="0" cy="-5.9" rx="4.0" ry="5.9" transform="rotate(0)"/><ellipse cx="0" cy="-5.9" rx="4.0" ry="5.9" transform="rotate(72)"/><ellipse cx="0" cy="-5.9" rx="4.0" ry="5.9" transform="rotate(144)"/><ellipse cx="0" cy="-5.9" rx="4.0" ry="5.9" transform="rotate(216)"/><ellipse cx="0" cy="-5.9" rx="4.0" ry="5.9" transform="rotate(288)"/><circle r="2.1" fill="#fff4c9"/></g><g transform="translate(215.4 98.7) rotate(0)" fill="#ee8aa7"><ellipse cx="0" cy="-5.7" rx="3.9" ry="5.7" transform="rotate(0)"/><ellipse cx="0" cy="-5.7" rx="3.9" ry="5.7" transform="rotate(72)"/><ellipse cx="0" cy="-5.7" rx="3.9" ry="5.7" transform="rotate(144)"/><ellipse cx="0" cy="-5.7" rx="3.9" ry="5.7" transform="rotate(216)"/><ellipse cx="0" cy="-5.7" rx="3.9" ry="5.7" transform="rotate(288)"/><circle r="2.0" fill="#fff4c9"/></g><g transform="translate(102.7 94.1) rotate(3)" fill="#f39bb4"><ellipse cx="0" cy="-7.1" rx="4.8" ry="7.1" transform="rotate(0)"/><ellipse cx="0" cy="-7.1" rx="4.8" ry="7.1" transform="rotate(72)"/><ellipse cx="0" cy="-7.1" rx="4.8" ry="7.1" transform="rotate(144)"/><ellipse cx="0" cy="-7.1" rx="4.8" ry="7.1" transform="rotate(216)"/><ellipse cx="0" cy="-7.1" rx="4.8" ry="7.1" transform="rotate(288)"/><circle r="2.5" fill="#fff4c9"/></g><g transform="translate(111.1 2.5) rotate(0)" fill="#f7b7c8"><ellipse cx="0" cy="-5.9" rx="4.0" ry="5.9" transform="rotate(0)"/><ellipse cx="0" cy="-5.9" rx="4.0" ry="5.9" transform="rotate(72)"/><ellipse cx="0" cy="-5.9" rx="4.0" ry="5.9" transform="rotate(144)"/><ellipse cx="0" cy="-5.9" rx="4.0" ry="5.9" transform="rotate(216)"/><ellipse cx="0" cy="-5.9" rx="4.0" ry="5.9" transform="rotate(288)"/><circle r="2.1" fill="#fff4c9"/></g><g transform="translate(119.2 67.2) rotate(42)" fill="#f7b7c8"><ellipse cx="0" cy="-8.2" rx="5.6" ry="8.2" transform="rotate(0)"/><ellipse cx="0" cy="-8.2" rx="5.6" ry="8.2" transform="rotate(72)"/><ellipse cx="0" cy="-8.2" rx="5.6" ry="8.2" transform="rotate(144)"/><ellipse cx="0" cy="-8.2" rx="5.6" ry="8.2" transform="rotate(216)"/><ellipse cx="0" cy="-8.2" rx="5.6" ry="8.2" transform="rotate(288)"/><circle r="2.9" fill="#fff4c9"/></g><g transform="translate(94.7 -1.9) rotate(64)" fill="#f7b7c8"><ellipse cx="0" cy="-8.4" rx="5.7" ry="8.4" transform="rotate(0)"/><ellipse cx="0" cy="-8.4" rx="5.7" ry="8.4" transform="rotate(72)"/><ellipse cx="0" cy="-8.4" rx="5.7" ry="8.4" transform="rotate(144)"/><ellipse cx="0" cy="-8.4" rx="5.7" ry="8.4" transform="rotate(216)"/><ellipse cx="0" cy="-8.4" rx="5.7" ry="8.4" transform="rotate(288)"/><circle r="3.0" fill="#fff4c9"/></g><circle cx="128.1" cy="43.6" r="3.5" fill="#f7b7c8"/><circle cx="27.2" cy="15.6" r="3.5" fill="#f7b7c8"/><circle cx="145.7" cy="71.8" r="3.5" fill="#f7b7c8"/><circle cx="147.5" cy="60.5" r="3.5" fill="#f7b7c8"/><circle cx="156.3" cy="66.0" r="3.5" fill="#f7b7c8"/><circle cx="161.7" cy="57.8" r="3.5" fill="#f7b7c8"/></symbol>
+  <symbol id="heart" viewBox="0 0 24 22"><path d="M12 21S1 14 1 7a5.5 5.5 0 0 1 11-1 5.5 5.5 0 0 1 11 1c0 7-11 14-11 14z" fill="#e3849f"/></symbol>
+  <symbol id="flourish" viewBox="0 0 150 24">
+    <path d="M4 12C30 12 40 2 56 6 66 9 62 18 54 16M146 12C120 12 110 2 94 6 84 9 88 18 96 16" fill="none" stroke="#c8917b" stroke-width="1.3" stroke-linecap="round"/>
+    <path d="M75 4c3 4 3 12 0 16-3-4-3-12 0-16z" fill="#e3849f"/><path d="M67 12c4-3 12-3 16 0-4 3-12 3-16 0z" fill="#f5a8bd"/>
+  </symbol>
+</svg>
+
+<div id="petals" aria-hidden="true"></div>
+
+<header class="hero" id="top">
+  <svg class="sakura sk-tl" aria-hidden="true"><use href="#sakura"/></svg>
+  <svg class="sakura sk-tr" aria-hidden="true"><use href="#sakura2"/></svg>
+  <div class="col">
+    <p class="bism" lang="ar" dir="rtl">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيْمِ</p>
+    <span class="tagline">Tasyakuran Aqiqah</span>
+    <div class="oval">
+      <div class="lace" aria-hidden="true"></div>
+      <div class="rim"><div class="inner" id="photo">
+        <div class="placeholder">
+          <svg viewBox="0 0 160 160" role="img" aria-label="Ilustrasi monogram putri kecil">
+            <circle cx="80" cy="80" r="62" fill="#fbe3ea"/>
+            <text x="80" y="104" text-anchor="middle" font-family="Parisienne, cursive" font-size="78" fill="#b9557a" data-k="initial">A</text>
+            <g fill="#f39bb4"><circle cx="34" cy="40" r="4"/><circle cx="128" cy="50" r="3"/><circle cx="120" cy="128" r="4"/><circle cx="40" cy="122" r="3"/></g>
+          </svg>
+        </div>
+      </div></div>
+      <svg class="tiara" viewBox="0 0 120 64" aria-hidden="true">
+        <path d="M6 56C20 40 30 34 40 36L46 14 56 30 60 2 64 30 74 14 80 36C90 34 100 40 114 56Z" fill="url(#rg)" stroke="#a86f5c" stroke-width="1"/>
+        <path d="M6 56Q60 44 114 56L112 62Q60 52 8 62Z" fill="url(#rg)" stroke="#a86f5c" stroke-width="1"/>
+        <circle class="gem" cx="60" cy="30" r="5" fill="#f39bb4" stroke="#fff" stroke-width="1.5"/>
+        <circle class="gem" cx="44" cy="40" r="3.4" fill="#c9b5f0" stroke="#fff" stroke-width="1"/>
+        <circle class="gem" cx="76" cy="40" r="3.4" fill="#c9b5f0" stroke="#fff" stroke-width="1"/>
+        <circle cx="60" cy="3" r="3" fill="#fff"/><circle cx="46" cy="14" r="2.4" fill="#fff"/><circle cx="74" cy="14" r="2.4" fill="#fff"/>
+      </svg>
+      <svg class="bow" viewBox="0 0 80 40" aria-hidden="true"><path d="M40 20L6 4Q0 20 6 36Z" fill="#e3849f"/><path d="M40 20L74 4Q80 20 74 36Z" fill="#e3849f"/><path d="M34 22l-8 18h8zM46 22l8 18h-8z" fill="#b9557a"/><circle cx="40" cy="20" r="7" fill="#f5a8bd"/></svg>
+    </div>
+    <p class="pre">Dengan penuh syukur, kami memperkenalkan putri kecil kami</p>
+    <h1 data-k="child">Aisyah Humaira</h1>
+    <p class="binti">binti <span data-k="father">Ahmad Fauzan</span></p>
+    <div class="dateline"><span data-k="day">Sabtu</span><b data-k="dd">17</b><span data-k="monthYear">Okt 2026</span></div>
+    <div class="guest">
+      <small>Kepada Yth. Bapak/Ibu/Saudara/i</small>
+      <strong id="guest">Tamu Undangan</strong>
+    </div>
+    <a class="cta" href="#salam">Buka Undangan</a>
+  </div>
+</header>
+
+<main class="col">
+  <section class="card" id="salam">
+    <svg class="heart" aria-hidden="true"><use href="#heart"/></svg>
+    <p class="eyebrow">Assalamu’alaikum Warahmatullahi Wabarakatuh</p>
+    <p class="arabic" lang="ar" dir="rtl">يَهَبُ لِمَنْ يَشَاءُ إِنَاثًا وَيَهَبُ لِمَنْ يَشَاءُ الذُّكُورَ</p>
+    <blockquote>“…Dia memberikan anak perempuan kepada siapa yang Dia kehendaki, dan memberikan anak laki-laki kepada siapa yang Dia kehendaki.”</blockquote>
+    <p class="src">QS. Asy-Syura: 49</p>
+    <svg class="flourish" aria-hidden="true"><use href="#flourish"/></svg>
+    <p class="lead">Alhamdulillah, puji syukur kehadirat Allah SWT. Sebagai ungkapan rasa syukur, kami bermaksud menyelenggarakan Tasyakuran Aqiqah putri kami.</p>
+  </section>
+
+  <section class="card" id="anak">
+    <svg class="heart" aria-hidden="true"><use href="#heart"/></svg>
+    <p class="eyebrow">Sang Putri Kecil</p>
+    <p class="princess-name" data-k="child">Aisyah Humaira</p>
+    <p class="kid-binti">binti <span data-k="father">Ahmad Fauzan</span></p>
+    <div class="meaning" id="meaning-box">
+      <p style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Arti nama</p>
+      <p class="t" data-k="meaning">“Yang hidup, berpipi kemerahan”, semoga tumbuh sehat dan penuh cahaya.</p>
+    </div>
+    <div class="parents">
+      <p style="font-size:13px;color:var(--muted);margin:0"><span data-k="order">Putri pertama</span> dari</p>
+      <p class="who"><span data-k="fatherFull">Bpk. Ahmad Fauzan</span> <i>&amp;</i> <span data-k="mother">Ibu Nur Aini</span></p>
+    </div>
+  </section>
+
+  <section class="card event" id="acara">
+    <svg class="heart" aria-hidden="true"><use href="#heart"/></svg>
+    <p class="eyebrow">Waktu &amp; Tempat</p>
+    <h2>Insya Allah diselenggarakan pada</h2>
+    <div class="date-card">
+      <div class="side" data-k="day">Sabtu</div>
+      <div class="num" data-k="dd">17</div>
+      <div class="side" data-k="month">Oktober</div>
+    </div>
+    <p class="yr" data-k="year">2026</p>
+    <div class="where">
+      <span class="time" data-k="time">Pukul 10.00 WIB – selesai</span>
+      <p id="addr" data-k="venue">Kediaman Keluarga</p>
+      <p style="color:var(--muted)" data-k="address">Jl. Melati No. 12, Kota Anda</p>
+    </div>
+    <div class="actions">
+      <a class="btn solid" id="map" href="#" target="_blank" rel="noopener">Buka Peta</a>
+      <button class="btn" type="button" id="copy">Salin Alamat</button>
+      <a class="btn" id="cal" href="#" target="_blank" rel="noopener">Simpan Tanggal</a>
+    </div>
+    <p class="note" id="note" aria-live="polite"></p>
+    <div class="count" id="count" hidden>
+      <div><b id="cd-d">0</b><span>Hari</span></div>
+      <div><b id="cd-h">00</b><span>Jam</span></div>
+      <div><b id="cd-m">00</b><span>Menit</span></div>
+      <div><b id="cd-s">00</b><span>Detik</span></div>
+    </div>
+    <p class="past" id="past" hidden>Acara telah berlangsung. Terima kasih atas doa dan kehadirannya.</p>
+  </section>
+
+  <section class="card" id="rsvp">
+    <svg class="heart" aria-hidden="true"><use href="#heart"/></svg>
+    <p class="eyebrow">RSVP &amp; Doa</p>
+    <h2>Titipkan doa untuk sang putri</h2>
+    <p class="hint">Isi konfirmasi, lalu kirim lewat WhatsApp ke keluarga.</p>
+    <form id="form" novalidate>
+      <div><label for="f-name">Nama</label><input type="text" id="f-name" autocomplete="name" placeholder="Nama Anda"></div>
+      <div>
+        <label id="lbl-att">Kehadiran</label>
+        <div class="seg" role="radiogroup" aria-labelledby="lbl-att">
+          <label><input type="radio" name="att" id="att-y" value="Insya Allah hadir" checked><span>Insya Allah hadir</span></label>
+          <label><input type="radio" name="att" id="att-n" value="Berhalangan hadir"><span>Berhalangan</span></label>
+        </div>
+      </div>
+      <div><label for="f-num">Jumlah tamu</label>
+        <select id="f-num"><option>1 orang</option><option selected>2 orang</option><option>3 orang</option><option>4 orang</option><option>5 orang atau lebih</option></select></div>
+      <div><label for="f-msg">Ucapan &amp; doa</label>
+        <textarea id="f-msg" placeholder="Semoga menjadi anak salihah, cantik akhlaknya, dan penyejuk hati orang tua…"></textarea></div>
+      <p class="err" id="err" aria-live="polite"></p>
+      <button class="send" type="submit">Kirim via WhatsApp</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <svg class="heart" aria-hidden="true"><use href="#heart"/></svg>
+    <p class="lead" style="margin-top:0">Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.</p>
+    <p style="font-family:var(--serif);font-style:italic;font-size:19px;color:var(--plum);margin:14px 0 0">Wassalamu’alaikum Warahmatullahi Wabarakatuh</p>
+    <svg class="flourish" aria-hidden="true"><use href="#flourish"/></svg>
+    <p class="eyebrow" style="margin-top:14px">Kami yang berbahagia</p>
+    <p class="family">Kel. <span data-k="fatherFull">Bpk. Ahmad Fauzan</span><br>&amp; <span data-k="mother">Ibu Nur Aini</span></p>
+  </section>
+</main>
+<footer>UNDANGAN DIGITAL · LITTLE PRINCESS</footer>
+
+<script>
+/* ===== Ubah semua data undangan di sini ===== */
+var CONFIG = {
+  child: "Aisyah Humaira",
+  initial: "A",                       // huruf di bingkai jika belum ada foto
+  father: "Ahmad Fauzan",             // untuk "binti …"
+  fatherFull: "Bpk. Ahmad Fauzan",
+  mother: "Ibu Nur Aini",
+  order: "Putri pertama",
+  meaning: "“Yang hidup, berpipi kemerahan”, semoga tumbuh sehat dan penuh cahaya.",  // kosongkan "" untuk menyembunyikan
+  event: "2026-10-17T10:00:00+07:00", // tanggal & jam acara (WIB = +07:00)
+  eventEnd: "2026-10-17T13:00:00+07:00",
+  time: "Pukul 10.00 WIB – selesai",
+  venue: "Kediaman Keluarga",
+  address: "Jl. Melati No. 12, Kota Anda",
+  mapQuery: "",                       // kosong = pakai alamat di atas
+  whatsapp: "",                       // nomor WA keluarga, mis. "6281234567890"
+  photo: ""                           // tautan/data foto; kosong = monogram
+};
+
+(function(){
+  var C=CONFIG, d=new Date(C.event);
+  var days=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  var months=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  var derived={ day:days[d.getDay()], dd:String(d.getDate()).padStart(2,'0'), month:months[d.getMonth()], year:String(d.getFullYear()),
+    monthYear:months[d.getMonth()].slice(0,3)+' '+d.getFullYear() };
+  document.querySelectorAll('[data-k]').forEach(function(el){
+    var k=el.getAttribute('data-k'), v=(k in derived)?derived[k]:C[k];
+    if(typeof v==='string' && v) el.textContent=v;
+  });
+  if(!C.meaning) document.getElementById('meaning-box').hidden=true;
+  if(C.photo){ var p=document.getElementById('photo'); p.innerHTML=''; var im=document.createElement('img'); im.src=C.photo; im.alt='Foto '+C.child; p.appendChild(im); }
+  document.title='Aqiqah '+C.child;
+  function z(t){ return new Date(t).toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,''); }
+  var full=C.venue+', '+C.address;
+  document.getElementById('map').href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(C.mapQuery||C.address);
+  document.getElementById('cal').href='https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent('Tasyakuran Aqiqah '+C.child)+'&dates='+z(C.event)+'/'+z(C.eventEnd||C.event)+'&location='+encodeURIComponent(full);
+
+  try{
+    var h=decodeURIComponent((location.hash||'').slice(1));
+    if(h && ['top','salam','anak','acara','rsvp'].indexOf(h)<0){
+      var g=h.replace(/[_.~-]+/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()});
+      document.getElementById('guest').textContent=g; document.getElementById('f-name').value=g;
+    }
+  }catch(e){}
+
+  var target=d.getTime(), cd=document.getElementById('count'), past=document.getElementById('past');
+  function pad(n){return String(n).padStart(2,'0')}
+  function tick(){var ms=target-Date.now(); if(ms<=0){cd.hidden=true; past.hidden=false; return false}
+    cd.hidden=false; past.hidden=true; var s=Math.floor(ms/1000);
+    document.getElementById('cd-d').textContent=Math.floor(s/86400);
+    document.getElementById('cd-h').textContent=pad(Math.floor(s%86400/3600));
+    document.getElementById('cd-m').textContent=pad(Math.floor(s%3600/60));
+    document.getElementById('cd-s').textContent=pad(s%60); return true}
+  if(tick()){var t=setInterval(function(){if(!tick())clearInterval(t)},1000)}
+
+  var note=document.getElementById('note');
+  document.getElementById('copy').addEventListener('click',function(){
+    function fb(){var r=document.createRange(); r.selectNodeContents(document.getElementById('addr')); var s=getSelection(); s.removeAllRanges(); s.addRange(r); note.textContent='Alamat sudah ditandai. Tekan salin di perangkat Anda.'}
+    try{navigator.clipboard.writeText(full).then(function(){note.textContent='Alamat disalin.'},fb)}catch(e){fb()}
+  });
+  var form=document.getElementById('form'), err=document.getElementById('err');
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    var name=document.getElementById('f-name').value.trim();
+    if(!name){err.style.color='';err.textContent='Tulis nama Anda dulu agar keluarga tahu siapa yang mengirim.'; document.getElementById('f-name').focus(); return}
+    var att=form.querySelector('input[name=att]:checked').value, num=document.getElementById('f-num').value, msg=document.getElementById('f-msg').value.trim();
+    var text='Assalamu’alaikum. Konfirmasi Tasyakuran Aqiqah '+C.child+'\n\nNama: '+name+'\nKehadiran: '+att+(att.indexOf('Insya')===0?'\nJumlah: '+num:'')+(msg?'\n\nUcapan & doa:\n'+msg:'');
+    var a=document.createElement('a'); a.href='https://wa.me/'+(C.whatsapp||'')+'?text='+encodeURIComponent(text); a.target='_blank'; a.rel='noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+    err.style.color='var(--rose-d)'; err.textContent='WhatsApp dibuka di tab baru. Jika tidak terbuka, kirim pesan secara manual.';
+  });
+
+  // falling petals
+  if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    var box=document.getElementById('petals');
+    for(var i=0;i<14;i++){var p2=document.createElement('i'); p2.style.left=(Math.random()*100)+'%';
+      p2.style.animationDuration=(9+Math.random()*9)+'s'; p2.style.animationDelay=(-Math.random()*16)+'s';
+      var sc=.6+Math.random()*.7; p2.style.width=(12*sc)+'px'; p2.style.height=(10*sc)+'px'; box.appendChild(p2);}
+  }
+})();
+</script>
+
+</body></html>
