@@ -8,6 +8,7 @@ import AqiqahTheme04 from './themes/aqiqah/aqiqah_theme_04/AqiqahTheme04';
 import AqiqahTheme05 from './themes/aqiqah/aqiqah_theme_05/AqiqahTheme05';
 import AqiqahTheme06 from './themes/aqiqah/aqiqah_theme_06/AqiqahTheme06';
 import AqiqahTheme07 from './themes/aqiqah/aqiqah_theme_07/AqiqahTheme07';
+import AqiqahTheme08 from './themes/aqiqah/aqiqah_theme_08/AqiqahTheme08';
 
 import BirthdayStarryNight from './themes/birthday/BirthdayStarryNight';
 import BirthdayTheme01 from './themes/birthday/birthday_theme_01/BirthdayTheme01';
@@ -136,6 +137,10 @@ function resolveThemeComponent(themeSlug: string, invitation: InvitationData, vi
         case 'aqiqah_theme_07':
         case 'aqiqah-theme-07':
             return <AqiqahTheme07 invitation={invitation as AqiqahInvitation} visitor={visitor} greeting={invitation.greeting} />;
+
+        case 'aqiqah_theme_08':
+        case 'aqiqah-theme-08':
+            return <AqiqahTheme08 invitation={invitation as AqiqahInvitation} visitor={visitor} greeting={invitation.greeting} />;
 
         // Gender reveal themes
         case 'gender_reveal_theme_01':

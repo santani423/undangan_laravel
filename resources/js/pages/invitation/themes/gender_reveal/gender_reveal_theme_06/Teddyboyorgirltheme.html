@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boy or Girl? — Undangan Teddy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --beige:#f3e6d3; --beige-2:#e9d6bc; --beige-3:#fbf6ee; --brown:#a47551; --brown-2:#c89f7a; --brown-ink:#6e4a33;
+    --pink:#f4b6c2; --pink-2:#fde2e7; --pink-ink:#d0607a;
+    --blue:#a8cbe8; --blue-2:#e0eefa; --blue-ink:#4879a8;
+    --ink:#4a3a30; --muted:#8d7b6d; --line:rgba(74,58,48,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Nunito',sans-serif;color:var(--ink);background:var(--beige-3);line-height:1.6;overflow-x:hidden}
+  h1,h2,h3,.fr{font-family:'Fredoka',sans-serif;font-weight:600;line-height:1.15}
+  section{padding:84px 18px;position:relative;overflow:hidden}
+  .wrap{max-width:680px;margin:0 auto;text-align:center;position:relative;z-index:2}
+  .chip{display:inline-block;background:var(--beige);color:var(--brown-ink);font:600 .8rem 'Fredoka';letter-spacing:.12em;text-transform:uppercase;padding:6px 16px;border-radius:99px}
+  h2.t{font-size:clamp(1.9rem,6.5vw,2.6rem);margin:12px 0 6px;color:var(--brown-ink)}
+  .pk{color:var(--pink-ink)} .bl{color:var(--blue-ink)}
+  /* scalloped edge between sections */
+  .scallop{position:absolute;left:0;right:0;height:22px;background:radial-gradient(circle at 11px 0,transparent 11px,var(--bg) 12px) repeat-x;background-size:22px 22px}
+  .scallop.top{top:-1px;transform:rotate(180deg)}
+
+  /* ===== balloons (CSS) ===== */
+  .bln{position:absolute;width:54px;height:66px;border-radius:50% 50% 47% 47%/55% 55% 45% 45%;animation:bob 5s ease-in-out infinite;z-index:1}
+  .bln::before{content:"";position:absolute;left:28%;top:18%;width:14%;height:20%;border-radius:50%;background:rgba(255,255,255,.55)}
+  .bln::after{content:"";position:absolute;left:50%;top:100%;width:1px;height:80px;background:rgba(74,58,48,.3)}
+  .bln.p{background:var(--pink)} .bln.b{background:var(--blue)} .bln.c{background:var(--beige-2)}
+  @keyframes bob{50%{transform:translateY(-18px) rotate(4deg)}}
+
+  /* ===== letter blocks ===== */
+  .blocks{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+  .blk{width:54px;height:54px;border-radius:12px;display:grid;place-items:center;font:700 1.7rem 'Fredoka';color:#fff;
+    box-shadow:inset 0 -6px 0 rgba(0,0,0,.12),0 6px 14px rgba(74,58,48,.12);border:3px solid rgba(255,255,255,.6)}
+  .blk.p{background:var(--pink)} .blk.b{background:var(--blue)} .blk.c{background:var(--brown-2)}
+  .blk:nth-child(odd){transform:rotate(-5deg)} .blk:nth-child(even){transform:rotate(4deg) translateY(4px)}
+
+  /* ===== cover ===== */
+  #cover{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:20px;background:var(--beige);transition:opacity .8s,visibility .8s}
+  #cover.hide{opacity:0;visibility:hidden}
+  #cover .card{position:relative;z-index:2;background:var(--beige-3);border-radius:36px;padding:34px 26px 30px;max-width:370px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(110,74,51,.18);border:3px dashed var(--beige-2)}
+  #cover h1{font-size:clamp(2.2rem,9vw,2.8rem);color:var(--brown-ink);margin-top:6px}
+  #cover .to{margin:16px 0 22px;color:var(--muted);font-size:.95rem}
+  #cover .to b{display:block;color:var(--ink);font:600 1.25rem 'Fredoka'}
+  .btn{border:none;cursor:pointer;font:600 1.02rem 'Fredoka';padding:14px 30px;border-radius:99px;color:#fff;background:var(--brown);
+    box-shadow:0 6px 0 var(--brown-ink),0 12px 24px rgba(110,74,51,.25);transition:transform .15s,box-shadow .15s}
+  .btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--brown-ink)}
+  .btn:focus-visible{outline:3px solid var(--blue-ink);outline-offset:3px}
+  .teddy{display:block;margin:0 auto}
+  .teddy.wave .arm-r{transform-origin:150px 150px;animation:wave 1.4s ease-in-out infinite}
+  @keyframes wave{50%{transform:rotate(-22deg)}}
+
+  /* ===== hero ===== */
+  #hero{--bg:var(--beige);background:var(--beige);min-height:100vh;display:grid;place-items:center;padding-bottom:110px}
+  #hero h1{font-size:clamp(2.8rem,12vw,4.6rem);margin:10px 0}
+  #hero .lead{max-width:460px;margin:0 auto 26px;color:var(--muted);font-size:1.05rem}
+  .date-badge{display:inline-flex;align-items:center;gap:10px;margin-top:26px;background:#fff;padding:10px 22px;border-radius:99px;font:600 1rem 'Fredoka';color:var(--brown-ink);box-shadow:0 6px 16px rgba(110,74,51,.12)}
+
+  /* ===== parents ===== */
+  .parents{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:28px}
+  .par{background:#fff;border-radius:28px;padding:26px 12px 22px;border:2px solid var(--line)}
+  .par .face{width:84px;height:84px;margin:0 auto 10px;border-radius:50%;display:grid;place-items:center;font:700 2rem 'Fredoka';color:#fff}
+  .par.d .face{background:var(--blue)} .par.m .face{background:var(--pink)}
+  .par h3{font-size:1.15rem;color:var(--brown-ink)}
+  .par p{font-size:.88rem;color:var(--muted)}
+
+  /* ===== event ===== */
+  #event{--bg:var(--beige);background:var(--beige)}
+  .ticket{background:#fff;border-radius:28px;margin-top:26px;overflow:hidden;box-shadow:0 12px 30px rgba(110,74,51,.1)}
+  .ticket .top{background:var(--brown-2);color:#fff;padding:20px;font-family:'Fredoka'}
+  .ticket .top b{display:block;font-size:2rem;font-weight:600}
+  .ticket .rows{padding:22px;display:grid;gap:16px;text-align:left;border-top:3px dashed var(--beige-2)}
+  .ticket .row{display:flex;gap:14px;align-items:flex-start}
+  .ticket .ic{flex:none;width:42px;height:42px;border-radius:14px;background:var(--beige-3);display:grid;place-items:center;font-size:1.3rem}
+  .ticket small{display:block;font:600 .74rem 'Fredoka';letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .countdown{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:22px}
+  .cd{border-radius:18px;padding:12px 0;color:#fff;box-shadow:inset 0 -5px 0 rgba(0,0,0,.1)}
+  .cd:nth-child(1){background:var(--pink)} .cd:nth-child(2){background:var(--blue)} .cd:nth-child(3){background:var(--brown-2)} .cd:nth-child(4){background:var(--pink)}
+  .cd b{display:block;font:700 1.9rem/1.1 'Fredoka';font-variant-numeric:tabular-nums}
+  .cd span{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700}
+  .maps{display:inline-block;margin-top:22px;font:600 1rem 'Fredoka';color:var(--brown-ink)}
+
+  /* ===== toys row ===== */
+  .toys{display:flex;justify-content:center;align-items:flex-end;gap:22px;margin-top:28px;flex-wrap:wrap}
+  .toys svg{height:70px;width:auto;animation:bob 4s ease-in-out infinite}
+  .toys svg:nth-child(2){animation-delay:.8s} .toys svg:nth-child(3){animation-delay:1.6s}
+
+  /* ===== vote ===== */
+  .vote{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:26px}
+  .v{cursor:pointer;border:3px solid transparent;border-radius:28px;padding:22px 10px;font:600 1.1rem 'Fredoka';transition:transform .2s}
+  .v:hover{transform:translateY(-3px)}
+  .v .e{display:block;font-size:2.4rem}
+  .v.boy{background:var(--blue-2);color:var(--blue-ink)} .v.girl{background:var(--pink-2);color:var(--pink-ink)}
+  .v.boy.sel{border-color:var(--blue-ink)} .v.girl.sel{border-color:var(--pink-ink)}
+  .jar{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+  .jar div{font:600 1rem 'Fredoka';color:var(--muted)}
+  .jar b{font-size:1.6rem;display:block}
+  .jar .jb b{color:var(--blue-ink)} .jar .jg b{color:var(--pink-ink)}
+
+  /* ===== reveal (gift box) ===== */
+  #reveal{--bg:var(--beige);background:var(--beige)}
+  .stage{position:relative;height:420px;max-width:420px;margin:10px auto 0}
+  .gift{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);width:190px;height:170px;border:none;background:none;cursor:pointer;z-index:3}
+  .gift .box{position:absolute;left:0;right:0;bottom:0;height:130px;background:var(--brown-2);border-radius:10px;box-shadow:inset 0 -10px 0 rgba(0,0,0,.08)}
+  .gift .box::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:30px;transform:translateX(-50%);background:var(--beige-3)}
+  .gift .lid{position:absolute;left:-10px;right:-10px;bottom:118px;height:40px;background:var(--brown);border-radius:10px;transition:transform .8s cubic-bezier(.3,1.6,.5,1),opacity .8s}
+  .gift .lid::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:30px;transform:translateX(-50%);background:var(--beige-3)}
+  .gift .bow{position:absolute;left:50%;top:-30px;transform:translateX(-50%);font-size:2.4rem;line-height:1}
+  .gift .qm{position:absolute;left:0;right:0;bottom:36px;font:700 2.6rem 'Fredoka';color:#fff;z-index:2;text-shadow:0 2px 0 rgba(0,0,0,.15)}
+  .gift.shake{animation:shake .35s}
+  @keyframes shake{20%{transform:translateX(-50%) rotate(-7deg)}60%{transform:translateX(-50%) rotate(7deg)}}
+  .gift.open .lid{transform:translateY(-120px) rotate(-25deg);opacity:0}
+  .gift.open{cursor:default}
+  .flyer{position:absolute;bottom:120px;width:48px;height:58px;border-radius:50% 50% 47% 47%/55% 55% 45% 45%;opacity:0;z-index:2}
+  .flyer::after{content:"";position:absolute;left:50%;top:100%;width:1px;height:50px;background:rgba(74,58,48,.3)}
+  .flyer.go{animation:up 3.2s ease-out forwards}
+  @keyframes up{0%{opacity:0;transform:translate(0,0) scale(.3)}15%{opacity:1}100%{opacity:1;transform:translate(var(--dx),-250px) scale(1)}}
+  .result{position:absolute;left:0;right:0;top:40px;opacity:0;transform:scale(.6);transition:all .7s cubic-bezier(.3,1.6,.5,1) .6s;z-index:4}
+  .result.show{opacity:1;transform:none}
+  .result .bubble{display:inline-block;background:#fff;border-radius:28px;padding:18px 28px;box-shadow:0 14px 34px rgba(110,74,51,.18)}
+  .result h3{font-size:clamp(2rem,8vw,2.6rem)}
+  .taps{display:flex;gap:8px;justify-content:center;margin-top:10px}
+  .taps span{width:12px;height:12px;border-radius:50%;background:var(--beige-2)}
+  .taps span.on{background:var(--brown)}
+
+  /* ===== rsvp ===== */
+  form{display:grid;gap:14px;margin-top:24px;text-align:left;background:#fff;border-radius:28px;padding:26px 20px;border:2px solid var(--line)}
+  label{font:600 .92rem 'Fredoka';color:var(--brown-ink)}
+  input,select,textarea{width:100%;margin-top:6px;padding:12px 15px;border-radius:16px;border:2px solid var(--beige);background:var(--beige-3);font:400 1rem 'Nunito';color:var(--ink)}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brown-2);background:#fff}
+  .wishes{display:grid;gap:10px;margin-top:22px;text-align:left}
+  .wish{display:flex;gap:12px;background:#fff;border-radius:20px;padding:14px 16px;border:2px solid var(--line)}
+  .wish .av{flex:none;width:40px;height:40px;border-radius:50%;background:var(--beige);display:grid;place-items:center;font-size:1.2rem}
+  .wish b{font-family:'Fredoka';font-weight:600} .wish small{color:var(--muted);margin-left:6px}
+
+  footer{background:var(--brown-2);color:#fff;text-align:center;padding:50px 18px 80px}
+  footer .fr{font-size:1.8rem;margin-top:6px}
+
+  #music{position:fixed;right:16px;bottom:16px;z-index:50;width:50px;height:50px;border-radius:50%;border:none;background:#fff;box-shadow:0 6px 20px rgba(0,0,0,.15);font-size:1.3rem;cursor:pointer}
+  .pop-in{opacity:0;transform:translateY(24px) scale(.97);transition:opacity .7s,transform .7s}
+  .pop-in.on{opacity:1;transform:none}
+  .confetti{position:fixed;top:-20px;z-index:70;pointer-events:none;width:10px;height:10px;border-radius:50%;animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(115vh)}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- Teddy bear (SVG, dipakai ulang) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="bear" viewBox="0 0 200 220">
+      <!-- ears -->
+      <circle cx="58" cy="40" r="24" fill="#b3845e"/><circle cx="58" cy="40" r="13" fill="#e8c9a8"/>
+      <circle cx="142" cy="40" r="24" fill="#b3845e"/><circle cx="142" cy="40" r="13" fill="#e8c9a8"/>
+      <!-- body -->
+      <ellipse cx="100" cy="160" rx="56" ry="52" fill="#b3845e"/>
+      <ellipse cx="100" cy="168" rx="34" ry="32" fill="#e8c9a8"/>
+      <!-- arms -->
+      <ellipse cx="46" cy="148" rx="17" ry="28" fill="#a47551" transform="rotate(20 46 148)"/>
+      <g class="arm-r"><ellipse cx="154" cy="148" rx="17" ry="28" fill="#a47551" transform="rotate(-20 154 148)"/></g>
+      <!-- feet -->
+      <ellipse cx="68" cy="206" rx="22" ry="13" fill="#a47551"/><ellipse cx="68" cy="206" rx="11" ry="7" fill="#e8c9a8"/>
+      <ellipse cx="132" cy="206" rx="22" ry="13" fill="#a47551"/><ellipse cx="132" cy="206" rx="11" ry="7" fill="#e8c9a8"/>
+      <!-- head -->
+      <circle cx="100" cy="76" r="52" fill="#b3845e"/>
+      <ellipse cx="100" cy="94" rx="24" ry="19" fill="#e8c9a8"/>
+      <ellipse cx="100" cy="85" rx="8" ry="6" fill="#4a3a30"/>
+      <path d="M100 91 v6 M92 100 q8 7 16 0" stroke="#4a3a30" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <circle cx="80" cy="68" r="5.5" fill="#4a3a30"/><circle cx="120" cy="68" r="5.5" fill="#4a3a30"/>
+      <circle cx="82" cy="66" r="1.8" fill="#fff"/><circle cx="122" cy="66" r="1.8" fill="#fff"/>
+      <circle cx="70" cy="86" r="7" fill="#f4b6c2" opacity=".7"/><circle cx="130" cy="86" r="7" fill="#f4b6c2" opacity=".7"/>
+      <!-- bow tie -->
+      <path d="M100 124 l-18 -10 v20 z M100 124 l18 -10 v20 z" fill="var(--tie,#a8cbe8)"/><circle cx="100" cy="124" r="5" fill="var(--tie,#a8cbe8)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ============ COVER ============ -->
+<div id="cover">
+  <span class="bln p" style="left:8%;top:10%"></span>
+  <span class="bln b" style="right:10%;top:16%;animation-delay:1s"></span>
+  <span class="bln c" style="left:14%;bottom:20%;animation-delay:2s"></span>
+  <div class="card">
+    <svg class="teddy wave" viewBox="0 0 200 220" width="130"><use href="#bear"/></svg>
+    <h1>Boy or Girl?</h1>
+    <p style="color:var(--muted);font-weight:600">Gender Reveal Party</p>
+    <div class="to">Kepada Yth.<b id="guest">Tamu Undangan</b></div>
+    <button class="btn" id="openBtn">🧸 Buka Undangan</button>
+  </div>
+</div>
+
+<!-- ============ HERO ============ -->
+<section id="hero">
+  <span class="bln p" style="left:6%;top:10%"></span>
+  <span class="bln b" style="right:6%;top:14%;animation-delay:1.3s"></span>
+  <span class="bln c" style="left:78%;top:38%;animation-delay:2.2s;transform:scale(.8)"></span>
+  <span class="bln b" style="left:4%;top:44%;animation-delay:.6s;transform:scale(.8)"></span>
+  <div class="wrap pop-in">
+    <span class="chip">You're invited</span>
+    <h1><span class="bl">Boy</span> <span style="color:var(--brown-ink)">or</span> <span class="pk">Girl</span>?</h1>
+    <p class="lead" id="heroMsg"></p>
+    <svg class="teddy" viewBox="0 0 200 220" width="170"><use href="#bear"/></svg>
+    <div class="blocks" style="margin-top:-6px">
+      <span class="blk b">B</span><span class="blk c">A</span><span class="blk p">B</span><span class="blk b">Y</span>
+    </div>
+    <div class="date-badge">🎈 <span id="heroDate"></span></div>
+  </div>
+  <div class="scallop" style="bottom:-1px;--bg:var(--beige-3)"></div>
+</section>
+
+<!-- ============ PARENTS ============ -->
+<section>
+  <div class="wrap pop-in">
+    <span class="chip">Calon Orang Tua</span>
+    <h2 class="t">Mommy &amp; Daddy to be</h2>
+    <p style="color:var(--muted);max-width:440px;margin:0 auto">Dengan penuh cinta kami menantikan si kecil, dan ingin berbagi momen bahagia ini bersama Anda.</p>
+    <div class="parents">
+      <div class="par d"><div class="face" id="dadI"></div><h3 id="dad"></h3><p>Calon Ayah</p></div>
+      <div class="par m"><div class="face" id="momI"></div><h3 id="mom"></h3><p>Calon Ibu</p></div>
+    </div>
+    <div class="toys" aria-hidden="true">
+      <!-- rattle -->
+      <svg viewBox="0 0 60 100"><circle cx="30" cy="28" r="24" fill="var(--pink)"/><circle cx="30" cy="28" r="12" fill="#fff" opacity=".45"/><rect x="25" y="50" width="10" height="34" rx="5" fill="var(--brown-2)"/><circle cx="30" cy="90" r="9" fill="var(--blue)"/></svg>
+      <!-- duck -->
+      <svg viewBox="0 0 100 80"><ellipse cx="50" cy="56" rx="38" ry="20" fill="#f7d774"/><circle cx="66" cy="30" r="18" fill="#f7d774"/><path d="M82 30 l14 4 -14 5z" fill="#f09a5b"/><circle cx="70" cy="26" r="3" fill="#4a3a30"/><path d="M30 52 q10 -10 22 0" stroke="#e6c45a" stroke-width="4" fill="none"/></svg>
+      <!-- pacifier -->
+      <svg viewBox="0 0 80 80"><circle cx="40" cy="58" r="14" fill="none" stroke="var(--blue)" stroke-width="7"/><ellipse cx="40" cy="34" rx="30" ry="12" fill="var(--blue)"/><ellipse cx="40" cy="18" rx="10" ry="12" fill="#f6e3cf"/></svg>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EVENT ============ -->
+<section id="event">
+  <div class="scallop top" style="--bg:var(--beige-3)"></div>
+  <div class="wrap pop-in">
+    <span class="chip" style="background:#fff">Save the Date</span>
+    <h2 class="t">Detail Acara</h2>
+    <div class="ticket">
+      <div class="top"><span id="evDay"></span><b id="evDate"></b></div>
+      <div class="rows">
+        <div class="row"><span class="ic">⏰</span><div><small>Waktu</small><span id="evTime"></span></div></div>
+        <div class="row"><span class="ic">📍</span><div><small>Lokasi</small><span id="evPlace"></span></div></div>
+        <div class="row"><span class="ic">👕</span><div><small>Dress Code</small><span id="evDress"></span></div></div>
+      </div>
+    </div>
+    <div class="countdown" aria-live="polite">
+      <div class="cd"><b id="cdD">0</b><span>Hari</span></div>
+      <div class="cd"><b id="cdH">0</b><span>Jam</span></div>
+      <div class="cd"><b id="cdM">0</b><span>Menit</span></div>
+      <div class="cd"><b id="cdS">0</b><span>Detik</span></div>
+    </div>
+    <a class="maps" id="maps" target="_blank" rel="noopener">📍 Buka Google Maps</a>
+  </div>
+  <div class="scallop" style="bottom:-1px;--bg:var(--beige-3)"></div>
+</section>
+
+<!-- ============ VOTE ============ -->
+<section>
+  <div class="wrap pop-in">
+    <span class="chip">Ayo Tebak!</span>
+    <h2 class="t">Kamu Tim Mana?</h2>
+    <div class="vote">
+      <button class="v boy" data-v="boy"><span class="e">🧸💙</span>Team Boy</button>
+      <button class="v girl" data-v="girl"><span class="e">🧸🎀</span>Team Girl</button>
+    </div>
+    <div class="jar">
+      <div class="jb"><b id="nB">0</b>tebakan boy</div>
+      <div class="jg"><b id="nG">0</b>tebakan girl</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ REVEAL ============ -->
+<section id="reveal">
+  <div class="scallop top" style="--bg:var(--beige-3)"></div>
+  <div class="wrap pop-in">
+    <span class="chip" style="background:#fff">The Big Reveal</span>
+    <h2 class="t">Buka Kado dari Teddy!</h2>
+    <p style="color:var(--muted)">Ketuk kado <span id="need">3</span>× untuk membukanya 🎁</p>
+    <div class="taps" id="taps"></div>
+    <div class="stage" id="stage">
+      <div class="result" id="result"><div class="bubble"><h3 id="rTitle"></h3><p id="rSub" style="color:var(--muted);font-weight:600"></p></div></div>
+      <svg class="teddy" viewBox="0 0 200 220" width="120" style="position:absolute;left:4%;bottom:26px;z-index:3"><use href="#bear"/></svg>
+      <button class="gift" id="gift" aria-label="Ketuk kado">
+        <span class="lid"><span class="bow">🎀</span></span>
+        <span class="box"></span>
+        <span class="qm">?</span>
+      </button>
+    </div>
+  </div>
+  <div class="scallop" style="bottom:-1px;--bg:var(--beige-3)"></div>
+</section>
+
+<!-- ============ RSVP ============ -->
+<section>
+  <div class="wrap pop-in" style="max-width:520px">
+    <span class="chip">RSVP</span>
+    <h2 class="t">Konfirmasi Kehadiran</h2>
+    <form id="rsvp">
+      <label>Nama<input name="nama" required placeholder="Nama lengkap"></label>
+      <label>Kehadiran<select name="hadir"><option>Hadir</option><option>Tidak hadir</option><option>Masih ragu</option></select></label>
+      <label>Tebakanmu<select name="tebak"><option value="b">💙 Boy</option><option value="g">🎀 Girl</option></select></label>
+      <label>Ucapan &amp; Doa<textarea name="ucapan" rows="3" placeholder="Tulis ucapan untuk si kecil…"></textarea></label>
+      <button class="btn" type="submit">Kirim Ucapan 🧸</button>
+    </form>
+    <div class="wishes" id="wishes"></div>
+  </div>
+</section>
+
+<footer>
+  <svg class="teddy wave" viewBox="0 0 200 220" width="90"><use href="#bear"/></svg>
+  <p style="margin-top:8px;opacity:.9">Terima kasih atas doa dan kehadirannya</p>
+  <p class="fr" id="foot"></p>
+</footer>
+
+<button id="music" aria-label="Musik" hidden>🎵</button>
+<audio id="bgm" loop></audio>
+
+<script>
+/* ==================================================
+   CONFIG — ubah sesuai acara Anda
+   ================================================== */
+const CONFIG = {
+  ayah: "Dimas Saputra",
+  ibu:  "Anisa Rahma",
+  pesan: "Teddy punya rahasia manis di dalam kadonya! Yuk datang dan cari tahu bersama: si kecil laki-laki atau perempuan?",
+  tanggal: "2026-11-29T10:00:00+07:00",   // format ISO
+  waktu: "10.00 – 13.00 WIB",
+  lokasi: "Rumah Keluarga, Jl. Anggrek No. 5, Surabaya",
+  maps: "https://maps.google.com/?q=Surabaya",
+  dressCode: "Beige, pink, atau biru pastel",
+  hasil: "girl",          // "boy" atau "girl"
+  jumlahKetuk: 3,
+  musik: "",              // URL mp3 (opsional)
+};
+/* ================================================== */
+
+const $ = id => document.getElementById(id);
+const ev = new Date(CONFIG.tanggal);
+const isBoy = CONFIG.hasil === "boy";
+
+const to = new URLSearchParams(location.search).get("to");
+if (to) $("guest").textContent = to;
+$("heroMsg").textContent = CONFIG.pesan;
+$("heroDate").textContent = ev.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"});
+$("dad").textContent = CONFIG.ayah; $("mom").textContent = CONFIG.ibu;
+$("dadI").textContent = CONFIG.ayah[0]; $("momI").textContent = CONFIG.ibu[0];
+$("evDay").textContent = ev.toLocaleDateString("id-ID",{weekday:"long"});
+$("evDate").textContent = ev.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"});
+$("evTime").textContent = CONFIG.waktu; $("evPlace").textContent = CONFIG.lokasi; $("evDress").textContent = CONFIG.dressCode;
+$("maps").href = CONFIG.maps;
+$("foot").textContent = CONFIG.ayah.split(" ")[0] + " & " + CONFIG.ibu.split(" ")[0];
+
+// Cover
+const bgm = $("bgm");
+if (CONFIG.musik){ bgm.src = CONFIG.musik; $("music").hidden = false; }
+document.body.style.overflow = "hidden";
+$("openBtn").onclick = () => {
+  $("cover").classList.add("hide"); document.body.style.overflow = "";
+  if (CONFIG.musik) bgm.play().catch(()=>{});
+};
+$("music").onclick = () => { bgm.paused ? bgm.play() : bgm.pause(); $("music").textContent = bgm.paused ? "🔇" : "🎵"; };
+
+const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add("on")), {threshold:.12});
+document.querySelectorAll(".pop-in").forEach(el => io.observe(el));
+
+// Countdown
+function tick(){
+  let t = Math.max(0, ev - Date.now());
+  $("cdD").textContent = Math.floor(t/864e5); t %= 864e5;
+  $("cdH").textContent = Math.floor(t/36e5);  t %= 36e5;
+  $("cdM").textContent = Math.floor(t/6e4);
+  $("cdS").textContent = Math.floor(t%6e4/1e3);
+}
+tick(); setInterval(tick, 1000);
+
+// Vote (angka awal contoh — ganti/hapus sesuai kebutuhan)
+const votes = { boy: 9, girl: 12 }; let mine = null;
+const drawVotes = () => { $("nB").textContent = votes.boy; $("nG").textContent = votes.girl; };
+document.querySelectorAll(".v").forEach(b => b.onclick = () => {
+  if (mine) votes[mine]--;
+  mine = b.dataset.v; votes[mine]++;
+  document.querySelectorAll(".v").forEach(x => x.classList.toggle("sel", x === b));
+  drawVotes();
+});
+drawVotes();
+
+// Gift box reveal
+const need = CONFIG.jumlahKetuk; let taps = 0;
+$("need").textContent = need;
+for (let i = 0; i < need; i++) $("taps").appendChild(document.createElement("span"));
+$("rTitle").textContent = isBoy ? "It's a Boy! 💙" : "It's a Girl! 🎀";
+$("rTitle").className = isBoy ? "bl" : "pk";
+$("rSub").textContent = isBoy ? "Teddy punya adik laki-laki!" : "Teddy punya adik perempuan!";
+document.querySelector("#stage .teddy").style.setProperty("--tie", isBoy ? "#a8cbe8" : "#f4b6c2");
+$("gift").onclick = () => {
+  const g = $("gift");
+  if (g.classList.contains("open")) return;
+  taps++;
+  $("taps").children[taps - 1].classList.add("on");
+  g.classList.remove("shake"); void g.offsetWidth; g.classList.add("shake");
+  if (taps >= need){
+    g.classList.add("open"); g.querySelector(".qm").textContent = isBoy ? "💙" : "🎀";
+    const col = isBoy ? ["#a8cbe8","#7fb0dc","#e0eefa"] : ["#f4b6c2","#ec95a8","#fde2e7"];
+    for (let i = 0; i < 9; i++){
+      const f = document.createElement("span"); f.className = "flyer";
+      f.style.background = col[i % 3];
+      f.style.left = (46 + (Math.random() * 10 - 5)) + "%";
+      f.style.setProperty("--dx", (Math.random() * 300 - 150) + "px");
+      f.style.animationDelay = (i * .12) + "s";
+      $("stage").appendChild(f); requestAnimationFrame(() => f.classList.add("go"));
+    }
+    $("result").classList.add("show");
+    confetti(col);
+  }
+};
+function confetti(col){
+  for (let i = 0; i < 100; i++){
+    const c = document.createElement("span"); c.className = "confetti";
+    c.style.background = [...col, "#e9d6bc"][i % 4];
+    c.style.left = Math.random() * 100 + "vw";
+    c.style.animationDuration = 2.5 + Math.random() * 2.5 + "s";
+    c.style.animationDelay = Math.random() * .8 + "s";
+    document.body.appendChild(c); setTimeout(() => c.remove(), 6000);
+  }
+}
+
+// RSVP (hanya tampil di halaman — sambungkan ke backend/Google Form bila perlu)
+const wishes = [
+  { nama:"Bude Sri", hadir:"Hadir", tebak:"g", ucapan:"Semoga sehat terus sampai lahiran, Nis! 🎀" },
+  { nama:"Yoga", hadir:"Hadir", tebak:"b", ucapan:"Calon jagoan nih kayaknya 💙" },
+];
+function drawWishes(){
+  const box = $("wishes"); box.innerHTML = "";
+  wishes.slice().reverse().forEach(w => {
+    const d = document.createElement("div"); d.className = "wish";
+    const av = document.createElement("span"); av.className = "av"; av.textContent = w.tebak === "b" ? "💙" : "🎀";
+    const txt = document.createElement("div");
+    const n = document.createElement("b"); n.textContent = w.nama;
+    const s = document.createElement("small"); s.textContent = w.hadir;
+    const p = document.createElement("p"); p.textContent = w.ucapan;
+    txt.append(n, s, p); d.append(av, txt); box.appendChild(d);
+  });
+}
+$("rsvp").onsubmit = e => {
+  e.preventDefault(); const f = new FormData(e.target);
+  wishes.push({ nama: f.get("nama"), hadir: f.get("hadir"), tebak: f.get("tebak"), ucapan: f.get("ucapan") || "🧸" });
+  drawWishes(); e.target.reset();
+};
+drawWishes();
+</script>
+</body>
+</html>
