@@ -118,6 +118,15 @@ html:has(.bt5-root) {
     margin: 0 auto 6px;
     overflow: visible;
 }
+/* The cover isn't wrapped in .bt5-stage.bt5-jalan, so show the cake fully
+   assembled and lit instead of leaving its layers at their pre-animation opacity:0. */
+.bt5-cover-cake .bt5-jatuh,
+.bt5-cover-cake .bt5-api-luar {
+    opacity: 1;
+}
+.bt5-cover-cake .bt5-cahaya {
+    opacity: 0.3;
+}
 .bt5-cover-subtitle {
     color: var(--bt5-muted);
     font-size: 0.92rem;
