@@ -554,7 +554,7 @@ function TabMethods({ enabledMethods }: { enabledMethods: string[] }) {
 
 const WEBHOOK_ENDPOINTS = [
     { gateway: 'Xendit',          path: '/api/webhooks/xendit', implemented: true  },
-    { gateway: 'Midtrans',        path: null,                   implemented: false },
+    { gateway: 'Midtrans',        path: '/api/webhooks/midtrans', implemented: true  },
     { gateway: 'Tripay',          path: null,                   implemented: false },
     { gateway: 'Transfer Manual', path: null,                   implemented: false },
 ];

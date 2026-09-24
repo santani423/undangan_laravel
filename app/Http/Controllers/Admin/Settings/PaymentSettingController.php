@@ -46,7 +46,7 @@ class PaymentSettingController extends Controller
         'dana', 'shopeepay', 'cc', 'alfamart', 'indomaret', 'transfer_bank',
     ];
 
-    private const DEFAULT_ENABLED_METHODS = [
+    public const DEFAULT_ENABLED_METHODS = [
         'va_bca', 'va_bni', 'va_bri', 'va_mandiri', 'qris', 'gopay', 'transfer_bank',
     ];
 

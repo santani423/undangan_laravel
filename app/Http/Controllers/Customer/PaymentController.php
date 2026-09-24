@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Http\Controllers\Admin\Settings\PaymentSettingController;
 use App\Http\Controllers\Controller;
 use App\Models\AppSetting;
 use App\Models\Invitation;
 use App\Models\Payment;
 use App\Models\PaymentGatewayConfig;
 use App\Models\Transaction;
+use App\Services\MidtransService;
 use App\Services\UploadService;
 use App\Services\XenditService;
 use Carbon\Carbon;
@@ -24,55 +26,117 @@ use Throwable;
 class PaymentController extends Controller
 {
     /**
-     * Only Xendit has a real payment integration today — this maps the
-     * fine-grained method ids from admin settings to what Xendit can actually
-     * process, so the checkout page never advertises a method nothing can charge.
+     * Online gateways with a real integration (Xendit, Midtrans) — this maps the
+     * fine-grained method ids from admin settings to what each gateway can
+     * actually process, so the checkout page never advertises a method nothing
+     * can charge. Midtrans entries also carry their Snap `enabled_payments` codes.
      */
-    private const XENDIT_METHODS = [
-        'va_bca' => ['group' => 'Virtual Account', 'label' => 'BCA'],
-        'va_bni' => ['group' => 'Virtual Account', 'label' => 'BNI'],
-        'qris' => ['group' => 'QRIS', 'label' => 'QRIS'],
-        'ovo' => ['group' => 'E-Wallet', 'label' => 'OVO'],
-        'dana' => ['group' => 'E-Wallet', 'label' => 'DANA'],
-        'shopeepay' => ['group' => 'E-Wallet', 'label' => 'ShopeePay'],
+    private const GATEWAY_METHODS = [
+        'xendit' => [
+            'va_bca' => ['group' => 'Virtual Account', 'label' => 'BCA'],
+            'va_bni' => ['group' => 'Virtual Account', 'label' => 'BNI'],
+            'qris' => ['group' => 'QRIS', 'label' => 'QRIS'],
+            'ovo' => ['group' => 'E-Wallet', 'label' => 'OVO'],
+            'dana' => ['group' => 'E-Wallet', 'label' => 'DANA'],
+            'shopeepay' => ['group' => 'E-Wallet', 'label' => 'ShopeePay'],
+        ],
+        'midtrans' => [
+            'va_bca' => ['group' => 'Virtual Account', 'label' => 'BCA', 'snap' => ['bca_va']],
+            'va_bni' => ['group' => 'Virtual Account', 'label' => 'BNI', 'snap' => ['bni_va']],
+            'va_bri' => ['group' => 'Virtual Account', 'label' => 'BRI', 'snap' => ['bri_va']],
+            'va_mandiri' => ['group' => 'Virtual Account', 'label' => 'Mandiri', 'snap' => ['echannel']],
+            'qris' => ['group' => 'QRIS', 'label' => 'QRIS', 'snap' => ['other_qris']],
+            'gopay' => ['group' => 'E-Wallet', 'label' => 'GoPay', 'snap' => ['gopay']],
+            'shopeepay' => ['group' => 'E-Wallet', 'label' => 'ShopeePay', 'snap' => ['shopeepay']],
+            'cc' => ['group' => 'Kartu Kredit / Debit', 'label' => 'Kartu', 'snap' => ['credit_card']],
+        ],
     ];
 
     /** Coarse per-gateway method ids (from PaymentSettingController::GATEWAY_SPECS) → fine ids above. */
     private const COARSE_TO_FINE = [
-        'va' => ['va_bca', 'va_bni'],
-        'qris' => ['qris'],
-        'ewallet' => ['ovo', 'dana', 'shopeepay'],
+        'xendit' => [
+            'va' => ['va_bca', 'va_bni'],
+            'qris' => ['qris'],
+            'ewallet' => ['ovo', 'dana', 'shopeepay'],
+        ],
+        'midtrans' => [
+            'va' => ['va_bca', 'va_bni', 'va_bri', 'va_mandiri'],
+            'qris' => ['qris'],
+            'ewallet' => ['gopay', 'shopeepay'],
+            'cc' => ['cc'],
+        ],
     ];
 
-    public function __construct(private readonly XenditService $xendit) {}
+    private const GATEWAY_LABELS = ['xendit' => 'Xendit', 'midtrans' => 'Midtrans'];
+
+    public function __construct(
+        private readonly XenditService $xendit,
+        private readonly MidtransService $midtrans,
+    ) {}
 
     /**
-     * Payment methods actually available right now: enabled globally
-     * (admin/settings/payment → Metode Pembayaran) AND enabled on the Xendit
-     * gateway itself AND the Xendit gateway is active — all three must agree.
+     * Fine method ids a gateway can charge right now: enabled globally
+     * (admin/settings/payment → Metode Pembayaran) AND enabled on the gateway
+     * itself — both must agree.
      */
-    private function resolveActivePaymentMethods(): array
+    private function resolveGatewayMethodIds(string $gateway, ?PaymentGatewayConfig $config): array
     {
-        $xenditGateway = PaymentGatewayConfig::where('gateway_name', 'xendit')->first();
-        $gatewayActive = (bool) $xenditGateway?->is_active;
+        $globalEnabled = AppSetting::get('payment_enabled_methods', PaymentSettingController::DEFAULT_ENABLED_METHODS);
+        $gatewayEnabled = $config?->configExtraSafe()['enabled_methods'] ?? [];
+        $gatewayFine = collect($gatewayEnabled)->flatMap(fn ($c) => self::COARSE_TO_FINE[$gateway][$c] ?? [])->all();
 
-        $globalEnabled = AppSetting::get('payment_enabled_methods', []);
-        $gatewayEnabled = $xenditGateway?->configExtraSafe()['enabled_methods'] ?? [];
-        $gatewayFine = collect($gatewayEnabled)->flatMap(fn ($c) => self::COARSE_TO_FINE[$c] ?? [])->all();
+        return array_values(array_intersect(array_keys(self::GATEWAY_METHODS[$gateway]), $globalEnabled, $gatewayFine));
+    }
 
-        $active = array_intersect(array_keys(self::XENDIT_METHODS), $globalEnabled, $gatewayFine);
-
+    private function methodLabels(string $gateway, array $ids): array
+    {
         $groups = [];
-        foreach ($active as $id) {
-            $groups[self::XENDIT_METHODS[$id]['group']][] = self::XENDIT_METHODS[$id]['label'];
+        foreach ($ids as $id) {
+            $groups[self::GATEWAY_METHODS[$gateway][$id]['group']][] = self::GATEWAY_METHODS[$gateway][$id]['label'];
         }
 
         $labels = [];
         foreach ($groups as $group => $items) {
-            $labels[] = $group === 'QRIS' ? 'QRIS' : "{$group} (".implode(', ', $items).')';
+            $labels[] = in_array($group, ['QRIS', 'Kartu Kredit / Debit'], true) ? $group : "{$group} (".implode(', ', $items).')';
         }
 
-        return ['gatewayActive' => $gatewayActive, 'methods' => $labels];
+        return $labels;
+    }
+
+    /**
+     * Online gateways the customer can pay through, keyed by gateway id.
+     * Xendit only needs to be active (unchanged behaviour); Midtrans also needs
+     * a Server Key and at least one method, since an empty Snap
+     * `enabled_payments` would open up every channel the admin didn't choose.
+     */
+    private function resolveOnlineGateways(): array
+    {
+        $configs = PaymentGatewayConfig::whereIn('gateway_name', array_keys(self::GATEWAY_METHODS))
+            ->get()
+            ->keyBy('gateway_name');
+
+        $gateways = [];
+        foreach (array_keys(self::GATEWAY_METHODS) as $id) {
+            $config = $configs->get($id);
+            if (! $config?->is_active) {
+                continue;
+            }
+
+            $methodIds = $this->resolveGatewayMethodIds($id, $config);
+
+            if ($id === 'midtrans' && (! $this->midtrans->isConfigured() || $methodIds === [])) {
+                continue;
+            }
+
+            $gateways[$id] = [
+                'id' => $id,
+                'label' => self::GATEWAY_LABELS[$id],
+                'methods' => $this->methodLabels($id, $methodIds),
+                'method_ids' => $methodIds,
+            ];
+        }
+
+        return $gateways;
     }
 
     /**
@@ -86,7 +150,7 @@ class PaymentController extends Controller
         $manualGateway = PaymentGatewayConfig::where('gateway_name', 'manual')->first();
         $gatewayActive = (bool) $manualGateway?->is_active;
 
-        $globalEnabled = AppSetting::get('payment_enabled_methods', []);
+        $globalEnabled = AppSetting::get('payment_enabled_methods', PaymentSettingController::DEFAULT_ENABLED_METHODS);
         $manualExtra = $manualGateway?->configExtraSafe() ?? [];
         $gatewayMethods = $manualExtra['enabled_methods'] ?? [];
         $values = $manualExtra['values'] ?? [];
@@ -158,7 +222,7 @@ class PaymentController extends Controller
             'feature_value' => $f->feature_value,
         ])->values()->toArray();
 
-        $paymentInfo = $this->resolveActivePaymentMethods();
+        $onlineGateways = $this->resolveOnlineGateways();
         $manualTransfer = $this->resolveManualTransfer();
 
         $latestManualPayment = $transaction->payments()
@@ -192,8 +256,13 @@ class PaymentController extends Controller
                 'paid_at' => $transaction->paid_at?->toDateTimeString(),
                 'payment_url' => $paymentUrl,
             ] : null,
-            'paymentMethods' => $paymentInfo['methods'],
-            'gatewayActive' => $paymentInfo['gatewayActive'],
+            'paymentMethods' => collect($onlineGateways)->flatMap(fn ($g) => $g['methods'])->unique()->values()->all(),
+            'gatewayActive' => $onlineGateways !== [],
+            'onlineGateways' => collect($onlineGateways)->map(fn ($g) => [
+                'id' => $g['id'],
+                'label' => $g['label'],
+                'methods' => $g['methods'],
+            ])->values()->all(),
             'manualTransfer' => [
                 'available' => $manualTransfer['available'],
                 'bankDetails' => $manualTransfer['bankDetails'],
@@ -237,9 +306,18 @@ class PaymentController extends Controller
                 ->with('info', 'Undangan ini sudah dibayar.');
         }
 
-        // Already has a live Xendit invoice URL — send user there
+        $onlineGateways = $this->resolveOnlineGateways();
+        $gateway = $request->input('gateway') ?: array_key_first($onlineGateways);
+
+        if (! $gateway || ! isset($onlineGateways[$gateway])) {
+            return redirect()->route('customer.invitations.payment', $invitation->slug)
+                ->with('error', 'Metode pembayaran sedang tidak tersedia. Silakan hubungi admin.');
+        }
+
+        // Already has a live payment page on the same gateway — send user there
         if ($transaction && $transaction->status === 'pending') {
             $existing = $transaction->payments()
+                ->where('payment_gateway', $gateway)
                 ->where('status', 'pending')
                 ->whereNotNull('gateway_order_id')
                 ->latest()
@@ -249,12 +327,7 @@ class PaymentController extends Controller
             }
         }
 
-        if (! $this->resolveActivePaymentMethods()['gatewayActive']) {
-            return redirect()->route('customer.invitations.payment', $invitation->slug)
-                ->with('error', 'Metode pembayaran sedang tidak tersedia. Silakan hubungi admin.');
-        }
-
-        // ── Step 1: Call Xendit API FIRST — no DB writes yet ─────────────
+        // ── Step 1: Call the gateway API FIRST — no DB writes yet ────────
         try {
             // Reuse the invoice number already shown on the payment page if this
             // is the first payment attempt; generate a fresh one for retries.
@@ -264,16 +337,34 @@ class PaymentController extends Controller
             $amount = (float) $package->price;
             $user = auth()->user();
             $dueDate = Carbon::now()->addDays(1);
+            $description = "Undangan Digital - {$package->label} | {$invitation->title}";
 
-            $xenditData = $this->xendit->createInvoice([
-                'external_id' => $invoiceNumber,
-                'amount' => $amount,
-                'payer_email' => $user->email,
-                'description' => "Undangan Digital - {$package->label} | {$invitation->title}",
-                'success_redirect_url' => route('customer.payments.success').'?invoice_number='.urlencode($invoiceNumber),
-                'failure_redirect_url' => route('customer.payments.failed').'?invoice_number='.urlencode($invoiceNumber),
-                'currency' => $package->currency ?? 'IDR',
-            ]);
+            if ($gateway === 'midtrans') {
+                $snap = $this->midtrans->createSnapTransaction([
+                    'order_id' => $invoiceNumber,
+                    'gross_amount' => (int) round($amount),
+                    'customer' => ['first_name' => $user->name, 'email' => $user->email],
+                    'item_name' => $description,
+                    'enabled_payments' => collect($onlineGateways['midtrans']['method_ids'])
+                        ->flatMap(fn ($id) => self::GATEWAY_METHODS['midtrans'][$id]['snap'])
+                        ->unique()->values()->all(),
+                    // Midtrans appends ?order_id=…&transaction_status=… itself.
+                    'finish_url' => route('customer.payments.success'),
+                    'notification_url' => route('webhooks.midtrans'),
+                ]);
+                $gatewayData = ['reference_id' => $snap['token'], 'payment_url' => $snap['redirect_url']];
+            } else {
+                $xenditData = $this->xendit->createInvoice([
+                    'external_id' => $invoiceNumber,
+                    'amount' => $amount,
+                    'payer_email' => $user->email,
+                    'description' => $description,
+                    'success_redirect_url' => route('customer.payments.success').'?invoice_number='.urlencode($invoiceNumber),
+                    'failure_redirect_url' => route('customer.payments.failed').'?invoice_number='.urlencode($invoiceNumber),
+                    'currency' => $package->currency ?? 'IDR',
+                ]);
+                $gatewayData = ['reference_id' => $xenditData['id'], 'payment_url' => $xenditData['invoice_url']];
+            }
         } catch (Throwable $e) {
             report($e);
 
@@ -281,10 +372,10 @@ class PaymentController extends Controller
                 ->with('error', $this->paymentErrorMessage($e));
         }
 
-        // ── Step 2: Persist to DB only after Xendit succeeds ─────────────
+        // ── Step 2: Persist to DB only after the gateway succeeds ────────
         DB::transaction(function () use (
-            $invitation, $package, $transaction,
-            $invoiceNumber, $amount, $dueDate, $xenditData
+            $invitation, $package, $transaction, $gateway,
+            $invoiceNumber, $amount, $dueDate, $gatewayData
         ) {
             if ($transaction) {
                 // Cancel any stale pending payments before reassigning invoice number
@@ -313,16 +404,16 @@ class PaymentController extends Controller
 
             Payment::create([
                 'transaction_id' => $transaction->id,
-                'payment_gateway' => 'xendit',
-                'gateway_reference_id' => $xenditData['id'],
-                'gateway_order_id' => $xenditData['invoice_url'],
+                'payment_gateway' => $gateway,
+                'gateway_reference_id' => $gatewayData['reference_id'],
+                'gateway_order_id' => $gatewayData['payment_url'],
                 'amount' => $amount,
                 'currency' => $package->currency ?? 'IDR',
                 'status' => 'pending',
             ]);
         });
 
-        return Inertia::location($xenditData['invoice_url']);
+        return Inertia::location($gatewayData['payment_url']);
     }
 
     // ─── Submit Manual Transfer Proof ────────────────────────────────────────
@@ -396,16 +487,26 @@ class PaymentController extends Controller
 
     // ─── Success & Failed Redirect Pages ─────────────────────────────────────
 
-    public function success(Request $request): Response
+    public function success(Request $request): Response|RedirectResponse
     {
         $transaction = null;
-        $invoiceNumber = $request->query('invoice_number') ?? $request->query('external_id');
+        // order_id: appended by Midtrans Snap on its finish redirect.
+        $invoiceNumber = $request->query('invoice_number') ?? $request->query('external_id') ?? $request->query('order_id');
 
         if ($invoiceNumber) {
             $transaction = Transaction::with(['invitation', 'package'])
                 ->where('user_id', auth()->id())
                 ->where('invoice_number', $invoiceNumber)
                 ->first();
+        }
+
+        // Midtrans also redirects here for unfinished payments (e.g. a VA number
+        // issued but not yet paid) — don't show "Pembayaran Berhasil" for those.
+        $midtransStatus = $request->query('transaction_status');
+        if ($transaction && $transaction->status !== 'paid' && $midtransStatus
+            && ! in_array($midtransStatus, ['settlement', 'capture'], true)) {
+            return redirect()->route('customer.transactions.show', $transaction->id)
+                ->with('info', 'Pembayaran belum selesai. Silakan selesaikan pembayaran sesuai instruksi Midtrans.');
         }
 
         return Inertia::render('customer/payments/success', [
@@ -471,7 +572,7 @@ class PaymentController extends Controller
         }
 
         // Detect permission error and give actionable guidance
-        if (str_contains($message, 'forbidden') || str_contains($message, 'permission')) {
+        if (str_contains($message, 'Xendit') && (str_contains($message, 'forbidden') || str_contains($message, 'permission'))) {
             return 'API Key Xendit tidak memiliki izin untuk membuat Invoice. '
                 .'Silakan masuk ke Dashboard Xendit → Settings → API Keys, '
                 .'lalu aktifkan permission "Money-In" / "Invoice" pada API key Anda, kemudian coba lagi.';

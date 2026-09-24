@@ -67,12 +67,19 @@ interface ManualTransferInfo {
     } | null;
 }
 
+interface OnlineGateway {
+    id: 'xendit' | 'midtrans';
+    label: string;
+    methods: string[];
+}
+
 interface Props {
     invitation: InvitationData;
     package: PackageData;
     transaction: TransactionData | null;
     paymentMethods: string[];
     gatewayActive: boolean;
+    onlineGateways: OnlineGateway[];
     manualTransfer: ManualTransferInfo;
 }
 
@@ -192,8 +199,8 @@ function ProofFileField({
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-export default function InvitationPayment({ invitation, package: pkg, transaction, paymentMethods, gatewayActive, manualTransfer }: Props) {
-    const [loading, setLoading] = useState(false);
+export default function InvitationPayment({ invitation, package: pkg, transaction, paymentMethods, gatewayActive, onlineGateways, manualTransfer }: Props) {
+    const [loadingGateway, setLoadingGateway] = useState<string | null>(null);
     const [proofFile, setProofFile] = useState<File | null>(null);
     const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
@@ -217,12 +224,12 @@ export default function InvitationPayment({ invitation, package: pkg, transactio
         { title: 'Pembayaran', href: '#' },
     ];
 
-    function handlePay() {
-        setLoading(true);
+    function handlePay(gateway: OnlineGateway['id']) {
+        setLoadingGateway(gateway);
         router.post(
             `/customer/invitations/${invitation.slug}/payment`,
-            {},
-            { onFinish: () => setLoading(false) },
+            { gateway },
+            { onFinish: () => setLoadingGateway(null) },
         );
     }
 
@@ -449,23 +456,34 @@ export default function InvitationPayment({ invitation, package: pkg, transactio
                             </div>
                         </div>
 
-                        {/* Xendit — Bayar Online */}
+                        {/* Online gateways (Xendit / Midtrans) — Bayar Online */}
                         {gatewayActive && !transaction?.payment_url && (
                             <div className="bg-card rounded-2xl border border-border shadow-sm p-5">
                                 <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
                                     Bayar Online
                                 </h2>
-                                <button
-                                    type="button"
-                                    onClick={handlePay}
-                                    disabled={loading}
-                                    className="w-full rounded-xl bg-primary text-primary-foreground px-4 py-3 text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                                >
-                                    {loading ? 'Memproses...' : 'Bayar Sekarang'}
-                                </button>
+                                <div className="flex flex-col gap-3">
+                                    {onlineGateways.map((g) => (
+                                        <div key={g.id}>
+                                            <button
+                                                type="button"
+                                                onClick={() => handlePay(g.id)}
+                                                disabled={loadingGateway !== null}
+                                                className="w-full rounded-xl bg-primary text-primary-foreground px-4 py-3 text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                                            >
+                                                {loadingGateway === g.id
+                                                    ? 'Memproses...'
+                                                    : onlineGateways.length > 1 ? `Bayar via ${g.label}` : 'Bayar Sekarang'}
+                                            </button>
+                                            {onlineGateways.length > 1 && g.methods.length > 0 && (
+                                                <p className="mt-1.5 text-xs text-muted-foreground">{g.methods.join(' · ')}</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
                                 <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
                                     <ShieldCheck className="size-4 shrink-0 text-emerald-500" />
-                                    <span>Pembayaran aman & terenkripsi melalui Xendit</span>
+                                    <span>Pembayaran aman & terenkripsi melalui {onlineGateways.map((g) => g.label).join(' / ')}</span>
                                 </div>
                             </div>
                         )}

@@ -1,11 +1,15 @@
 <?php
 
 use App\Http\Controllers\InvitationPublicApiController;
+use App\Http\Controllers\Webhook\MidtransWebhookController;
 use App\Http\Controllers\Webhook\XenditWebhookController;
 use Illuminate\Support\Facades\Route;
 
 // ─── Xendit Payment Webhook (no auth, verified via callback token) ────────────
 Route::post('/webhooks/xendit', [XenditWebhookController::class, 'handle'])->name('webhooks.xendit');
+
+// ─── Midtrans Payment Notification (no auth, verified via signature_key) ──────
+Route::post('/webhooks/midtrans', [MidtransWebhookController::class, 'handle'])->name('webhooks.midtrans');
 
 // ─── Public invitation API (RSVP & wishes — no auth required) ────────────────
 Route::prefix('inv/{code}')->group(function () {
