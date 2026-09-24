@@ -3,7 +3,8 @@ import { Head } from '@inertiajs/react';
 import { useEffect } from 'react';
 import AqiqahTheme01 from './themes/aqiqah/aqiqah_theme_01/AqiqahTheme01';
 import AqiqahTheme02 from './themes/aqiqah/aqiqah_theme_02/AqiqahTheme02';
-import AqiqahTheme03 from './themes/aqiqah/aqiqah_theme_03/AqiqahTheme03';
+import AqiqahTheme03 from './themes/aqiqah/aqiqah_theme_03/AqiqahTheme03'; 
+
 import BirthdayStarryNight from './themes/birthday/BirthdayStarryNight';
 import BirthdayTheme01 from './themes/birthday/birthday_theme_01/BirthdayTheme01';
 import BirthdayTheme02 from './themes/birthday/birthday_theme_02/BirthdayTheme02';
