@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Theme;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -45,5 +46,9 @@ class AdditionalThemeSeeder extends Seeder
                 );
             }
         }
+
+        // Raw inserts skip model hooks: append newly seeded themes to the end
+        // of their invitation type without disturbing admin-set positions.
+        Theme::resequenceAll();
     }
 }

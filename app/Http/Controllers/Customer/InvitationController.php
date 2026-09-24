@@ -129,8 +129,7 @@ class InvitationController extends Controller
 
         $themes = Theme::active()
             ->where('event_type', $eventType->name)
-            ->orderBy('is_premium')
-            ->orderBy('usage_count', 'desc')
+            ->ordered()
             ->get(['id', 'name', 'slug', 'description', 'thumbnail_url', 'preview_image_url', 'color_primary', 'color_secondary', 'is_premium', 'is_exclusive', 'price', 'tags', 'usage_count']);
 
         $packages = Package::active()
@@ -543,7 +542,7 @@ class InvitationController extends Controller
         // ── Themes available for this event type ──────────────────────────────
         $availableThemes = Theme::active()
             ->where('event_type', $invitation->eventType->name)
-            ->orderByRaw('is_premium ASC, is_exclusive ASC, usage_count DESC')
+            ->ordered()
             ->get(['id', 'name', 'slug', 'category', 'description', 'thumbnail_url', 'preview_image_url',
                    'color_primary', 'color_secondary', 'is_premium', 'is_exclusive', 'price', 'usage_count'])
             ->map(fn ($t) => [

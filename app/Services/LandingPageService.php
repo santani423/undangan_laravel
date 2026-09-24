@@ -156,16 +156,17 @@ class LandingPageService
     }
 
     /**
-     * Teaser grid for the showcase section — pulls real themes independently
-     * by usage_count (Theme.event_type and Package.invitation_type are
-     * different taxonomies, so we don't try to match a theme to a tier).
+     * Teaser grid for the showcase section — pulls real themes in the
+     * admin-defined order (Theme::ordered(): each invitation type's top picks
+     * first). Theme.event_type and Package.invitation_type are different
+     * taxonomies, so we don't try to match a theme to a tier.
      *
      * @return array<int, array{id: int, name: string, category: string, event_type: string, thumbnail: ?string, color_primary: ?string, color_secondary: ?string, is_premium: bool, is_exclusive: bool}>
      */
     public function themeSamples(): array
     {
         return Theme::active()
-            ->orderByDesc('usage_count')
+            ->ordered()
             ->limit(6)
             ->get()
             ->map(fn (Theme $theme) => [

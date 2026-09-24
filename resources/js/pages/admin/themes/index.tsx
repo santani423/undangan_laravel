@@ -1,17 +1,38 @@
 import AdminLayout from '@/layouts/admin-layout';
 import { type BreadcrumbItem } from '@/types';
+import {
+    closestCenter,
+    DndContext,
+    type DragEndEvent,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    rectSortingStrategy,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { Head, router, usePage } from '@inertiajs/react';
 import {
     AlertCircle,
+    ArrowUpDown,
     CheckCircle2,
     Crown,
     Edit,
     Eye,
     Filter,
+    GripVertical,
     Grid3X3,
     Image,
     Layers,
     List,
+    Loader2,
     Palette,
     Plus,
     Search,
@@ -34,6 +55,8 @@ interface TemplateData {
     slug: string;
     category: string;
     event_type: string;
+    /** Position within its event_type (1..n); null only for rows not yet placed. */
+    sort_order: number | null;
     thumbnail: string;
     color_primary: string;
     color_secondary: string;
@@ -223,7 +246,7 @@ function TemplateFormModal({
 
     const previewTpl = {
         ...defaultForm,
-        id: 0, slug: '', usage_count: 0, created_at: '',
+        id: 0, slug: '', usage_count: 0, created_at: '', sort_order: null,
         name: form.name || 'Preview',
         thumbnail: '',
         color_primary: form.color_primary,
@@ -498,6 +521,80 @@ function DeleteConfirmModal({ template, onClose, onConfirm }: { template: Templa
     );
 }
 
+// ─── Drag & drop (reorder) ─────────────────────────────────────────────────────
+
+/** What a sortable wrapper hands to a card/row so it can be dragged by its handle. */
+interface DragBinding {
+    position: number;
+    disabled: boolean;
+    isDragging: boolean;
+    setNodeRef: (el: HTMLElement | null) => void;
+    setActivatorNodeRef: (el: HTMLElement | null) => void;
+    style: React.CSSProperties;
+    handleProps: React.HTMLAttributes<HTMLElement>;
+}
+
+function useDragBinding(id: number, position: number, disabled: boolean): DragBinding {
+    const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id, disabled });
+    return {
+        position,
+        disabled,
+        isDragging,
+        setNodeRef,
+        setActivatorNodeRef,
+        style: { transform: CSS.Translate.toString(transform), transition, position: 'relative', zIndex: isDragging ? 20 : undefined },
+        handleProps: { ...attributes, ...listeners },
+    };
+}
+
+function DragHandle({ drag, name }: { drag: DragBinding; name: string }) {
+    return (
+        <button
+            type="button"
+            ref={drag.setActivatorNodeRef}
+            {...drag.handleProps}
+            disabled={drag.disabled}
+            title="Seret untuk mengubah urutan"
+            aria-label={`Ubah urutan ${name} (posisi ${drag.position})`}
+            className="inline-flex items-center justify-center rounded-md p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors touch-none cursor-grab active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-40"
+        >
+            <GripVertical className="size-4" />
+        </button>
+    );
+}
+
+function PositionBadge({ position }: { position: number }) {
+    return (
+        <span className="inline-flex min-w-6 items-center justify-center rounded-md bg-primary/10 px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-primary">
+            #{position}
+        </span>
+    );
+}
+
+type ItemActions = { onEdit: () => void; onDelete: () => void; onToggle: () => void };
+
+function SortableTemplateCard({ template, position, disabled, ...actions }: { template: TemplateData; position: number; disabled: boolean } & ItemActions) {
+    const drag = useDragBinding(template.id, position, disabled);
+    return <TemplateCard template={template} drag={drag} {...actions} />;
+}
+
+function SortableTemplateRow({ template, position, disabled, ...actions }: { template: TemplateData; position: number; disabled: boolean } & ItemActions) {
+    const drag = useDragBinding(template.id, position, disabled);
+    return <TemplateRow template={template} drag={drag} {...actions} />;
+}
+
+/** Laravel's XSRF-TOKEN cookie, sent back as X-XSRF-TOKEN for fetch() calls. */
+function xsrfToken(): string {
+    const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);
+    return match ? decodeURIComponent(match[1]) : '';
+}
+
+type ReorderStatus =
+    | { state: 'idle' }
+    | { state: 'saving' }
+    | { state: 'saved'; message: string }
+    | { state: 'error'; message: string };
+
 // ─── Template Card (Grid) ──────────────────────────────────────────────────────
 
 function TemplateCard({
@@ -505,19 +602,25 @@ function TemplateCard({
     onEdit,
     onDelete,
     onToggle,
+    drag,
 }: {
     template: TemplateData;
     onEdit: () => void;
     onDelete: () => void;
     onToggle: () => void;
+    drag?: DragBinding;
 }) {
     const tier = tierMeta(template);
     const TierIcon = tier.icon;
 
     return (
-        <div className={`group relative rounded-2xl border bg-card shadow-sm overflow-hidden transition-all hover:shadow-md ${
-            template.is_active ? 'border-border/60' : 'border-border/30 opacity-60'
-        }`}>
+        <div
+            ref={drag?.setNodeRef}
+            style={drag?.style}
+            className={`group relative rounded-2xl border bg-card shadow-sm overflow-hidden transition-all hover:shadow-md ${
+                template.is_active ? 'border-border/60' : 'border-border/30 opacity-60'
+            } ${drag?.isDragging ? 'shadow-xl ring-2 ring-primary/40' : ''}`}
+        >
             {/* Thumbnail */}
             <div className="relative">
                 <TemplateThumbnail tpl={template} size="md" />
@@ -558,9 +661,17 @@ function TemplateCard({
 
             {/* Info */}
             <div className="p-3 space-y-2">
-                <div>
-                    <p className="text-sm font-semibold text-foreground leading-tight truncate">{template.name}</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">{template.category} · {eventTypeLabel(template.event_type)}</p>
+                <div className="flex items-start gap-2">
+                    <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-foreground leading-tight truncate">{template.name}</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">{template.category} · {eventTypeLabel(template.event_type)}</p>
+                    </div>
+                    {drag && (
+                        <div className="flex shrink-0 items-center gap-1">
+                            <PositionBadge position={drag.position} />
+                            <DragHandle drag={drag} name={template.name} />
+                        </div>
+                    )}
                 </div>
 
                 {/* Tags */}
@@ -605,17 +716,32 @@ function TemplateRow({
     onEdit,
     onDelete,
     onToggle,
+    drag,
 }: {
     template: TemplateData;
     onEdit: () => void;
     onDelete: () => void;
     onToggle: () => void;
+    drag?: DragBinding;
 }) {
     const tier = tierMeta(template);
     const TierIcon = tier.icon;
 
     return (
-        <tr className="group hover:bg-muted/20 transition-colors border-b border-border/20">
+        <tr
+            ref={drag?.setNodeRef}
+            style={drag?.style}
+            className={`group hover:bg-muted/20 transition-colors border-b border-border/20 ${drag?.isDragging ? 'bg-card shadow-lg' : ''}`}
+        >
+            {/* Urutan (reorder mode only) */}
+            {drag && (
+                <td className="px-4 py-3 w-px">
+                    <div className="flex items-center gap-1">
+                        <DragHandle drag={drag} name={template.name} />
+                        <PositionBadge position={drag.position} />
+                    </div>
+                </td>
+            )}
             {/* Template */}
             <td className="px-4 py-3">
                 <div className="flex items-center gap-3">
@@ -702,6 +828,23 @@ export default function AdminThemes() {
     const [deleteTarget, setDeleteTarget] = useState<TemplateData | null>(null);
     const [showAdd, setShowAdd]           = useState(false);
 
+    // Local copy so a drop can reorder optimistically; re-synced whenever the
+    // server sends fresh props (add/edit/delete/toggle).
+    const [items, setItems] = useState<TemplateData[]>(templates);
+    useEffect(() => setItems(templates), [templates]);
+
+    const [reorderStatus, setReorderStatus] = useState<ReorderStatus>({ state: 'idle' });
+    useEffect(() => {
+        if (reorderStatus.state !== 'saved') return;
+        const t = setTimeout(() => setReorderStatus({ state: 'idle' }), 2500);
+        return () => clearTimeout(t);
+    }, [reorderStatus]);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    );
+
     function handleAdd(data: Partial<TemplateData>) {
         router.post(route('admin.themes.store'), {
             name:            data.name,
@@ -750,7 +893,7 @@ export default function AdminThemes() {
     }
 
     // ── Filter & search ─────────────────────────────────────────────────────
-    const filtered = templates.filter((t) => {
+    const filtered = items.filter((t) => {
         if (search && !t.name.toLowerCase().includes(search.toLowerCase()) &&
             !t.tags.some((tag) => tag.includes(search.toLowerCase()))) return false;
         if (filterCat !== 'Semua' && t.category !== filterCat) return false;
@@ -760,6 +903,61 @@ export default function AdminThemes() {
         if (filterTier === 'exclusive' && !t.is_exclusive) return false;
         return true;
     });
+
+    // ── Reorder ──────────────────────────────────────────────────────────────
+    // Ordering is per invitation type, so drag & drop is only offered when the
+    // list shows exactly one type's full sequence (no search / other filters).
+    const reorderMode = filterEvt !== 'Semua' && !search && filterCat === 'Semua' && filterTier === 'all';
+    const isSaving    = reorderStatus.state === 'saving';
+
+    async function handleDragEnd({ active, over }: DragEndEvent) {
+        if (!reorderMode || isSaving || !over || active.id === over.id) return;
+
+        const oldIndex = filtered.findIndex((t) => t.id === active.id);
+        const newIndex = filtered.findIndex((t) => t.id === over.id);
+        if (oldIndex < 0 || newIndex < 0) return;
+
+        const reordered = arrayMove(filtered, oldIndex, newIndex).map((t, i) => ({ ...t, sort_order: i + 1 }));
+        const previous  = items;
+
+        // The group is contiguous in `items`, so refill its slots in the new order.
+        const groupIds = new Set(reordered.map((t) => t.id));
+        let k = 0;
+        setItems(items.map((t) => (groupIds.has(t.id) ? reordered[k++] : t)));
+        setReorderStatus({ state: 'saving' });
+
+        try {
+            const res = await fetch(route('admin.themes.reorder'), {
+                method: 'PATCH',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-XSRF-TOKEN': xsrfToken(),
+                },
+                body: JSON.stringify({ event_type: filterEvt, ids: reordered.map((t) => t.id) }),
+            });
+            const body = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                const message =
+                    res.status === 419 ? 'Sesi Anda kedaluwarsa. Muat ulang halaman lalu coba lagi.'
+                    : body?.errors?.ids?.[0] ?? body?.message ?? `Gagal menyimpan urutan (HTTP ${res.status}).`;
+                throw new Error(message);
+            }
+
+            setReorderStatus({ state: 'saved', message: body?.message ?? 'Urutan tersimpan.' });
+        } catch (err) {
+            setItems(previous);
+            setReorderStatus({
+                state: 'error',
+                message: err instanceof TypeError
+                    ? 'Koneksi terputus. Urutan belum tersimpan, silakan coba lagi.'
+                    : err instanceof Error ? err.message : 'Gagal menyimpan urutan.',
+            });
+        }
+    }
 
     // ── Stats ────────────────────────────────────────────────────────────────
     const totalActive    = templates.filter((t) => t.is_active).length;
@@ -885,6 +1083,33 @@ export default function AdminThemes() {
                     </div>
                 </div>
 
+                {/* Reorder hint / status */}
+                {reorderMode ? (
+                    <div className={`flex flex-wrap items-center justify-between gap-2 rounded-xl border px-4 py-2.5 text-xs ${
+                        reorderStatus.state === 'error' ? 'border-red-200 bg-red-50 text-red-700' : 'border-primary/20 bg-primary/5 text-foreground'
+                    }`}>
+                        <span className="flex items-center gap-2">
+                            <ArrowUpDown className="size-3.5 shrink-0 text-primary" />
+                            Seret ikon <GripVertical className="inline size-3.5" /> untuk mengatur urutan template <strong>{eventTypeLabel(filterEvt)}</strong>. Urutan ini dipakai di semua halaman pemilihan tema dan tersimpan otomatis.
+                        </span>
+                        <span role="status" aria-live="polite" className="flex items-center gap-1.5 font-medium">
+                            {reorderStatus.state === 'saving' && <><Loader2 className="size-3.5 animate-spin" />Menyimpan urutan…</>}
+                            {reorderStatus.state === 'saved'  && <span className="flex items-center gap-1.5 text-emerald-700"><CheckCircle2 className="size-3.5" />{reorderStatus.message}</span>}
+                            {reorderStatus.state === 'error'  && <>
+                                <AlertCircle className="size-3.5" />{reorderStatus.message}
+                                <button type="button" onClick={() => setReorderStatus({ state: 'idle' })} className="ml-1 opacity-60 hover:opacity-100" aria-label="Tutup">
+                                    <X className="size-3.5" />
+                                </button>
+                            </>}
+                        </span>
+                    </div>
+                ) : (
+                    <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <ArrowUpDown className="size-3.5 shrink-0" />
+                        Untuk mengatur urutan, pilih satu Jenis Acara dan kosongkan pencarian serta filter lainnya.
+                    </p>
+                )}
+
                 {/* Content */}
                 {filtered.length === 0 ? (
                     <div className="rounded-2xl border-2 border-dashed border-border/60 py-20 text-center">
@@ -908,7 +1133,20 @@ export default function AdminThemes() {
                             </div>
                             <span className="text-xs font-medium">Tambah Template</span>
                         </button>
-                        {filtered.map((t) => (
+                        {reorderMode ? (
+                            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                                <SortableContext items={filtered.map((t) => t.id)} strategy={rectSortingStrategy}>
+                                    {filtered.map((t, i) => (
+                                        <SortableTemplateCard
+                                            key={t.id} template={t} position={i + 1} disabled={isSaving}
+                                            onEdit={() => setEditTarget(t)}
+                                            onDelete={() => setDeleteTarget(t)}
+                                            onToggle={() => handleToggle(t.id)}
+                                        />
+                                    ))}
+                                </SortableContext>
+                            </DndContext>
+                        ) : filtered.map((t) => (
                             <TemplateCard
                                 key={t.id} template={t}
                                 onEdit={() => setEditTarget(t)}
@@ -920,25 +1158,38 @@ export default function AdminThemes() {
                 ) : (
                     <div className="rounded-2xl border border-border/60 bg-card shadow-sm overflow-hidden">
                         <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead>
-                                    <tr className="border-b border-border/40 bg-muted/20">
-                                        {['Template', 'Kategori', 'Tier', 'Harga', 'Dipakai', 'Status', 'Aksi'].map((h) => (
-                                            <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground whitespace-nowrap">{h}</th>
+                            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="border-b border-border/40 bg-muted/20">
+                                            {[...(reorderMode ? ['Urutan'] : []), 'Template', 'Kategori', 'Tier', 'Harga', 'Dipakai', 'Status', 'Aksi'].map((h) => (
+                                                <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground whitespace-nowrap">{h}</th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {reorderMode ? (
+                                            <SortableContext items={filtered.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+                                                {filtered.map((t, i) => (
+                                                    <SortableTemplateRow
+                                                        key={t.id} template={t} position={i + 1} disabled={isSaving}
+                                                        onEdit={() => setEditTarget(t)}
+                                                        onDelete={() => setDeleteTarget(t)}
+                                                        onToggle={() => handleToggle(t.id)}
+                                                    />
+                                                ))}
+                                            </SortableContext>
+                                        ) : filtered.map((t) => (
+                                            <TemplateRow
+                                                key={t.id} template={t}
+                                                onEdit={() => setEditTarget(t)}
+                                                onDelete={() => setDeleteTarget(t)}
+                                                onToggle={() => handleToggle(t.id)}
+                                            />
                                         ))}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filtered.map((t) => (
-                                        <TemplateRow
-                                            key={t.id} template={t}
-                                            onEdit={() => setEditTarget(t)}
-                                            onDelete={() => setDeleteTarget(t)}
-                                            onToggle={() => handleToggle(t.id)}
-                                        />
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </tbody>
+                                </table>
+                            </DndContext>
                         </div>
                     </div>
                 )}

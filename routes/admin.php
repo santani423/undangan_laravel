@@ -45,6 +45,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'area:admin'])->grou
         // ── CRUD ────────────────────────────────────────────────────────────
         Route::get('/', [ThemeController::class, 'index'])->name('index');
         Route::post('/', [ThemeController::class, 'store'])->name('store');
+        Route::patch('/reorder', [ThemeController::class, 'reorder'])->name('reorder');
         Route::patch('/{theme}/toggle', [ThemeController::class, 'toggle'])->name('toggle');
         Route::patch('/{theme}', [ThemeController::class, 'update'])->name('update');
         Route::delete('/{theme}', [ThemeController::class, 'destroy'])->name('destroy');

@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin\Themes;
 
 use App\Http\Controllers\Controller;
 use App\Models\Theme;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -14,13 +16,15 @@ class ThemeController extends Controller
 {
     public function index(): Response
     {
-        $themes = Theme::orderByDesc('created_at')->get()->map(function (Theme $t) {
+        // Grouped per invitation type, each group in its admin-defined order.
+        $themes = Theme::orderBy('event_type')->ordered()->get()->map(function (Theme $t) {
             return [
                 'id'              => $t->id,
                 'name'            => $t->name,
                 'slug'            => $t->slug,
                 'category'        => $t->category,
                 'event_type'      => $t->event_type,
+                'sort_order'      => $t->sort_order,
                 'thumbnail'       => $t->thumbnail_url ?? '',
                 'color_primary'   => $t->color_primary,
                 'color_secondary' => $t->color_secondary,
@@ -66,7 +70,8 @@ class ThemeController extends Controller
         $data['price']              = $data['price']        ?? 0;
         $data['created_by_user_id'] = auth()->id();
 
-        Theme::create($data);
+        // sort_order is appended to the end of this invitation type by Theme::booted().
+        DB::transaction(fn () => Theme::create($data));
 
         return back()->with('success', "Template \"{$data['name']}\" berhasil ditambahkan.");
     }
@@ -91,9 +96,30 @@ class ThemeController extends Controller
             $data['slug'] = Str::slug($data['name']);
         }
 
-        $theme->update($data);
+        // Changing event_type moves it to the end of the new type (see Theme::booted()).
+        DB::transaction(fn () => $theme->update($data));
 
         return back()->with('success', "Template \"{$theme->name}\" berhasil diperbarui.");
+    }
+
+    /**
+     * Persist a drag-and-drop order for one invitation type. Called via fetch
+     * from the admin page, so it answers JSON instead of redirecting.
+     */
+    public function reorder(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'event_type' => 'required|string|max:100',
+            'ids'        => 'required|array|min:1',
+            'ids.*'      => 'required|integer|distinct',
+        ]);
+
+        Theme::reorder($data['event_type'], $data['ids']);
+
+        return response()->json([
+            'message' => 'Urutan template berhasil disimpan.',
+            'order'   => Theme::where('event_type', $data['event_type'])->ordered()->pluck('sort_order', 'id'),
+        ]);
     }
 
     public function toggle(Theme $theme): RedirectResponse
@@ -107,7 +133,8 @@ class ThemeController extends Controller
     public function destroy(Theme $theme): RedirectResponse
     {
         $name = $theme->name;
-        $theme->delete();
+        // Remaining themes of the type are resequenced by Theme::booted().
+        DB::transaction(fn () => $theme->delete());
 
         return back()->with('success', "Template \"{$name}\" berhasil dihapus.");
     }

@@ -15,7 +15,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('themes', function () {
     $themes = Theme::where('is_active', true)
-        ->orderByDesc('usage_count')
+        ->ordered()
         ->get()
         ->map(fn (Theme $t) => [
             'id'              => $t->id,
