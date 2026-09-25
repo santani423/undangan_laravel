@@ -1,10 +1,39 @@
 import { type LandingThemeSample } from '@/types/landing';
 import { Link } from '@inertiajs/react';
 import { ArrowRight } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 interface LandingShowcaseProps {
     themes: LandingThemeSample[];
     onCreateFromTheme: (themeId: number) => void;
+}
+
+const ALL_TAB = 'all';
+const ALL_TAB_LIMIT = 6;
+
+// Keys mirror the event_type slug stored in the database; order defines tab order.
+const EVENT_TYPE_LABELS: Record<string, string> = {
+    wedding: 'Pernikahan',
+    birthday: 'Ulang Tahun',
+    khitanan: 'Khitanan',
+    aqiqah: 'Aqiqah',
+    gender_reveal: 'Gender Reveal',
+    syukuran: 'Syukuran',
+};
+
+function eventTypeLabel(value: string): string {
+    return EVENT_TYPE_LABELS[value] ?? value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+// Round-robin across types so the "Semua" tab shows a mix instead of one type's themes.
+function interleaveByType(groups: [string, LandingThemeSample[]][], limit: number): LandingThemeSample[] {
+    const result: LandingThemeSample[] = [];
+    for (let i = 0; result.length < limit; i++) {
+        const round = groups.map(([, list]) => list[i]).filter(Boolean);
+        if (round.length === 0) break;
+        result.push(...round);
+    }
+    return result.slice(0, limit);
 }
 
 function TierBadge({ theme }: { theme: LandingThemeSample }) {
@@ -28,6 +57,25 @@ function TierBadge({ theme }: { theme: LandingThemeSample }) {
 }
 
 export default function LandingShowcase({ themes, onCreateFromTheme }: LandingShowcaseProps) {
+    const [activeTab, setActiveTab] = useState<string>(ALL_TAB);
+
+    const groups = useMemo(() => {
+        const map = new Map<string, LandingThemeSample[]>();
+        for (const theme of themes) {
+            const list = map.get(theme.event_type) ?? [];
+            list.push(theme);
+            map.set(theme.event_type, list);
+        }
+        const order = Object.keys(EVENT_TYPE_LABELS);
+        const rank = (type: string) => (order.includes(type) ? order.indexOf(type) : order.length);
+        return [...map.entries()].sort(([a], [b]) => rank(a) - rank(b));
+    }, [themes]);
+
+    const visibleThemes =
+        activeTab === ALL_TAB ? interleaveByType(groups, ALL_TAB_LIMIT) : (groups.find(([type]) => type === activeTab)?.[1] ?? []);
+
+    const tabs = [{ value: ALL_TAB, label: 'Semua' }, ...groups.map(([type]) => ({ value: type, label: eventTypeLabel(type) }))];
+
     return (
         <section className="bg-white py-20">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -39,9 +87,35 @@ export default function LandingShowcase({ themes, onCreateFromTheme }: LandingSh
                     <div className="mx-auto mt-6 h-1 w-24 rounded-full bg-gradient-to-r from-rose-400 to-rose-500" />
                 </div>
 
-                {themes.length > 0 ? (
+                {groups.length > 1 && (
+                    <div className="mb-10 flex justify-center">
+                        <div role="tablist" className="flex max-w-full gap-2 overflow-x-auto px-1 pb-2">
+                            {tabs.map((tab) => {
+                                const isActive = tab.value === activeTab;
+                                return (
+                                    <button
+                                        key={tab.value}
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={isActive}
+                                        onClick={() => setActiveTab(tab.value)}
+                                        className={`shrink-0 rounded-full px-5 py-2 text-sm font-semibold whitespace-nowrap transition-all ${
+                                            isActive
+                                                ? 'bg-gradient-to-r from-rose-500 to-rose-400 text-white shadow-md'
+                                                : 'border border-gray-200 bg-white text-gray-600 hover:border-rose-300 hover:text-rose-500'
+                                        }`}
+                                    >
+                                        {tab.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {visibleThemes.length > 0 ? (
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        {themes.map((theme) => {
+                        {visibleThemes.map((theme) => {
                             const hasSample = Boolean(theme.sample_url);
 
                             return (

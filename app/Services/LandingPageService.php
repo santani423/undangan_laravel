@@ -160,16 +160,18 @@ class LandingPageService
      * admin-defined order (Theme::ordered(): each invitation type's top picks
      * first). Theme.event_type and Package.invitation_type are different
      * taxonomies, so we don't try to match a theme to a tier.
+     * Capped per event_type so every tab in the showcase has samples.
      *
      * @return array<int, array{id: int, name: string, category: string, event_type: string, thumbnail: ?string, color_primary: ?string, color_secondary: ?string, is_premium: bool, is_exclusive: bool, sample_url: ?string}>
      */
-    public function themeSamples(): array
+    public function themeSamples(int $perType = 6): array
     {
         return Theme::active()
             ->withExists('sampleInvitation')
             ->ordered()
-            ->limit(6)
             ->get()
+            ->groupBy('event_type')
+            ->flatMap(fn ($group) => $group->take($perType))
             ->map(fn (Theme $theme) => [
                 'id'              => $theme->id,
                 'name'            => $theme->name,
@@ -183,6 +185,7 @@ class LandingPageService
                 'is_exclusive'    => $theme->is_exclusive,
                 'sample_url'      => $theme->sampleUrl($theme->sample_invitation_exists),
             ])
+            ->values()
             ->all();
     }
 
