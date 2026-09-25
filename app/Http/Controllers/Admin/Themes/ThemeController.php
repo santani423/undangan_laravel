@@ -17,7 +17,7 @@ class ThemeController extends Controller
     public function index(): Response
     {
         // Grouped per invitation type, each group in its admin-defined order.
-        $themes = Theme::orderBy('event_type')->ordered()->get()->map(function (Theme $t) {
+        $themes = Theme::orderBy('event_type')->ordered()->withExists('sampleInvitation')->get()->map(function (Theme $t) {
             return [
                 'id'              => $t->id,
                 'name'            => $t->name,
@@ -35,6 +35,7 @@ class ThemeController extends Controller
                 'usage_count'     => $t->usage_count,
                 'tags'            => $t->tags ?? [],
                 'created_at'      => $t->created_at?->format('Y-m-d') ?? '',
+                'sample_url'      => $t->sampleUrl($t->sample_invitation_exists),
             ];
         });
 

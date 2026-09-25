@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Invitation;
 use App\Models\Guest;
+use App\Models\Theme;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -13,12 +15,28 @@ class InvitationPublicController extends Controller
 {
     public function show(Request $request, string $code, ?string $visitor = null): Response
     {
-        $visitor = $visitor
-        ? urldecode($visitor)
-        : ($request->query('visitor') ?? $request->query('tamu') ?? $request->query('guests'));
-   
+        $invitation = $this->withViewerRelations(Invitation::query())->where('slug', $code)->first()
+            ?? $this->withViewerRelations(Invitation::query())->where('invitation_code', $code)->firstOrFail();
 
-        $invitation = Invitation::with([
+        return $this->render($request, $invitation, $visitor);
+    }
+
+    /**
+     * GET /themes/{theme}/sample — the theme's seeded demo invitation, rendered
+     * through the exact same viewer (and theme component) customers get.
+     */
+    public function sample(Request $request, Theme $theme): Response
+    {
+        $invitation = $this->withViewerRelations(Invitation::sample()->where('theme_id', $theme->id))->first();
+
+        abort_if(! $invitation, 404, 'Contoh undangan untuk tema ini belum tersedia.');
+
+        return $this->render($request, $invitation, null);
+    }
+
+    private function withViewerRelations(Builder $query): Builder
+    {
+        return $query->with([
             'theme',
             'settings',
             'events'         => fn($q) => $q->orderBy('display_order')->orderBy('event_date'),
@@ -26,26 +44,14 @@ class InvitationPublicController extends Controller
             'galleryPhotos'  => fn($q) => $q->whereIn('category', ['general', 'love_story'])->orderBy('category')->orderBy('display_order'),
             'stories'        => fn($q) => $q->where('story_type', 'love_story')->where('is_published', true)->orderBy('display_order'),
             'digitalWallets' => fn($q) => $q->wherePivot('is_displayed', true)->orderByPivot('display_order'),
-        ])
-            ->where('slug', $code)
-            ->first();
+        ]);
+    }
 
-        if (! $invitation) {
-            $invitation = Invitation::with([
-                'theme',
-                'settings',
-                'events'         => fn($q) => $q->orderBy('display_order')->orderBy('event_date'),
-                'contents',
-                'galleryPhotos'  => fn($q) => $q->whereIn('category', ['general', 'love_story'])->orderBy('category')->orderBy('display_order'),
-                'stories'        => fn($q) => $q->where('story_type', 'love_story')->where('is_published', true)->orderBy('display_order'),
-                'digitalWallets' => fn($q) => $q->wherePivot('is_displayed', true)->orderByPivot('display_order'),
-            ])
-                ->where('invitation_code', $code)
-                ->firstOrFail();
-        }
-        // $invitation = Invitation::where('invitation_code', $code)
- 
-        // ->first();
+    private function render(Request $request, Invitation $invitation, ?string $visitor): Response
+    {
+        $visitor = $visitor
+            ? urldecode($visitor)
+            : ($request->query('visitor') ?? $request->query('tamu') ?? $request->query('guests'));
 
         abort_if($invitation->isExpired(), 410, 'Undangan ini sudah tidak aktif.');
 
@@ -68,6 +74,7 @@ class InvitationPublicController extends Controller
         $data['ogImage']       = $this->resolveOgImage($data);
         $data['ogDescription'] = $this->resolveOgDescription($data);
         $data['ogUrl']         = $request->fullUrl();
+        $data['isSample']      = (bool) $invitation->is_sample;
 
         return Inertia::render('invitation/show', [
             'invitation' => $data,
@@ -266,9 +273,11 @@ class InvitationPublicController extends Controller
         if ($eventType === 'wedding') {
             $groomNick = $contents->get('groom_nickname', '');
             $brideNick = $contents->get('bride_nickname', '');
-            $groomFull = $contents->get('groom_full_name', 'Mempelai Pria');
-            $brideFull = $contents->get('bride_full_name', 'Mempelai Wanita');
-// dd($base);
+            // The editor saves groom_name/bride_name (EventTypeFieldSeeder);
+            // *_full_name is kept as a fallback for older rows.
+            $groomFull = $contents->get('groom_name') ?: $contents->get('groom_full_name', 'Mempelai Pria');
+            $brideFull = $contents->get('bride_name') ?: $contents->get('bride_full_name', 'Mempelai Wanita');
+
             return array_merge($base, [
                 'pageTitle'        => $invitation->title ?: "The Wedding of {$groomFull} & {$brideFull}",
                 'groomFullName'    => $groomFull,
@@ -279,6 +288,7 @@ class InvitationPublicController extends Controller
                 'groomMother'      => $contents->get('groom_mother', ''),
                 'groomBio'         => $contents->get('groom_bio', ''),
                 'groomPhoto'       => $this->resolveContentUrl($invitation, 'groom_photo'),
+                'groomInstagram'   => $contents->get('groom_instagram', ''),
                 'couplePhoto'      => $this->resolveContentUrl($invitation, 'couple_photo'),
                 'brideFullName'    => $brideFull,
                 'brideNickname'    => $brideNick,
@@ -288,6 +298,7 @@ class InvitationPublicController extends Controller
                 'brideMother'      => $contents->get('bride_mother', ''),
                 'brideBio'         => $contents->get('bride_bio', ''),
                 'bridePhoto'       => $this->resolveContentUrl($invitation, 'bride_photo'),
+                'brideInstagram'   => $contents->get('bride_instagram', ''),
                 'loveStory'        => $loveStory,
                 'dressCodes'       => json_decode($contents->get('dress_code_colors', '[]'), true) ?? [],
                 'rsvpDeadline'     => $contents->get('rsvp_deadline', ''),
@@ -357,6 +368,18 @@ class InvitationPublicController extends Controller
                 'teamBName'           => $contents->get('team_b_name', ''),
                 'revealDateFormatted' => $revealDate ? $this->formatDateId(Carbon::parse($revealDate)) : '',
                 'openingMessage'      => $contents->get('opening_message', ''),
+            ]);
+        }
+
+        if ($eventType === 'syukuran') {
+            $hostName = $contents->get('host_name', '');
+
+            return array_merge($base, [
+                'pageTitle'      => $invitation->title ?: "Undangan Syukuran - {$hostName}",
+                'hostName'       => $hostName,
+                'hostPhoto'      => $this->resolveContentUrl($invitation, 'host_photo'),
+                'occasion'       => $contents->get('occasion', ''),
+                'openingMessage' => $contents->get('opening_message', ''),
             ]);
         }
 

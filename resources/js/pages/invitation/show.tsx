@@ -33,6 +33,8 @@ import GenderRevealTheme03 from './themes/gender_reveal/gender_reveal_theme_03/G
 
 import KhitananTheme01 from './themes/khitanan/khitanan_theme_01/KhitananTheme01';
 import KhitananTheme02 from './themes/khitanan/khitanan_theme_02/KhitananTheme02';
+import SyukuranTheme01 from './themes/syukuran/syukuran_theme_01/SyukuranTheme01';
+import SyukuranTheme02 from './themes/syukuran/syukuran_theme_02/SyukuranTheme02';
 import WeddingBase from './themes/wedding/blossom-garden/WeddingBase';
 import WeddingTheme01 from './themes/wedding/wedding_theme_01/WeddingTheme01';
 import WeddingTheme02 from './themes/wedding/wedding_theme_02/WeddingTheme02';
@@ -201,6 +203,15 @@ function resolveThemeComponent(themeSlug: string, invitation: InvitationData, vi
         case 'khitanan-theme-02':
             return <KhitananTheme02 invitation={invitation as KhitananInvitation} visitor={visitor} greeting={invitation.greeting} />;
 
+        // Syukuran themes
+        case 'syukuran_theme_01':
+        case 'syukuran-theme-01':
+            return <SyukuranTheme01 invitation={invitation as SyukuranInvitation} visitor={visitor} greeting={invitation.greeting} />;
+
+        case 'syukuran_theme_02':
+        case 'syukuran-theme-02':
+            return <SyukuranTheme02 invitation={invitation as SyukuranInvitation} visitor={visitor} greeting={invitation.greeting} />;
+
         // Wedding themes
         case 'wedding':
         case 'blossom-garden':
@@ -329,6 +340,27 @@ export default function InvitationShow({ invitation, themeSlug, visitor }: Props
         <>
             <Head title={invitation.pageTitle || invitation.title || 'Undangan Digital'} />
             {resolveThemeComponent(themeSlug, invitation, visitor)}
+            {invitation.isSample && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        left: 12,
+                        bottom: 12,
+                        zIndex: 9999,
+                        pointerEvents: 'none',
+                        padding: '4px 10px',
+                        borderRadius: 999,
+                        background: 'rgba(17, 24, 39, 0.72)',
+                        color: '#fff',
+                        fontFamily: 'sans-serif',
+                        fontSize: 11,
+                        fontWeight: 600,
+                        letterSpacing: 0.3,
+                    }}
+                >
+                    Contoh Undangan
+                </div>
+            )}
         </>
     );
 }

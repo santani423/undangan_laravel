@@ -15,6 +15,7 @@ interface ThemeItem {
     is_exclusive: boolean;
     usage_count: number;
     tags: string[];
+    sample_url: string | null;
 }
 
 interface PageProps {
@@ -46,7 +47,7 @@ function TierBadge({ theme }: { theme: ThemeItem }) {
 }
 
 function ThemeCard({ theme, onCreate }: { theme: ThemeItem; onCreate: (themeId: number) => void }) {
-    const hasSample = theme.event_type === "wedding";
+    const hasSample = Boolean(theme.sample_url);
 
     return (
         <div className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
@@ -74,12 +75,12 @@ function ThemeCard({ theme, onCreate }: { theme: ThemeItem; onCreate: (themeId: 
                 <div className="mt-3 flex gap-2">
                     {hasSample ? (
                         <a
-                            href={`/preview/themes/wedding/${theme.slug}`}
+                            href={theme.sample_url ?? undefined}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-center text-xs font-semibold text-gray-700 hover:bg-gray-50"
                         >
-                            Sampel
+                            Lihat Contoh
                         </a>
                     ) : (
                         <span
@@ -102,7 +103,7 @@ function ThemeCard({ theme, onCreate }: { theme: ThemeItem; onCreate: (themeId: 
 }
 
 function ThemeRow({ theme, onCreate }: { theme: ThemeItem; onCreate: (themeId: number) => void }) {
-    const hasSample = theme.event_type === "wedding";
+    const hasSample = Boolean(theme.sample_url);
 
     return (
         <div className="flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md">
@@ -129,12 +130,12 @@ function ThemeRow({ theme, onCreate }: { theme: ThemeItem; onCreate: (themeId: n
                 <div className="mt-2 flex gap-1.5">
                     {hasSample && (
                         <a
-                            href={`/preview/themes/wedding/${theme.slug}`}
+                            href={theme.sample_url ?? undefined}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50"
                         >
-                            Sampel
+                            Lihat Contoh
                         </a>
                     )}
                     <button

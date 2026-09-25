@@ -42,6 +42,7 @@ interface Theme {
     price: number;
     tags: string[] | null;
     usage_count: number;
+    sample_url: string | null;
 }
 
 interface PackageFeature {
@@ -623,6 +624,17 @@ export default function SelectTheme({ eventType, themes, packages, preselectedTh
                                     )}
                                 </div>
                                             </div>
+                            {previewTheme.sample_url && (
+                                <a
+                                    href={previewTheme.sample_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="mt-4 flex items-center justify-center gap-1.5 rounded-xl border border-primary/40 py-2.5 text-sm font-medium text-primary hover:bg-primary/5 transition-colors"
+                                >
+                                    <Eye className="size-4" />
+                                    Lihat Contoh Undangan
+                                </a>
+                            )}
                             <div className="mt-4 flex gap-3">
                                 <button
                                     type="button"

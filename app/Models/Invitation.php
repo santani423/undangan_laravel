@@ -24,6 +24,7 @@ class Invitation extends Model
         'custom_domain',
         'qr_code_url',
         'status',
+        'is_sample',
         'is_public',
         'requires_password',
         'password_hash',
@@ -43,6 +44,7 @@ class Invitation extends Model
     protected function casts(): array
     {
         return [
+            'is_sample'           => 'boolean',
             'is_public'           => 'boolean',
             'requires_password'   => 'boolean',
             'allow_guest_comments'=> 'boolean',
@@ -191,6 +193,18 @@ class Invitation extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
+    }
+
+    /** Per-theme demo invitations seeded by SampleInvitationSeeder. */
+    public function scopeSample($query)
+    {
+        return $query->where('is_sample', true);
+    }
+
+    /** Everything except the demo invitations — i.e. real customer data. */
+    public function scopeNotSample($query)
+    {
+        return $query->where('is_sample', false);
     }
 
     public function isExpired(): bool

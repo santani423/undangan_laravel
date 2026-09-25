@@ -113,6 +113,8 @@ interface InvitationBase {
     greeting?: Greeting;
     guestQrData?: string;
     guestSlug?: string;
+    /** True for the per-theme demo invitations opened from a theme preview. */
+    isSample?: boolean;
 }
 
 export interface WeddingInvitation extends InvitationBase {

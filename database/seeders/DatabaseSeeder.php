@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             CustomerSeeder::class,
             InvitationSeeder::class,
+            SampleInvitationSeeder::class,
             TransactionSeeder::class,
             PaymentGatewayConfigSeeder::class,
             AppSettingSeeder::class,
@@ -51,6 +52,7 @@ class DatabaseSeeder extends Seeder
         $this->command?->info('- roles & permissions');
         $this->command?->info('- users (super_admin, admin, demo customers)');
         $this->command?->info('- invitations (30 sample records)');
+        $this->command?->info('- theme sample invitations (1 per renderable theme, is_sample = true)');
         $this->command?->info('- transactions (30 sample records)');
         $this->command?->info('- payments (35 sample records)');
         $this->command?->info('- payment_gateway_configs');

@@ -42,7 +42,7 @@ export default function LandingShowcase({ themes, onCreateFromTheme }: LandingSh
                 {themes.length > 0 ? (
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {themes.map((theme) => {
-                            const hasSample = theme.event_type === 'wedding';
+                            const hasSample = Boolean(theme.sample_url);
 
                             return (
                                 <div
@@ -72,7 +72,7 @@ export default function LandingShowcase({ themes, onCreateFromTheme }: LandingSh
                                         <div className="mt-3 flex gap-2">
                                             {hasSample ? (
                                                 <a
-                                                    href={route('preview.wedding.show', theme.slug)}
+                                                    href={theme.sample_url ?? undefined}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="flex-1 rounded-full border border-gray-200 px-3 py-2 text-center text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"

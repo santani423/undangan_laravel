@@ -161,11 +161,12 @@ class LandingPageService
      * first). Theme.event_type and Package.invitation_type are different
      * taxonomies, so we don't try to match a theme to a tier.
      *
-     * @return array<int, array{id: int, name: string, category: string, event_type: string, thumbnail: ?string, color_primary: ?string, color_secondary: ?string, is_premium: bool, is_exclusive: bool}>
+     * @return array<int, array{id: int, name: string, category: string, event_type: string, thumbnail: ?string, color_primary: ?string, color_secondary: ?string, is_premium: bool, is_exclusive: bool, sample_url: ?string}>
      */
     public function themeSamples(): array
     {
         return Theme::active()
+            ->withExists('sampleInvitation')
             ->ordered()
             ->limit(6)
             ->get()
@@ -180,6 +181,7 @@ class LandingPageService
                 'color_secondary' => $theme->color_secondary,
                 'is_premium'      => $theme->is_premium,
                 'is_exclusive'    => $theme->is_exclusive,
+                'sample_url'      => $theme->sampleUrl($theme->sample_invitation_exists),
             ])
             ->all();
     }
@@ -208,7 +210,7 @@ class LandingPageService
     public function stats(): array
     {
         return [
-            'invitations_created' => Invitation::where('status', '!=', 'draft')->count(),
+            'invitations_created' => Invitation::notSample()->where('status', '!=', 'draft')->count(),
             'themes_available'    => Theme::active()->count(),
             'event_types'         => Package::where('is_active', true)->pluck('invitation_type')->unique()->count(),
         ];

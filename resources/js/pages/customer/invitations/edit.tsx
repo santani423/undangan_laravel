@@ -162,6 +162,7 @@ interface ThemeItem {
     is_exclusive: boolean;
     price: number;
     usage_count: number;
+    sample_url: string | null;
 }
 
 // ─── Guest & Comment types ────────────────────────────────────────────────────
@@ -1247,6 +1248,18 @@ function ThemePreviewModal({ theme, onClose }: { theme: ThemeItem; onClose: () =
                                 style={{ background: `linear-gradient(135deg, ${theme.color_primary ?? '#e5e7eb'}, ${theme.color_secondary ?? theme.color_primary ?? '#d1d5db'})` }} />
                             <p className="text-sm text-muted-foreground">Preview tidak tersedia</p>
                         </div>
+                    </div>
+                )}
+                {theme.sample_url && (
+                    <div className="px-5 py-3 border-t border-border">
+                        <a
+                            href={theme.sample_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-1.5 rounded-xl border border-primary/40 py-2.5 text-sm font-medium text-primary hover:bg-primary/5 transition-colors"
+                        >
+                            <ExternalLink className="size-4" /> Lihat Contoh Undangan
+                        </a>
                     </div>
                 )}
             </div>

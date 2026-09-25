@@ -31,6 +31,8 @@ export interface LandingThemeSample {
     color_secondary: string | null;
     is_premium: boolean;
     is_exclusive: boolean;
+    /** Preview URL of the theme's seeded sample invitation, null when none exists. */
+    sample_url: string | null;
 }
 
 export interface LandingTestimonial {

@@ -67,6 +67,8 @@ interface TemplateData {
     usage_count: number;
     tags: string[];
     created_at: string;
+    /** Preview URL of the seeded sample invitation; null/absent when none exists. */
+    sample_url?: string | null;
 }
 
 // ─── Page props ───────────────────────────────────────────────────────────────
@@ -636,12 +638,24 @@ function TemplateCard({
                 </span>
                 {/* Hover overlay */}
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <button
-                        title="Preview"
-                        className="flex size-8 items-center justify-center rounded-lg bg-white/90 text-foreground hover:bg-white transition-colors shadow"
-                    >
-                        <Eye className="size-4" />
-                    </button>
+                    {template.sample_url ? (
+                        <a
+                            href={template.sample_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Lihat Contoh Undangan"
+                            className="flex size-8 items-center justify-center rounded-lg bg-white/90 text-foreground hover:bg-white transition-colors shadow"
+                        >
+                            <Eye className="size-4" />
+                        </a>
+                    ) : (
+                        <span
+                            title="Belum ada contoh undangan untuk tema ini"
+                            className="flex size-8 cursor-not-allowed items-center justify-center rounded-lg bg-white/60 text-muted-foreground shadow"
+                        >
+                            <Eye className="size-4" />
+                        </span>
+                    )}
                     <button
                         onClick={onEdit}
                         title="Edit"
@@ -792,9 +806,16 @@ function TemplateRow({
             {/* Aksi */}
             <td className="px-4 py-3">
                 <div className="flex items-center gap-1">
-                    <button className="rounded-lg border border-border/60 p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" title="Preview">
-                        <Eye className="size-3.5" />
-                    </button>
+                    {template.sample_url ? (
+                        <a href={template.sample_url} target="_blank" rel="noopener noreferrer"
+                            className="rounded-lg border border-border/60 p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" title="Lihat Contoh Undangan">
+                            <Eye className="size-3.5" />
+                        </a>
+                    ) : (
+                        <span className="cursor-not-allowed rounded-lg border border-border/40 p-1.5 text-muted-foreground/40" title="Belum ada contoh undangan untuk tema ini">
+                            <Eye className="size-3.5" />
+                        </span>
+                    )}
                     <button onClick={onEdit} className="rounded-lg border border-border/60 px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors inline-flex items-center gap-1">
                         <Edit className="size-3" />Edit
                     </button>

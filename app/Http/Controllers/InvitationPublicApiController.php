@@ -41,6 +41,12 @@ class InvitationPublicApiController extends Controller
             'guest_slug'       => 'nullable|string|max:255',
         ]);
 
+        // Theme previews are shared by every visitor: let the form work, but
+        // don't persist demo submissions into the sample invitation.
+        if ($invitation->is_sample) {
+            return response()->json(['success' => true, 'guest_id' => null, 'sample' => true], 201);
+        }
+
         // If guest_slug provided, update the existing guest record
         $guest = null;
         if (! empty($data['guest_slug'])) {
@@ -125,6 +131,14 @@ class InvitationPublicApiController extends Controller
             'name'    => 'required|string|max:255',
             'message' => 'required|string|max:1000',
         ]);
+
+        if ($invitation->is_sample) {
+            return response()->json([
+                'success' => true,
+                'sample'  => true,
+                'message' => 'Ini contoh undangan — ucapan tidak disimpan.',
+            ], 201);
+        }
 
         Comment::create([
             'invitation_id' => $invitation->id,

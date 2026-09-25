@@ -129,8 +129,11 @@ class InvitationController extends Controller
 
         $themes = Theme::active()
             ->where('event_type', $eventType->name)
+            ->select(['id', 'name', 'slug', 'description', 'thumbnail_url', 'preview_image_url', 'color_primary', 'color_secondary', 'is_premium', 'is_exclusive', 'price', 'tags', 'usage_count'])
+            ->withExists('sampleInvitation')
             ->ordered()
-            ->get(['id', 'name', 'slug', 'description', 'thumbnail_url', 'preview_image_url', 'color_primary', 'color_secondary', 'is_premium', 'is_exclusive', 'price', 'tags', 'usage_count']);
+            ->get()
+            ->each(fn (Theme $t) => $t->setAttribute('sample_url', $t->sampleUrl($t->sample_invitation_exists)));
 
         $packages = Package::active()
             ->where('invitation_type', $eventType->invitationType())
@@ -542,9 +545,11 @@ class InvitationController extends Controller
         // ── Themes available for this event type ──────────────────────────────
         $availableThemes = Theme::active()
             ->where('event_type', $invitation->eventType->name)
-            ->ordered()
-            ->get(['id', 'name', 'slug', 'category', 'description', 'thumbnail_url', 'preview_image_url',
+            ->select(['id', 'name', 'slug', 'category', 'description', 'thumbnail_url', 'preview_image_url',
                    'color_primary', 'color_secondary', 'is_premium', 'is_exclusive', 'price', 'usage_count'])
+            ->withExists('sampleInvitation')
+            ->ordered()
+            ->get()
             ->map(fn ($t) => [
                 'id'                => $t->id,
                 'name'              => $t->name,
@@ -559,6 +564,7 @@ class InvitationController extends Controller
                 'is_exclusive'      => $t->is_exclusive,
                 'price'             => $t->price,
                 'usage_count'       => $t->usage_count,
+                'sample_url'        => $t->sampleUrl($t->sample_invitation_exists),
             ]);
 
         // ── Guests data ───────────────────────────────────────────────────────────

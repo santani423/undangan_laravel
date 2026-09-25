@@ -15,6 +15,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('themes', function () {
     $themes = Theme::where('is_active', true)
+        ->withExists('sampleInvitation')
         ->ordered()
         ->get()
         ->map(fn (Theme $t) => [
@@ -30,12 +31,17 @@ Route::get('themes', function () {
             'is_exclusive'    => $t->is_exclusive,
             'usage_count'     => $t->usage_count,
             'tags'            => $t->tags ?? [],
+            'sample_url'      => $t->sampleUrl($t->sample_invitation_exists),
         ]);
 
     return Inertia::render('themes/index', [
         'themes' => $themes,
     ]);
 })->name('themes.index');
+
+// Theme preview: opens the seeded sample invitation of that theme in the real viewer.
+Route::get('themes/{theme:slug}/sample', [InvitationPublicController::class, 'sample'])
+    ->name('themes.sample');
 
 Route::prefix('preview/themes/wedding')->group(function () {
     Route::get('/{theme}', function (string $theme) {
