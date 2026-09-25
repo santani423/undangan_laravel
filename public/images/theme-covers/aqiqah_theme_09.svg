@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="600" height="800">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fafcfd"/>
+      <stop offset="1" stop-color="#dfecfa"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.44" r="0.5">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.75"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="300" height="400" fill="url(#bg)"/>
+  <circle cx="150" cy="178" r="150" fill="url(#glow)"/>
+  <g><circle cx="136.1" cy="55.4" r="2.3" fill="#7fb2ee" fill-opacity="0.5"/><circle cx="241.1" cy="233.8" r="1.9" fill="#b9d5f6" fill-opacity="0.5"/><circle cx="49.1" cy="267.0" r="1.7" fill="#d9e8fa" fill-opacity="0.5"/><circle cx="132.4" cy="67.2" r="1.9" fill="#7fb2ee" fill-opacity="0.5"/><circle cx="216.4" cy="69.3" r="2.2" fill="#b9d5f6" fill-opacity="0.5"/><circle cx="243.1" cy="210.7" r="2.4" fill="#d9e8fa" fill-opacity="0.5"/><circle cx="33.0" cy="222.4" r="1.6" fill="#7fb2ee" fill-opacity="0.5"/><circle cx="31.9" cy="170.1" r="2.1" fill="#b9d5f6" fill-opacity="0.5"/><circle cx="259.2" cy="313.3" r="1.4" fill="#d9e8fa" fill-opacity="0.5"/><circle cx="142.3" cy="49.9" r="2.9" fill="#7fb2ee" fill-opacity="0.5"/><circle cx="69.6" cy="47.4" r="2.4" fill="#b9d5f6" fill-opacity="0.5"/><circle cx="242.2" cy="337.8" r="1.6" fill="#d9e8fa" fill-opacity="0.5"/><circle cx="187.3" cy="57.4" r="2.1" fill="#7fb2ee" fill-opacity="0.5"/><circle cx="53.0" cy="233.7" r="1.9" fill="#b9d5f6" fill-opacity="0.5"/><circle cx="265.0" cy="127.1" r="2.4" fill="#d9e8fa" fill-opacity="0.5"/><circle cx="80.1" cy="62.6" r="2.9" fill="#7fb2ee" fill-opacity="0.5"/><circle cx="35.1" cy="42.9" r="1.7" fill="#b9d5f6" fill-opacity="0.5"/><circle cx="61.6" cy="269.1" r="2.9" fill="#d9e8fa" fill-opacity="0.5"/><circle cx="268.5" cy="307.6" r="2.9" fill="#7fb2ee" fill-opacity="0.5"/><circle cx="65.7" cy="366.1" r="1.5" fill="#b9d5f6" fill-opacity="0.5"/><circle cx="48.0" cy="197.0" r="1.7" fill="#d9e8fa" fill-opacity="0.5"/><circle cx="60.4" cy="222.6" r="2.1" fill="#7fb2ee" fill-opacity="0.5"/></g>
+  <rect x="14" y="14" width="272" height="372" rx="16" fill="none" stroke="#7fb2ee" stroke-opacity="0.55" stroke-width="1.4"/>
+  <rect x="21" y="21" width="258" height="358" rx="12" fill="none" stroke="#7fb2ee" stroke-opacity="0.3" stroke-width="0.7"/>
+  <g transform="translate(30 30) rotate(0)" fill="none" stroke="#7fb2ee" stroke-width="1" stroke-opacity="0.7"><path d="M0 22 Q0 0 22 0"/><path d="M6 22 Q6 6 22 6" stroke-opacity="0.4"/><circle cx="0" cy="0" r="2" fill="#7fb2ee" stroke="none"/></g><g transform="translate(270 30) rotate(90)" fill="none" stroke="#7fb2ee" stroke-width="1" stroke-opacity="0.7"><path d="M0 22 Q0 0 22 0"/><path d="M6 22 Q6 6 22 6" stroke-opacity="0.4"/><circle cx="0" cy="0" r="2" fill="#7fb2ee" stroke="none"/></g><g transform="translate(270 370) rotate(180)" fill="none" stroke="#7fb2ee" stroke-width="1" stroke-opacity="0.7"><path d="M0 22 Q0 0 22 0"/><path d="M6 22 Q6 6 22 6" stroke-opacity="0.4"/><circle cx="0" cy="0" r="2" fill="#7fb2ee" stroke="none"/></g><g transform="translate(30 370) rotate(270)" fill="none" stroke="#7fb2ee" stroke-width="1" stroke-opacity="0.7"><path d="M0 22 Q0 0 22 0"/><path d="M6 22 Q6 6 22 6" stroke-opacity="0.4"/><circle cx="0" cy="0" r="2" fill="#7fb2ee" stroke="none"/></g>
+  <text x="150" y="58" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" letter-spacing="3.2" fill="#597da7" fill-opacity="0.85">TASYAKURAN AQIQAH</text>
+  <g transform="translate(150 180)"><circle cx="30" cy="-30" r="26" fill="#b9d5f6" fill-opacity="0.7"/><path d="M-30 10 A14 14 0 0 1 -22 -12 A18 18 0 0 1 10 -18 A15 15 0 0 1 30 -4 A12 12 0 0 1 30 10 Z" fill="#ffffff" stroke="#7fb2ee" stroke-width="1.5" stroke-opacity="0.5" transform="translate(-20 -10) scale(1.8)"/><path d="M-30 10 A14 14 0 0 1 -22 -12 A18 18 0 0 1 10 -18 A15 15 0 0 1 30 -4 A12 12 0 0 1 30 10 Z" fill="#ffffff" stroke="#7fb2ee" stroke-width="1.5" stroke-opacity="0.5" transform="translate(40 30) scale(1.3)"/><path d="M-30 10 A14 14 0 0 1 -22 -12 A18 18 0 0 1 10 -18 A15 15 0 0 1 30 -4 A12 12 0 0 1 30 10 Z" fill="#ffffff" stroke="#7fb2ee" stroke-width="1.5" stroke-opacity="0.5" transform="translate(-50 44) scale(0.9)"/><path d="M0 8 C-14 -2 -12 -14 -5 -14 C-2 -14 0 -12 0 -9 C0 -12 2 -14 5 -14 C12 -14 14 -2 0 8 Z" fill="#7fb2ee" fill-opacity="0.8" transform="translate(-10 50) scale(1.1)"/></g>
+  <text x="150" y="304" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="28" fill="#597da7">Yusuf</text>
+  <g fill="#7fb2ee" stroke="#7fb2ee">
+    <line x1="104" y1="322" x2="140" y2="322" stroke-width="0.8" stroke-opacity="0.6"/>
+    <line x1="160" y1="322" x2="196" y2="322" stroke-width="0.8" stroke-opacity="0.6"/>
+    <path d="M150 317 L154 322 L150 327 L146 322 Z" stroke="none"/>
+  </g>
+  <text x="150" y="346" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" letter-spacing="2.4" fill="#597da7" fill-opacity="0.7">20 . 06 . 2026</text>
+</svg>

@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             PackageSeeder::class,
             ThemeSeeder::class,
             AdditionalThemeSeeder::class,
+            ThemeCoverSeeder::class,
             EventTypeFieldSeeder::class,
             RolePermissionSeeder::class,
             AdminUserSeeder::class,

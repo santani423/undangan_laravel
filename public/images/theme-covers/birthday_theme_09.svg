@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="600" height="800">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fad985"/>
+      <stop offset="1" stop-color="#d7ba8d"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.44" r="0.5">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.75"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="300" height="400" fill="url(#bg)"/>
+  <circle cx="150" cy="178" r="150" fill="url(#glow)"/>
+  <g><circle cx="59.9" cy="234.5" r="1.8" fill="#5d4ca8" fill-opacity="0.7"/><rect x="246.5" y="74.6" width="3.4" height="9.1" rx="1" fill="#a69dcf" fill-opacity="0.75" transform="rotate(171 246.5 74.6)"/><circle cx="257.2" cy="248.4" r="2.6" fill="#cec9e5" fill-opacity="0.7"/><rect x="240.3" y="248.9" width="4.1" height="11.0" rx="1" fill="#5d4ca8" fill-opacity="0.75" transform="rotate(190 240.3 248.9)"/><circle cx="268.7" cy="81.6" r="2.7" fill="#a69dcf" fill-opacity="0.7"/><rect x="30.7" y="300.9" width="2.9" height="7.7" rx="1" fill="#cec9e5" fill-opacity="0.75" transform="rotate(274 30.7 300.9)"/><circle cx="61.5" cy="98.7" r="3.4" fill="#5d4ca8" fill-opacity="0.7"/><rect x="55.1" y="257.4" width="4.0" height="10.7" rx="1" fill="#a69dcf" fill-opacity="0.75" transform="rotate(255 55.1 257.4)"/><circle cx="103.3" cy="361.5" r="2.6" fill="#cec9e5" fill-opacity="0.7"/><rect x="207.6" y="60.0" width="3.2" height="8.5" rx="1" fill="#5d4ca8" fill-opacity="0.75" transform="rotate(132 207.6 60.0)"/><circle cx="93.1" cy="68.7" r="3.1" fill="#a69dcf" fill-opacity="0.7"/><rect x="59.0" y="294.0" width="3.2" height="8.4" rx="1" fill="#cec9e5" fill-opacity="0.75" transform="rotate(358 59.0 294.0)"/><circle cx="197.9" cy="368.1" r="3.0" fill="#5d4ca8" fill-opacity="0.7"/><rect x="250.0" y="279.3" width="3.9" height="10.3" rx="1" fill="#a69dcf" fill-opacity="0.75" transform="rotate(184 250.0 279.3)"/><circle cx="224.2" cy="365.8" r="2.1" fill="#cec9e5" fill-opacity="0.7"/><rect x="68.6" y="67.8" width="2.7" height="7.3" rx="1" fill="#5d4ca8" fill-opacity="0.75" transform="rotate(298 68.6 67.8)"/><circle cx="31.6" cy="213.1" r="2.8" fill="#a69dcf" fill-opacity="0.7"/><rect x="130.2" y="38.3" width="2.2" height="5.8" rx="1" fill="#cec9e5" fill-opacity="0.75" transform="rotate(67 130.2 38.3)"/><circle cx="239.8" cy="101.2" r="2.0" fill="#5d4ca8" fill-opacity="0.7"/><rect x="55.4" y="211.5" width="4.1" height="10.8" rx="1" fill="#a69dcf" fill-opacity="0.75" transform="rotate(37 55.4 211.5)"/><circle cx="265.5" cy="255.7" r="1.9" fill="#cec9e5" fill-opacity="0.7"/><rect x="103.4" y="61.8" width="2.5" height="6.7" rx="1" fill="#5d4ca8" fill-opacity="0.75" transform="rotate(282 103.4 61.8)"/></g>
+  <rect x="14" y="14" width="272" height="372" rx="16" fill="none" stroke="#5d4ca8" stroke-opacity="0.55" stroke-width="1.4"/>
+  <rect x="21" y="21" width="258" height="358" rx="12" fill="none" stroke="#5d4ca8" stroke-opacity="0.3" stroke-width="0.7"/>
+  <g transform="translate(30 30) rotate(0)" fill="none" stroke="#5d4ca8" stroke-width="1" stroke-opacity="0.7"><path d="M0 22 Q0 0 22 0"/><path d="M6 22 Q6 6 22 6" stroke-opacity="0.4"/><circle cx="0" cy="0" r="2" fill="#5d4ca8" stroke="none"/></g><g transform="translate(270 30) rotate(90)" fill="none" stroke="#5d4ca8" stroke-width="1" stroke-opacity="0.7"><path d="M0 22 Q0 0 22 0"/><path d="M6 22 Q6 6 22 6" stroke-opacity="0.4"/><circle cx="0" cy="0" r="2" fill="#5d4ca8" stroke="none"/></g><g transform="translate(270 370) rotate(180)" fill="none" stroke="#5d4ca8" stroke-width="1" stroke-opacity="0.7"><path d="M0 22 Q0 0 22 0"/><path d="M6 22 Q6 6 22 6" stroke-opacity="0.4"/><circle cx="0" cy="0" r="2" fill="#5d4ca8" stroke="none"/></g><g transform="translate(30 370) rotate(270)" fill="none" stroke="#5d4ca8" stroke-width="1" stroke-opacity="0.7"><path d="M0 22 Q0 0 22 0"/><path d="M6 22 Q6 6 22 6" stroke-opacity="0.4"/><circle cx="0" cy="0" r="2" fill="#5d4ca8" stroke="none"/></g>
+  <text x="150" y="58" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" letter-spacing="3.2" fill="#413576" fill-opacity="0.85">HAPPY BIRTHDAY</text>
+  <g transform="translate(150 180)"><path d="M-20 -60 L0 -40 L20 -62" fill="none" stroke="#2a224c" stroke-width="2.5" stroke-linecap="round"/><rect x="-64" y="-40" width="128" height="94" rx="16" fill="#5d4ca8"/><rect x="-54" y="-30" width="84" height="74" rx="12" fill="#cec9e5"/><path d="M-12 -15 L-6.71 -0.28 L8.92 0.2 L-3.44 9.78 L0.93 24.8 L-12 16 L-24.93 24.8 L-20.56 9.78 L-32.92 0.2 L-17.29 -0.28 Z" fill="#a69dcf"/><circle cx="46" cy="-14" r="6" fill="#a69dcf"/><circle cx="46" cy="6" r="6" fill="#a69dcf"/><rect x="-44" y="54" width="10" height="10" fill="#2a224c"/><rect x="34" y="54" width="10" height="10" fill="#2a224c"/></g>
+  <text x="150" y="304" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="28" fill="#413576">Arka</text>
+  <g fill="#5d4ca8" stroke="#5d4ca8">
+    <line x1="104" y1="322" x2="140" y2="322" stroke-width="0.8" stroke-opacity="0.6"/>
+    <line x1="160" y1="322" x2="196" y2="322" stroke-width="0.8" stroke-opacity="0.6"/>
+    <path d="M150 317 L154 322 L150 327 L146 322 Z" stroke="none"/>
+  </g>
+  <text x="150" y="346" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" letter-spacing="2.4" fill="#413576" fill-opacity="0.7">08 . 08 . 2026</text>
+</svg>

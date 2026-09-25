@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="600" height="800">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fcde67"/>
+      <stop offset="1" stop-color="#edb357"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.44" r="0.5">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.75"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="300" height="400" fill="url(#bg)"/>
+  <circle cx="150" cy="178" r="150" fill="url(#glow)"/>
+  <g><circle cx="264.0" cy="247.9" r="2.4" fill="#b91c1c" fill-opacity="0.7"/><rect x="45.5" y="98.1" width="3.9" height="10.3" rx="1" fill="#d98282" fill-opacity="0.75" transform="rotate(290 45.5 98.1)"/><circle cx="166.4" cy="63.3" r="2.5" fill="#eabbbb" fill-opacity="0.7"/><rect x="264.7" y="330.5" width="2.9" height="7.8" rx="1" fill="#b91c1c" fill-opacity="0.75" transform="rotate(48 264.7 330.5)"/><circle cx="254.7" cy="240.1" r="3.1" fill="#d98282" fill-opacity="0.7"/><rect x="61.8" y="105.8" width="2.3" height="6.2" rx="1" fill="#eabbbb" fill-opacity="0.75" transform="rotate(259 61.8 105.8)"/><circle cx="221.8" cy="55.5" r="3.5" fill="#b91c1c" fill-opacity="0.7"/><rect x="232.5" y="66.5" width="2.3" height="6.2" rx="1" fill="#d98282" fill-opacity="0.75" transform="rotate(40 232.5 66.5)"/><circle cx="244.1" cy="187.6" r="2.8" fill="#eabbbb" fill-opacity="0.7"/><rect x="237.5" y="63.9" width="3.0" height="8.0" rx="1" fill="#b91c1c" fill-opacity="0.75" transform="rotate(230 237.5 63.9)"/><circle cx="44.6" cy="362.4" r="1.8" fill="#d98282" fill-opacity="0.7"/><rect x="254.4" y="100.2" width="3.9" height="10.3" rx="1" fill="#eabbbb" fill-opacity="0.75" transform="rotate(266 254.4 100.2)"/><circle cx="44.0" cy="182.6" r="1.9" fill="#b91c1c" fill-opacity="0.7"/><rect x="252.2" y="318.7" width="3.8" height="10.2" rx="1" fill="#d98282" fill-opacity="0.75" transform="rotate(187 252.2 318.7)"/><circle cx="258.8" cy="225.4" r="2.5" fill="#eabbbb" fill-opacity="0.7"/><rect x="261.4" y="89.3" width="3.9" height="10.4" rx="1" fill="#b91c1c" fill-opacity="0.75" transform="rotate(145 261.4 89.3)"/><circle cx="95.8" cy="35.7" r="3.1" fill="#d98282" fill-opacity="0.7"/><rect x="132.7" y="66.5" width="3.5" height="9.4" rx="1" fill="#eabbbb" fill-opacity="0.75" transform="rotate(255 132.7 66.5)"/><circle cx="48.7" cy="362.9" r="2.9" fill="#b91c1c" fill-opacity="0.7"/><rect x="59.1" y="98.8" width="3.0" height="8.0" rx="1" fill="#d98282" fill-opacity="0.75" transform="rotate(114 59.1 98.8)"/><circle cx="32.5" cy="80.0" r="2.8" fill="#eabbbb" fill-opacity="0.7"/><rect x="239.0" y="207.3" width="2.5" height="6.6" rx="1" fill="#b91c1c" fill-opacity="0.75" transform="rotate(241 239.0 207.3)"/></g>
+  <rect x="14" y="14" width="272" height="372" rx="16" fill="none" stroke="#b91c1c" stroke-opacity="0.55" stroke-width="1.4"/>
+  <rect x="21" y="21" width="258" height="358" rx="12" fill="none" stroke="#b91c1c" stroke-opacity="0.3" stroke-width="0.7"/>
+  <g transform="translate(30 30) rotate(0)" fill="none" stroke="#b91c1c" stroke-width="1" stroke-opacity="0.7"><path d="M0 22 Q0 0 22 0"/><path d="M6 22 Q6 6 22 6" stroke-opacity="0.4"/><circle cx="0" cy="0" r="2" fill="#b91c1c" stroke="none"/></g><g transform="translate(270 30) rotate(90)" fill="none" stroke="#b91c1c" stroke-width="1" stroke-opacity="0.7"><path d="M0 22 Q0 0 22 0"/><path d="M6 22 Q6 6 22 6" stroke-opacity="0.4"/><circle cx="0" cy="0" r="2" fill="#b91c1c" stroke="none"/></g><g transform="translate(270 370) rotate(180)" fill="none" stroke="#b91c1c" stroke-width="1" stroke-opacity="0.7"><path d="M0 22 Q0 0 22 0"/><path d="M6 22 Q6 6 22 6" stroke-opacity="0.4"/><circle cx="0" cy="0" r="2" fill="#b91c1c" stroke="none"/></g><g transform="translate(30 370) rotate(270)" fill="none" stroke="#b91c1c" stroke-width="1" stroke-opacity="0.7"><path d="M0 22 Q0 0 22 0"/><path d="M6 22 Q6 6 22 6" stroke-opacity="0.4"/><circle cx="0" cy="0" r="2" fill="#b91c1c" stroke="none"/></g>
+  <text x="150" y="58" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" letter-spacing="3.2" fill="#821414" fill-opacity="0.85">WALIMATUL KHITAN</text>
+  <g transform="translate(150 180)"><path d="M-36 -40 Q-66 -40 -58 -12 Q-52 6 -26 8 M36 -40 Q66 -40 58 -12 Q52 6 26 8" fill="none" stroke="#b91c1c" stroke-width="6"/><path d="M-40 -52 L40 -52 L36 -10 Q30 20 0 24 Q-30 20 -36 -10 Z" fill="#b91c1c"/><rect x="-7" y="22" width="14" height="18" fill="#b91c1c"/><rect x="-30" y="40" width="60" height="10" rx="2" fill="#d98282"/><rect x="-38" y="50" width="76" height="12" rx="2" fill="#530d0d"/><path d="M0 -36 L4.11 -25.66 L15.22 -24.94 L6.66 -17.84 L9.4 -7.06 L0 -13 L-9.4 -7.06 L-6.66 -17.84 L-15.22 -24.94 L-4.11 -25.66 Z" fill="#eabbbb"/></g>
+  <text x="150" y="304" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="28" fill="#821414">Alfarizi</text>
+  <g fill="#b91c1c" stroke="#b91c1c">
+    <line x1="104" y1="322" x2="140" y2="322" stroke-width="0.8" stroke-opacity="0.6"/>
+    <line x1="160" y1="322" x2="196" y2="322" stroke-width="0.8" stroke-opacity="0.6"/>
+    <path d="M150 317 L154 322 L150 327 L146 322 Z" stroke="none"/>
+  </g>
+  <text x="150" y="346" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" letter-spacing="2.4" fill="#821414" fill-opacity="0.7">05 . 04 . 2026</text>
+</svg>

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="600" height="800">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fefaf7"/>
+      <stop offset="1" stop-color="#f5eee6"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.44" r="0.5">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.75"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="300" height="400" fill="url(#bg)"/>
+  <circle cx="150" cy="178" r="150" fill="url(#glow)"/>
+  <g><circle cx="243.6" cy="337.4" r="3.0" fill="#8b7f6f" fill-opacity="0.5"/><circle cx="254.8" cy="354.6" r="2.0" fill="#e8ded0" fill-opacity="0.5"/><circle cx="246.4" cy="315.1" r="1.6" fill="#f3ede6" fill-opacity="0.5"/><circle cx="91.6" cy="45.9" r="2.2" fill="#8b7f6f" fill-opacity="0.5"/><circle cx="241.5" cy="167.4" r="2.3" fill="#e8ded0" fill-opacity="0.5"/><circle cx="46.5" cy="127.5" r="1.4" fill="#f3ede6" fill-opacity="0.5"/><circle cx="265.7" cy="181.7" r="3.0" fill="#8b7f6f" fill-opacity="0.5"/><circle cx="187.0" cy="42.5" r="1.7" fill="#e8ded0" fill-opacity="0.5"/><circle cx="258.3" cy="226.9" r="2.7" fill="#f3ede6" fill-opacity="0.5"/><circle cx="209.8" cy="51.8" r="3.1" fill="#8b7f6f" fill-opacity="0.5"/><circle cx="266.8" cy="261.2" r="1.7" fill="#e8ded0" fill-opacity="0.5"/><circle cx="35.6" cy="35.5" r="1.9" fill="#f3ede6" fill-opacity="0.5"/><circle cx="59.9" cy="228.9" r="3.0" fill="#8b7f6f" fill-opacity="0.5"/><circle cx="238.7" cy="238.9" r="3.0" fill="#e8ded0" fill-opacity="0.5"/><circle cx="252.3" cy="270.1" r="2.5" fill="#f3ede6" fill-opacity="0.5"/><circle cx="30.8" cy="60.1" r="2.1" fill="#8b7f6f" fill-opacity="0.5"/><circle cx="249.2" cy="106.7" r="1.9" fill="#e8ded0" fill-opacity="0.5"/><circle cx="63.0" cy="34.1" r="2.8" fill="#f3ede6" fill-opacity="0.5"/><circle cx="243.0" cy="187.5" r="2.1" fill="#8b7f6f" fill-opacity="0.5"/><circle cx="41.2" cy="320.9" r="1.8" fill="#e8ded0" fill-opacity="0.5"/><circle cx="249.2" cy="154.2" r="2.6" fill="#f3ede6" fill-opacity="0.5"/><circle cx="59.2" cy="330.3" r="2.4" fill="#8b7f6f" fill-opacity="0.5"/></g>
+  <rect x="14" y="14" width="272" height="372" rx="16" fill="none" stroke="#8b7f6f" stroke-opacity="0.55" stroke-width="1.4"/>
+  <rect x="21" y="21" width="258" height="358" rx="12" fill="none" stroke="#8b7f6f" stroke-opacity="0.3" stroke-width="0.7"/>
+  <g transform="translate(30 30) rotate(0)" fill="none" stroke="#8b7f6f" stroke-width="1" stroke-opacity="0.7"><path d="M0 22 Q0 0 22 0"/><path d="M6 22 Q6 6 22 6" stroke-opacity="0.4"/><circle cx="0" cy="0" r="2" fill="#8b7f6f" stroke="none"/></g><g transform="translate(270 30) rotate(90)" fill="none" stroke="#8b7f6f" stroke-width="1" stroke-opacity="0.7"><path d="M0 22 Q0 0 22 0"/><path d="M6 22 Q6 6 22 6" stroke-opacity="0.4"/><circle cx="0" cy="0" r="2" fill="#8b7f6f" stroke="none"/></g><g transform="translate(270 370) rotate(180)" fill="none" stroke="#8b7f6f" stroke-width="1" stroke-opacity="0.7"><path d="M0 22 Q0 0 22 0"/><path d="M6 22 Q6 6 22 6" stroke-opacity="0.4"/><circle cx="0" cy="0" r="2" fill="#8b7f6f" stroke="none"/></g><g transform="translate(30 370) rotate(270)" fill="none" stroke="#8b7f6f" stroke-width="1" stroke-opacity="0.7"><path d="M0 22 Q0 0 22 0"/><path d="M6 22 Q6 6 22 6" stroke-opacity="0.4"/><circle cx="0" cy="0" r="2" fill="#8b7f6f" stroke="none"/></g>
+  <text x="150" y="58" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="600" letter-spacing="3.2" fill="#61594e" fill-opacity="0.85">GENDER REVEAL</text>
+  <g transform="translate(150 180)"><g transform="translate(-22 10) rotate(-12) scale(1 1)" fill="#8b7f6f"><path d="M-12 0 C-16 -26 12 -34 14 -8 C16 10 10 30 -2 30 C-12 30 -10 14 -12 0 Z"/><circle cx="-10" cy="-34" r="5"/><circle cx="0" cy="-38" r="4"/><circle cx="8" cy="-36" r="3.5"/><circle cx="14" cy="-31" r="3"/><circle cx="18" cy="-25" r="2.5"/></g><g transform="translate(24 -10) rotate(12) scale(-1 1)" fill="#e8ded0"><path d="M-12 0 C-16 -26 12 -34 14 -8 C16 10 10 30 -2 30 C-12 30 -10 14 -12 0 Z"/><circle cx="-10" cy="-34" r="5"/><circle cx="0" cy="-38" r="4"/><circle cx="8" cy="-36" r="3.5"/><circle cx="14" cy="-31" r="3"/><circle cx="18" cy="-25" r="2.5"/></g><path d="M0 8 C-14 -2 -12 -14 -5 -14 C-2 -14 0 -12 0 -9 C0 -12 2 -14 5 -14 C12 -14 14 -2 0 8 Z" fill="#8b7f6f" fill-opacity="0.7" transform="translate(0 56) scale(1.1)"/></g>
+  <text x="150" y="304" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="28" fill="#61594e">He or She?</text>
+  <g fill="#8b7f6f" stroke="#8b7f6f">
+    <line x1="104" y1="322" x2="140" y2="322" stroke-width="0.8" stroke-opacity="0.6"/>
+    <line x1="160" y1="322" x2="196" y2="322" stroke-width="0.8" stroke-opacity="0.6"/>
+    <path d="M150 317 L154 322 L150 327 L146 322 Z" stroke="none"/>
+  </g>
+  <text x="150" y="346" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" letter-spacing="2.4" fill="#61594e" fill-opacity="0.7">17 . 10 . 2026</text>
+</svg>
