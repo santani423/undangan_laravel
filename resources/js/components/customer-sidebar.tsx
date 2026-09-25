@@ -1,3 +1,4 @@
+import AppLogoIcon from '@/components/app-logo-icon';
 import { NavUser } from '@/components/nav-user';
 import {
     Sidebar,
@@ -16,7 +17,6 @@ import {
     LayoutGrid,
     Mail,
     Package,
-    Star,
     User,
 } from 'lucide-react';
 
@@ -64,9 +64,7 @@ export function CustomerSidebar() {
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
                             <Link href="/customer">
-                                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg shadow-sm">
-                                    <Star className="size-4" />
-                                </div>
+                                <AppLogoIcon alt="" aria-hidden="true" className="size-8 shrink-0" />
                                 <div className="ml-1 grid flex-1 text-left text-sm">
                                     <span className="truncate leading-none font-bold tracking-wide">Undesia</span>
                                     <span className="truncate text-xs opacity-60 leading-none mt-0.5">Member Area</span>

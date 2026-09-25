@@ -295,7 +295,7 @@ function resolveThemeComponent(themeSlug: string, invitation: InvitationData, vi
     }
 }
 
-const DEFAULT_FAVICON = '/favicon.svg';
+const DEFAULT_FAVICON = '/favicon.png';
 
 // Fallback for older cached responses that predate the server-computed `ogImage` field.
 function getFaviconUrl(invitation: InvitationData): string {
