@@ -1,6 +1,6 @@
 import { type LandingThemeSample } from '@/types/landing';
 import { Link } from '@inertiajs/react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, LoaderCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 interface LandingShowcaseProps {
@@ -46,6 +46,7 @@ function TierBadge({ theme }: { theme: LandingThemeSample }) {
 
 export default function LandingShowcase({ themes, onCreateFromTheme }: LandingShowcaseProps) {
     const [selectedTab, setSelectedTab] = useState<string>(DEFAULT_TAB);
+    const [isNavigating, setIsNavigating] = useState(false);
 
     const groups = useMemo(() => {
         const map = new Map<string, LandingThemeSample[]>();
@@ -171,10 +172,15 @@ export default function LandingShowcase({ themes, onCreateFromTheme }: LandingSh
                     <p className="mb-6 text-lg text-gray-600">Masih banyak template menarik lainnya untuk setiap jenis acara Anda</p>
                     <Link
                         href={route('themes.index', { event_type: activeTab })}
-                        className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-rose-500 to-orange-400 px-8 py-4 text-lg font-medium text-white shadow-lg transition-all duration-300 hover:from-rose-600 hover:to-orange-500 hover:shadow-xl"
+                        onStart={() => setIsNavigating(true)}
+                        onFinish={() => setIsNavigating(false)}
+                        aria-busy={isNavigating}
+                        className={`inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-rose-500 to-orange-400 px-8 py-4 text-lg font-medium text-white shadow-lg transition-all duration-300 hover:from-rose-600 hover:to-orange-500 hover:shadow-xl ${
+                            isNavigating ? 'pointer-events-none opacity-80' : ''
+                        }`}
                     >
-                        Lihat Semua Tema
-                        <ArrowRight className="size-5" />
+                        {isNavigating ? 'Memuat Tema...' : `Lihat Semua Tema ${eventTypeLabel(activeTab)}`}
+                        {isNavigating ? <LoaderCircle className="size-5 animate-spin" /> : <ArrowRight className="size-5" />}
                     </Link>
                     <p className="mt-4 text-sm text-gray-400">
                         Butuh desain custom atau undangan video? <span className="text-rose-500">Konsultasikan lewat WhatsApp di footer.</span>
