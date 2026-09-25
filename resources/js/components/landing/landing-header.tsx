@@ -38,8 +38,14 @@ export default function LandingHeader({ auth, onCreateInvitation }: LandingHeade
 
     const handleAnchorClick = (e: React.MouseEvent, href: string) => {
         e.preventDefault();
-        document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' });
         setIsOpen(false);
+        const section = document.querySelector(href);
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            // Header is also used on pages without these sections (e.g. /themes).
+            window.location.href = route('home') + href;
+        }
     };
 
     return (

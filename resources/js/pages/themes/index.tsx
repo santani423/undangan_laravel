@@ -1,327 +1,133 @@
-﻿import React, { useState, useMemo } from "react";
-import { Head, Link, usePage } from "@inertiajs/react";
-import { useAuthGate } from "@/hooks/use-auth-gate";
+import EventTypeTabs from '@/components/landing/event-type-tabs';
+import LandingHeader from '@/components/landing/landing-header';
+import LandingLogo from '@/components/landing/landing-logo';
+import ThemeSampleCard from '@/components/landing/theme-sample-card';
+import { useAuthGate } from '@/hooks/use-auth-gate';
+import { eventTypeLabel, groupByEventType } from '@/lib/event-types';
+import { type SharedData } from '@/types';
+import { Head, Link, usePage } from '@inertiajs/react';
+import { Search } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 interface ThemeItem {
     id: number;
     name: string;
     slug: string;
-    category: string;
     event_type: string;
     thumbnail: string;
     color_primary: string;
     color_secondary: string;
-    is_premium: boolean;
-    is_exclusive: boolean;
-    usage_count: number;
-    tags: string[];
     sample_url: string | null;
 }
 
-interface PageProps {
+interface PageProps extends SharedData {
     themes: ThemeItem[];
     event_type?: string;
-    auth?: { user?: { name: string } };
     [key: string]: unknown;
 }
 
-function TierBadge({ theme }: { theme: ThemeItem }) {
-    if (theme.is_exclusive) {
-        return (
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
-                ★ Eksklusif
-            </span>
-        );
-    }
-    if (theme.is_premium) {
-        return (
-            <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-700">
-                ◆ Premium
-            </span>
-        );
-    }
-    return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
-            ✓ Gratis
-        </span>
-    );
-}
-
-function ThemeCard({ theme, onCreate }: { theme: ThemeItem; onCreate: (themeId: number) => void }) {
-    const hasSample = Boolean(theme.sample_url);
-
-    return (
-        <div className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
-            <div
-                className="relative h-52 w-full"
-                style={{ background: `linear-gradient(135deg, ${theme.color_primary} 0%, ${theme.color_secondary} 100%)` }}
-            >
-                {theme.thumbnail ? (
-                    <img src={theme.thumbnail} alt={theme.name} className="h-full w-full object-cover" />
-                ) : (
-                    <div className="flex h-full items-center justify-center">
-                        <span className="text-4xl opacity-30">🎨</span>
-                    </div>
-                )}
-                <div className="absolute left-3 top-3">
-                    <TierBadge theme={theme} />
-                </div>
-            </div>
-            <div className="p-4">
-                <h3 className="font-semibold text-gray-900">{theme.name}</h3>
-                <p className="mt-0.5 text-xs text-gray-500">{theme.category} · {theme.event_type}</p>
-                <div className="mt-3 flex items-center justify-end">
-                    <span className="text-xs text-gray-400">{theme.usage_count.toLocaleString("id-ID")}× dipakai</span>
-                </div>
-                <div className="mt-3 flex gap-2">
-                    {hasSample ? (
-                        <a
-                            href={theme.sample_url ?? undefined}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-center text-xs font-semibold text-gray-700 hover:bg-gray-50"
-                        >
-                            Lihat Contoh
-                        </a>
-                    ) : (
-                        <span
-                            className="flex-1 cursor-not-allowed rounded-lg border border-gray-100 px-3 py-1.5 text-center text-xs font-semibold text-gray-400"
-                            title="Sampel untuk tema ini segera hadir"
-                        >
-                            Segera Hadir
-                        </span>
-                    )}
-                    <button
-                        onClick={() => onCreate(theme.id)}
-                        className="flex-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
-                    >
-                        Buat Undangan
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function ThemeRow({ theme, onCreate }: { theme: ThemeItem; onCreate: (themeId: number) => void }) {
-    const hasSample = Boolean(theme.sample_url);
-
-    return (
-        <div className="flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md">
-            <div
-                className="h-16 w-24 flex-shrink-0 rounded-lg"
-                style={{ background: `linear-gradient(135deg, ${theme.color_primary} 0%, ${theme.color_secondary} 100%)` }}
-            />
-            <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-gray-900">{theme.name}</h3>
-                    <TierBadge theme={theme} />
-                </div>
-                <p className="mt-0.5 text-xs text-gray-500">{theme.category} · {theme.event_type}</p>
-                <div className="mt-1 flex flex-wrap gap-1">
-                    {(theme.tags ?? []).slice(0, 3).map((tag: string) => (
-                        <span key={tag} className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-500">
-                            {tag}
-                        </span>
-                    ))}
-                </div>
-            </div>
-            <div className="text-right flex-shrink-0">
-                <p className="text-xs text-gray-400">{theme.usage_count.toLocaleString("id-ID")}× dipakai</p>
-                <div className="mt-2 flex gap-1.5">
-                    {hasSample && (
-                        <a
-                            href={theme.sample_url ?? undefined}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50"
-                        >
-                            Lihat Contoh
-                        </a>
-                    )}
-                    <button
-                        onClick={() => onCreate(theme.id)}
-                        className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
-                    >
-                        Buat Undangan
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
+const ALL_TYPES = '';
 
 export default function ThemesIndex() {
     const { themes, auth, event_type: initialEventType } = usePage<PageProps>().props;
     const { requireAuth, modal } = useAuthGate();
 
-    const handleCreate = (themeId: number) =>
-        requireAuth(route('customer.invitations.create.theme', { theme_id: themeId }), { themeId });
+    const handleCreate = (themeId: number) => requireAuth(route('customer.invitations.create.theme', { theme_id: themeId }), { themeId });
 
-    const [search, setSearch] = useState("");
-    const [filterCategory, setFilterCategory] = useState("");
-    const [filterEventType, setFilterEventType] = useState(
-        () => (initialEventType && themes.some(t => t.event_type === initialEventType) ? initialEventType : "")
+    const groups = useMemo(() => groupByEventType(themes), [themes]);
+
+    const [search, setSearch] = useState('');
+    const [eventType, setEventType] = useState(() =>
+        initialEventType && groups.some(([type]) => type === initialEventType) ? initialEventType : ALL_TYPES,
     );
-    const [filterTier, setFilterTier] = useState<"all" | "free" | "premium" | "exclusive">("all");
-    const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-    const categories = useMemo(() => [...new Set(themes.map(t => t.category))].sort(), [themes]);
-    const eventTypes = useMemo(() => [...new Set(themes.map(t => t.event_type))].sort(), [themes]);
+    const tabs = [
+        { value: ALL_TYPES, label: 'Semua', count: themes.length },
+        ...groups.map(([type, list]) => ({ value: type, label: eventTypeLabel(type), count: list.length })),
+    ];
 
     const filtered = useMemo(() => {
-        return themes.filter(t => {
-            if (search && !t.name.toLowerCase().includes(search.toLowerCase())) return false;
-            if (filterCategory && t.category !== filterCategory) return false;
-            if (filterEventType && t.event_type !== filterEventType) return false;
-            if (filterTier === "free" && (t.is_premium || t.is_exclusive)) return false;
-            if (filterTier === "premium" && (!t.is_premium || t.is_exclusive)) return false;
-            if (filterTier === "exclusive" && !t.is_exclusive) return false;
-            return true;
-        });
-    }, [themes, search, filterCategory, filterEventType, filterTier]);
+        const query = search.trim().toLowerCase();
+        return themes.filter((t) => (!eventType || t.event_type === eventType) && (!query || t.name.toLowerCase().includes(query)));
+    }, [themes, search, eventType]);
 
-    const resetFilters = () => {
-        setSearch("");
-        setFilterCategory("");
-        setFilterEventType("");
-        setFilterTier("all");
-    };
-
-    const freeCount = themes.filter(t => !t.is_premium && !t.is_exclusive).length;
-    const premiumCount = themes.filter(t => t.is_premium && !t.is_exclusive).length;
-    const exclusiveCount = themes.filter(t => t.is_exclusive).length;
+    const heading = eventType ? `Tema ${eventTypeLabel(eventType)}` : 'Semua Tema Undangan';
 
     return (
         <>
-            <Head title="Template Undangan" />
+            <Head title={heading}>
+                <link rel="preconnect" href="https://fonts.bunny.net" />
+                <link href="https://fonts.bunny.net/css?family=playfair-display:500,600,700" rel="stylesheet" />
+            </Head>
 
-            {/* Navbar */}
-            <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur">
-                <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-                    <Link href="/" className="text-xl font-bold text-indigo-600">Undesia</Link>
-                    <nav className="hidden items-center gap-6 text-sm sm:flex">
-                        <Link href="/themes" className="font-medium text-indigo-600">Template</Link>
-                        <a href="#" className="text-gray-600 hover:text-gray-900">Harga</a>
-                        <a href="#" className="text-gray-600 hover:text-gray-900">Blog</a>
-                    </nav>
-                    <div className="flex items-center gap-2">
-                        {auth?.user ? (
-                            <Link href="/customer" className="rounded-lg px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">
-                                Dashboard
-                            </Link>
-                        ) : (
-                            <Link href="/login" className="rounded-lg px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">
-                                Masuk
-                            </Link>
-                        )}
-                        <button
-                            onClick={() => requireAuth(route('customer.invitations.create'), {})}
-                            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
-                        >
-                            Buat Undangan
-                        </button>
+            <div className="min-h-screen bg-white">
+                <LandingHeader auth={auth} onCreateInvitation={() => requireAuth(route('customer.invitations.create'), {})} />
+
+                {/* Hero */}
+                <section className="bg-gradient-to-b from-rose-50 via-white to-white pt-32 pb-10 text-center">
+                    <div className="mx-auto max-w-3xl px-4">
+                        <h1 className="font-serif text-4xl font-bold text-gray-800 md:text-5xl">
+                            {heading}
+                            <span className="mt-2 block text-2xl font-light text-rose-500 md:text-3xl">Pilih Desain, Langsung Pakai</span>
+                        </h1>
+                        <div className="mx-auto mt-6 h-1 w-24 rounded-full bg-gradient-to-r from-rose-400 to-rose-500" />
+                        <p className="mt-6 text-gray-600">{themes.length} tema tersedia untuk berbagai acara spesial Anda</p>
+
+                        <div className="relative mx-auto mt-8 max-w-md">
+                            <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-gray-400" />
+                            <input
+                                type="search"
+                                placeholder="Cari tema..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="h-12 w-full rounded-full border border-gray-200 bg-white pr-4 pl-11 text-sm shadow-sm focus:border-rose-300 focus:ring-2 focus:ring-rose-100 focus:outline-none"
+                            />
+                        </div>
+                    </div>
+                </section>
+
+                {/* Event type tabs */}
+                <div className="sticky top-18 z-40 border-b border-gray-100 bg-white/95 pt-3 pb-1 backdrop-blur">
+                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                        <EventTypeTabs tabs={tabs} active={eventType} onChange={setEventType} />
                     </div>
                 </div>
-            </header>
 
-            {/* Hero */}
-            <section className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-14 text-center">
-                <h1 className="text-4xl font-extrabold text-gray-900">Pilih Template Undangan</h1>
-                <p className="mt-3 text-gray-500">
-                    {themes.length} template tersedia untuk berbagai acara spesial Anda
-                </p>
-                <div className="mt-6 flex justify-center gap-4 text-sm">
-                    <span className="rounded-full bg-green-100 px-4 py-1.5 font-semibold text-green-700">{freeCount} Gratis</span>
-                    <span className="rounded-full bg-purple-100 px-4 py-1.5 font-semibold text-purple-700">{premiumCount} Premium</span>
-                    <span className="rounded-full bg-amber-100 px-4 py-1.5 font-semibold text-amber-700">{exclusiveCount} Eksklusif</span>
-                </div>
-            </section>
-
-            {/* Filter bar */}
-            <div className="sticky top-[57px] z-40 border-b border-gray-100 bg-white/95 backdrop-blur shadow-sm">
-                <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3">
-                    <input
-                        type="text"
-                        placeholder="Cari template..."
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        className="h-9 rounded-lg border border-gray-200 px-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 w-48"
-                    />
-                    <select
-                        value={filterCategory}
-                        onChange={e => setFilterCategory(e.target.value)}
-                        className="h-9 rounded-lg border border-gray-200 px-3 text-sm focus:border-indigo-400 focus:outline-none"
-                    >
-                        <option value="">Semua Kategori</option>
-                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                    <select
-                        value={filterEventType}
-                        onChange={e => setFilterEventType(e.target.value)}
-                        className="h-9 rounded-lg border border-gray-200 px-3 text-sm focus:border-indigo-400 focus:outline-none"
-                    >
-                        <option value="">Semua Acara</option>
-                        {eventTypes.map(e => <option key={e} value={e}>{e}</option>)}
-                    </select>
-                    <div className="flex rounded-lg border border-gray-200 overflow-hidden text-sm">
-                        {(["all", "free", "premium", "exclusive"] as const).map(tier => (
+                {/* Content */}
+                <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+                    {filtered.length === 0 ? (
+                        <div className="flex flex-col items-center py-24 text-center text-gray-500">
+                            <span className="text-6xl">🔍</span>
+                            <p className="mt-4 text-lg font-medium">Tidak ada tema ditemukan</p>
                             <button
-                                key={tier}
-                                onClick={() => setFilterTier(tier)}
-                                className={`px-3 py-1.5 capitalize ${filterTier === tier ? "bg-indigo-600 text-white" : "bg-white text-gray-600 hover:bg-gray-50"}`}
+                                type="button"
+                                onClick={() => {
+                                    setSearch('');
+                                    setEventType(ALL_TYPES);
+                                }}
+                                className="mt-4 text-sm font-semibold text-rose-500 hover:underline"
                             >
-                                {tier === "all" ? "Semua" : tier === "free" ? "Gratis" : tier === "premium" ? "Premium" : "Eksklusif"}
+                                Tampilkan Semua Tema
                             </button>
-                        ))}
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                            {filtered.map((theme) => (
+                                <ThemeSampleCard key={theme.id} theme={theme} onCreate={handleCreate} />
+                            ))}
+                        </div>
+                    )}
+                </main>
+
+                <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
+                    <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-10 sm:flex-row sm:px-6 lg:px-8">
+                        <Link href="/" aria-label="Undesia">
+                            <LandingLogo variant="dark" />
+                        </Link>
+                        <p className="text-sm text-gray-400">© {new Date().getFullYear()} Undesia · Semua hak dilindungi</p>
                     </div>
-                    <div className="ml-auto flex gap-1">
-                        <button
-                            onClick={() => setViewMode("grid")}
-                            className={`rounded-lg p-2 ${viewMode === "grid" ? "bg-indigo-100 text-indigo-600" : "text-gray-400 hover:bg-gray-100"}`}
-                            title="Grid"
-                        >
-                            <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                            </svg>
-                        </button>
-                        <button
-                            onClick={() => setViewMode("list")}
-                            className={`rounded-lg p-2 ${viewMode === "list" ? "bg-indigo-100 text-indigo-600" : "text-gray-400 hover:bg-gray-100"}`}
-                            title="List"
-                        >
-                            <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
+                </footer>
             </div>
-
-            {/* Content */}
-            <main className="mx-auto max-w-7xl px-4 py-8">
-                {filtered.length === 0 ? (
-                    <div className="flex flex-col items-center py-24 text-center text-gray-400">
-                        <span className="text-6xl">🔍</span>
-                        <p className="mt-4 text-lg font-medium">Tidak ada template ditemukan</p>
-                        <button onClick={resetFilters} className="mt-4 text-sm text-indigo-600 hover:underline">
-                            Tampilkan Semua
-                        </button>
-                    </div>
-                ) : viewMode === "grid" ? (
-                    <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                        {filtered.map(theme => <ThemeCard key={theme.id} theme={theme} onCreate={handleCreate} />)}
-                    </div>
-                ) : (
-                    <div className="flex flex-col gap-3">
-                        {filtered.map(theme => <ThemeRow key={theme.id} theme={theme} onCreate={handleCreate} />)}
-                    </div>
-                )}
-            </main>
-
-            <footer className="border-t border-gray-100 bg-gray-50 py-8 text-center text-sm text-gray-400">
-                © 2026 Undesia · Semua hak dilindungi
-            </footer>
 
             {modal}
         </>
