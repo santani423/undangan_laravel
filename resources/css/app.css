@@ -77,7 +77,10 @@
     }
 }
 
-:root {
+/* .force-light re-applies the light tokens to a subtree (e.g. auth pages that
+   follow the always-light landing design) even when <html> has .dark. */
+:root,
+.force-light {
     --background: hsl(30, 20%, 98%);
     --foreground: hsl(20, 15%, 15%);
     --card: hsl(0, 0%, 100%);
