@@ -329,11 +329,18 @@ export default function InvitationShow({ invitation, themeSlug, visitor }: Props
         // without a full page reload. The initial load's favicon and Open Graph tags
         // (what WhatsApp/Facebook/Telegram crawlers read) are rendered server-side in
         // app.blade.php, since those crawlers don't execute this JavaScript.
-        document.querySelectorAll('link[rel~="icon"]').forEach((el) => el.remove());
+        const original = Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]'));
+        original.forEach((el) => el.remove());
         const link = document.createElement('link');
         link.rel = 'icon';
         link.href = faviconUrl;
         document.head.appendChild(link);
+
+        // Put the app favicon back when navigating away (Inertia keeps the same <head>).
+        return () => {
+            link.remove();
+            original.forEach((el) => document.head.appendChild(el));
+        };
     }, [faviconUrl]);
 
     return (

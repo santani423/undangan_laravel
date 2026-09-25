@@ -11,6 +11,8 @@
             $ogDescription = $inv['ogDescription'] ?? 'Anda diundang! Silakan buka undangan digital ini untuk info lengkap acara.';
             $ogImage = $inv['ogImage'] ?? null;
             $ogUrl = $inv['ogUrl'] ?? url()->current();
+            // ?v=<mtime> busts the browser's long-lived favicon cache whenever the file changes.
+            $iconUrl = fn (string $file) => asset($file) . '?v=' . (@filemtime(public_path($file)) ?: '1');
         @endphp
 
         <title inertia>{{ $isInvitation ? $ogTitle : config('app.name', 'Laravel') }}</title>
@@ -37,12 +39,13 @@
                 <meta name="twitter:image" content="{{ $ogImage }}">
             @endif
 
-            <link rel="icon" href="{{ $ogImage ?: '/favicon.png' }}">
+            <link rel="icon" href="{{ $ogImage ?: $iconUrl('favicon.png') }}">
         @else
-            <link rel="icon" href="/favicon.ico" sizes="any">
-            <link rel="icon" href="/favicon.png" type="image/png">
+            <link rel="icon" href="{{ $iconUrl('favicon.ico') }}" sizes="48x48">
+            <link rel="icon" href="{{ $iconUrl('favicon.png') }}" type="image/png" sizes="64x64">
+            <link rel="icon" href="{{ $iconUrl('favicon.svg') }}" type="image/svg+xml">
         @endif
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <link rel="apple-touch-icon" href="{{ $iconUrl('apple-touch-icon.png') }}">
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
