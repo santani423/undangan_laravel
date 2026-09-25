@@ -20,6 +20,7 @@ interface ThemeItem {
 
 interface PageProps {
     themes: ThemeItem[];
+    event_type?: string;
     auth?: { user?: { name: string } };
     [key: string]: unknown;
 }
@@ -151,7 +152,7 @@ function ThemeRow({ theme, onCreate }: { theme: ThemeItem; onCreate: (themeId: n
 }
 
 export default function ThemesIndex() {
-    const { themes, auth } = usePage<PageProps>().props;
+    const { themes, auth, event_type: initialEventType } = usePage<PageProps>().props;
     const { requireAuth, modal } = useAuthGate();
 
     const handleCreate = (themeId: number) =>
@@ -159,7 +160,9 @@ export default function ThemesIndex() {
 
     const [search, setSearch] = useState("");
     const [filterCategory, setFilterCategory] = useState("");
-    const [filterEventType, setFilterEventType] = useState("");
+    const [filterEventType, setFilterEventType] = useState(
+        () => (initialEventType && themes.some(t => t.event_type === initialEventType) ? initialEventType : "")
+    );
     const [filterTier, setFilterTier] = useState<"all" | "free" | "premium" | "exclusive">("all");
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 

@@ -170,7 +170,7 @@ export default function LandingShowcase({ themes, onCreateFromTheme }: LandingSh
                 <div className="mt-14 text-center">
                     <p className="mb-6 text-lg text-gray-600">Masih banyak template menarik lainnya untuk setiap jenis acara Anda</p>
                     <Link
-                        href={route('themes.index')}
+                        href={route('themes.index', { event_type: activeTab })}
                         className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-rose-500 to-orange-400 px-8 py-4 text-lg font-medium text-white shadow-lg transition-all duration-300 hover:from-rose-600 hover:to-orange-500 hover:shadow-xl"
                     >
                         Lihat Semua Tema

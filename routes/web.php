@@ -13,7 +13,7 @@ Route::get('/tess', function () {
 });
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Route::get('themes', function () {
+Route::get('themes', function (Request $request) {
     $themes = Theme::where('is_active', true)
         ->withExists('sampleInvitation')
         ->ordered()
@@ -35,7 +35,9 @@ Route::get('themes', function () {
         ]);
 
     return Inertia::render('themes/index', [
-        'themes' => $themes,
+        'themes'     => $themes,
+        // Pre-selects the event filter, e.g. when coming from a landing showcase tab.
+        'event_type' => $request->string('event_type')->toString(),
     ]);
 })->name('themes.index');
 
