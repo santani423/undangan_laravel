@@ -8,8 +8,7 @@ interface LandingShowcaseProps {
     onCreateFromTheme: (themeId: number) => void;
 }
 
-const ALL_TAB = 'all';
-const ALL_TAB_LIMIT = 6;
+const DEFAULT_TAB = 'wedding';
 
 // Keys mirror the event_type slug stored in the database; order defines tab order.
 const EVENT_TYPE_LABELS: Record<string, string> = {
@@ -23,17 +22,6 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
 
 function eventTypeLabel(value: string): string {
     return EVENT_TYPE_LABELS[value] ?? value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-// Round-robin across types so the "Semua" tab shows a mix instead of one type's themes.
-function interleaveByType(groups: [string, LandingThemeSample[]][], limit: number): LandingThemeSample[] {
-    const result: LandingThemeSample[] = [];
-    for (let i = 0; result.length < limit; i++) {
-        const round = groups.map(([, list]) => list[i]).filter(Boolean);
-        if (round.length === 0) break;
-        result.push(...round);
-    }
-    return result.slice(0, limit);
 }
 
 function TierBadge({ theme }: { theme: LandingThemeSample }) {
@@ -57,7 +45,7 @@ function TierBadge({ theme }: { theme: LandingThemeSample }) {
 }
 
 export default function LandingShowcase({ themes, onCreateFromTheme }: LandingShowcaseProps) {
-    const [activeTab, setActiveTab] = useState<string>(ALL_TAB);
+    const [selectedTab, setSelectedTab] = useState<string>(DEFAULT_TAB);
 
     const groups = useMemo(() => {
         const map = new Map<string, LandingThemeSample[]>();
@@ -71,10 +59,11 @@ export default function LandingShowcase({ themes, onCreateFromTheme }: LandingSh
         return [...map.entries()].sort(([a], [b]) => rank(a) - rank(b));
     }, [themes]);
 
-    const visibleThemes =
-        activeTab === ALL_TAB ? interleaveByType(groups, ALL_TAB_LIMIT) : (groups.find(([type]) => type === activeTab)?.[1] ?? []);
+    // Fall back to the first available type when there are no wedding themes.
+    const activeTab = groups.some(([type]) => type === selectedTab) ? selectedTab : (groups[0]?.[0] ?? DEFAULT_TAB);
+    const visibleThemes = groups.find(([type]) => type === activeTab)?.[1] ?? [];
 
-    const tabs = [{ value: ALL_TAB, label: 'Semua' }, ...groups.map(([type]) => ({ value: type, label: eventTypeLabel(type) }))];
+    const tabs = groups.map(([type]) => ({ value: type, label: eventTypeLabel(type) }));
 
     return (
         <section className="bg-white py-20">
@@ -98,7 +87,7 @@ export default function LandingShowcase({ themes, onCreateFromTheme }: LandingSh
                                         type="button"
                                         role="tab"
                                         aria-selected={isActive}
-                                        onClick={() => setActiveTab(tab.value)}
+                                        onClick={() => setSelectedTab(tab.value)}
                                         className={`shrink-0 rounded-full px-5 py-2 text-sm font-semibold whitespace-nowrap transition-all ${
                                             isActive
                                                 ? 'bg-gradient-to-r from-rose-500 to-rose-400 text-white shadow-md'
