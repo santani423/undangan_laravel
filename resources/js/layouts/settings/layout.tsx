@@ -2,7 +2,7 @@ import Heading from '@/components/heading';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
-import { AppWindow, CreditCard, KeyRound, Package, Palette, User } from 'lucide-react';
+import { KeyRound, Palette, User } from 'lucide-react';
 
 interface NavGroup {
     label: string;
@@ -18,14 +18,6 @@ const navGroups: NavGroup[] = [
             { title: 'Tampilan',   url: '/settings/appearance',  icon: Palette   },
         ],
     },
-    {
-        label: 'Sistem',
-        items: [
-            { title: 'Aplikasi',  url: '/settings/app',      icon: AppWindow  },
-            { title: 'Pembayaran',url: '/settings/payment',  icon: CreditCard },
-            { title: 'Paket',     url: '/settings/packages', icon: Package    },
-        ],
-    },
 ];
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
@@ -33,7 +25,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 
     return (
         <div className="px-4 py-6">
-            <Heading title="Pengaturan" description="Kelola profil akun dan konfigurasi sistem." />
+            <Heading title="Pengaturan" description="Kelola profil dan pengaturan akun Anda." />
 
             <div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
                 {/* Sidebar nav */}
