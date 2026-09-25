@@ -98,7 +98,7 @@ export function CustomerSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavUser />
+                <NavUser showEditProfile={false} />
             </SidebarFooter>
         </Sidebar>
     );

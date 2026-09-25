@@ -5,9 +5,7 @@ import {
     Check,
     ChevronLeft,
     ChevronRight,
-    Crown,
     Eye,
-    Gem,
     ImageOff,
     Package,
     Search,
@@ -147,21 +145,6 @@ function ThemeCard({
                             />
                         )}
                     </div>
-                )}
-
-                {/* Badge premium / exclusive */}
-                {theme.is_exclusive ? (
-                    <span className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-semibold text-white shadow">
-                        <Gem className="size-2.5" /> Eksklusif
-                    </span>
-                ) : theme.is_premium ? (
-                    <span className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-full bg-violet-600 px-2 py-0.5 text-[10px] font-semibold text-white shadow">
-                        <Crown className="size-2.5" /> Premium
-                    </span>
-                ) : (
-                    <span className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-semibold text-white shadow">
-                        Gratis
-                    </span>
                 )}
 
                 {/* Selected checkmark */}

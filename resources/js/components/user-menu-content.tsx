@@ -8,9 +8,10 @@ import { useState } from 'react';
 
 interface UserMenuContentProps {
     user: User;
+    showEditProfile?: boolean;
 }
 
-export function UserMenuContent({ user }: UserMenuContentProps) {
+export function UserMenuContent({ user, showEditProfile = true }: UserMenuContentProps) {
     const cleanup = useMobileNavigation();
     const [loggingOut, setLoggingOut] = useState(false);
 
@@ -44,15 +45,19 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                     <UserInfo user={user} showEmail={true} />
                 </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-                <DropdownMenuItem asChild>
-                    <Link className="block w-full" href={route('profile.edit')} as="button" prefetch onClick={cleanup}>
-                        <UserCircle className="mr-2" />
-                        Edit Profil
-                    </Link>
-                </DropdownMenuItem>
-            </DropdownMenuGroup>
+            {showEditProfile && (
+                <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuGroup>
+                        <DropdownMenuItem asChild>
+                            <Link className="block w-full" href={route('profile.edit')} as="button" prefetch onClick={cleanup}>
+                                <UserCircle className="mr-2" />
+                                Edit Profil
+                            </Link>
+                        </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                </>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={handleLogout} disabled={loggingOut} className="w-full cursor-pointer">
                 {loggingOut ? <LoaderCircle className="mr-2 animate-spin" /> : <LogOut className="mr-2" />}
