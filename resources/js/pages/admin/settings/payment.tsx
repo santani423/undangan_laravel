@@ -241,6 +241,7 @@ function GatewayCard({ id, meta, data }: { id: GatewayId; meta: GatewayMeta; dat
     const [fieldValues, setFieldValues] = useState<Record<string, string>>(() => ({ ...data.fieldValues }));
     const [enabledMethods, setEnabledMethods] = useState<Set<string>>(() => new Set(data.enabledMethods));
     const [saving, setSaving] = useState(false);
+    const globalEnabledMethods = usePage<PageProps>().props.enabledMethods;
 
     function resetToServerState() {
         setEnabled(data.enabled);
@@ -385,6 +386,14 @@ function GatewayCard({ id, meta, data }: { id: GatewayId; meta: GatewayMeta; dat
                                     <MethodToggle key={m.id} label={m.label} icon={METHOD_ICONS[m.id] ?? Wallet}
                                         checked={enabledMethods.has(m.id)} onToggle={() => toggleMethod(m.id)} />
                                 ))}
+                                {/* Manual transfer also needs the global "Transfer Bank Manual" method (tab Metode Pembayaran) —
+                                    without it the customer checkout hides bank transfer even though this card looks fully on. */}
+                                {id === 'manual' && !globalEnabledMethods.includes('transfer_bank') && (
+                                    <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-700 flex items-start gap-1.5">
+                                        <AlertCircle className="size-3.5 shrink-0 mt-px" />
+                                        <span>"Transfer Bank Manual" nonaktif di tab <b>Metode Pembayaran</b>. Aktifkan di sana agar muncul di halaman pembayaran customer.</span>
+                                    </p>
+                                )}
                             </div>
                             <div className="px-5 py-4">
                                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Monitoring</p>
