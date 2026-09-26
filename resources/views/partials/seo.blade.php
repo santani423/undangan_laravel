@@ -66,12 +66,14 @@
             '@graph'   => [
                 $organization,
                 [
-                    '@type'      => 'WebSite',
-                    '@id'        => $home . '#website',
-                    'url'        => $home,
-                    'name'       => $siteName,
-                    'inLanguage' => 'id-ID',
-                    'publisher'  => ['@id' => $home . '#organization'],
+                    '@type'         => 'WebSite',
+                    '@id'           => $home . '#website',
+                    'url'           => $home,
+                    'name'          => $siteName,
+                    // Google site names: the preferred name plus the bare domain as fallback.
+                    'alternateName' => [parse_url($siteUrl, PHP_URL_HOST)],
+                    'inLanguage'    => 'id-ID',
+                    'publisher'     => ['@id' => $home . '#organization'],
                 ],
                 [
                     '@type'              => 'WebPage',

@@ -13,6 +13,12 @@
                 'themes/index' => config('seo.themes'),
                 default        => null,
             };
+            // Login/forgot-password/dashboards have no search value and were showing up as Google
+            // sitelinks ("Lupa Password") in place of the brand pages.
+            $noindex = \Illuminate\Support\Str::is(
+                ['auth/*', 'settings/*', 'admin/*', 'customer/*', 'dashboard', 'error'],
+                $page['component'] ?? '',
+            );
             $inv = $isInvitation ? ($page['props']['invitation'] ?? []) : [];
             $ogTitle = $inv['pageTitle'] ?? $inv['title'] ?? config('app.name', 'Undesia Digital Invitation');
             $ogDescription = $inv['ogDescription'] ?? 'Anda diundang! Silakan buka undangan digital ini untuk info lengkap acara.';
@@ -28,6 +34,8 @@
 
         @if($seo)
             @include('partials.seo', ['seo' => $seo])
+        @elseif($noindex)
+            <meta name="robots" content="noindex, follow">
         @endif
 
         @if($isInvitation)
