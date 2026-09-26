@@ -18,6 +18,7 @@ class HomeController extends Controller
         return Inertia::render('welcome', [
             'appName'      => AppSetting::get('app_name', config('app.name', 'Undesia')),
             'appTagline'   => AppSetting::get('app_tagline', 'Undangan Digital Modern & Eksklusif'),
+            'seoTitle'     => config('seo.home.title'),
             'features'     => $this->landing->topFeatures(),
             'packagesByType' => $this->landing->packagesByType(),
             'themeSamples' => $this->landing->themeSamples(),

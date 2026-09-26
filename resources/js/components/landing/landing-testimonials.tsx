@@ -65,7 +65,7 @@ export default function LandingTestimonials({ testimonials, stats }: LandingTest
                                                     {initials(testimonial.name)}
                                                 </div>
                                                 <div className="text-left">
-                                                    <h4 className="font-serif text-lg font-bold text-gray-800">{testimonial.name}</h4>
+                                                    <h3 className="font-serif text-lg font-bold text-gray-800">{testimonial.name}</h3>
                                                     {testimonial.event_type && (
                                                         <span className="mt-1 inline-block rounded-full bg-gradient-to-r from-rose-400 to-rose-500 px-3 py-0.5 text-xs font-medium text-white">
                                                             {testimonial.event_type}

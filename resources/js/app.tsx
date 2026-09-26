@@ -10,10 +10,14 @@ declare global {
     const route: typeof routeFn;
 }
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+// VITE_APP_NAME is baked in at build time and has shipped as the framework's "Laravel" placeholder
+// before, which then ended up in every page title Google indexed.
+const envAppName = import.meta.env.VITE_APP_NAME;
+const appName = envAppName && envAppName !== 'Laravel' ? envAppName : 'Undesia';
 
 createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
+    // Titles that already carry the brand (e.g. the landing page's SEO title) are used as-is.
+    title: (title) => (!title ? appName : title.includes(appName) ? title : `${title} - ${appName}`),
     resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
     setup({ el, App, props }) {
         const root = createRoot(el);

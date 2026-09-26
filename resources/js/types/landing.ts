@@ -61,6 +61,7 @@ export interface LandingContact {
 export interface WelcomePageProps {
     appName: string;
     appTagline: string;
+    seoTitle: string;
     features: LandingFeature[];
     packagesByType: LandingPackageByType[];
     themeSamples: LandingThemeSample[];

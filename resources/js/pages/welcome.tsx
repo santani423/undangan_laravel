@@ -13,7 +13,7 @@ import { Head, usePage } from '@inertiajs/react';
 
 export default function Welcome(props: WelcomePageProps) {
     const { auth } = usePage<SharedData>().props;
-    const { appName, appTagline, features, packagesByType, themeSamples, testimonials, stats, contact } = props;
+    const { appName, appTagline, seoTitle, features, packagesByType, themeSamples, testimonials, stats, contact } = props;
     const { requireAuth, modal } = useAuthGate();
 
     const startPlainInvitation = () => requireAuth(route('customer.invitations.create'), {});
@@ -26,20 +26,22 @@ export default function Welcome(props: WelcomePageProps) {
 
     return (
         <>
-            <Head title={`${appName} – ${appTagline}`}>
+            {/* Description, canonical, Open Graph and JSON-LD are server-rendered in app.blade.php (partials/seo). */}
+            <Head title={seoTitle}>
                 <link rel="preconnect" href="https://fonts.bunny.net" />
                 <link href="https://fonts.bunny.net/css?family=playfair-display:500,600,700" rel="stylesheet" />
-                <meta name="description" content={appTagline} />
             </Head>
 
             <div className="min-h-screen bg-white">
                 <LandingHeader auth={auth} onCreateInvitation={startPlainInvitation} />
-                <LandingHero auth={auth} appTagline={appTagline} onCreateInvitation={startPlainInvitation} />
-                <LandingFeatures features={features} />
-                <LandingPackages packagesByType={packagesByType} whatsappLink={contact.whatsapp_link} onSelectPackage={startFromPackage} />
-                <LandingShowcase themes={themeSamples} onCreateFromTheme={startFromTheme} />
-                <LandingTestimonials testimonials={testimonials} stats={stats} />
-                <LandingCta auth={auth} onCreateInvitation={startPlainInvitation} />
+                <main>
+                    <LandingHero auth={auth} appTagline={appTagline} onCreateInvitation={startPlainInvitation} />
+                    <LandingFeatures features={features} />
+                    <LandingPackages packagesByType={packagesByType} whatsappLink={contact.whatsapp_link} onSelectPackage={startFromPackage} />
+                    <LandingShowcase themes={themeSamples} onCreateFromTheme={startFromTheme} />
+                    <LandingTestimonials testimonials={testimonials} stats={stats} />
+                    <LandingCta auth={auth} onCreateInvitation={startPlainInvitation} />
+                </main>
                 <LandingFooter contact={contact} appName={appName} />
             </div>
 
