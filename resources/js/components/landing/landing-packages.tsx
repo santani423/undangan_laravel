@@ -36,8 +36,8 @@ export default function LandingPackages({ packagesByType, whatsappLink, onSelect
                     <div className="mx-auto mt-6 h-1 w-24 rounded-full bg-gradient-to-r from-rose-400 to-rose-500" />
                 </div>
 
-                {/* Jenis undangan tabs */}
-                <div className="mb-10 flex flex-wrap justify-center gap-2">
+                {/* Jenis undangan tabs — hidden on single-type pages like /undangan/pernikahan */}
+                <div className={`mb-10 flex-wrap justify-center gap-2 ${packagesByType.length > 1 ? 'flex' : 'hidden'}`}>
                     {packagesByType.map((group) => (
                         <button
                             key={group.event_type}

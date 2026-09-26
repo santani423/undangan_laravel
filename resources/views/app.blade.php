@@ -7,20 +7,18 @@
 
         @php
             $isInvitation = ($page['component'] ?? null) === 'invitation/show';
-            // Public marketing pages that get full server-rendered SEO tags (partials.seo).
-            $seo = match ($page['component'] ?? null) {
-                'welcome'      => config('seo.home'),
-                'themes/index' => config('seo.themes'),
-                default        => null,
-            };
+            // Indexable public pages get full server-rendered SEO tags (<x-seo>).
+            $seo = config('seo.pages.' . ($page['component'] ?? ''));
             // Login/forgot-password/dashboards have no search value and were showing up as Google
-            // sitelinks ("Lupa Password") in place of the brand pages.
+            // sitelinks ("Lupa Password") in place of the brand pages. Guest invitations (and the
+            // theme demos that reuse the same viewer) are personal family events with guest names
+            // in the URL: shareable via link and Open Graph, but kept out of search results.
             $noindex = \Illuminate\Support\Str::is(
-                ['auth/*', 'settings/*', 'admin/*', 'customer/*', 'dashboard', 'error'],
+                ['auth/*', 'settings/*', 'admin/*', 'customer/*', 'dashboard', 'error', 'invitation/show'],
                 $page['component'] ?? '',
             );
             $inv = $isInvitation ? ($page['props']['invitation'] ?? []) : [];
-            $ogTitle = $inv['pageTitle'] ?? $inv['title'] ?? config('app.name', 'Undesia Digital Invitation');
+            $ogTitle = $inv['pageTitle'] ?? $inv['title'] ?? config('seo.site_name');
             $ogDescription = $inv['ogDescription'] ?? 'Anda diundang! Silakan buka undangan digital ini untuk info lengkap acara.';
             $ogImage = $inv['ogImage'] ?? null;
             $ogUrl = $inv['ogUrl'] ?? url()->current();
@@ -30,10 +28,8 @@
             $iconUrl = fn (string $file) => asset($file) . '?v=' . substr(@md5_file(public_path($file)) ?: '1', 0, 8);
         @endphp
 
-        <title inertia>{{ $isInvitation ? $ogTitle : ($seo['title'] ?? config('seo.site_name')) }}</title>
-
         @if($seo)
-            @include('partials.seo', ['seo' => $seo])
+            <x-seo :seo="$seo" :component="$page['component']" :contact="$page['props']['contact'] ?? []" />
         @elseif($noindex)
             <meta name="robots" content="noindex, follow">
         @endif
@@ -42,7 +38,7 @@
             <meta name="description" content="{{ $ogDescription }}">
 
             <meta property="og:type" content="website">
-            <meta property="og:site_name" content="{{ config('app.name', 'Undesia Digital Invitation') }}">
+            <meta property="og:site_name" content="{{ config('seo.site_name') }}">
             <meta property="og:title" content="{{ $ogTitle }}">
             <meta property="og:description" content="{{ $ogDescription }}">
             <meta property="og:url" content="{{ $ogUrl }}">
@@ -71,6 +67,8 @@
             <link rel="icon" href="{{ $iconUrl('favicon.svg') }}" type="image/svg+xml">
         @endif
         <link rel="apple-touch-icon" href="{{ $iconUrl('apple-touch-icon.png') }}">
+        <link rel="manifest" href="{{ $iconUrl('site.webmanifest') }}">
+        <meta name="theme-color" content="#f43f5e">
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
@@ -79,6 +77,11 @@
         @viteReactRefresh
         @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
         @inertiaHead
+        {{-- Fallback title when the SSR server isn't running; with SSR, @inertiaHead above already
+             emitted the page's <title> (Inertia sets $__inertiaSsrResponse in that directive). --}}
+        @if(empty($__inertiaSsrResponse))
+            <title inertia>{{ $isInvitation ? $ogTitle : ($seo['title'] ?? config('seo.site_name')) }}</title>
+        @endif
     </head>
     <body class="font-sans antialiased">
         @inertia

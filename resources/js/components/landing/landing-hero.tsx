@@ -32,7 +32,7 @@ export default function LandingHero({ auth, appTagline, onCreateInvitation }: La
                 </span>
 
                 <h1 className="mt-6 font-serif text-4xl leading-tight font-bold text-gray-800 sm:text-5xl lg:text-6xl">
-                    Rayakan Momen Spesial Anda Bersama{' '}
+                    Undangan Pernikahan Digital yang Elegan Bersama{' '}
                     <span className="bg-gradient-to-r from-rose-600 via-rose-500 to-orange-400 bg-clip-text text-transparent">Undesia</span>
                 </h1>
 

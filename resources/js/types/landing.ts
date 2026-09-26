@@ -70,3 +70,14 @@ export interface WelcomePageProps {
     contact: LandingContact;
     [key: string]: unknown;
 }
+
+export interface WeddingPageProps {
+    appName: string;
+    seoTitle: string;
+    features: LandingFeature[];
+    /** Only the wedding group (0 or 1 entries). */
+    packagesByType: LandingPackageByType[];
+    themeSamples: LandingThemeSample[];
+    themeCount: number;
+    contact: LandingContact;
+}

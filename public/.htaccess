@@ -5,9 +5,9 @@
 
     RewriteEngine On
 
-    # One canonical host: www.undesia.com → undesia.com (matches config/seo.php site_url)
-    RewriteCond %{HTTP_HOST} ^www\.undesia\.com$ [NC]
-    RewriteRule ^ https://undesia.com%{REQUEST_URI} [L,R=301]
+    # One canonical host: undesia.com → www.undesia.com (matches config/seo.php site_url)
+    RewriteCond %{HTTP_HOST} ^undesia\.com$ [NC]
+    RewriteRule ^ https://www.undesia.com%{REQUEST_URI} [L,R=301]
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .

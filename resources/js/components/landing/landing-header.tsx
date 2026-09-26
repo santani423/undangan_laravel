@@ -30,6 +30,7 @@ export default function LandingHeader({ auth, onCreateInvitation }: LandingHeade
 
     const navItems: NavItem[] = [
         { label: 'Beranda', href: '#beranda', anchor: true },
+        { label: 'Undangan Pernikahan', href: route('wedding.index') },
         { label: 'Fitur', href: '#fitur', anchor: true },
         { label: 'Paket', href: '#paket', anchor: true },
         { label: 'Tema', href: route('themes.index') },
@@ -55,7 +56,7 @@ export default function LandingHeader({ auth, onCreateInvitation }: LandingHeade
             }`}
         >
             <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                <Link href="/" aria-label="Undesia">
+                <Link href="/" aria-label="Undesia — Beranda">
                     <LandingLogo />
                 </Link>
 
@@ -118,7 +119,12 @@ export default function LandingHeader({ auth, onCreateInvitation }: LandingHeade
 
                 <Sheet open={isOpen} onOpenChange={setIsOpen}>
                     <SheetTrigger asChild>
-                        <Button variant="ghost" size="icon" className="text-gray-700 hover:bg-rose-50 hover:text-rose-500 lg:hidden">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Buka menu navigasi"
+                            className="text-gray-700 hover:bg-rose-50 hover:text-rose-500 lg:hidden"
+                        >
                             <Menu className="size-6" />
                         </Button>
                     </SheetTrigger>

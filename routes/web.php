@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvitationPublicController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\WeddingThemePreviewController;
 use App\Models\Theme;
 use Illuminate\Http\Request;
@@ -12,6 +13,8 @@ Route::get('/tess', function () {
     return view('tess');
 });
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('undangan/pernikahan', [HomeController::class, 'wedding'])->name('wedding.index');
+Route::get('sitemap.xml', SitemapController::class)->name('sitemap');
 
 Route::get('themes', function (Request $request) {
     $themes = Theme::where('is_active', true)

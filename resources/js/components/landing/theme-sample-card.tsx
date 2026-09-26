@@ -32,7 +32,7 @@ export default function ThemeSampleCard({ theme, onCreate }: ThemeSampleCardProp
                 {showImage ? (
                     <img
                         src={theme.thumbnail ?? undefined}
-                        alt={theme.name}
+                        alt={`Contoh tema undangan ${eventTypeLabel(theme.event_type).toLowerCase()} ${theme.name}`}
                         loading="lazy"
                         onError={() => setImageFailed(true)}
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"

@@ -27,7 +27,13 @@ const SERVICES = [
 export default function LandingFooter({ contact, appName }: LandingFooterProps) {
     const handleAnchorClick = (e: React.MouseEvent, href: string) => {
         e.preventDefault();
-        document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' });
+        const section = document.querySelector(href);
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            // Footer is also used on pages without these sections (e.g. /themes).
+            window.location.href = route('home') + href;
+        }
     };
 
     return (
@@ -90,6 +96,9 @@ export default function LandingFooter({ contact, appName }: LandingFooterProps) 
                                     {item.label}
                                 </a>
                             ))}
+                            <Link href={route('wedding.index')} className="block text-gray-300 transition-colors hover:text-rose-300">
+                                Undangan Pernikahan
+                            </Link>
                             <Link href={route('themes.index')} className="block text-gray-300 transition-colors hover:text-rose-300">
                                 Semua Tema
                             </Link>

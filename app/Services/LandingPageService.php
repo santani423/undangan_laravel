@@ -226,7 +226,7 @@ class LandingPageService
             'whatsapp'      => self::adminWhatsappNumber(),
             'whatsapp_link' => WhatsAppLink::build(self::adminWhatsappNumber()),
             'email'         => (string) AppSetting::get('company_email', 'halo@undesia.com'),
-            'instagram'     => '@undesia.official',
+            'instagram'     => '@undesia_id',
             'facebook'      => 'UNDESIA Official',
         ];
     }
