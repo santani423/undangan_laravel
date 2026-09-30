@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\EventTypeController;
 use App\Http\Controllers\Admin\Settings\PackageController;
 use App\Http\Controllers\Admin\Settings\PaymentSettingController;
@@ -74,7 +75,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'area:admin'])->grou
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/platform', fn () => Inertia::render('admin/reports/platform'))->name('platform');
         Route::get('/revenue', fn () => Inertia::render('admin/reports/revenue'))->name('revenue');
-        Route::get('/activity-logs', fn () => Inertia::render('admin/reports/activity-logs'))->name('activity-logs');
+        Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs');
     });
 
     // ─── Pengaturan Sistem ────────────────────────────────────────────────────

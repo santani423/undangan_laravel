@@ -49,7 +49,9 @@ interface UserDetail {
 interface InvitationItem {
     id: number;
     slug: string;
-    invitation_code: string;
+    invitation_code: string | null;
+    /** Null when the invitation is soft-deleted (not served publicly). */
+    preview_url: string | null;
     title: string;
     description: string | null;
     status: string;
@@ -89,9 +91,13 @@ interface TransactionItem {
 interface ActivityLogItem {
     id: number;
     action: string;
+    description: string;
+    module: string | null;
     model_type: string | null;
     model_id: number | null;
+    changes: Record<string, unknown> | null;
     ip_address: string | null;
+    user_agent: string | null;
     created_at: string | null;
 }
 
@@ -442,15 +448,25 @@ export default function AdminUserShow({ user, invitations, transactions, activit
                                             </td>
                                             <td className="px-4 py-4 align-top">
                                                 <div className="flex flex-col gap-1.5 sm:flex-row">
-                                                    <a
-                                                        href={`/${invitation.invitation_code}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-border/60 px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/40"
-                                                    >
-                                                        <ExternalLink className="size-3.5" />
-                                                        Preview
-                                                    </a>
+                                                    {invitation.preview_url ? (
+                                                        <a
+                                                            href={invitation.preview_url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-border/60 px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/40"
+                                                        >
+                                                            <ExternalLink className="size-3.5" />
+                                                            Preview
+                                                        </a>
+                                                    ) : (
+                                                        <span
+                                                            title="Undangan sudah dihapus"
+                                                            className="inline-flex cursor-not-allowed items-center gap-1.5 whitespace-nowrap rounded-lg border border-border/60 px-2.5 py-1.5 text-xs font-medium text-muted-foreground opacity-60"
+                                                        >
+                                                            <ExternalLink className="size-3.5" />
+                                                            Preview
+                                                        </span>
+                                                    )}
                                                     <button
                                                         type="button"
                                                         onClick={() => setSelectedInvitation(invitation)}
@@ -549,7 +565,7 @@ export default function AdminUserShow({ user, invitations, transactions, activit
                             <table className="w-full">
                                 <thead>
                                     <tr className="border-b border-border/40 bg-muted/20">
-                                        {['Aksi', 'Objek', 'IP Address', 'Waktu'].map((heading) => (
+                                        {['Aktivitas', 'Modul', 'IP Address', 'Waktu'].map((heading) => (
                                             <th
                                                 key={heading}
                                                 className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold text-muted-foreground"
@@ -565,12 +581,13 @@ export default function AdminUserShow({ user, invitations, transactions, activit
                                             <td className="px-4 py-4 align-top">
                                                 <p className="flex items-center gap-1.5 text-sm text-foreground">
                                                     <MessageSquare className="size-3.5 text-muted-foreground" />
-                                                    {log.action}
+                                                    {log.description}
                                                 </p>
+                                                <p className="mt-0.5 font-mono text-xs text-muted-foreground">{log.action}</p>
                                             </td>
                                             <td className="px-4 py-4 align-top">
                                                 <p className="text-xs text-muted-foreground">
-                                                    {log.model_type ? `${log.model_type} #${log.model_id}` : '-'}
+                                                    {log.module ? `${log.module} #${log.model_id}` : '-'}
                                                 </p>
                                             </td>
                                             <td className="px-4 py-4 align-top">
@@ -632,7 +649,11 @@ export default function AdminUserShow({ user, invitations, transactions, activit
                                 </div>
                                 <div>
                                     <p className="text-xs font-medium text-muted-foreground">Kode Undangan</p>
-                                    <p className="font-mono text-sm text-foreground">{selectedInvitation.invitation_code}</p>
+                                    {selectedInvitation.invitation_code ? (
+                                        <p className="font-mono text-sm text-foreground">{selectedInvitation.invitation_code}</p>
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground">Tidak diatur (URL memakai slug)</p>
+                                    )}
                                 </div>
                                 <div>
                                     <p className="text-xs font-medium text-muted-foreground">Tipe Acara</p>
@@ -698,15 +719,19 @@ export default function AdminUserShow({ user, invitations, transactions, activit
                                 </div>
                             </div>
 
-                            <a
-                                href={`/${selectedInvitation.invitation_code}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-                            >
-                                <ExternalLink className="size-3.5" />
-                                Buka Preview Undangan
-                            </a>
+                            {selectedInvitation.preview_url ? (
+                                <a
+                                    href={selectedInvitation.preview_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                                >
+                                    <ExternalLink className="size-3.5" />
+                                    Buka Preview Undangan
+                                </a>
+                            ) : (
+                                <p className="text-xs text-muted-foreground">Undangan ini sudah dihapus sehingga tidak dapat dipreview.</p>
+                            )}
                         </>
                     )}
                 </DialogContent>

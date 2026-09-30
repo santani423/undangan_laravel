@@ -7,6 +7,7 @@ use App\Models\ActivityLog;
 use App\Models\Invitation;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -49,6 +50,8 @@ class UserController extends Controller
 
     public function show(User $user): Response
     {
+        ActivityLogger::record('viewed', $user);
+
         $user->loadMissing('roles:id,name', 'profile');
 
         $invitations = $user->invitations()
@@ -65,6 +68,8 @@ class UserController extends Controller
                 'id'                    => $invitation->id,
                 'slug'                  => $invitation->slug,
                 'invitation_code'       => $invitation->invitation_code,
+                // Soft-deleted invitations are not served by the public viewer.
+                'preview_url'           => $invitation->trashed() ? null : url('/' . $invitation->publicCode()),
                 'title'                 => $invitation->title,
                 'description'           => $invitation->description,
                 'status'                => $invitation->status,
@@ -122,16 +127,10 @@ class UserController extends Controller
 
         $activityLogs = $user->activityLogs()
             ->orderByDesc('created_at')
+            ->orderByDesc('id')
             ->limit(200)
             ->get()
-            ->map(fn (ActivityLog $log) => [
-                'id'         => $log->id,
-                'action'     => $log->action,
-                'model_type' => $log->model_type,
-                'model_id'   => $log->model_id,
-                'ip_address' => $log->ip_address,
-                'created_at' => $log->created_at?->toDateTimeString(),
-            ])
+            ->map(fn (ActivityLog $log) => $log->toAdminArray())
             ->values();
 
         return Inertia::render('admin/users/show', [

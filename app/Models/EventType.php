@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class EventType extends Model
 {
+    use LogsActivity;
+
     /**
      * Maps event_types.name to packages.invitation_type. `label` is a
      * free-form display string (see database/seeders/EventTypeSeeder.php)

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,6 +12,10 @@ use Illuminate\Validation\ValidationException;
 
 class Theme extends Model
 {
+    use LogsActivity;
+
+    protected array $activityLogExcept = ['usage_count'];
+
     protected $fillable = [
         'name',
         'slug',

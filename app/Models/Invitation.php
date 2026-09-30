@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Invitation extends Model
 {
-    use SoftDeletes;
+    use LogsActivity, SoftDeletes;
 
     protected $fillable = [
         'user_id',
@@ -210,5 +211,14 @@ class Invitation extends Model
     public function isExpired(): bool
     {
         return $this->expires_at && $this->expires_at->isPast();
+    }
+
+    /**
+     * Code used in the public URL (/{code}). `invitation_code` is optional —
+     * the viewer route resolves the slug too — so fall back to the slug.
+     */
+    public function publicCode(): string
+    {
+        return $this->invitation_code ?: $this->slug;
     }
 }
