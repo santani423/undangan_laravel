@@ -71,6 +71,7 @@ interface InvitationBase {
     countdownDate: string; // "YYYY-MM-DDTHH:mm:ss"
     pageTitle: string;
     ogImage?: string | null;
+    favicon?: string | null;
     ogDescription?: string;
     ogUrl?: string;
     mainDateFormatted: string;

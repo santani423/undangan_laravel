@@ -6,6 +6,7 @@ use App\Models\Invitation;
 use App\Models\Guest;
 use App\Models\Theme;
 use App\Support\InvitationMusic;
+use App\Support\ShareImage;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -72,7 +73,13 @@ class InvitationPublicController extends Controller
             $data['guestSlug'] = $guest->slug;
         }
 
-        $data['ogImage']       = $this->resolveOgImage($data);
+        $share = ShareImage::for($this->resolveOgImage($data));
+
+        $data['ogImage']       = $share['og']['url'];
+        $data['ogImageType']   = $share['og']['type'];
+        $data['ogImageWidth']  = $share['og']['width'];
+        $data['ogImageHeight'] = $share['og']['height'];
+        $data['favicon']       = $share['icon'];
         $data['ogDescription'] = $this->resolveOgDescription($data);
         $data['ogUrl']         = $request->fullUrl();
         $data['isSample']      = (bool) $invitation->is_sample;
@@ -88,6 +95,7 @@ class InvitationPublicController extends Controller
     /**
      * Pick the best available photo to use as the social share (Open Graph) image
      * and favicon, since crawlers like WhatsApp's only read the initial server HTML.
+     * ShareImage turns it into formats those crawlers and browsers actually accept.
      */
     private function resolveOgImage(array $data): ?string
     {

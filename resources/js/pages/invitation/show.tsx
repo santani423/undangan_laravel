@@ -295,36 +295,14 @@ function resolveThemeComponent(themeSlug: string, invitation: InvitationData, vi
     }
 }
 
-const DEFAULT_FAVICON = '/favicon.png';
-
-// Fallback for older cached responses that predate the server-computed `ogImage` field.
-function getFaviconUrl(invitation: InvitationData): string {
-    if (invitation.ogImage) return invitation.ogImage;
-
-    switch (invitation.type) {
-        case 'wedding': {
-            const w = invitation as WeddingInvitation;
-            return w.couplePhoto || w.groomPhoto || w.bridePhoto || DEFAULT_FAVICON;
-        }
-        case 'birthday':
-            return (invitation as BirthdayInvitation).celebrantPhoto || DEFAULT_FAVICON;
-        case 'khitanan':
-            return (invitation as KhitananInvitation).childPhoto || DEFAULT_FAVICON;
-        case 'aqiqah':
-            return (invitation as AqiqahInvitation).babyPhoto || DEFAULT_FAVICON;
-        case 'gender_reveal':
-            return (invitation as GenderRevealInvitation).parentsPhoto || DEFAULT_FAVICON;
-        case 'syukuran':
-            return (invitation as SyukuranInvitation).hostPhoto || DEFAULT_FAVICON;
-        default:
-            return DEFAULT_FAVICON;
-    }
-}
-
 export default function InvitationShow({ invitation, themeSlug, visitor }: Props) {
-    const faviconUrl = getFaviconUrl(invitation);
+    // Small PNG built server-side from the invitation's photo (App\Support\ShareImage);
+    // empty when the invitation has no photo, in which case the app favicon stays.
+    const faviconUrl = invitation.favicon;
 
     useEffect(() => {
+        if (!faviconUrl) return;
+
         // Keeps the favicon correct if the client ever renders a different invitation
         // without a full page reload. The initial load's favicon and Open Graph tags
         // (what WhatsApp/Facebook/Telegram crawlers read) are rendered server-side in
@@ -333,6 +311,7 @@ export default function InvitationShow({ invitation, themeSlug, visitor }: Props
         original.forEach((el) => el.remove());
         const link = document.createElement('link');
         link.rel = 'icon';
+        link.type = 'image/png';
         link.href = faviconUrl;
         document.head.appendChild(link);
 

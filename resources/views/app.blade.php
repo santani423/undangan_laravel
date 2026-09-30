@@ -20,7 +20,9 @@
             $inv = $isInvitation ? ($page['props']['invitation'] ?? []) : [];
             $ogTitle = $inv['pageTitle'] ?? $inv['title'] ?? config('seo.site_name');
             $ogDescription = $inv['ogDescription'] ?? 'Anda diundang! Silakan buka undangan digital ini untuk info lengkap acara.';
+            // Both built by App\Support\ShareImage: a JPEG WhatsApp can preview and a small PNG icon.
             $ogImage = $inv['ogImage'] ?? null;
+            $invitationIcon = $inv['favicon'] ?? null;
             $ogUrl = $inv['ogUrl'] ?? url()->current();
             // ?v=<content hash> busts the browser's long-lived favicon cache whenever the file changes,
             // while staying stable across deploys (mtime changes on every checkout, which would keep
@@ -45,8 +47,14 @@
             @if($ogImage)
                 <meta property="og:image" content="{{ $ogImage }}">
                 <meta property="og:image:secure_url" content="{{ $ogImage }}">
-                <meta property="og:image:width" content="1200">
-                <meta property="og:image:height" content="1200">
+                @if(! empty($inv['ogImageType']))
+                    <meta property="og:image:type" content="{{ $inv['ogImageType'] }}">
+                @endif
+                @if(! empty($inv['ogImageWidth']) && ! empty($inv['ogImageHeight']))
+                    <meta property="og:image:width" content="{{ $inv['ogImageWidth'] }}">
+                    <meta property="og:image:height" content="{{ $inv['ogImageHeight'] }}">
+                @endif
+                <meta property="og:image:alt" content="{{ $ogTitle }}">
             @endif
 
             <meta name="twitter:card" content="{{ $ogImage ? 'summary_large_image' : 'summary' }}">
@@ -55,8 +63,10 @@
             @if($ogImage)
                 <meta name="twitter:image" content="{{ $ogImage }}">
             @endif
+        @endif
 
-            <link rel="icon" href="{{ $ogImage ?: $iconUrl('favicon.png') }}">
+        @if($invitationIcon)
+            <link rel="icon" href="{{ $invitationIcon }}" type="image/png" sizes="192x192">
         @else
             {{-- Google Search favicon: square, multiple of 48px, crawlable, declared in the raw HTML. --}}
             <link rel="icon" href="{{ $iconUrl('favicon.ico') }}" sizes="16x16 32x32 48x48">
