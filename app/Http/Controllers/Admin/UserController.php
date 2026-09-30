@@ -68,8 +68,12 @@ class UserController extends Controller
                 'id'                    => $invitation->id,
                 'slug'                  => $invitation->slug,
                 'invitation_code'       => $invitation->invitation_code,
-                // Soft-deleted invitations are not served by the public viewer.
-                'preview_url'           => $invitation->trashed() ? null : url('/' . $invitation->publicCode()),
+                // The public viewer resolves /{slug}. Soft-deleted invitations
+                // are not served, and without a slug there is nothing to open.
+                'preview_url'           => $invitation->trashed() || ! $invitation->slug
+                    ? null
+                    : url('/' . rawurlencode($invitation->slug)),
+                'detail_url'            => $invitation->trashed() ? null : route('admin.invitations.show', $invitation->id),
                 'title'                 => $invitation->title,
                 'description'           => $invitation->description,
                 'status'                => $invitation->status,

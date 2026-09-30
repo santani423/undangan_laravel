@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\EventTypeController;
+use App\Http\Controllers\Admin\InvitationController as AdminInvitationController;
 use App\Http\Controllers\Admin\Settings\PackageController;
 use App\Http\Controllers\Admin\Settings\PaymentSettingController;
 use App\Http\Controllers\Admin\Themes\ThemeController;
@@ -28,6 +29,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'area:admin'])->grou
     Route::prefix('invitations')->name('invitations.')->group(function () {
         Route::get('/', fn () => Inertia::render('admin/invitations/index'))->name('index');
         Route::get('/custom-domains', fn () => Inertia::render('admin/invitations/custom-domains'))->name('custom-domains');
+        Route::get('/check-slug', [AdminInvitationController::class, 'checkSlug'])->name('check-slug');
+        Route::get('/{invitation:id}', [AdminInvitationController::class, 'show'])->name('show')->whereNumber('invitation');
+        Route::patch('/{invitation:id}', [AdminInvitationController::class, 'update'])->name('update')->whereNumber('invitation');
+        Route::patch('/{invitation:id}/settings', [AdminInvitationController::class, 'updateSettings'])->name('update-settings')->whereNumber('invitation');
+        Route::patch('/{invitation:id}/theme', [AdminInvitationController::class, 'updateTheme'])->name('update-theme')->whereNumber('invitation');
+        Route::post('/{invitation:id}/upload-music', [AdminInvitationController::class, 'uploadMusic'])->name('upload-music')->whereNumber('invitation');
     });
 
     // ─── Konten Platform ─────────────────────────────────────────────────────

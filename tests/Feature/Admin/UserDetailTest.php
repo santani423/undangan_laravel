@@ -45,13 +45,15 @@ it('builds the preview url from the slug when the invitation has no code', funct
             ->where('invitations.0.preview_url', url('/giavanya-elisabet-kau-suni')));
 });
 
-it('prefers the invitation code for the preview url', function () {
+it('builds the preview url from the slug even when the invitation has a code', function () {
     $customer = User::factory()->create();
-    userDetailInvitation($customer, ['invitation_code' => 'giavanya-27']);
+    $invitation = userDetailInvitation($customer, ['invitation_code' => 'giavanya-27']);
 
     $this->actingAs(userDetailAdmin())
         ->get(route('admin.users.show', $customer))
-        ->assertInertia(fn ($page) => $page->where('invitations.0.preview_url', url('/giavanya-27')));
+        ->assertInertia(fn ($page) => $page
+            ->where('invitations.0.preview_url', url('/giavanya-elisabet-kau-suni'))
+            ->where('invitations.0.detail_url', route('admin.invitations.show', $invitation->id)));
 });
 
 it('has no preview url for a soft-deleted invitation', function () {

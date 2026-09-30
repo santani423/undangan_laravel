@@ -50,8 +50,10 @@ interface InvitationItem {
     id: number;
     slug: string;
     invitation_code: string | null;
-    /** Null when the invitation is soft-deleted (not served publicly). */
+    /** Null when the invitation is soft-deleted or has no slug (not served publicly). */
     preview_url: string | null;
+    /** Admin detail/editor page; null for soft-deleted invitations. */
+    detail_url: string | null;
     title: string;
     description: string | null;
     status: string;
@@ -460,21 +462,31 @@ export default function AdminUserShow({ user, invitations, transactions, activit
                                                         </a>
                                                     ) : (
                                                         <span
-                                                            title="Undangan sudah dihapus"
+                                                            title={invitation.deleted_at ? 'Undangan sudah dihapus' : 'Slug undangan belum tersedia'}
                                                             className="inline-flex cursor-not-allowed items-center gap-1.5 whitespace-nowrap rounded-lg border border-border/60 px-2.5 py-1.5 text-xs font-medium text-muted-foreground opacity-60"
                                                         >
                                                             <ExternalLink className="size-3.5" />
                                                             Preview
                                                         </span>
                                                     )}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setSelectedInvitation(invitation)}
-                                                        className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-border/60 px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/40"
-                                                    >
-                                                        <Info className="size-3.5" />
-                                                        Detail
-                                                    </button>
+                                                    {invitation.detail_url ? (
+                                                        <Link
+                                                            href={invitation.detail_url}
+                                                            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-border/60 px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/40"
+                                                        >
+                                                            <Info className="size-3.5" />
+                                                            Detail
+                                                        </Link>
+                                                    ) : (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setSelectedInvitation(invitation)}
+                                                            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-border/60 px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/40"
+                                                        >
+                                                            <Info className="size-3.5" />
+                                                            Detail
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
@@ -726,7 +738,11 @@ export default function AdminUserShow({ user, invitations, transactions, activit
                                     Buka Preview Undangan
                                 </a>
                             ) : (
-                                <p className="text-xs text-muted-foreground">Undangan ini sudah dihapus sehingga tidak dapat dipreview.</p>
+                                <p className="text-xs text-muted-foreground">
+                                    {selectedInvitation.deleted_at
+                                        ? 'Undangan ini sudah dihapus sehingga tidak dapat dipreview.'
+                                        : 'Slug undangan belum tersedia. Preview belum dapat dibuka.'}
+                                </p>
                             )}
                         </>
                     )}
