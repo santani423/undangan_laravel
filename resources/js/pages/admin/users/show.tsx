@@ -448,15 +448,15 @@ export default function AdminUserShow({ user, invitations, transactions, activit
                                             </td>
                                             <td className="px-4 py-4 align-top">
                                                 <div className="flex flex-col gap-1.5 sm:flex-row">
-                                                    {invitation.preview_url ? (
+                                                    {invitation.slug ? (
                                                         <a
-                                                            href={invitation.preview_url}
+                                                            href={invitation.slug}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-border/60 px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/40"
                                                         >
                                                             <ExternalLink className="size-3.5" />
-                                                            Preview
+                                                            Preview ini 
                                                         </a>
                                                     ) : (
                                                         <span
