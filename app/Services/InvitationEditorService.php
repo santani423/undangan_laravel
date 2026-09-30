@@ -9,6 +9,7 @@ use App\Models\InvitationEvent;
 use App\Models\Package;
 use App\Models\Story;
 use App\Models\Theme;
+use App\Support\InvitationMusic;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -186,6 +187,8 @@ class InvitationEditorService
             'availableThemes'    => $availableThemes,
             'invitationSettings' => $invitationSettings,
             'availableMusic'     => [],
+            // Same event type the public viewer resolves music with (the theme's).
+            'defaultMusic'       => InvitationMusic::default($invitation->theme?->event_type ?? $invitation->eventType?->name),
         ];
     }
 

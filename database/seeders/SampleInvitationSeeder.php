@@ -16,6 +16,7 @@ use App\Models\Package;
 use App\Models\Story;
 use App\Models\Theme;
 use App\Models\User;
+use App\Support\InvitationMusic;
 use Database\Seeders\Data\SampleInvitationData;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
@@ -188,6 +189,10 @@ class SampleInvitationSeeder extends Seeder
         // No stable, license-safe video to embed; keep the section hidden.
         $features['video'] = false;
 
+        // Types with a bundled default track (birthday) keep music_url empty so
+        // the preview plays that default, exactly like a fresh customer invitation.
+        $hasDefaultMusic = InvitationMusic::default($invitation->eventType?->name) !== null;
+
         InvitationSetting::updateOrCreate(['invitation_id' => $invitation->id], [
             'feature_rsvp'           => true,
             'feature_gift_wishlist'  => ! empty($data['wishlist']),
@@ -202,9 +207,9 @@ class SampleInvitationSeeder extends Seeder
             'music_enabled'          => true,
             'music_autoplay'         => true,
             'music_loop'             => true,
-            'music_source'           => 'upload',
+            'music_source'           => $hasDefaultMusic ? null : 'upload',
             'music_library_id'       => null,
-            'music_url'              => self::ASSET_DIR.'/music.mp3',
+            'music_url'              => $hasDefaultMusic ? null : self::ASSET_DIR.'/music.mp3',
             'features'               => $features,
         ]);
     }

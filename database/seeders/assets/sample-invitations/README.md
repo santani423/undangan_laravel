@@ -8,6 +8,8 @@ the demo invitations never depend on external URLs.
   [StockSnap.io](https://stocksnap.io), which publishes under CC0 (free for
   commercial use, no attribution needed).
 - `music.mp3`: the background track bundled with the project's wedding themes.
+  Birthday samples don't use it: they leave the music empty and play the
+  default `public/audio/birthday-default.mp3` (see `App\Support\InvitationMusic`).
 - `qris-sample.png`: QR code that only encodes the text "CONTOH QRIS UNDESIA".
   It is **not** a payment code.
 

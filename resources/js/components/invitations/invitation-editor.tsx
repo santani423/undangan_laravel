@@ -246,6 +246,8 @@ export interface InvitationEditorData {
     availableThemes:     ThemeItem[];
     invitationSettings:  InvitationSettingsData | null;
     availableMusic:      MusicTrack[];
+    /** Bundled track played when there is no custom music (birthday only); null for other types. */
+    defaultMusic:        DefaultMusic | null;
 }
 
 /**
@@ -289,6 +291,11 @@ interface MusicTrack {
     artist: string;
     genre: string;
     preview_url: string;
+}
+
+interface DefaultMusic {
+    url: string;
+    label: string;
 }
 
 interface InvitationSettingsData {
@@ -2287,6 +2294,24 @@ function ToggleSwitch({ enabled, onChange }: { enabled: boolean; onChange: (v: b
 
 // ─── Settings Tab ─────────────────────────────────────────────────────────────
 
+/** Shown while an invitation has no custom music and falls back to the bundled track. */
+function DefaultMusicNotice({ music }: { music: DefaultMusic }) {
+    return (
+        <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
+                <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Music2 className="size-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{music.label} digunakan</p>
+                    <p className="text-[11px] text-muted-foreground">Belum ada musik custom. Upload musik sendiri untuk menggantinya.</p>
+                </div>
+            </div>
+            <audio controls src={music.url} className="w-full h-9 rounded-xl" />
+        </div>
+    );
+}
+
 function SettingsTab({
     initialSlug,
     invitationId,
@@ -2294,6 +2319,7 @@ function SettingsTab({
     fieldValues,
     initSettings,
     availableMusic,
+    defaultMusic,
     maxMusicMb,
     endpoints,
 }: {
@@ -2304,6 +2330,7 @@ function SettingsTab({
     fieldValues: Record<string, string>;
     initSettings: InvitationSettingsData | null;
     availableMusic: MusicTrack[];
+    defaultMusic: DefaultMusic | null;
     maxMusicMb: number;
 }) {
     const inputCls = 'w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition placeholder:text-muted-foreground';
@@ -2333,6 +2360,8 @@ function SettingsTab({
     const [musicUploadError, setMusicUploadError] = useState('');
     const [previewingId,   setPreviewingId]   = useState<string | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    // No custom track → the viewer plays the bundled default regardless of music_enabled.
+    const usingDefaultMusic = defaultMusic !== null && !musicUploadUrl;
 
     // ── Features ──────────────────────────────────────────────────────────────
     const [features, setFeatures] = useState<Record<string, boolean>>({
@@ -2499,7 +2528,10 @@ function SettingsTab({
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400 truncate">File musik siap digunakan</p>
-                                        <p className="text-[11px] text-emerald-600/70 dark:text-emerald-500">Akan diputar saat tamu membuka undangan</p>
+                                        <p className="text-[11px] text-emerald-600/70 dark:text-emerald-500">
+                                            Akan diputar saat tamu membuka undangan
+                                            {defaultMusic && ` — hapus untuk kembali ke ${defaultMusic.label}`}
+                                        </p>
                                     </div>
                                     <button
                                         type="button"
@@ -2526,12 +2558,14 @@ function SettingsTab({
                                 </div>
                             </div>
                         ) : (
+                            <>
+                            {defaultMusic && <DefaultMusicNotice music={defaultMusic} />}
                             <label className={`group flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed py-8 transition-colors text-muted-foreground ${musicUploading ? 'border-primary/40 bg-primary/5 cursor-wait' : 'border-border cursor-pointer hover:border-primary hover:bg-primary/5 hover:text-primary'}`}>
                                 <div className={`size-12 rounded-xl border bg-muted/40 flex items-center justify-center transition-colors ${musicUploading ? 'border-primary/50 bg-primary/10' : 'border-border group-hover:border-primary/50 group-hover:bg-primary/10'}`}>
                                     {musicUploading ? <Loader2 className="size-6 animate-spin text-primary" /> : <Music2 className="size-6" />}
                                 </div>
                                 <div className="text-center">
-                                    <p className="text-sm font-medium">{musicUploading ? 'Mengupload musik...' : 'Klik untuk upload musik latar'}</p>
+                                    <p className="text-sm font-medium">{musicUploading ? 'Mengupload musik...' : defaultMusic ? 'Klik untuk ganti dengan musik sendiri' : 'Klik untuk upload musik latar'}</p>
                                     <p className="text-xs mt-0.5">Format MP3, AAC, OGG — maks. {maxMusicMb} MB</p>
                                 </div>
                                 {musicUploadError && <p className="text-xs text-destructive">{musicUploadError}</p>}
@@ -2543,6 +2577,7 @@ function SettingsTab({
                                     onChange={handleMusicFileChange}
                                 />
                             </label>
+                            </>
                         )}
                     </div>
                 </div>
@@ -2642,11 +2677,24 @@ function SettingsTab({
                         <h3 className="font-semibold text-foreground text-sm">Musik Latar</h3>
                         <p className="text-xs text-muted-foreground">Musik yang diputar saat tamu membuka undangan</p>
                     </div>
-                    <ToggleSwitch enabled={musicEnabled} onChange={setMusicEnabled} />
+                    {usingDefaultMusic ? (
+                        <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">Default aktif</span>
+                    ) : (
+                        <ToggleSwitch enabled={musicEnabled} onChange={setMusicEnabled} />
+                    )}
                 </div>
 
-                {musicEnabled && (
+                {(musicEnabled || usingDefaultMusic) && (
                     <div className="flex flex-col gap-4 pt-1">
+                        {usingDefaultMusic && defaultMusic && (
+                            <>
+                                <DefaultMusicNotice music={defaultMusic} />
+                                <p className="text-xs text-muted-foreground">
+                                    Untuk mematikan musik sepenuhnya, nonaktifkan <span className="font-medium text-foreground">Musik Latar</span> pada bagian Fitur & Halaman Undangan di bawah.
+                                </p>
+                            </>
+                        )}
+
                         {/* Music options */}
                         <div className="flex flex-col gap-1">
                             <div className="flex items-center justify-between py-2.5 border-t border-border/50">
@@ -3585,6 +3633,7 @@ export default function InvitationEditor({
     availableThemes,
     invitationSettings,
     availableMusic,
+    defaultMusic,
     endpoints,
     management,
     back,
@@ -3785,6 +3834,7 @@ export default function InvitationEditor({
                         fieldValues={fieldValues}
                         initSettings={invitationSettings}
                         availableMusic={availableMusic ?? []}
+                        defaultMusic={defaultMusic ?? null}
                         maxMusicMb={pkg.max_music_upload_mb ?? 10}
                         endpoints={endpoints}
                     />

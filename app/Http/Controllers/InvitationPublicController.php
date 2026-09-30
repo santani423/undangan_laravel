@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Invitation;
 use App\Models\Guest;
 use App\Models\Theme;
+use App\Support\InvitationMusic;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -205,14 +206,8 @@ class InvitationPublicController extends Controller
         $featuresRaw   = $settings?->features ?? [];
         $features      = ! empty($featuresRaw) ? $featuresRaw : null;
 
-        // Music — stored in invitation_settings; music_url may be a storage path
-        $rawMusicUrl   = $settings?->music_url ?? '';
-        $musicUrl      = $rawMusicUrl
-            ? (str_starts_with($rawMusicUrl, 'http') ? $rawMusicUrl : asset('storage/' . $rawMusicUrl))
-            : '';
-        $musicEnabled  = (bool) ($settings?->music_enabled ?? false);
-        $musicAutoplay = (bool) ($settings?->music_autoplay ?? true);
-        $musicLoop     = (bool) ($settings?->music_loop ?? true);
+        // Music — custom track from invitation_settings, else the event type's default (if any)
+        $music = InvitationMusic::resolve($settings, $eventType);
 
         // Greeting / cover page settings
         $greeting = [
@@ -262,12 +257,8 @@ class InvitationPublicController extends Controller
         if ($features !== null) {
             $base['features'] = $features;
         }
-        if ($musicEnabled && $musicUrl) {
-            $base['music'] = [
-                'url'      => $musicUrl,
-                'autoplay' => $musicAutoplay,
-                'loop'     => $musicLoop,
-            ];
+        if ($music !== null) {
+            $base['music'] = $music;
         }
 
         if ($eventType === 'wedding') {
