@@ -448,15 +448,15 @@ export default function AdminUserShow({ user, invitations, transactions, activit
                                             </td>
                                             <td className="px-4 py-4 align-top">
                                                 <div className="flex flex-col gap-1.5 sm:flex-row">
-                                                    {invitation.slug ? (
+                                                    {invitation.preview_url ? (
                                                         <a
-                                                            href={invitation.slug}
+                                                            href={invitation.preview_url}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-border/60 px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/40"
                                                         >
                                                             <ExternalLink className="size-3.5" />
-                                                            Preview ini 
+                                                            Preview
                                                         </a>
                                                     ) : (
                                                         <span
@@ -649,11 +649,7 @@ export default function AdminUserShow({ user, invitations, transactions, activit
                                 </div>
                                 <div>
                                     <p className="text-xs font-medium text-muted-foreground">Kode Undangan</p>
-                                    {selectedInvitation.invitation_code ? (
-                                        <p className="font-mono text-sm text-foreground">{selectedInvitation.invitation_code}</p>
-                                    ) : (
-                                        <p className="text-sm text-muted-foreground">Tidak diatur (URL memakai slug)</p>
-                                    )}
+                                    <p className="font-mono text-sm text-foreground">{selectedInvitation.invitation_code}</p>
                                 </div>
                                 <div>
                                     <p className="text-xs font-medium text-muted-foreground">Tipe Acara</p>
