@@ -15,16 +15,20 @@ import {
     EyeOff,
     FileText,
     Globe,
+    Info,
     LayoutGrid,
+    QrCode,
     RefreshCw,
     Save,
     Shield,
     Smartphone,
+    Upload,
     Wallet,
     Wifi,
     WifiOff,
     Zap,
 } from 'lucide-react';
+import { BrowserQRCodeReader } from '@zxing/browser';
 import { useEffect, useRef, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -35,6 +39,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const tabs: SettingsTab[] = [
     { id: 'gateway',  label: 'Payment Gateway',       icon: CreditCard  },
+    { id: 'qris',     label: 'QRIS',                  icon: QrCode      },
     { id: 'methods',  label: 'Metode Pembayaran',     icon: LayoutGrid  },
     { id: 'webhook',  label: 'Konfigurasi Webhook',   icon: Globe       },
     { id: 'logs',     label: 'Log Integrasi',         icon: FileText    },
@@ -64,9 +69,22 @@ interface GatewayData {
     configuredAt: string | null;
 }
 
+interface QrisSettings {
+    enabled: boolean;
+    basePayload: string;
+    merchantName: string;
+    discountMin: number;
+    discountMax: number;
+    taxRate: number;
+    cheapestPackagePrice: number | null;
+    configuredAt: string | null;
+}
+
 interface PageProps {
     gateways: GatewayData[];
     enabledMethods: string[];
+    qris: QrisSettings;
+    errors: Record<string, string>;
     webhook: { successRedirectUrl: string; failedRedirectUrl: string; pendingRedirectUrl: string };
     flash: { success?: string | null; error?: string | null };
     [key: string]: unknown;
@@ -475,6 +493,149 @@ function TabGateway({ gateways }: { gateways: GatewayData[] }) {
     );
 }
 
+// ── Tab: QRIS ─────────────────────────────────────────────────────────────────
+
+function formatRupiah(value: number): string {
+    return new Intl.NumberFormat('id-ID').format(value);
+}
+
+function RupiahInput({ value, onChange, error }: { value: number; onChange: (v: number) => void; error?: string }) {
+    return (
+        <div>
+            <div className={`flex items-center rounded-lg border bg-background focus-within:ring-2 focus-within:ring-primary/30 transition-all ${error ? 'border-red-300' : 'border-border/60'}`}>
+                <span className="pl-3 text-sm text-muted-foreground">Rp</span>
+                <input type="text" inputMode="numeric" value={formatRupiah(value)}
+                    onChange={(e) => onChange(Number(e.target.value.replace(/\D/g, '').slice(0, 9)) || 0)}
+                    className="w-full bg-transparent px-2 py-2 text-sm text-foreground focus:outline-none" />
+            </div>
+            {error && <p className="mt-1 text-[11px] text-red-600">{error}</p>}
+        </div>
+    );
+}
+
+function TabQris({ qris, globalQrisEnabled }: { qris: QrisSettings; globalQrisEnabled: boolean }) {
+    const { errors } = usePage<PageProps>().props;
+    const [enabled, setEnabled] = useState(qris.enabled);
+    const [basePayload, setBasePayload] = useState(qris.basePayload);
+    const [discountMin, setDiscountMin] = useState(qris.discountMin);
+    const [discountMax, setDiscountMax] = useState(qris.discountMax);
+    const [decoding, setDecoding] = useState(false);
+    const [decodeError, setDecodeError] = useState<string | null>(null);
+    const [saving, setSaving] = useState(false);
+
+    const rangeInvalid = discountMax < discountMin;
+    const exceedsPrice = qris.cheapestPackagePrice !== null && discountMax >= qris.cheapestPackagePrice;
+
+    function reset() {
+        setEnabled(qris.enabled);
+        setBasePayload(qris.basePayload);
+        setDiscountMin(qris.discountMin);
+        setDiscountMax(qris.discountMax);
+        setDecodeError(null);
+    }
+
+    // Decoding the QR image in the browser only fills the payload field — the
+    // backend still validates the payload's structure and CRC on save.
+    async function handleUpload(file: File | undefined) {
+        if (!file) return;
+        setDecoding(true);
+        setDecodeError(null);
+        const url = URL.createObjectURL(file);
+        try {
+            const result = await new BrowserQRCodeReader().decodeFromImageUrl(url);
+            setBasePayload(result.getText());
+        } catch {
+            setDecodeError('QR code tidak terbaca. Gunakan gambar QRIS yang jelas atau tempel payload secara manual.');
+        } finally {
+            URL.revokeObjectURL(url);
+            setDecoding(false);
+        }
+    }
+
+    function handleSave() {
+        setSaving(true);
+        router.patch(route('admin.settings.payment.qris.update'), {
+            is_active: enabled,
+            base_payload: basePayload,
+            discount_min: discountMin,
+            discount_max: discountMax,
+        }, {
+            preserveScroll: true,
+            onFinish: () => setSaving(false),
+        });
+    }
+
+    return (
+        <div className="space-y-6">
+            <div className="rounded-2xl border border-border/60 bg-card shadow-sm overflow-hidden">
+                <div className="px-5 py-4 border-b border-border/40 bg-muted/20">
+                    <h2 className="text-sm font-semibold text-foreground">QRIS Payment Settings</h2>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                        QRIS statis milik merchant diubah menjadi QRIS dinamis dengan nominal final per transaksi. Pembayaran dikonfirmasi admin secara manual.
+                    </p>
+                </div>
+                <div className="px-5 py-5 space-y-6">
+                    {/* Status */}
+                    <div>
+                        <p className="text-xs font-medium text-foreground mb-2">Status</p>
+                        <MethodToggle label={enabled ? 'Aktif' : 'Nonaktif'} icon={QrCode} checked={enabled} onToggle={() => setEnabled(!enabled)} />
+                        {enabled && !globalQrisEnabled && (
+                            <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-700 flex items-start gap-1.5">
+                                <AlertCircle className="size-3.5 shrink-0 mt-px" />
+                                <span>"QRIS" nonaktif di tab <b>Metode Pembayaran</b>. Aktifkan di sana agar muncul di halaman pembayaran customer.</span>
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Base QRIS */}
+                    <div>
+                        <p className="text-xs font-medium text-foreground mb-2">Base QRIS</p>
+                        <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border/60 px-3 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors">
+                            <Upload className="size-3.5" />
+                            {decoding ? 'Membaca QR...' : 'Upload QRIS'}
+                            <input type="file" accept="image/*" className="hidden" disabled={decoding}
+                                onChange={(e) => { handleUpload(e.target.files?.[0]); e.target.value = ''; }} />
+                        </label>
+                        <textarea value={basePayload} onChange={(e) => setBasePayload(e.target.value.trim())} rows={3}
+                            placeholder="Atau tempel payload QRIS statis (00020101021126...6304XXXX)"
+                            className={`mt-2 w-full rounded-lg border bg-background px-3 py-2 text-xs font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all break-all ${errors?.base_payload ? 'border-red-300' : 'border-border/60'}`} />
+                        {decodeError && <p className="mt-1 text-[11px] text-red-600">{decodeError}</p>}
+                        {errors?.base_payload && <p className="mt-1 text-[11px] text-red-600">{errors.base_payload}</p>}
+                        {qris.merchantName && basePayload === qris.basePayload && (
+                            <p className="mt-1 text-[11px] text-emerald-600">Merchant: {qris.merchantName}</p>
+                        )}
+                    </div>
+
+                    {/* Discount range */}
+                    <div>
+                        <p className="text-xs font-medium text-foreground mb-2">Range Diskon</p>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs text-muted-foreground mb-1">Minimum Diskon</label>
+                                <RupiahInput value={discountMin} onChange={setDiscountMin} error={errors?.discount_min} />
+                            </div>
+                            <div>
+                                <label className="block text-xs text-muted-foreground mb-1">Maksimum Diskon</label>
+                                <RupiahInput value={discountMax} onChange={setDiscountMax}
+                                    error={errors?.discount_max ?? (rangeInvalid ? 'Maksimum harus ≥ minimum.' : exceedsPrice ? `Harus lebih kecil dari harga paket termurah (Rp${formatRupiah(qris.cheapestPackagePrice!)}).` : undefined)} />
+                            </div>
+                        </div>
+                        <div className="mt-3 flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-[11px] text-blue-700">
+                            <Info className="size-3.5 shrink-0 mt-px" />
+                            <span>
+                                Setiap transaksi QRIS akan mendapatkan nominal diskon yang berbeda secara otomatis dalam range yang telah ditentukan.
+                                PPN {qris.taxRate}% dihitung setelah diskon. Perubahan range tidak mengubah transaksi yang sudah dibuat.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <SaveBar saving={saving} onSave={handleSave} onReset={reset}
+                note={qris.configuredAt ? `Terakhir disimpan: ${qris.configuredAt}` : undefined} />
+        </div>
+    );
+}
+
 // ── Tab: Metode Pembayaran ────────────────────────────────────────────────────
 
 const ALL_METHODS = [
@@ -482,7 +643,7 @@ const ALL_METHODS = [
     { id: 'va_bni',        label: 'Virtual Account BNI',      icon: Banknote,   category: 'Virtual Account', gateways: ['Midtrans', 'Xendit', 'Tripay'] },
     { id: 'va_bri',        label: 'Virtual Account BRI',      icon: Banknote,   category: 'Virtual Account', gateways: ['Midtrans', 'Tripay'] },
     { id: 'va_mandiri',    label: 'Virtual Account Mandiri',  icon: Banknote,   category: 'Virtual Account', gateways: ['Midtrans', 'Tripay'] },
-    { id: 'qris',          label: 'QRIS',                     icon: Smartphone, category: 'QRIS',            gateways: ['Midtrans', 'Xendit', 'Tripay'] },
+    { id: 'qris',          label: 'QRIS',                     icon: Smartphone, category: 'QRIS',            gateways: ['QRIS Statis', 'Midtrans', 'Xendit', 'Tripay'] },
     { id: 'gopay',         label: 'GoPay',                    icon: Wallet,     category: 'E-Wallet',        gateways: ['Midtrans'] },
     { id: 'ovo',           label: 'OVO',                      icon: Wallet,     category: 'E-Wallet',        gateways: ['Xendit'] },
     { id: 'dana',          label: 'DANA',                     icon: Wallet,     category: 'E-Wallet',        gateways: ['Xendit'] },
@@ -789,11 +950,12 @@ function TabLogs() {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function AdminSettingsPayment() {
-    const { gateways, enabledMethods, webhook } = usePage<PageProps>().props;
+    const { gateways, enabledMethods, webhook, qris } = usePage<PageProps>().props;
     const [activeTab, setActiveTab] = useState('gateway');
 
     const panels: Record<string, React.ReactNode> = {
         gateway: <TabGateway gateways={gateways} />,
+        qris:    <TabQris qris={qris} globalQrisEnabled={enabledMethods.includes('qris')} />,
         methods: <TabMethods enabledMethods={enabledMethods} />,
         webhook: <TabWebhook webhook={webhook} />,
         logs:    <TabLogs />,

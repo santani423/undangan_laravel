@@ -50,6 +50,14 @@ interface PaymentRecord {
     proof_file_url: string | null;
     proof_is_pdf: boolean;
     proof_uploaded_at: string | null;
+    qris: {
+        original_amount: string;
+        discount_amount: string;
+        subtotal_amount: string;
+        tax_rate: string;
+        tax_amount: string;
+        expires_at: string | null;
+    } | null;
     created_at: string;
 }
 
@@ -134,6 +142,7 @@ const GATEWAY_LABEL: Record<string, string> = {
     midtrans: 'Midtrans',
     tripay: 'Tripay',
     manual: 'Manual',
+    qris: 'QRIS Statis',
 };
 
 function formatCurrency(amount: string | number, currency = 'IDR'): string {
@@ -979,6 +988,16 @@ export default function AdminTransactionsIndex() {
                                                             compact
                                                         />
                                                     </div>
+
+                                                    {payment.qris && (
+                                                        <div className="mt-3 grid gap-1 rounded-lg bg-muted/40 px-3 py-2 text-xs sm:grid-cols-2">
+                                                            <DetailRow label="Harga awal" value={formatCurrency(payment.qris.original_amount, payment.currency)} compact />
+                                                            <DetailRow label="Diskon" value={formatCurrency(payment.qris.discount_amount, payment.currency)} compact />
+                                                            <DetailRow label="Subtotal" value={formatCurrency(payment.qris.subtotal_amount, payment.currency)} compact />
+                                                            <DetailRow label={`PPN ${Number(payment.qris.tax_rate)}%`} value={formatCurrency(payment.qris.tax_amount, payment.currency)} compact />
+                                                            <DetailRow label="Berlaku hingga" value={formatDateTime(payment.qris.expires_at)} compact />
+                                                        </div>
+                                                    )}
 
                                                     {payment.error_message && (
                                                         <div className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:bg-rose-900/20 dark:text-rose-300">

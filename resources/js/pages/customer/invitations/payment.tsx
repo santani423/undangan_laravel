@@ -1,3 +1,4 @@
+import GuestQrCode from '@/components/invitation/GuestQrCode';
 import CustomerLayout from '@/layouts/customer-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
@@ -15,6 +16,7 @@ import {
     FileText,
     Landmark,
     Package2,
+    QrCode,
     ShieldCheck,
     X,
 } from 'lucide-react';
@@ -73,6 +75,21 @@ interface OnlineGateway {
     methods: string[];
 }
 
+interface QrisInfo {
+    available: boolean;
+    taxRate: number;
+    payment: {
+        payload: string;
+        original_amount: string;
+        discount_amount: string;
+        subtotal_amount: string;
+        tax_rate: string;
+        tax_amount: string;
+        total_amount: string;
+        expires_at: string | null;
+    } | null;
+}
+
 interface Props {
     invitation: InvitationData;
     package: PackageData;
@@ -81,6 +98,7 @@ interface Props {
     gatewayActive: boolean;
     onlineGateways: OnlineGateway[];
     manualTransfer: ManualTransferInfo;
+    qris: QrisInfo;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -199,7 +217,7 @@ function ProofFileField({
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-export default function InvitationPayment({ invitation, package: pkg, transaction, paymentMethods, gatewayActive, onlineGateways, manualTransfer }: Props) {
+export default function InvitationPayment({ invitation, package: pkg, transaction, paymentMethods, gatewayActive, onlineGateways, manualTransfer, qris }: Props) {
     const [loadingGateway, setLoadingGateway] = useState<string | null>(null);
     const [proofFile, setProofFile] = useState<File | null>(null);
     const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
@@ -230,6 +248,15 @@ export default function InvitationPayment({ invitation, package: pkg, transactio
             `/customer/invitations/${invitation.slug}/payment`,
             { gateway },
             { onFinish: () => setLoadingGateway(null) },
+        );
+    }
+
+    function handlePayQris() {
+        setLoadingGateway('qris');
+        router.post(
+            `/customer/invitations/${invitation.slug}/payment`,
+            { gateway: 'qris' },
+            { preserveScroll: true, onFinish: () => setLoadingGateway(null) },
         );
     }
 
@@ -271,11 +298,14 @@ export default function InvitationPayment({ invitation, package: pkg, transactio
         (f) => f.feature_type === 'boolean' && f.feature_value === '1',
     );
 
-    const infoMethods = manualTransfer.available
-        ? [...paymentMethods, 'Transfer Bank Manual']
-        : paymentMethods;
+    const infoMethods = [
+        ...paymentMethods,
+        ...(qris.available && !paymentMethods.includes('QRIS') ? ['QRIS'] : []),
+        ...(manualTransfer.available ? ['Transfer Bank Manual'] : []),
+    ];
 
-    const nothingAvailable = !gatewayActive && !manualTransfer.available;
+    const qrisPayment = qris.payment;
+    const nothingAvailable = !gatewayActive && !manualTransfer.available && !qris.available && !qrisPayment;
 
     return (
         <CustomerLayout breadcrumbs={breadcrumbs}>
@@ -304,6 +334,12 @@ export default function InvitationPayment({ invitation, package: pkg, transactio
                     <div className="flex items-start gap-3 rounded-xl bg-red-50 border border-red-200 p-4 text-red-700 text-sm dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
                         <AlertCircle className="size-4 mt-0.5 shrink-0" />
                         <span className="min-w-0 break-words">{flash.error}</span>
+                    </div>
+                )}
+                {flash?.success && (
+                    <div className="flex items-start gap-3 rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-700 text-sm dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400">
+                        <CheckCircle2 className="size-4 mt-0.5 shrink-0" />
+                        {flash.success}
                     </div>
                 )}
                 {flash?.info && (
@@ -451,10 +487,67 @@ export default function InvitationPayment({ invitation, package: pkg, transactio
                             <div className="flex items-center justify-between">
                                 <span className="text-sm text-muted-foreground">Total Pembayaran</span>
                                 <span className="text-xl font-bold text-foreground">
-                                    {formatCurrency(pkg.price, pkg.currency)}
+                                    {formatCurrency(qrisPayment ? qrisPayment.total_amount : pkg.price, pkg.currency)}
                                 </span>
                             </div>
+                            {qrisPayment && <p className="mt-1 text-[11px] text-muted-foreground">Termasuk diskon & PPN untuk pembayaran QRIS.</p>}
                         </div>
+
+                        {/* QRIS statis → dinamis */}
+                        {(qrisPayment || qris.available) && (
+                            <div className="bg-card rounded-2xl border border-border shadow-sm p-5">
+                                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                                    <QrCode className="size-4" /> QRIS
+                                </h2>
+                                {qrisPayment ? (
+                                    <>
+                                        <div className="flex justify-center rounded-xl bg-white p-2">
+                                            <GuestQrCode data={qrisPayment.payload} size={220} />
+                                        </div>
+                                        <div className="mt-4 space-y-1.5 text-sm">
+                                            <div className="flex justify-between">
+                                                <span className="text-muted-foreground">Harga Awal</span>
+                                                <span>{formatCurrency(qrisPayment.original_amount, pkg.currency)}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-muted-foreground">Diskon</span>
+                                                <span className="text-emerald-600">−{formatCurrency(qrisPayment.discount_amount, pkg.currency)}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-muted-foreground">Subtotal</span>
+                                                <span>{formatCurrency(qrisPayment.subtotal_amount, pkg.currency)}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-muted-foreground">PPN {Number(qrisPayment.tax_rate)}%</span>
+                                                <span>{formatCurrency(qrisPayment.tax_amount, pkg.currency)}</span>
+                                            </div>
+                                            <div className="flex justify-between border-t border-border pt-2 font-semibold">
+                                                <span>Total</span>
+                                                <span className="text-primary">{formatCurrency(qrisPayment.total_amount, pkg.currency)}</span>
+                                            </div>
+                                        </div>
+                                        <p className="mt-3 text-xs text-muted-foreground">
+                                            Scan dengan aplikasi bank / e-wallet dan bayar <b>tepat</b> sesuai total. Pembayaran akan diverifikasi admin.
+                                            {qrisPayment.expires_at && <> Berlaku hingga {new Date(qrisPayment.expires_at).toLocaleString('id-ID')}.</>}
+                                        </p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={handlePayQris}
+                                            disabled={loadingGateway !== null}
+                                            className="w-full rounded-xl bg-primary text-primary-foreground px-4 py-3 text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                                        >
+                                            {loadingGateway === 'qris' ? 'Membuat QRIS...' : 'Bayar via QRIS'}
+                                        </button>
+                                        <p className="mt-1.5 text-xs text-muted-foreground">
+                                            Dapatkan diskon otomatis. PPN {qris.taxRate}% dihitung setelah diskon.
+                                        </p>
+                                    </>
+                                )}
+                            </div>
+                        )}
 
                         {/* Online gateways (Xendit / Midtrans) — Bayar Online */}
                         {gatewayActive && !transaction?.payment_url && (

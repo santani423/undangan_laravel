@@ -4,13 +4,18 @@ namespace App\Http\Controllers\Admin\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Models\AppSetting;
+use App\Models\Package;
 use App\Models\PaymentGatewayAuditLog;
 use App\Models\PaymentGatewayConfig;
+use App\Services\QrisPaymentService;
+use App\Support\QrisPayload;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use InvalidArgumentException;
 
 class PaymentSettingController extends Controller
 {
@@ -56,6 +61,8 @@ class PaymentSettingController extends Controller
         'tripay' => ['is_active' => false, 'is_test_mode' => true,  'enabled_methods' => []],
         'manual' => ['is_active' => true,  'is_test_mode' => false, 'enabled_methods' => ['transfer']],
     ];
+
+    public function __construct(private readonly QrisPaymentService $qris) {}
 
     public function index(Request $request): Response
     {
@@ -107,6 +114,7 @@ class PaymentSettingController extends Controller
         return Inertia::render('admin/settings/payment', [
             'gateways' => $gateways,
             'enabledMethods' => AppSetting::get('payment_enabled_methods', self::DEFAULT_ENABLED_METHODS),
+            'qris' => $this->qrisProps(),
             'webhook' => [
                 'successRedirectUrl' => AppSetting::get('payment_redirect_success_url', ''),
                 'failedRedirectUrl' => AppSetting::get('payment_redirect_failed_url', ''),
@@ -185,6 +193,95 @@ class PaymentSettingController extends Controller
         ]);
 
         return back()->with('success', 'Konfigurasi gateway berhasil disimpan.');
+    }
+
+    public function updateQris(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()?->hasRole(['super_admin', 'admin']), 403);
+
+        $validated = $request->validate([
+            'is_active' => ['required', 'boolean'],
+            'base_payload' => [Rule::requiredIf($request->boolean('is_active')), 'nullable', 'string', 'max:1000'],
+            'discount_min' => ['required', 'integer', 'min:0', 'max:100000000'],
+            'discount_max' => ['required', 'integer', 'gte:discount_min', 'max:100000000'],
+        ], [
+            'base_payload.required' => 'Base QRIS wajib diisi untuk mengaktifkan pembayaran QRIS.',
+            'discount_min.min' => 'Minimum diskon tidak boleh kurang dari 0.',
+            'discount_max.gte' => 'Maksimum diskon harus lebih besar atau sama dengan minimum diskon.',
+        ]);
+
+        $basePayload = trim((string) ($validated['base_payload'] ?? ''));
+        $merchantName = '';
+
+        if ($basePayload !== '') {
+            try {
+                $merchantName = QrisPayload::validate($basePayload)['59'] ?? '';
+            } catch (InvalidArgumentException $e) {
+                throw ValidationException::withMessages(['base_payload' => $e->getMessage()]);
+            }
+        }
+
+        // The discount must never reach a package's price, or the subtotal would hit zero/negative.
+        $cheapestPrice = Package::where('is_active', true)->where('price', '>', 0)->min('price');
+        if ($cheapestPrice !== null && (int) $validated['discount_max'] >= (int) floor((float) $cheapestPrice)) {
+            throw ValidationException::withMessages([
+                'discount_max' => 'Maksimum diskon harus lebih kecil dari harga paket aktif termurah ('
+                    .QrisPaymentService::rupiah((int) floor((float) $cheapestPrice)).').',
+            ]);
+        }
+
+        $row = PaymentGatewayConfig::firstOrNew(['gateway_name' => QrisPaymentService::GATEWAY]);
+        $row->gateway_type ??= 'payment';
+        $old = $this->qris->config();
+
+        $row->is_active = $validated['is_active'];
+        $row->is_test_mode = false;
+        $row->setConfigExtraSafely([
+            'values' => ['base_payload' => $basePayload, 'merchant_name' => $merchantName],
+            'enabled_methods' => ['qris'],
+            'discount_min' => (int) $validated['discount_min'],
+            'discount_max' => (int) $validated['discount_max'],
+        ]);
+        $row->configured_at = now();
+        $row->configured_by_user_id = $request->user()->id;
+        $row->save();
+
+        PaymentGatewayAuditLog::create([
+            'gateway_name' => QrisPaymentService::GATEWAY,
+            'action' => 'update',
+            'old_values' => [
+                'is_active' => $old['is_active'],
+                'discount_min' => $old['discount_min'],
+                'discount_max' => $old['discount_max'],
+            ],
+            'new_values' => [
+                'is_active' => $row->is_active,
+                'discount_min' => (int) $validated['discount_min'],
+                'discount_max' => (int) $validated['discount_max'],
+                'base_payload_changed' => $old['base_payload'] !== $basePayload,
+            ],
+            'changed_by_user_id' => $request->user()->id,
+            'ip_address' => $request->ip(),
+        ]);
+
+        return back()->with('success', 'Pengaturan QRIS berhasil disimpan.');
+    }
+
+    private function qrisProps(): array
+    {
+        $config = $this->qris->config();
+        $cheapestPrice = Package::where('is_active', true)->where('price', '>', 0)->min('price');
+
+        return [
+            'enabled' => $config['is_active'],
+            'basePayload' => $config['base_payload'],
+            'merchantName' => $config['merchant_name'],
+            'discountMin' => $config['discount_min'],
+            'discountMax' => $config['discount_max'],
+            'taxRate' => QrisPaymentService::TAX_RATE_PERCENT,
+            'cheapestPackagePrice' => $cheapestPrice !== null ? (int) floor((float) $cheapestPrice) : null,
+            'configuredAt' => $config['configured_at']?->translatedFormat('d M Y, H:i'),
+        ];
     }
 
     public function updateMethods(Request $request): RedirectResponse

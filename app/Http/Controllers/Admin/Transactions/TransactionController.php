@@ -287,6 +287,14 @@ class TransactionController extends Controller
             'proof_file_url' => $payment->proof_file_path ? Storage::disk('public')->url($payment->proof_file_path) : null,
             'proof_is_pdf' => $payment->proof_file_path ? str_ends_with(strtolower($payment->proof_file_path), '.pdf') : false,
             'proof_uploaded_at' => $payment->proof_uploaded_at?->toDateTimeString(),
+            'qris' => $payment->payment_gateway === 'qris' ? [
+                'original_amount' => (string) $payment->original_amount,
+                'discount_amount' => (string) $payment->discount_amount,
+                'subtotal_amount' => (string) $payment->subtotal_amount,
+                'tax_rate' => (string) $payment->tax_rate,
+                'tax_amount' => (string) $payment->tax_amount,
+                'expires_at' => $payment->qris_expires_at?->toDateTimeString(),
+            ] : null,
             'created_at' => $payment->created_at->toDateTimeString(),
         ])->values()->all();
 

@@ -6,10 +6,12 @@ use App\Http\Controllers\Admin\Settings\PaymentSettingController;
 use App\Http\Controllers\Controller;
 use App\Models\AppSetting;
 use App\Models\Invitation;
+use App\Models\Package;
 use App\Models\Payment;
 use App\Models\PaymentGatewayConfig;
 use App\Models\Transaction;
 use App\Services\MidtransService;
+use App\Services\QrisPaymentService;
 use App\Services\UploadService;
 use App\Services\XenditService;
 use Carbon\Carbon;
@@ -72,6 +74,7 @@ class PaymentController extends Controller
     public function __construct(
         private readonly XenditService $xendit,
         private readonly MidtransService $midtrans,
+        private readonly QrisPaymentService $qris,
     ) {}
 
     /**
@@ -230,6 +233,8 @@ class PaymentController extends Controller
             ->latest()
             ->first();
 
+        $activeQris = $this->qris->activePayment($transaction);
+
         return Inertia::render('customer/invitations/payment', [
             'invitation' => [
                 'id' => $invitation->id,
@@ -277,6 +282,20 @@ class PaymentController extends Controller
                     'uploaded_at' => $latestManualPayment->proof_uploaded_at?->toDateTimeString(),
                 ] : null,
             ],
+            'qris' => [
+                'available' => $this->qris->isAvailable(),
+                'taxRate' => QrisPaymentService::TAX_RATE_PERCENT,
+                'payment' => $activeQris ? [
+                    'payload' => $activeQris->qris_payload,
+                    'original_amount' => $activeQris->original_amount,
+                    'discount_amount' => $activeQris->discount_amount,
+                    'subtotal_amount' => $activeQris->subtotal_amount,
+                    'tax_rate' => $activeQris->tax_rate,
+                    'tax_amount' => $activeQris->tax_amount,
+                    'total_amount' => $activeQris->amount,
+                    'expires_at' => $activeQris->qris_expires_at?->toIso8601String(),
+                ] : null,
+            ],
         ]);
     }
 
@@ -304,6 +323,10 @@ class PaymentController extends Controller
         if ($transaction && $transaction->status === 'paid') {
             return redirect()->route('customer.transactions.show', $transaction->id)
                 ->with('info', 'Undangan ini sudah dibayar.');
+        }
+
+        if ($request->input('gateway') === QrisPaymentService::GATEWAY) {
+            return $this->payWithQris($invitation, $package, $transaction);
         }
 
         $onlineGateways = $this->resolveOnlineGateways();
@@ -416,6 +439,39 @@ class PaymentController extends Controller
         return Inertia::location($gatewayData['payment_url']);
     }
 
+    /**
+     * Static QRIS: the discount, PPN and final amount are all decided here on
+     * the backend, then the customer scans the generated dynamic QRIS on the
+     * payment page and an admin confirms the incoming transfer manually.
+     * A still-valid QRIS is reused as-is — never regenerated or recalculated.
+     */
+    private function payWithQris(Invitation $invitation, Package $package, ?Transaction $transaction): RedirectResponse
+    {
+        $paymentPage = redirect()->route('customer.invitations.payment', $invitation->slug);
+
+        if (! $this->qris->isAvailable()) {
+            return $paymentPage->with('error', 'Pembayaran QRIS sedang tidak tersedia.');
+        }
+
+        if (! $transaction) {
+            return $paymentPage->with('error', 'Transaksi tidak ditemukan. Silakan muat ulang halaman.');
+        }
+
+        if ($this->qris->activePayment($transaction)) {
+            return $paymentPage;
+        }
+
+        try {
+            $this->qris->createPayment($transaction, (int) round((float) $package->price));
+        } catch (Throwable $e) {
+            report($e);
+
+            return $paymentPage->with('error', $this->paymentErrorMessage($e));
+        }
+
+        return $paymentPage->with('success', 'QRIS berhasil dibuat. Silakan scan dan bayar sesuai nominal yang tertera.');
+    }
+
     // ─── Submit Manual Transfer Proof ────────────────────────────────────────
 
     public function submitManualProof(Request $request, Invitation $invitation): RedirectResponse
@@ -457,6 +513,12 @@ class PaymentController extends Controller
             "invitations/{$invitation->id}/payment-proof",
         );
 
+        // A QRIS attempt may have set the invoice to its discounted + PPN total;
+        // a bank transfer is for the plain package price.
+        if ((float) $transaction->invoice_amount !== (float) $package->price) {
+            $transaction->update(['invoice_amount' => $package->price]);
+        }
+
         $existingManualPayment = $transaction->payments()
             ->where('payment_gateway', 'manual')
             ->whereIn('status', ['pending', 'processing'])
@@ -473,7 +535,7 @@ class PaymentController extends Controller
             $transaction->payments()->create([
                 'payment_gateway' => 'manual',
                 'gateway_reference_id' => "manual-{$transaction->id}-".now()->timestamp,
-                'amount' => $transaction->invoice_amount,
+                'amount' => $package->price,
                 'currency' => $transaction->invoice_currency ?? 'IDR',
                 'status' => 'pending',
                 'proof_file_path' => $path,
