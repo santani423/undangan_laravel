@@ -9,6 +9,7 @@ use App\Models\PaymentGatewayAuditLog;
 use App\Models\PaymentGatewayConfig;
 use App\Services\QrisPaymentService;
 use App\Support\QrisPayload;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -16,6 +17,7 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use InvalidArgumentException;
+use RuntimeException;
 
 class PaymentSettingController extends Controller
 {
@@ -265,6 +267,50 @@ class PaymentSettingController extends Controller
         ]);
 
         return back()->with('success', 'Pengaturan QRIS berhasil disimpan.');
+    }
+
+    /**
+     * Admin "Test Generate QRIS": builds a dynamic QRIS from the form's
+     * current (possibly unsaved) values so it can be scanned before going
+     * live. Nothing is persisted.
+     */
+    public function testQris(Request $request): JsonResponse
+    {
+        abort_unless($request->user()?->hasRole(['super_admin', 'admin']), 403);
+
+        $validated = $request->validate([
+            'base_payload' => ['required', 'string', 'max:1000'],
+            'price' => ['required', 'integer', 'min:1', 'max:1000000000'],
+            'discount_min' => ['required', 'integer', 'min:0', 'max:100000000'],
+            'discount_max' => ['required', 'integer', 'gte:discount_min', 'max:100000000'],
+        ], [
+            'base_payload.required' => 'Isi atau upload Base QRIS terlebih dahulu.',
+            'discount_max.gte' => 'Maksimum diskon harus lebih besar atau sama dengan minimum diskon.',
+        ]);
+
+        $basePayload = trim($validated['base_payload']);
+
+        try {
+            $entries = QrisPayload::validate($basePayload);
+        } catch (InvalidArgumentException $e) {
+            throw ValidationException::withMessages(['base_payload' => $e->getMessage()]);
+        }
+
+        try {
+            $result = $this->qris->preview(
+                $basePayload,
+                (int) $validated['price'],
+                (int) $validated['discount_min'],
+                (int) $validated['discount_max'],
+            );
+        } catch (RuntimeException $e) {
+            throw ValidationException::withMessages(['price' => $e->getMessage()]);
+        }
+
+        return response()->json($result + [
+            'merchant_name' => $entries['59'] ?? '',
+            'merchant_city' => $entries['60'] ?? '',
+        ]);
     }
 
     private function qrisProps(): array

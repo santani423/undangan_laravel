@@ -1,4 +1,4 @@
-import GuestQrCode from '@/components/invitation/GuestQrCode';
+import QrisFrame from '@/components/qris-frame';
 import CustomerLayout from '@/layouts/customer-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
@@ -501,8 +501,8 @@ export default function InvitationPayment({ invitation, package: pkg, transactio
                                 </h2>
                                 {qrisPayment ? (
                                     <>
-                                        <div className="flex justify-center rounded-xl bg-white p-2">
-                                            <GuestQrCode data={qrisPayment.payload} size={220} />
+                                        <div className="flex justify-center">
+                                            <QrisFrame payload={qrisPayment.payload} size={200} />
                                         </div>
                                         <div className="mt-4 space-y-1.5 text-sm">
                                             <div className="flex justify-between">

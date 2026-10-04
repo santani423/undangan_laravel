@@ -98,6 +98,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'area:admin'])->grou
         Route::patch('/payment/methods', [PaymentSettingController::class, 'updateMethods'])->name('payment.methods.update');
         Route::patch('/payment/webhook', [PaymentSettingController::class, 'updateWebhook'])->name('payment.webhook.update');
         Route::patch('/payment/qris', [PaymentSettingController::class, 'updateQris'])->name('payment.qris.update');
+        Route::post('/payment/qris/test', [PaymentSettingController::class, 'testQris'])->name('payment.qris.test');
         Route::get('/whatsapp', fn () => Inertia::render('admin/settings/whatsapp'))->name('whatsapp');
         Route::get('/notification', fn () => Inertia::render('admin/settings/notification'))->name('notification');
     });

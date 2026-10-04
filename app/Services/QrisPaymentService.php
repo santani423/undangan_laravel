@@ -142,6 +142,24 @@ class QrisPaymentService
     }
 
     /**
+     * Dry run of createPayment() for the admin "Test Generate" tool: same
+     * discount rules and amount maths, but nothing is saved and the discount
+     * is not reserved.
+     *
+     * @throws RuntimeException with a user-facing message.
+     */
+    public function preview(string $basePayload, int $originalPrice, int $min, int $max): array
+    {
+        $discount = $this->generateDiscount($originalPrice, $min, $max);
+        $amounts = self::calculate($originalPrice, $discount);
+
+        return $amounts + [
+            'tax_rate' => self::TAX_RATE_PERCENT,
+            'payload' => QrisPayload::withAmount($basePayload, $amounts['total']),
+        ];
+    }
+
+    /**
      * Random discount in [min, max], capped below the price so the subtotal
      * stays positive, and not already held by another live QRIS payment.
      * Bounded: never loops forever, throws when the range is exhausted.

@@ -203,3 +203,31 @@ it('validates the discount range in admin settings', function () {
     expect($config['discount_max'])->toBe(2500);
     expect($config['merchant_name'])->toBe('UNDESIA QA');
 });
+
+it('generates a test QRIS for the admin without saving anything', function () {
+    Role::findOrCreate('admin', 'web');
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $response = $this->actingAs($admin)
+        ->postJson(route('admin.settings.payment.qris.test'), [
+            'base_payload' => staticQris(), 'price' => 100000, 'discount_min' => 500, 'discount_max' => 2500,
+        ])
+        ->assertOk()
+        ->assertJsonPath('merchant_name', 'UNDESIA QA');
+
+    $discount = $response->json('discount');
+    $expected = QrisPaymentService::calculate(100000, $discount);
+
+    expect($discount)->toBeGreaterThanOrEqual(500)->toBeLessThanOrEqual(2500);
+    expect($response->json('total'))->toBe($expected['total']);
+    expect(QrisPayload::validate($response->json('payload'))['54'])->toBe((string) $expected['total']);
+    expect(Payment::count())->toBe(0);
+
+    $this->actingAs($admin)
+        ->postJson(route('admin.settings.payment.qris.test'), [
+            'base_payload' => staticQris(), 'price' => 400, 'discount_min' => 500, 'discount_max' => 2500,
+        ])
+        ->assertStatus(422)
+        ->assertJsonValidationErrors('price');
+});

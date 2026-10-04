@@ -1,3 +1,4 @@
+import QrisFrame from '@/components/qris-frame';
 import { SettingsTabNav, type SettingsTab } from '@/components/settings/settings-tab-nav';
 import AdminLayout from '@/layouts/admin-layout';
 import SettingsLayout from '@/layouts/settings-layout';
@@ -14,6 +15,7 @@ import {
     Eye,
     EyeOff,
     FileText,
+    FlaskConical,
     Globe,
     Info,
     LayoutGrid,
@@ -28,7 +30,14 @@ import {
     WifiOff,
     Zap,
 } from 'lucide-react';
-import { BrowserQRCodeReader } from '@zxing/browser';
+import {
+    BinaryBitmap,
+    DecodeHintType,
+    GlobalHistogramBinarizer,
+    HybridBinarizer,
+    QRCodeReader,
+    RGBLuminanceSource,
+} from '@zxing/library';
 import { useEffect, useRef, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -513,6 +522,183 @@ function RupiahInput({ value, onChange, error }: { value: number; onChange: (v: 
     );
 }
 
+/**
+ * Decode a QR from an uploaded image. QRIS posters (big photos, red frame,
+ * text around the code) often defeat zxing's default HybridBinarizer, so try
+ * both binarizers at a few scales before giving up.
+ */
+async function decodeQrFromFile(file: File): Promise<string> {
+    const bitmap = await createImageBitmap(file);
+    const hints = new Map<DecodeHintType, unknown>([[DecodeHintType.TRY_HARDER, true]]);
+    const longest = Math.max(bitmap.width, bitmap.height);
+
+    try {
+        for (const target of [longest, 1200, 800, 500]) {
+            if (target > longest) continue;
+            const scale = target / longest;
+            const width = Math.round(bitmap.width * scale);
+            const height = Math.round(bitmap.height * scale);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            if (!ctx) break;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, width, height);
+            ctx.drawImage(bitmap, 0, 0, width, height);
+
+            const { data } = ctx.getImageData(0, 0, width, height);
+            const luminance = new Uint8ClampedArray(width * height);
+            for (let i = 0; i < luminance.length; i++) {
+                luminance[i] = (data[i * 4] * 299 + data[i * 4 + 1] * 587 + data[i * 4 + 2] * 114) / 1000;
+            }
+            const source = new RGBLuminanceSource(luminance, width, height);
+
+            for (const Binarizer of [HybridBinarizer, GlobalHistogramBinarizer]) {
+                try {
+                    return new QRCodeReader().decode(new BinaryBitmap(new Binarizer(source)), hints).getText();
+                } catch {
+                    // try the next binarizer / scale
+                }
+            }
+        }
+    } finally {
+        bitmap.close();
+    }
+
+    throw new Error('QR code not found');
+}
+
+interface QrisTestResult {
+    original: number;
+    discount: number;
+    subtotal: number;
+    tax: number;
+    tax_rate: number;
+    total: number;
+    payload: string;
+    merchant_name: string;
+    merchant_city: string;
+}
+
+/** Laravel's XSRF-TOKEN cookie, sent back as X-XSRF-TOKEN for fetch() calls. */
+function xsrfToken(): string {
+    const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);
+    return match ? decodeURIComponent(match[1]) : '';
+}
+
+/**
+ * Dry-run generator: uses the form's current (unsaved) Base QRIS and range so
+ * the admin can scan the result with a banking app before going live.
+ */
+function QrisTestPanel({ basePayload, discountMin, discountMax, defaultPrice }: {
+    basePayload: string; discountMin: number; discountMax: number; defaultPrice: number;
+}) {
+    const [price, setPrice] = useState(defaultPrice);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [result, setResult] = useState<QrisTestResult | null>(null);
+    const [copied, setCopied] = useState(false);
+
+    async function generate() {
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await fetch(route('admin.settings.payment.qris.test'), {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-XSRF-TOKEN': xsrfToken(),
+                },
+                body: JSON.stringify({ base_payload: basePayload, price, discount_min: discountMin, discount_max: discountMax }),
+            });
+            const body = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                const firstError = body?.errors ? (Object.values(body.errors)[0] as string[] | undefined)?.[0] : undefined;
+                throw new Error(
+                    res.status === 419 ? 'Sesi Anda kedaluwarsa. Muat ulang halaman lalu coba lagi.'
+                    : firstError ?? body?.message ?? `Gagal generate QRIS (HTTP ${res.status}).`,
+                );
+            }
+            setResult(body as QrisTestResult);
+        } catch (err) {
+            setResult(null);
+            setError(err instanceof Error ? err.message : 'Gagal generate QRIS.');
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    function copyPayload() {
+        if (!result) return;
+        navigator.clipboard?.writeText(result.payload);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+    }
+
+    return (
+        <div className="rounded-2xl border border-border/60 bg-card shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-border/40 bg-muted/20">
+                <h2 className="text-sm font-semibold text-foreground flex items-center gap-1.5"><FlaskConical className="size-4" />Test Generate QRIS</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                    Simulasi memakai Base QRIS & range diskon di form atas (belum perlu disimpan). Hasil tidak disimpan dan tidak memakai kuota nominal diskon.
+                </p>
+            </div>
+            <div className="px-5 py-5">
+                <div className="flex items-end gap-3">
+                    <div className="flex-1 max-w-xs">
+                        <label className="block text-xs text-muted-foreground mb-1">Harga Transaksi</label>
+                        <RupiahInput value={price} onChange={setPrice} />
+                    </div>
+                    <button type="button" onClick={generate} disabled={loading || !basePayload}
+                        className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60">
+                        <QrCode className="size-3.5" />{loading ? 'Membuat...' : result ? 'Generate Ulang' : 'Generate QRIS'}
+                    </button>
+                </div>
+                {!basePayload && <p className="mt-2 text-[11px] text-muted-foreground">Upload atau tempel Base QRIS terlebih dahulu.</p>}
+                {error && <p className="mt-2 text-[11px] text-red-600">{error}</p>}
+
+                {result && (
+                    <div className="mt-5 grid gap-5 sm:grid-cols-[auto_1fr]">
+                        <QrisFrame payload={result.payload} size={200} />
+                        <div className="min-w-0 space-y-1.5 text-sm">
+                            {[
+                                ['Harga Awal', `Rp${formatRupiah(result.original)}`],
+                                ['Diskon Random', `−Rp${formatRupiah(result.discount)}`],
+                                ['Subtotal', `Rp${formatRupiah(result.subtotal)}`],
+                                [`PPN ${result.tax_rate}%`, `Rp${formatRupiah(result.tax)}`],
+                            ].map(([label, value]) => (
+                                <div key={label} className="flex justify-between">
+                                    <span className="text-muted-foreground">{label}</span><span>{value}</span>
+                                </div>
+                            ))}
+                            <div className="flex justify-between border-t border-border/60 pt-2 font-semibold">
+                                <span>Total (nominal QRIS)</span><span className="text-primary">Rp{formatRupiah(result.total)}</span>
+                            </div>
+                            <div className="pt-2">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[11px] font-medium text-muted-foreground">Payload QRIS dinamis</span>
+                                    <button type="button" onClick={copyPayload} className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:text-primary/80">
+                                        <Copy className="size-3" />{copied ? 'Tersalin!' : 'Salin'}
+                                    </button>
+                                </div>
+                                <code className="mt-1 block break-all rounded-lg bg-muted/50 px-2 py-1.5 text-[10px] font-mono text-muted-foreground">{result.payload}</code>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground">
+                                Scan dengan aplikasi bank / e-wallet untuk memastikan nama merchant dan nominal Rp{formatRupiah(result.total)} terbaca benar.
+                            </p>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
 function TabQris({ qris, globalQrisEnabled }: { qris: QrisSettings; globalQrisEnabled: boolean }) {
     const { errors } = usePage<PageProps>().props;
     const [enabled, setEnabled] = useState(qris.enabled);
@@ -540,14 +726,11 @@ function TabQris({ qris, globalQrisEnabled }: { qris: QrisSettings; globalQrisEn
         if (!file) return;
         setDecoding(true);
         setDecodeError(null);
-        const url = URL.createObjectURL(file);
         try {
-            const result = await new BrowserQRCodeReader().decodeFromImageUrl(url);
-            setBasePayload(result.getText());
+            setBasePayload((await decodeQrFromFile(file)).trim());
         } catch {
             setDecodeError('QR code tidak terbaca. Gunakan gambar QRIS yang jelas atau tempel payload secara manual.');
         } finally {
-            URL.revokeObjectURL(url);
             setDecoding(false);
         }
     }
@@ -632,6 +815,8 @@ function TabQris({ qris, globalQrisEnabled }: { qris: QrisSettings; globalQrisEn
             </div>
             <SaveBar saving={saving} onSave={handleSave} onReset={reset}
                 note={qris.configuredAt ? `Terakhir disimpan: ${qris.configuredAt}` : undefined} />
+            <QrisTestPanel basePayload={basePayload} discountMin={discountMin} discountMax={discountMax}
+                defaultPrice={qris.cheapestPackagePrice ?? 100000} />
         </div>
     );
 }
