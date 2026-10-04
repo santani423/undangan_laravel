@@ -1,4 +1,4 @@
-import QrisFrame from '@/components/qris-frame';
+import QrisFrame, { downloadQrisImage } from '@/components/qris-frame';
 import CustomerLayout from '@/layouts/customer-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
@@ -11,6 +11,7 @@ import {
     Clock,
     Copy,
     CreditCard,
+    Download,
     Eye,
     ExternalLink,
     FileText,
@@ -223,6 +224,8 @@ export default function InvitationPayment({ invitation, package: pkg, transactio
     const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [downloadingQris, setDownloadingQris] = useState(false);
+    const [downloadError, setDownloadError] = useState<string | null>(null);
     const [previewModal, setPreviewModal] = useState<{ src: string; isPdf: boolean; title: string } | null>(null);
     const pageProps = usePage().props as unknown as { flash?: Record<string, string>; errors?: Record<string, string> };
     const flash = pageProps.flash;
@@ -258,6 +261,18 @@ export default function InvitationPayment({ invitation, package: pkg, transactio
             { gateway: 'qris' },
             { preserveScroll: true, onFinish: () => setLoadingGateway(null) },
         );
+    }
+
+    async function handleDownloadQris(payload: string) {
+        setDownloadingQris(true);
+        setDownloadError(null);
+        try {
+            await downloadQrisImage(payload, `QRIS-${transaction?.invoice_number ?? invitation.slug}.png`);
+        } catch {
+            setDownloadError('Gagal mengunduh QRIS. Silakan screenshot QR di atas.');
+        } finally {
+            setDownloadingQris(false);
+        }
     }
 
     function handleSelectProofFile(file: File | null) {
@@ -504,6 +519,16 @@ export default function InvitationPayment({ invitation, package: pkg, transactio
                                         <div className="flex justify-center">
                                             <QrisFrame payload={qrisPayment.payload} size={200} />
                                         </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleDownloadQris(qrisPayment.payload)}
+                                            disabled={downloadingQris}
+                                            className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-60"
+                                        >
+                                            <Download className="size-4" />
+                                            {downloadingQris ? 'Menyiapkan...' : 'Download QRIS'}
+                                        </button>
+                                        {downloadError && <p className="mt-1.5 text-xs text-red-600">{downloadError}</p>}
                                         <div className="mt-4 space-y-1.5 text-sm">
                                             <div className="flex justify-between">
                                                 <span className="text-muted-foreground">Harga Awal</span>

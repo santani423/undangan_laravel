@@ -1,4 +1,5 @@
 import GuestQrCode from '@/components/invitation/GuestQrCode';
+import QRCode from 'qrcode';
 
 /** Top-level EMVCo TLV entries (tag → value) of a QRIS payload. */
 function parseTlv(payload: string): Record<string, string> {
@@ -56,4 +57,97 @@ export default function QrisFrame({ payload, size = 220 }: { payload: string; si
             {nmid && <p className="mt-3 text-sm tracking-wide text-neutral-700">NMID : {nmid}</p>}
         </div>
     );
+}
+
+/**
+ * Download the framed QRIS as a PNG. Drawn straight onto a canvas (same
+ * layout as <QrisFrame>) at print-friendly resolution, so the saved image can
+ * be scanned from another device or printed.
+ */
+export async function downloadQrisImage(payload: string, filename: string): Promise<void> {
+    const entries = parseTlv(payload);
+    const merchantName = entries['59'] ?? '';
+    const amount = entries['54'];
+    const nmid = entries['51'] ? parseTlv(entries['51'])['02'] : undefined;
+
+    const width = 900;
+    const height = 1220;
+    const frameSize = 760;
+    const frameX = (width - frameSize) / 2;
+    const frameY = 320;
+    const qrSize = Math.round(frameSize / 1.12);
+    const font = getComputedStyle(document.body).fontFamily || 'sans-serif';
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas tidak didukung.');
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, width, height);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+
+    if (merchantName) {
+        ctx.fillStyle = '#404040';
+        ctx.font = `500 48px ${font}`;
+        ctx.fillText(merchantName, width / 2, 110);
+    }
+    if (amount) {
+        ctx.fillStyle = '#171717';
+        ctx.font = `700 66px ${font}`;
+        ctx.fillText(formatRupiah(amount), width / 2, 195);
+    }
+
+    // QRIS mark with corner brackets
+    ctx.fillStyle = '#171717';
+    ctx.font = `900 46px ${font}`;
+    ctx.letterSpacing = '6px';
+    const markWidth = ctx.measureText('QRIS').width;
+    ctx.fillText('QRIS', width / 2 + 3, 272);
+    ctx.letterSpacing = '0px';
+    const left = width / 2 - markWidth / 2 - 14;
+    const right = width / 2 + markWidth / 2 + 14;
+    ctx.strokeStyle = '#171717';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(left, 248); ctx.lineTo(left, 228); ctx.lineTo(left + 20, 228);
+    ctx.moveTo(right, 268); ctx.lineTo(right, 288); ctx.lineTo(right - 20, 288);
+    ctx.stroke();
+
+    // Red corner accents, same shapes as the SVG in <QrisFrame>
+    const point = (x: number, y: number): [number, number] => [frameX + (x / 100) * frameSize, frameY + (y / 100) * frameSize];
+    ctx.fillStyle = '#E11D2E';
+    for (const shape of [
+        [[0, 0], [5, 4], [5, 43], [0, 47]],
+        [[100, 53], [100, 100], [53, 100], [57, 95], [95, 95], [95, 57]],
+    ]) {
+        ctx.beginPath();
+        shape.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(...point(x, y)) : ctx.lineTo(...point(x, y))));
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    const qrCanvas = document.createElement('canvas');
+    await QRCode.toCanvas(qrCanvas, payload, { width: qrSize, margin: 2, errorCorrectionLevel: 'M' });
+    ctx.drawImage(qrCanvas, frameX + (frameSize - qrSize) / 2, frameY + (frameSize - qrSize) / 2, qrSize, qrSize);
+
+    if (nmid) {
+        ctx.fillStyle = '#404040';
+        ctx.font = `400 38px ${font}`;
+        ctx.fillText(`NMID : ${nmid}`, width / 2, frameY + frameSize + 75);
+    }
+
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
+    if (!blob) throw new Error('Gagal membuat gambar QRIS.');
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
 }
