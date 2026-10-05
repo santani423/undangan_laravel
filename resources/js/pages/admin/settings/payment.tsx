@@ -99,6 +99,20 @@ interface PageProps {
     [key: string]: unknown;
 }
 
+/** Fallback when the backend doesn't send `qris` (e.g. PHP not yet redeployed). */
+const DEFAULT_QRIS: QrisSettings = {
+    enabled: false,
+    basePayload: '',
+    merchantName: '',
+    discountMin: 0,
+    discountMax: 0,
+    taxRate: 11,
+    cheapestPackagePrice: null,
+    configuredAt: null,
+};
+
+const DEFAULT_WEBHOOK: PageProps['webhook'] = { successRedirectUrl: '', failedRedirectUrl: '', pendingRedirectUrl: '' };
+
 const GATEWAY_ORDER: GatewayId[] = ['midtrans', 'xendit', 'tripay', 'manual'];
 
 const GATEWAY_META: Record<GatewayId, GatewayMeta> = {
@@ -268,7 +282,7 @@ function GatewayCard({ id, meta, data }: { id: GatewayId; meta: GatewayMeta; dat
     const [fieldValues, setFieldValues] = useState<Record<string, string>>(() => ({ ...data.fieldValues }));
     const [enabledMethods, setEnabledMethods] = useState<Set<string>>(() => new Set(data.enabledMethods));
     const [saving, setSaving] = useState(false);
-    const globalEnabledMethods = usePage<PageProps>().props.enabledMethods;
+    const globalEnabledMethods = usePage<PageProps>().props.enabledMethods ?? [];
 
     function resetToServerState() {
         setEnabled(data.enabled);
@@ -1135,7 +1149,11 @@ function TabLogs() {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function AdminSettingsPayment() {
-    const { gateways, enabledMethods, webhook, qris } = usePage<PageProps>().props;
+    const props = usePage<PageProps>().props;
+    const gateways = (props.gateways ?? []).filter(Boolean);
+    const enabledMethods = props.enabledMethods ?? [];
+    const webhook = { ...DEFAULT_WEBHOOK, ...props.webhook };
+    const qris = { ...DEFAULT_QRIS, ...props.qris };
     const [activeTab, setActiveTab] = useState('gateway');
 
     const panels: Record<string, React.ReactNode> = {
