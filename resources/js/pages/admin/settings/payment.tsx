@@ -722,6 +722,7 @@ function TabQris({ qris, globalQrisEnabled }: { qris: QrisSettings; globalQrisEn
     const [decoding, setDecoding] = useState(false);
     const [decodeError, setDecodeError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
 
     const rangeInvalid = discountMax < discountMin;
     const exceedsPrice = qris.cheapestPackagePrice !== null && discountMax >= qris.cheapestPackagePrice;
@@ -751,15 +752,22 @@ function TabQris({ qris, globalQrisEnabled }: { qris: QrisSettings; globalQrisEn
 
     function handleSave() {
         setSaving(true);
-        router.patch(route('admin.settings.payment.qris.update'), {
-            is_active: enabled,
-            base_payload: basePayload,
-            discount_min: discountMin,
-            discount_max: discountMax,
-        }, {
-            preserveScroll: true,
-            onFinish: () => setSaving(false),
-        });
+        setSaveError(null);
+        try {
+            router.patch(route('admin.settings.payment.qris.update'), {
+                is_active: enabled,
+                base_payload: basePayload,
+                discount_min: discountMin,
+                discount_max: discountMax,
+            }, {
+                preserveScroll: true,
+                onFinish: () => setSaving(false),
+            });
+        } catch {
+            // route() throws when the server's route list lacks this route (backend not deployed / stale route cache).
+            setSaving(false);
+            setSaveError('Gagal menyimpan: endpoint QRIS belum tersedia di server. Pastikan backend sudah ter-deploy dan jalankan "php artisan optimize:clear".');
+        }
     }
 
     return (
@@ -827,6 +835,11 @@ function TabQris({ qris, globalQrisEnabled }: { qris: QrisSettings; globalQrisEn
                     </div>
                 </div>
             </div>
+            {saveError && (
+                <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 flex items-start gap-1.5">
+                    <AlertCircle className="size-3.5 shrink-0 mt-px" />{saveError}
+                </p>
+            )}
             <SaveBar saving={saving} onSave={handleSave} onReset={reset}
                 note={qris.configuredAt ? `Terakhir disimpan: ${qris.configuredAt}` : undefined} />
             <QrisTestPanel basePayload={basePayload} discountMin={discountMin} discountMax={discountMax}
