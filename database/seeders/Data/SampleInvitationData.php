@@ -100,9 +100,12 @@ class SampleInvitationData
      *     child_order: array{groom: ?int, bride: ?int},
      * }
      */
-    public static function build(string $type, int $variant, Carbon $today): array
+    public static function build(string $type, int $variant, Carbon $today, ?string $themeSlug = null): array
     {
-        $data = match ($type) {
+        // Themes with their own curated content skip the shared rotation below.
+        $curated = $type === 'wedding' ? WeddingThemeSampleData::build($themeSlug, $today) : null;
+
+        $data = $curated ?? match ($type) {
             'wedding'       => self::wedding($variant, $today),
             'birthday'      => self::birthday($variant, $today),
             'khitanan'      => self::khitanan($variant, $today),
@@ -497,13 +500,13 @@ class SampleInvitationData
      * Future date (so countdowns run), spread per variant: 5–12 weeks ahead,
      * snapped to the given weekday.
      */
-    private static function eventDate(Carbon $today, int $v, int $weekday): Carbon
+    public static function eventDate(Carbon $today, int $v, int $weekday): Carbon
     {
         return $today->copy()->addWeeks(5 + ($v % 8))->next($weekday)->startOfDay();
     }
 
     /** @return array<int, array{name: string, message: string}> */
-    private static function wishes(string $type, int $v, string $who): array
+    public static function wishes(string $type, int $v, string $who): array
     {
         $pool = match ($type) {
             'wedding' => [

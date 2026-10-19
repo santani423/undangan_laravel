@@ -36,6 +36,7 @@ use Illuminate\Support\Str;
  *   never touches customer invitations.
  * - Each run rewrites the sample's child rows (contents, events, gallery…)
  *   from SampleInvitationData, so the demo always reflects the latest data.
+ *   Themes with curated content (WeddingThemeSampleData) use that instead.
  */
 class SampleInvitationSeeder extends Seeder
 {
@@ -52,6 +53,20 @@ class SampleInvitationSeeder extends Seeder
 
     public function run(): void
     {
+        $this->seedSamples();
+    }
+
+    /**
+     * Seeds the sample of every renderable theme, or only of the themes
+     * matching $only (partial run, e.g. WeddingThemeSampleSeeder). Themes left
+     * out of a partial run still take their variant/index slot, so each sample
+     * gets exactly the photos, account numbers and guest QR codes of a full
+     * run (guests.qr_code_data is unique across all invitations).
+     *
+     * @param  (\Closure(Theme): bool)|null  $only
+     */
+    protected function seedSamples(?\Closure $only = null): void
+    {
         $this->publishAssets();
 
         $owner      = $this->owner();
@@ -63,34 +78,48 @@ class SampleInvitationSeeder extends Seeder
         $counts = [];
         $skipped = [];
         $variants = [];
+        $globalIndex = 0;
 
         foreach (Theme::query()->orderBy('event_type')->ordered()->get() as $theme) {
             $type = $theme->event_type;
+            $selected = $only === null || $only($theme);
 
             if (! isset($renderers[$theme->slug])) {
-                $skipped[$type][] = $theme->slug;
+                if ($selected) {
+                    $skipped[$type][] = $theme->slug;
+                }
                 continue;
             }
 
             if ($renderers[$theme->slug] !== $type) {
-                $this->command?->warn("  {$theme->slug}: renderer ada di folder '{$renderers[$theme->slug]}' tetapi tema bertipe '{$type}', dilewati.");
-                $skipped[$type][] = $theme->slug;
+                if ($selected) {
+                    $this->command?->warn("  {$theme->slug}: renderer ada di folder '{$renderers[$theme->slug]}' tetapi tema bertipe '{$type}', dilewati.");
+                    $skipped[$type][] = $theme->slug;
+                }
                 continue;
             }
 
             if (! isset($eventTypes[$type])) {
-                $this->command?->warn("  {$theme->slug}: event type '{$type}' tidak ditemukan, dilewati.");
+                if ($selected) {
+                    $this->command?->warn("  {$theme->slug}: event type '{$type}' tidak ditemukan, dilewati.");
+                }
                 continue;
             }
 
             $package = $this->package($type);
             if (! $package) {
-                $this->command?->warn("  {$theme->slug}: tidak ada paket untuk '{$type}', dilewati.");
+                if ($selected) {
+                    $this->command?->warn("  {$theme->slug}: tidak ada paket untuk '{$type}', dilewati.");
+                }
                 continue;
             }
 
             $variant = $variants[$type] = ($variants[$type] ?? -1) + 1;
-            $globalIndex = count($seededThemeIds);
+
+            if (! $selected) {
+                $globalIndex++;
+                continue;
+            }
 
             $seeded = DB::transaction(fn () => $this->seedSample(
                 $theme, $owner, (int) $eventTypes[$type], $package, $variant, $globalIndex, $today,
@@ -99,10 +128,14 @@ class SampleInvitationSeeder extends Seeder
             if ($seeded) {
                 $seededThemeIds[] = $theme->id;
                 $counts[$type] = ($counts[$type] ?? 0) + 1;
+                $globalIndex++;
             }
         }
 
-        $this->pruneStaleSamples($owner, $seededThemeIds);
+        // Pruning needs the full list of seeded themes, so only a full run does it.
+        if ($only === null) {
+            $this->pruneStaleSamples($owner, $seededThemeIds);
+        }
         $this->report($counts, $skipped);
     }
 
@@ -111,7 +144,7 @@ class SampleInvitationSeeder extends Seeder
     private function seedSample(Theme $theme, User $owner, int $eventTypeId, Package $package, int $variant, int $globalIndex, Carbon $today): bool
     {
         $type = $theme->event_type;
-        $data = SampleInvitationData::build($type, $variant, $today);
+        $data = SampleInvitationData::build($type, $variant, $today, $theme->slug);
         $slug = 'contoh-'.Str::slug(str_replace('_', '-', $theme->slug));
 
         // Never take over a customer's slug/code.
@@ -498,7 +531,7 @@ class SampleInvitationSeeder extends Seeder
         }
     }
 
-    private function report(array $counts, array $skipped): void
+    protected function report(array $counts, array $skipped): void
     {
         $this->command?->info('SampleInvitationSeeder: contoh undangan per tipe');
         foreach (array_keys(EventType::INVITATION_TYPES) as $type) {
