@@ -1,3 +1,8 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Bahagia Project Wedding</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Bahagia Project: undangan pernikahan digital interaktif dengan pengalaman 3D sinematik.">
@@ -230,6 +235,8 @@
     #pemuat{transition:none}
   }
 </style>
+</head>
+<body>
 
 <canvas id="scene" aria-hidden="true"></canvas>
 
@@ -641,19 +648,28 @@ setTimeout(tutupPemuat, 12000);                       // jangan menahan pengunju
 function webglOk() {
   try { const c = document.createElement('canvas'); return !!(window.WebGLRenderingContext && (c.getContext('webgl2') || c.getContext('webgl'))); } catch (_) { return false; }
 }
-if (!window.THREE || !webglOk()) {
-  document.documentElement.classList.add('no-webgl');
-  tutupPemuat();
-} else {
-  try { mulaiAdegan(); } catch (err) {
-    console.warn('Adegan 3D dinonaktifkan:', err);
-    document.documentElement.classList.add('no-webgl'); tutupPemuat();
-  }
+function tanpaAdegan(alasan) {
+  if (alasan) console.warn('Adegan 3D dinonaktifkan:', alasan);
+  document.documentElement.classList.add('no-webgl'); tutupPemuat();
 }
+function bootAdegan() {
+  if (!window.THREE || !webglOk()) return tanpaAdegan();
+  try { mulaiAdegan(); } catch (err) { tanpaAdegan(err); }
+}
+/* Dibuka langsung dari disk (file://): browser menolak gambar lokal sebagai tekstur WebGL,
+   jadi pakai salinan data-URI di assets/aset-lokal.js (buat ulang: node make_aset_lokal.mjs). */
+if (location.protocol === 'file:' && !window.ASET_LOKAL) {
+  const s = document.createElement('script');
+  s.src = 'assets/aset-lokal.js';
+  s.onload = bootAdegan;
+  s.onerror = () => tanpaAdegan('assets/aset-lokal.js tidak ditemukan');
+  document.head.appendChild(s);
+} else bootAdegan();
 
 function mulaiAdegan() {
 /* ---------- renderer ---------- */
 const ASSET = 'assets/';
+const sumber = name => (window.ASET_LOKAL && window.ASET_LOKAL[name]) || ASSET + name;
 const canvas = document.getElementById('scene');
 const isMobile = matchMedia('(pointer: coarse)').matches || innerWidth < 900;
 const PR = Math.min(devicePixelRatio, isMobile ? 1.25 : 1.5);
@@ -673,7 +689,7 @@ const manager = new THREE.LoadingManager();
 manager.onProgress = (u, a, b) => { pemuat.bilah.style.width = Math.round(a / b * 90) + '%'; };
 const loader = new THREE.TextureLoader(manager);
 function tex(name, o = {}) {
-  const t = loader.load(ASSET + name);
+  const t = loader.load(sumber(name));
   t.encoding = o.linear ? THREE.LinearEncoding : THREE.sRGBEncoding;
   if (o.repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(o.repeat[0], o.repeat[1]); }
   t.anisotropy = maxAniso; return t;
@@ -689,7 +705,11 @@ const T = {
 T.sky.mapping = THREE.EquirectangularReflectionMapping;
 scene.background = T.sky;
 const siap = { aset: false, font: false, jalan: false };
+const gagal = [];
+manager.onError = url => gagal.push(url.slice(0, 120));
 manager.onLoad = () => {
+  // tekstur kosong membuat adegan hitam; lebih baik tampil tanpa 3D
+  if (gagal.length) return tanpaAdegan('tekstur gagal dimuat: ' + gagal.join(', '));
   const pm = new THREE.PMREMGenerator(renderer);
   scene.environment = pm.fromEquirectangular(T.sky).texture; pm.dispose();
   siap.aset = true; jalankan();
@@ -1135,7 +1155,9 @@ function drawKecil() {
   [['Sup krim jagung', 'Salad buah segar'], ['Nasi liwet & ayam bakar', 'Sate lilit, sambal matah'], ['Klepon cake', 'Es teh melati']].forEach((l, i) => l.forEach((s, j) => g.fillText(s, 200, 272 + i * 150 + j * 34)));
   amplop.menuTex.needsUpdate = true;
 }
-const sampulImg = new Image(); sampulImg.src = 'assets/galeri-gapura.jpg';
+const sampulImg = new Image(), sampulSrc = sumber('galeri-gapura.jpg');
+// di file:// hanya data-URI yang aman; gambar lokal membuat kanvas "tainted" dan WebGL menolaknya
+if (location.protocol !== 'file:' || sampulSrc.startsWith('data:')) sampulImg.src = sampulSrc;
 function drawLayar(el = 0) {
   const g = amplop.scrC.getContext('2d'), W = 540, H = 1140;
   g.fillStyle = '#FAF6EE'; g.fillRect(0, 0, W, H);
@@ -1324,3 +1346,5 @@ function jalankan() {
 setTimeout(() => { siap.font = true; jalankan(); }, 5000);
 }
 </script>
+</body>
+</html>

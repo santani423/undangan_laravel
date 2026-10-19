@@ -48,6 +48,7 @@ import WeddingTheme09 from './themes/wedding/wedding_theme_09/WeddingTheme09';
 import WeddingTheme10 from './themes/wedding/wedding_theme_10/WeddingTheme10';
 import WeddingTheme11 from './themes/wedding/wedding_theme_11/WeddingTheme11';
 import WeddingTheme12 from './themes/wedding/wedding_theme_12/WeddingTheme12';
+import WeddingTheme13 from './themes/wedding/wedding_theme_13/WeddingTheme13';
 
 interface Props {
     invitation: InvitationData;
@@ -264,6 +265,9 @@ function resolveThemeComponent(themeSlug: string, invitation: InvitationData, vi
         case 'wedding_theme_12':
         case 'wedding-theme-12':
             return <WeddingTheme12 invitation={invitation as WeddingInvitation} visitor={visitor} greeting={invitation.greeting} />;
+        case 'wedding_theme_13':
+        case 'wedding-theme-13':
+            return <WeddingTheme13 invitation={invitation as WeddingInvitation} visitor={visitor} greeting={invitation.greeting} />;
 
         
 
