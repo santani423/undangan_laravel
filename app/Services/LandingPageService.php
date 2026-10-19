@@ -82,7 +82,7 @@ class LandingPageService
             ['key' => 'photo_gallery', 'icon' => 'Camera', 'title' => 'Galeri Foto', 'description' => 'Kenangan indah dalam galeri'],
             ['key' => 'background_music', 'icon' => 'Music', 'title' => 'Musik Latar', 'description' => 'Lagu favorit menemani undangan'],
             ['key' => 'social_share', 'icon' => 'Share2', 'title' => 'Bagikan Mudah', 'description' => 'Sebar ke WhatsApp & media sosial'],
-            ['key' => 'live_stream', 'icon' => 'Video', 'title' => 'Live Streaming', 'description' => 'Untuk tamu yang berhalangan hadir'],
+            ['key' => 'love_story', 'icon' => 'Heart', 'title' => 'Kisah Cinta', 'description' => 'Perjalanan cinta dalam cerita dan timeline romantis'],
             ['key' => 'amplop_digital', 'icon' => 'Gift', 'title' => 'Amplop Digital', 'description' => 'Hadiah digital praktis via QRIS'],
             ['key' => 'custom_domain', 'icon' => 'Globe', 'title' => 'Domain Kustom', 'description' => 'Alamat undangan khusus milikmu'],
         ];
