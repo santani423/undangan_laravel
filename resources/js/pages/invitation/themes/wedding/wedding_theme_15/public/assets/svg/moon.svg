@@ -1,4 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
-<defs><radialGradient id="halo"><stop stop-color="#F5D58B" stop-opacity=".42"/><stop offset="1" stop-color="#F5D58B" stop-opacity="0"/></radialGradient><linearGradient id="moon"><stop stop-color="#FFF8EE"/><stop offset="1" stop-color="#B9D5F2"/></linearGradient></defs>
-<circle cx="250" cy="250" r="235" fill="url(#halo)"/><path d="M316 74c-76 18-126 91-111 168 15 78 91 126 168 111-24 39-68 65-118 65-77 0-140-63-140-140S178 138 255 138c23 0 44 5 61 16z" fill="url(#moon)"/>
-<g fill="#FFF8EE" opacity=".85"><circle cx="174" cy="222" r="4"/><circle cx="218" cy="302" r="3"/><circle cx="281" cy="354" r="4"/></g></svg>
