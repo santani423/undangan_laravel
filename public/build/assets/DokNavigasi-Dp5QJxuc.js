@@ -1,1 +1,0 @@
-import{j as r}from"./app-BspC2_42.js";import{Ikon as e}from"./Ikon-C4dwaYsU.js";function l({item:n,aktif:s}){return r.jsx("nav",{className:"wt13-dok","aria-label":"Navigasi undangan",children:n.map(a=>r.jsxs("a",{href:`#${a.id}`,"aria-current":a.id===s?"true":"false",children:[r.jsx(e,{nama:a.ikon}),r.jsx("span",{children:a.label})]},a.id))})}export{l as default};
