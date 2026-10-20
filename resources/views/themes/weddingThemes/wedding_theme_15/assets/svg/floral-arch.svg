@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 800">
+<defs><linearGradient id="arch" x2="1"><stop stop-color="#A6C5A4"/><stop offset="1" stop-color="#658B7B"/></linearGradient></defs>
+<path d="M105 740V340C105 150 220 65 350 65S595 150 595 340V740" fill="none" stroke="url(#arch)" stroke-width="28" stroke-linecap="round"/>
+<path d="M145 740V350C145 190 235 110 350 110S555 190 555 350V740" fill="none" stroke="#F5D58B" stroke-opacity=".45" stroke-width="4"/>
+<g fill="#F2C5D2" stroke="#FFF0F5" stroke-width="4"><circle cx="150" cy="230" r="25"/><circle cx="180" cy="205" r="22"/><circle cx="205" cy="238" r="22"/><circle cx="520" cy="215" r="25"/><circle cx="548" cy="245" r="22"/><circle cx="492" cy="250" r="22"/><circle cx="330" cy="85" r="22"/><circle cx="360" cy="75" r="19"/></g>
+<g fill="#F5D58B"><circle cx="178" cy="232" r="11"/><circle cx="520" cy="245" r="11"/><circle cx="350" cy="82" r="9"/></g>
+<g fill="none" stroke="#A6C5A4" stroke-width="9" stroke-linecap="round"><path d="M126 310Q220 300 238 375"/><path d="M574 305Q490 305 467 375"/><path d="M245 120Q265 175 305 180"/><path d="M450 120Q430 175 395 180"/></g>
+</svg>

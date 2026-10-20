@@ -64,7 +64,7 @@ class WeddingThemeSampleData
             'groom'  => ['Satya Dharma Wicaksana', 'Satya', 'Drs. Wicaksono', 'Tri Utami', 1, 'kurator museum yang gemar mengoleksi piringan hitam'],
             'bride'  => ['Ratri Kusumawardhani', 'Ratri', 'Hadi Kusumo', 'Endah Purwaningsih', 3, 'penulis lepas dan pencinta buku antik'],
             'quote'  => 'Aku ingin mencintaimu dengan sederhana: dengan kata yang tak sempat diucapkan kayu kepada api yang menjadikannya abu. (Sapardi Djoko Damono)',
-            'colors' => [['Old Rose', '#B76E79'], ['Cream', '#FBEEE6'], ['Mocha', '#8B6F5C']],
+            'colors' => [['Lavender', '#8580B7'], ['Blush', '#F2C5D2'], ['Sage', '#A6C5A4']],
             'stories' => [
                 ['Surat Pertama', -7, 'Satya dan Ratri berkenalan lewat komunitas sahabat pena pencinta buku antik. Surat pertama Satya masih Ratri simpan di kotak kayu.'],
                 ['Kencan di Kayutangan', -5, 'Pertemuan pertama kami di kawasan heritage Kayutangan. Dua cangkir kopi tubruk menemani obrolan hingga senja.'],
