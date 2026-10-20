@@ -47,10 +47,10 @@ class WeddingThemeSampleData
             'groom'  => ['Bima Aryasatya', 'Bima', 'Ir. Prakoso Hadi', 'Retno Palupi', 2, 'perajin furnitur kayu daur ulang'],
             'bride'  => ['Sekar Ayu Larasati', 'Sekar', 'Darmanto', 'Sri Rahayu', 1, 'ilustrator lepas yang mencintai tanaman'],
             'quote'  => 'Dan segala sesuatu Kami ciptakan berpasang-pasangan agar kamu mengingat kebesaran Allah. (QS. Adz-Dzariyat: 49)',
-            'colors' => [['Terracotta', '#B5654A'], ['Sage', '#9CAF88'], ['Sand', '#E8D9C4']],
+            'colors' => [['Sogan', '#5F3B27'], ['Emas', '#B58A45'], ['Gading', '#F2E6CC']],
             'events' => [
                 ['Akad Nikah', 'home', '08:00', '09:30', 'countdown' => true],
-                ['Garden Party & Resepsi', 'hall', '15:30', '18:30'],
+                ['Panggih & Resepsi', 'hall', '11:00', '14:00'],
             ],
             'stories' => [
                 ['Pertama Bertemu', -5, 'Bima dan Sekar bertemu di sebuah lokakarya keramik di Kasongan. Vas buatan Bima retak, dan Sekar menawarkan bantuan sambil tertawa.'],
