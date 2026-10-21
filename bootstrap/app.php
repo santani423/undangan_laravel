@@ -21,7 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->web(append: [
             HandleInertiaRequests::class,
-            AddLinkHeadersForPreloadedAssets::class,
+            // invitation/show statically imports every theme (~200 preloaded assets); an
+            // unbounded Link header (~19 KB) makes the hosting proxy time out the response.
+            AddLinkHeadersForPreloadedAssets::using(20),
         ]);
 
         $middleware->alias([

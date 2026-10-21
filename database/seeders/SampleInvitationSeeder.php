@@ -40,7 +40,7 @@ use Illuminate\Support\Str;
  */
 class SampleInvitationSeeder extends Seeder
 {
-    private const OWNER_EMAIL = 'samples@undesia.id';
+    protected const OWNER_EMAIL = 'samples@undesia.id';
 
     /** Source assets (committed) → public disk directory they're published to. */
     private const ASSET_SOURCE = 'seeders/assets/sample-invitations';
@@ -147,9 +147,10 @@ class SampleInvitationSeeder extends Seeder
         $data = SampleInvitationData::build($type, $variant, $today, $theme->slug);
         $slug = 'contoh-'.Str::slug(str_replace('_', '-', $theme->slug));
 
-        // Never take over a customer's slug/code.
+        // Never take over a customer's slug/code — nor a customer invitation that
+        // happens to be flagged is_sample: only the system account's rows are samples.
         $clash = Invitation::withTrashed()
-            ->where('is_sample', false)
+            ->where(fn ($q) => $q->where('is_sample', false)->orWhere('user_id', '!=', $owner->id))
             ->where(fn ($q) => $q->where('slug', $slug)->orWhere('invitation_code', $slug))
             ->exists();
         if ($clash) {
@@ -158,7 +159,7 @@ class SampleInvitationSeeder extends Seeder
             return false;
         }
 
-        $invitation = Invitation::withTrashed()->firstOrNew(['theme_id' => $theme->id, 'is_sample' => true]);
+        $invitation = Invitation::withTrashed()->firstOrNew(['theme_id' => $theme->id, 'is_sample' => true, 'user_id' => $owner->id]);
         $invitation->fill([
             'user_id'              => $owner->id,
             'event_type_id'        => $eventTypeId,
