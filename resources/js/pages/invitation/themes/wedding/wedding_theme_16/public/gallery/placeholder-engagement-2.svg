@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f3d6d9"/>
+      <stop offset="1" stop-color="#fbf6ec"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1200" height="900" fill="url(#sky)" />
+  <rect x="0" y="640" width="1200" height="260" fill="#4d8a43" />
+  <rect x="0" y="640" width="40" height="14" fill="#5f9a4a" /><rect x="40" y="640" width="40" height="14" fill="#79ad57" /><rect x="80" y="640" width="40" height="14" fill="#5f9a4a" /><rect x="120" y="640" width="40" height="14" fill="#79ad57" /><rect x="160" y="640" width="40" height="14" fill="#5f9a4a" /><rect x="200" y="640" width="40" height="14" fill="#79ad57" /><rect x="240" y="640" width="40" height="14" fill="#5f9a4a" /><rect x="280" y="640" width="40" height="14" fill="#79ad57" /><rect x="320" y="640" width="40" height="14" fill="#5f9a4a" /><rect x="360" y="640" width="40" height="14" fill="#79ad57" /><rect x="400" y="640" width="40" height="14" fill="#5f9a4a" /><rect x="440" y="640" width="40" height="14" fill="#79ad57" /><rect x="480" y="640" width="40" height="14" fill="#5f9a4a" /><rect x="520" y="640" width="40" height="14" fill="#79ad57" /><rect x="560" y="640" width="40" height="14" fill="#5f9a4a" /><rect x="600" y="640" width="40" height="14" fill="#79ad57" /><rect x="640" y="640" width="40" height="14" fill="#5f9a4a" /><rect x="680" y="640" width="40" height="14" fill="#79ad57" /><rect x="720" y="640" width="40" height="14" fill="#5f9a4a" /><rect x="760" y="640" width="40" height="14" fill="#79ad57" /><rect x="800" y="640" width="40" height="14" fill="#5f9a4a" /><rect x="840" y="640" width="40" height="14" fill="#79ad57" /><rect x="880" y="640" width="40" height="14" fill="#5f9a4a" /><rect x="920" y="640" width="40" height="14" fill="#79ad57" /><rect x="960" y="640" width="40" height="14" fill="#5f9a4a" /><rect x="1000" y="640" width="40" height="14" fill="#79ad57" /><rect x="1040" y="640" width="40" height="14" fill="#5f9a4a" /><rect x="1080" y="640" width="40" height="14" fill="#79ad57" /><rect x="1120" y="640" width="40" height="14" fill="#5f9a4a" /><rect x="1160" y="640" width="40" height="14" fill="#79ad57" />
+  <rect x="500" y="470" width="200" height="170" fill="#c56f78" /><rect x="490" y="450" width="220" height="30" fill="#c9a25c" /><rect x="588" y="450" width="24" height="190" fill="#f1e3c6" /><rect x="211.2" y="541" width="17.6" height="99.00000000000001" fill="#80532f" /><rect x="167.2" y="475" width="105.60000000000001" height="77" fill="#c56f78" /><rect x="184.8" y="439.79999999999995" width="70.4" height="41.800000000000004" fill="#eda6a6" /><rect x="167.2" y="475" width="33" height="28.6" fill="#eda6a6" opacity="0.6"/><rect x="971.2" y="541" width="17.6" height="99.00000000000001" fill="#80532f" /><rect x="927.2" y="475" width="105.60000000000001" height="77" fill="#c56f78" /><rect x="944.8" y="439.79999999999995" width="70.4" height="41.800000000000004" fill="#eda6a6" /><rect x="927.2" y="475" width="33" height="28.6" fill="#eda6a6" opacity="0.6"/>
+  
+    <g>
+      <rect x="290" y="710" width="620" height="130" fill="#fbf6ec" opacity="0.92" rx="10"/>
+      <rect x="300" y="720" width="14" height="14" fill="#c9a25c" />
+      <rect x="886" y="816" width="14" height="14" fill="#c9a25c" />
+      <text x="600" y="768" text-anchor="middle" font-family="Georgia, serif" font-size="40" font-weight="700" letter-spacing="6" fill="#74552a">FOTO CONTOH</text>
+      <text x="600" y="808" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#564e42">Ganti dengan foto lamaran</text>
+    </g>
+</svg>

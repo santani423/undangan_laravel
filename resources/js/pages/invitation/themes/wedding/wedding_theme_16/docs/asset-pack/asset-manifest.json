@@ -1,0 +1,74 @@
+{
+  "pack_name": "Undesia Original Voxel Wedding Invitation Asset Pack",
+  "version": "1.0.0",
+  "license": "Original assets generated for this project; free to modify and use in your project. No Minecraft assets included.",
+  "models": [
+    {
+      "file": "models/voxel_tree.obj",
+      "purpose": "Blocky garden tree; pair with grass and path"
+    },
+    {
+      "file": "models/blossom_tree.obj",
+      "purpose": "Decorative flowering tree for wedding garden"
+    },
+    {
+      "file": "models/wedding_arch.obj",
+      "purpose": "Ceremony arch"
+    },
+    {
+      "file": "models/garden_bench.obj",
+      "purpose": "Garden seating"
+    },
+    {
+      "file": "models/garden_lantern.obj",
+      "purpose": "Path lighting"
+    },
+    {
+      "file": "models/flower_arrangement.obj",
+      "purpose": "Flower centerpiece"
+    },
+    {
+      "file": "models/gift_box.obj",
+      "purpose": "Digital gift section prop"
+    },
+    {
+      "file": "models/garden_cottage.obj",
+      "purpose": "Small background cottage"
+    },
+    {
+      "file": "models/grass_tile.obj",
+      "purpose": "Ground tile with simple grass blades"
+    },
+    {
+      "file": "models/stepping_stones.obj",
+      "purpose": "Path stepping stones"
+    },
+    {
+      "file": "models/wedding_rings_voxel.obj",
+      "purpose": "Stylized voxel wedding rings"
+    }
+  ],
+  "textures": [
+    "textures/grass.svg",
+    "textures/dirt.svg",
+    "textures/stone.svg",
+    "textures/wood.svg",
+    "textures/ivory_fabric.svg",
+    "textures/water.svg"
+  ],
+  "icons": [
+    "icons/calendar.svg",
+    "icons/location.svg",
+    "icons/music.svg",
+    "icons/gift.svg",
+    "icons/heart.svg",
+    "icons/gallery.svg"
+  ],
+  "notes": [
+    "OBJ files are low-poly cuboid meshes with per-face material assignments.",
+    "Keep the OBJ files and voxel_wedding_palette.mtl in the same models directory.",
+    "For production, convert OBJ assets to GLB with Blender to reduce draw calls and simplify loading.",
+    "Grass movement should be implemented in Three.js using vertex shader sway or instanced grass blades; the supplied grass_tile is a static starter prop.",
+    "Use original couple photos, event details, maps, music, and QRIS/payment details supplied by the invitation owner."
+  ]
+}
