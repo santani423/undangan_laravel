@@ -1,0 +1,1 @@
+import{r as t}from"./app-Uj8zEl3A.js";import"./app-IqrQmINv.js";const o=t.createContext(null),i=o.Provider;function r(){const e=t.useContext(o);if(!e)throw new Error("useTheme outside WeddingTheme15");return e}const d=()=>r().wedding;export{i as ThemeProvider,r as useTheme,d as useWedding};

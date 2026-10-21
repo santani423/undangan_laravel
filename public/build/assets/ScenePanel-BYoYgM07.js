@@ -1,1 +1,0 @@
-import{j as e}from"./app-DjCwi9X6.js";import"./app-Cny16GSG.js";function r({id:a,side:t,label:i,children:s}){return e.jsx("div",{className:`wt14-scene-panel wt14-side-${t}`,children:e.jsx("section",{"data-panel":a,"aria-label":i,className:"wt14-panel wt14-panel-scroll",style:{visibility:"hidden",opacity:0},children:s})})}export{r as ScenePanel};
