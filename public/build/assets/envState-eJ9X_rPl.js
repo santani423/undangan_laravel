@@ -1,0 +1,1 @@
+import{W as o}from"./waypoints-GDTohzSn.js";import{e as n,f as e}from"./three.core-CpBsj1UV.js";const f={fog:new n(o[0].env.fog),fogNear:o[0].env.fogNear,fogFar:o[0].env.fogFar,light:new e(...o[0].env.light),lightIntensity:o[0].env.lightIntensity,moon:o[0].env.moon,section:0,focus:new e(0,1.8,8)};export{f as e};

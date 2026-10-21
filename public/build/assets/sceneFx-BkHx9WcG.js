@@ -1,0 +1,1 @@
+const e={qTarget:0,intro:0,seal:0,flap:0,letter:0,away:0,burstAt:-1,pointerX:0,pointerY:0,reducedMotion:!1};function t(){Object.assign(e,{qTarget:0,intro:0,seal:0,flap:0,letter:0,away:0,burstAt:-1,pointerX:0,pointerY:0})}export{t as r,e as s};
