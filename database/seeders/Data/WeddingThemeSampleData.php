@@ -77,7 +77,7 @@ class WeddingThemeSampleData
             'groom'  => ['Bayu Samudra Wiratama', 'Bayu', 'Wiratama Putra', 'Nur Laila', 1, 'instruktur selam bersertifikat internasional'],
             'bride'  => ['Kinanti Maharani Putri', 'Kinanti', 'H. Syamsul Arifin', 'Hj. Dewi Sartika', 2, 'fotografer lepas yang jatuh cinta pada laut'],
             'quote'  => 'Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri, supaya kamu merasa tenteram kepadanya, dan dijadikan-Nya di antaramu rasa kasih dan sayang. (QS. Ar-Rum: 21)',
-            'colors' => [['Ocean Blue', '#0369A1'], ['Sky Blue', '#BAE6FD'], ['Pearl White', '#F8FAFC']],
+            'colors' => [['Ivory', '#F5EDDD'], ['Champagne', '#E8D5B0'], ['Sage', '#8FAE7E'], ['Dusty Rose', '#C9858C'], ['Gold', '#C9A25C']],
             'events' => [
                 ['Akad Nikah', 'mosque', '09:00', '10:30', 'countdown' => true],
                 ['Sunset Reception', 'hall', '16:00', '19:00'],

@@ -1,0 +1,120 @@
+# Original voxel wedding palette; custom colors, no third-party game assets.
+newmtl grass
+Kd 0.3 0.55 0.27
+Ka 0.08 0.08 0.08
+Ks 0.05 0.05 0.05
+Ns 8
+
+newmtl grass_light
+Kd 0.47 0.68 0.34
+Ka 0.08 0.08 0.08
+Ks 0.05 0.05 0.05
+Ns 8
+
+newmtl dirt
+Kd 0.43 0.29 0.18
+Ka 0.08 0.08 0.08
+Ks 0.05 0.05 0.05
+Ns 8
+
+newmtl wood
+Kd 0.43 0.27 0.16
+Ka 0.08 0.08 0.08
+Ks 0.05 0.05 0.05
+Ns 8
+
+newmtl wood_light
+Kd 0.62 0.42 0.25
+Ka 0.08 0.08 0.08
+Ks 0.05 0.05 0.05
+Ns 8
+
+newmtl leaf
+Kd 0.2 0.43 0.24
+Ka 0.08 0.08 0.08
+Ks 0.05 0.05 0.05
+Ns 8
+
+newmtl leaf_light
+Kd 0.31 0.56 0.29
+Ka 0.08 0.08 0.08
+Ks 0.05 0.05 0.05
+Ns 8
+
+newmtl stone
+Kd 0.62 0.62 0.57
+Ka 0.08 0.08 0.08
+Ks 0.05 0.05 0.05
+Ns 8
+
+newmtl stone_light
+Kd 0.78 0.76 0.68
+Ka 0.08 0.08 0.08
+Ks 0.05 0.05 0.05
+Ns 8
+
+newmtl cream
+Kd 0.93 0.86 0.72
+Ka 0.08 0.08 0.08
+Ks 0.05 0.05 0.05
+Ns 8
+
+newmtl ivory
+Kd 0.98 0.94 0.85
+Ka 0.08 0.08 0.08
+Ks 0.05 0.05 0.05
+Ns 8
+
+newmtl gold
+Kd 0.83 0.61 0.27
+Ka 0.08 0.08 0.08
+Ks 0.05 0.05 0.05
+Ns 8
+
+newmtl rose
+Kd 0.78 0.37 0.42
+Ka 0.08 0.08 0.08
+Ks 0.05 0.05 0.05
+Ns 8
+
+newmtl blush
+Kd 0.93 0.65 0.65
+Ka 0.08 0.08 0.08
+Ks 0.05 0.05 0.05
+Ns 8
+
+newmtl white
+Kd 0.96 0.95 0.91
+Ka 0.08 0.08 0.08
+Ks 0.05 0.05 0.05
+Ns 8
+
+newmtl dark
+Kd 0.16 0.18 0.16
+Ka 0.08 0.08 0.08
+Ks 0.05 0.05 0.05
+Ns 8
+
+newmtl water
+Kd 0.25 0.58 0.68
+Ka 0.08 0.08 0.08
+Ks 0.05 0.05 0.05
+Ns 8
+
+newmtl glass
+Kd 0.55 0.78 0.8
+Ka 0.08 0.08 0.08
+Ks 0.05 0.05 0.05
+Ns 8
+
+newmtl purple
+Kd 0.47 0.33 0.57
+Ka 0.08 0.08 0.08
+Ks 0.05 0.05 0.05
+Ns 8
+
+newmtl blue
+Kd 0.35 0.52 0.7
+Ka 0.08 0.08 0.08
+Ks 0.05 0.05 0.05
+Ns 8

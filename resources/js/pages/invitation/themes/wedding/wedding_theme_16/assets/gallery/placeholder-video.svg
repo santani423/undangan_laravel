@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2e2a22"/>
+      <stop offset="1" stop-color="#564e42"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1200" height="675" fill="url(#sky)" />
+  <rect x="0" y="415" width="1200" height="260" fill="#3f3a30" />
+  <rect x="0" y="415" width="40" height="14" fill="#5f9a4a" /><rect x="40" y="415" width="40" height="14" fill="#79ad57" /><rect x="80" y="415" width="40" height="14" fill="#5f9a4a" /><rect x="120" y="415" width="40" height="14" fill="#79ad57" /><rect x="160" y="415" width="40" height="14" fill="#5f9a4a" /><rect x="200" y="415" width="40" height="14" fill="#79ad57" /><rect x="240" y="415" width="40" height="14" fill="#5f9a4a" /><rect x="280" y="415" width="40" height="14" fill="#79ad57" /><rect x="320" y="415" width="40" height="14" fill="#5f9a4a" /><rect x="360" y="415" width="40" height="14" fill="#79ad57" /><rect x="400" y="415" width="40" height="14" fill="#5f9a4a" /><rect x="440" y="415" width="40" height="14" fill="#79ad57" /><rect x="480" y="415" width="40" height="14" fill="#5f9a4a" /><rect x="520" y="415" width="40" height="14" fill="#79ad57" /><rect x="560" y="415" width="40" height="14" fill="#5f9a4a" /><rect x="600" y="415" width="40" height="14" fill="#79ad57" /><rect x="640" y="415" width="40" height="14" fill="#5f9a4a" /><rect x="680" y="415" width="40" height="14" fill="#79ad57" /><rect x="720" y="415" width="40" height="14" fill="#5f9a4a" /><rect x="760" y="415" width="40" height="14" fill="#79ad57" /><rect x="800" y="415" width="40" height="14" fill="#5f9a4a" /><rect x="840" y="415" width="40" height="14" fill="#79ad57" /><rect x="880" y="415" width="40" height="14" fill="#5f9a4a" /><rect x="920" y="415" width="40" height="14" fill="#79ad57" /><rect x="960" y="415" width="40" height="14" fill="#5f9a4a" /><rect x="1000" y="415" width="40" height="14" fill="#79ad57" /><rect x="1040" y="415" width="40" height="14" fill="#5f9a4a" /><rect x="1080" y="415" width="40" height="14" fill="#79ad57" /><rect x="1120" y="415" width="40" height="14" fill="#5f9a4a" /><rect x="1160" y="415" width="40" height="14" fill="#79ad57" />
+  <polygon points="560,195 560,315 660,255" fill="#fbf6ec"/><rect x="470" y="155" width="260" height="200" fill="none" stroke="#c9a25c" stroke-width="10"/>
+  
+    <g>
+      <rect x="290" y="485" width="620" height="130" fill="#fbf6ec" opacity="0.92" rx="10"/>
+      <rect x="300" y="495" width="14" height="14" fill="#c9a25c" />
+      <rect x="886" y="591" width="14" height="14" fill="#c9a25c" />
+      <text x="600" y="543" text-anchor="middle" font-family="Georgia, serif" font-size="40" font-weight="700" letter-spacing="6" fill="#74552a">VIDEO CONTOH</text>
+      <text x="600" y="583" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#564e42">Tambahkan video pernikahan Anda</text>
+    </g>
+</svg>
