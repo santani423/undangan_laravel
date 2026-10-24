@@ -1,0 +1,49 @@
+{
+  "name": "Toy World Birthday Invitation Asset Pack",
+  "version": "1.0.0",
+  "style": "colorful miniature toy world",
+  "note": "Includes SVG concept/fallback illustrations, UI icons, procedural texture maps, and particle sprites. These are not production GLB models.",
+  "illustrations": [
+    "illustrations/toy-house.svg",
+    "illustrations/toy-tree.svg",
+    "illustrations/balloon-bunch.svg",
+    "illustrations/birthday-cake.svg",
+    "illustrations/gift-box.svg",
+    "illustrations/toy-car.svg",
+    "illustrations/mascot-bear.svg",
+    "illustrations/toy-blocks.svg"
+  ],
+  "textures": [
+    "textures/grass-basecolor.png",
+    "textures/grass-roughness.png",
+    "textures/grass-normal.png"
+  ],
+  "sprites": [
+    "sprites/confetti-sprite.png",
+    "sprites/soft-particle.png"
+  ],
+  "ui": [
+    "ui/music.svg",
+    "ui/map-pin.svg",
+    "ui/calendar.svg",
+    "ui/gift.svg",
+    "ui/camera.svg",
+    "ui/check.svg",
+    "ui/chevron-down.svg",
+    "ui/close.svg",
+    "ui/play.svg",
+    "ui/pause.svg"
+  ],
+  "recommendedProcedural3DObjects": [
+    "toy-house",
+    "rounded-tree",
+    "toy-car",
+    "gift-box",
+    "birthday-cake",
+    "balloon",
+    "toy-block",
+    "rounded-fence",
+    "miniature-road",
+    "toy-character"
+  ]
+}
