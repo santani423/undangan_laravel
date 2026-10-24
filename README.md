@@ -579,6 +579,24 @@ php artisan migrate:fresh --seed
 | `ThemeSeeder` | Template undangan default |
 | `PaymentGatewayConfigSeeder` | Konfigurasi payment gateway |
 | `AppSettingSeeder` | Pengaturan platform default |
+| `ResetBirthdaySampleSeeder` | Reset contoh undangan ulang tahun tema 01–20 (dijalankan manual, lihat di bawah) |
+
+### Reset Contoh Undangan Ulang Tahun
+
+Menghapus lalu membuat ulang contoh undangan (halaman "Lihat Contoh", `/themes/{slug}/sample`) untuk tema `birthday_theme_01` sampai `birthday_theme_20`. Contoh undangan tipe lain dan undangan milik customer tidak ikut berubah.
+
+```bash
+# Development
+php artisan db:seed --class=ResetBirthdaySampleSeeder
+
+# Production (wajib --force)
+php artisan db:seed --class=ResetBirthdaySampleSeeder --force
+```
+
+- Isi contoh (nama dan umur anak, tema pesta, acara, cerita, kado, foto) diambil dari `database/seeders/Data/BirthdayThemeSampleData.php`. Ubah file itu lalu jalankan ulang perintah di atas untuk mengganti isi contoh.
+- Contoh hanya dibuat untuk tema yang sudah punya renderer React di `resources/js/pages/invitation/themes/birthday/birthday_theme_XX/`. Tema yang belum punya renderer dilewati dan disebutkan di output. Jalankan ulang perintah ini setelah menambahkan renderer tema baru.
+- Yang dihapus hanya undangan `is_sample` milik akun sistem `samples@undesia.id`. Contoh yang sudah punya transaksi tidak dihapus, isinya saja yang diperbarui. Semua langkah berjalan dalam satu transaksi database, jadi kalau gagal, data lama tetap utuh.
+- Foto contoh disalin otomatis ke `storage/app/public/sample-invitations/`. Agar tampil, `php artisan storage:link` harus sudah dijalankan.
 
 ### Tabel Utama
 
