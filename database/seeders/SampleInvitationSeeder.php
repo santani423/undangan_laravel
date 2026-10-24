@@ -60,9 +60,11 @@ class SampleInvitationSeeder extends Seeder
     /**
      * Seeds the sample of every renderable theme, or only of the themes
      * matching $only (partial run, e.g. WeddingThemeSampleSeeder). Themes left
-     * out of a partial run still take their variant/index slot, so each sample
-     * gets exactly the photos, account numbers and guest QR codes of a full
-     * run (guests.qr_code_data is unique across all invitations).
+     * out of a partial run still take their variant slot, so each sample gets
+     * the content and photos of a full run. Guest QR codes and e-wallet numbers
+     * come from the theme id, not the theme's position: a position shifts when
+     * another theme gains a renderer, and the samples seeded before that would
+     * then collide (guests.qr_code_data is unique across all invitations).
      *
      * @param  (\Closure(Theme): bool)|null  $only
      */
@@ -79,7 +81,6 @@ class SampleInvitationSeeder extends Seeder
         $counts = [];
         $skipped = [];
         $variants = [];
-        $globalIndex = 0;
 
         foreach (Theme::query()->orderBy('event_type')->ordered()->get() as $theme) {
             $type = $theme->event_type;
@@ -118,31 +119,31 @@ class SampleInvitationSeeder extends Seeder
             $variant = $variants[$type] = ($variants[$type] ?? -1) + 1;
 
             if (! $selected) {
-                $globalIndex++;
                 continue;
             }
 
             $seeded = DB::transaction(fn () => $this->seedSample(
-                $theme, $owner, (int) $eventTypes[$type], $package, $variant, $globalIndex, $today,
+                $theme, $owner, (int) $eventTypes[$type], $package, $variant, $today,
             ));
 
             if ($seeded) {
                 $seededThemeIds[] = $theme->id;
                 $counts[$type] = ($counts[$type] ?? 0) + 1;
-                $globalIndex++;
             }
         }
 
         // Pruning needs the full list of seeded themes, so only a full run does it.
         if ($only === null) {
             $this->pruneStaleSamples($owner, $seededThemeIds);
+        } else {
+            $this->deleteOrphanWallets($owner);
         }
         $this->report($counts, $skipped);
     }
 
     // ─── One sample ──────────────────────────────────────────────────────────
 
-    private function seedSample(Theme $theme, User $owner, int $eventTypeId, Package $package, int $variant, int $globalIndex, Carbon $today): bool
+    private function seedSample(Theme $theme, User $owner, int $eventTypeId, Package $package, int $variant, Carbon $today): bool
     {
         $type = $theme->event_type;
         $data = SampleInvitationData::build($type, $variant, $today, $theme->slug);
@@ -192,9 +193,9 @@ class SampleInvitationSeeder extends Seeder
         $this->seedEvents($invitation, $data['events']);
         $this->seedGallery($invitation, $photos);
         $this->seedStories($invitation, $data['stories'], $photos);
-        $this->seedGuestsAndWishes($invitation, $data['wishes'], $globalIndex);
+        $this->seedGuestsAndWishes($invitation, $data['wishes']);
         $this->seedWishlist($invitation, $data['wishlist']);
-        $this->seedWallet($invitation, $owner, $data['wallet'], $globalIndex);
+        $this->seedWallet($invitation, $owner, $data['wallet']);
 
         return true;
     }
@@ -340,8 +341,12 @@ class SampleInvitationSeeder extends Seeder
         ]);
     }
 
-    /** Guests with varied RSVP answers + approved wishes (shown by the wishes API). */
-    private function seedGuestsAndWishes(Invitation $invitation, array $wishes, int $globalIndex): void
+    /**
+     * Guests with varied RSVP answers + approved wishes (shown by the wishes API).
+     * QR codes are keyed by theme id ("T"), so they can't match the older
+     * position-based codes ("SAMPLE-023-0") that unrefreshed samples still carry.
+     */
+    private function seedGuestsAndWishes(Invitation $invitation, array $wishes): void
     {
         $statuses = ['attending', 'attending', 'maybe', 'attending', 'not_attending'];
 
@@ -351,7 +356,7 @@ class SampleInvitationSeeder extends Seeder
                 'name'              => $wish['name'],
                 'slug'              => Str::slug($wish['name']),
                 'category'          => $i === 0 ? 'Keluarga' : 'Teman',
-                'qr_code_data'      => sprintf('SAMPLE-%03d-%d', $globalIndex, $i),
+                'qr_code_data'      => sprintf('SAMPLE-T%04d-%d', $invitation->theme_id, $i),
                 'rsvp_status'       => $statuses[$i % count($statuses)],
                 'rsvp_headcount'    => $statuses[$i % count($statuses)] === 'not_attending' ? 0 : 1 + ($i % 3),
                 'rsvp_submitted_at' => now()->subDays(5 - $i),
@@ -385,10 +390,15 @@ class SampleInvitationSeeder extends Seeder
         }
     }
 
-    private function seedWallet(Invitation $invitation, User $owner, array $wallet, int $globalIndex): void
+    /**
+     * One e-wallet per sample, numbered by theme id. The 0800-56… range stays
+     * clear of the older position-based 0800-55… numbers, so updateOrCreate
+     * never takes over (and renames) another sample's wallet.
+     */
+    private function seedWallet(Invitation $invitation, User $owner, array $wallet): void
     {
         $model = DigitalWallet::updateOrCreate(
-            ['user_id' => $owner->id, 'account_number' => sprintf('0800%07d', 5500000 + $globalIndex)],
+            ['user_id' => $owner->id, 'account_number' => sprintf('0800%07d', 5600000 + $invitation->theme_id)],
             [
                 'provider'       => $wallet['provider'],
                 'provider_label' => $wallet['label'],
@@ -543,12 +553,17 @@ class SampleInvitationSeeder extends Seeder
             $invitation->forceDelete();
         }
 
-        // Wallets no longer attached to any sample.
-        DigitalWallet::where('user_id', $owner->id)->whereDoesntHave('invitations')->delete();
+        $this->deleteOrphanWallets($owner);
 
         if ($stale->isNotEmpty()) {
             $this->command?->info("  {$stale->count()} contoh undangan usang dihapus.");
         }
+    }
+
+    /** The system account's wallets that no sample shows any more (replaced or deleted samples). */
+    protected function deleteOrphanWallets(User $owner): void
+    {
+        DigitalWallet::where('user_id', $owner->id)->whereDoesntHave('invitations')->delete();
     }
 
     protected function report(array $counts, array $skipped): void

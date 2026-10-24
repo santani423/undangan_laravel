@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\DigitalWallet;
 use App\Models\Invitation;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -73,7 +72,7 @@ class ResetSampleInvitationSeeder extends SampleInvitationSeeder
         Invitation::withTrashed()->whereKey($ids->all())->forceDelete();
 
         // Wallets that only belonged to the deleted samples.
-        DigitalWallet::where('user_id', $owner->id)->whereDoesntHave('invitations')->delete();
+        $this->deleteOrphanWallets($owner);
 
         $this->command?->info("{$seeder}: {$ids->count()} contoh undangan dihapus.");
         if ($kept->isNotEmpty()) {
