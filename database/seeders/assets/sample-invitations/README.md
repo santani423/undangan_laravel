@@ -17,3 +17,10 @@ The folder and file prefix decide how the seeder uses each photo. For example,
 `wedding/groom-*` is the groom portrait, `*/moment-*` goes to the gallery and
 stories, and `birthday/child-*` is the profile photo. If you add files that
 follow the same naming, the seeder picks them up without code changes.
+
+A folder named after a theme slug (for example `wedding_theme_14/`) holds that
+theme's own artwork. It sits outside the shared pools and is only used where
+`WeddingThemeSampleData` lists it under the theme's `photos` key. The
+`wedding_theme_14` files are flat illustrations made for this project (bride in
+paes ageng, groom in blangkon & beskap, Yogyakarta scenes). They are not stock
+photos.

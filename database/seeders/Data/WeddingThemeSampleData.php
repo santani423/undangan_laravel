@@ -22,6 +22,12 @@ class WeddingThemeSampleData
      * events: [name, venue kind (mosque|hall|home), start, end] + optional
      *         'day' (offset from the wedding day) and 'countdown'.
      * stories: [title, year offset from the wedding year, content]
+     *
+     * Optional: 'greeting', 'home' (venue name of 'home' events), 'wishes'
+     * ([name, message]), 'banks' (bank names for the two digital-envelope
+     * accounts) and 'photos' (the theme's own artwork in
+     * assets/sample-invitations/{slug}/: bride/groom/couple file, plus ordered
+     * gallery and story lists) override the shared defaults.
      */
     private const THEMES = [
         'wedding_theme_13' => [
@@ -43,20 +49,38 @@ class WeddingThemeSampleData
             ],
         ],
         'wedding_theme_14' => [
-            'city'   => 'Yogyakarta',
-            'groom'  => ['Bima Aryasatya', 'Bima', 'Ir. Prakoso Hadi', 'Retno Palupi', 2, 'perajin furnitur kayu daur ulang'],
-            'bride'  => ['Sekar Ayu Larasati', 'Sekar', 'Darmanto', 'Sri Rahayu', 1, 'ilustrator lepas yang mencintai tanaman'],
-            'quote'  => 'Dan segala sesuatu Kami ciptakan berpasang-pasangan agar kamu mengingat kebesaran Allah. (QS. Adz-Dzariyat: 49)',
-            'colors' => [['Sogan', '#5F3B27'], ['Emas', '#B58A45'], ['Gading', '#F2E6CC']],
-            'events' => [
+            'city'     => 'Yogyakarta',
+            'groom'    => ['Bima Aryasatya', 'Bima', 'Ir. Prakoso Hadi', 'Retno Palupi', 2, 'arsitek yang menekuni pelestarian rumah joglo'],
+            'bride'    => ['Sekar Ayu Larasati', 'Sekar', 'Darmanto', 'Sri Rahayu', 1, 'pembatik tulis dan penari klasik gaya Yogyakarta'],
+            'quote'    => 'Garwa iku sigaraning nyawa — pasangan hidup adalah separuh jiwa. (Pitutur Jawa)',
+            'greeting' => 'Kanthi nyuwun sih rahmat Gusti Allah, kami bermaksud menyelenggarakan pawiwahan putra-putri kami, Sekar & Bima. Merupakan kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan rawuh dan memberikan doa pangestu.',
+            'home'     => 'Ndalem Bapak Darmanto',
+            'colors'   => [['Sogan', '#5F3B27'], ['Emas', '#B58A45'], ['Gading', '#F2E6CC']],
+            'events'   => [
                 ['Akad Nikah', 'home', '08:00', '09:30', 'countdown' => true],
                 ['Panggih & Resepsi', 'hall', '11:00', '14:00'],
             ],
             'stories' => [
-                ['Pertama Bertemu', -5, 'Bima dan Sekar bertemu di sebuah lokakarya keramik di Kasongan. Vas buatan Bima retak, dan Sekar menawarkan bantuan sambil tertawa.'],
-                ['Perjalanan Pertama', -3, 'Menyusuri pantai selatan Gunungkidul membuat kami sadar: kami nyaman menghabiskan waktu berdua, bahkan dalam diam.'],
-                ['Lamaran', -1, 'Di bawah pohon beringin halaman rumah eyang, Bima melamar Sekar disaksikan kedua keluarga.'],
-                ['Menuju Halal', 0, 'Kami memilih merayakan hari bahagia secara sederhana dan hangat, dikelilingi orang-orang tercinta.'],
+                ['Pertama Bertemu', -5, 'Kami bertemu di sebuah sanggar batik di Kotagede. Bima datang mendokumentasikan pendhapa tuanya, Sekar sedang menorehkan canting pada selembar kain kawung.'],
+                ['Saling Mengenal', -3, 'Malam-malam di Alun-Alun Kidul, semangkuk wedang ronde, dan masangin di antara dua beringin kembar menjadi saksi obrolan panjang kami.'],
+                ['Lamaran', -1, 'Keluarga Bima datang nembung ke ndalem keluarga Sekar. Dengan peningset sederhana, kedua keluarga sepakat menyatukan kami.'],
+                ['Menuju Pawiwahan', 0, 'Dengan pangestu orang tua dan para sesepuh, kami siap melangkah ke pelaminan. Mugi pinaringan berkah.'],
+            ],
+            'wishes' => [
+                ['Pakdhe Harjo & Budhe Sri', 'Sugeng pawiwahan, Sekar lan Bima. Mugi tansah rukun, tentrem, lan enggal pinaringan momongan.'],
+                ['Rara & Keluarga', 'Selamat menempuh hidup baru, Sekar & Bima! Semoga menjadi keluarga yang sakinah, mawaddah, warahmah.'],
+                ['Teman Sanggar Batik Kotagede', 'Ikut bahagia! Semoga rumah tangga kalian seindah motif kawung: rapi, seimbang, dan penuh makna.'],
+                ['Mas Yoga & Komunitas Joglo Lestari', 'Selamat, Mas Bima! Semoga rumah tangganya kokoh seperti saka guru joglo.'],
+                ['Keluarga Bu Wening', 'Barakallahu lakuma wa baraka alaikuma wa jama\'a bainakuma fii khair. Nderek bingah!'],
+            ],
+            'banks'  => ['Bank BPD DIY', 'BSI'],
+            // Illustrations in Javanese bridal attire (paes ageng, blangkon & beskap) instead of the shared stock photos.
+            'photos' => [
+                'bride'   => 'bride.jpg',
+                'groom'   => 'groom.jpg',
+                'couple'  => 'couple.jpg',
+                'gallery' => ['couple.jpg', 'bride.jpg', 'groom.jpg', 'joglo.jpg', 'alun-alun.jpg', 'peningset.jpg', 'batik.jpg'],
+                'story'   => ['batik.jpg', 'alun-alun.jpg', 'peningset.jpg', 'joglo.jpg'],
             ],
         ],
         'wedding_theme_15' => [
@@ -364,8 +388,9 @@ class WeddingThemeSampleData
                 'opening_quote'     => $t['quote'],
                 'rsvp_deadline'     => $date->copy()->subDays(14)->toDateString(),
             ],
-            'photos' => ['groom_photo' => 'groom', 'bride_photo' => 'bride', 'couple_photo' => 'couple'],
-            'json'   => [
+            'photos'    => ['groom_photo' => 'groom', 'bride_photo' => 'bride', 'couple_photo' => 'couple'],
+            'photo_set' => isset($t['photos']) ? ['folder' => $slug] + $t['photos'] : null,
+            'json'      => [
                 'dress_code_colors' => array_map(fn ($c) => ['name' => $c[0], 'hex' => $c[1]], $t['colors']),
             ],
             'events'  => array_map(fn ($e) => [
@@ -373,7 +398,7 @@ class WeddingThemeSampleData
                 'date'      => $date->copy()->addDays($e['day'] ?? 0),
                 'time'      => "{$e[2]}:00",
                 'time_end'  => "{$e[3]}:00",
-                'venue'     => SampleInvitationData::venue($city, $e[1], 'Kediaman Mempelai Wanita'),
+                'venue'     => SampleInvitationData::venue($city, $e[1], $t['home'] ?? 'Kediaman Mempelai Wanita'),
                 'countdown' => $e['countdown'] ?? false,
             ], $t['events'] ?? self::DEFAULT_EVENTS),
             'stories' => array_map(fn ($s) => [
@@ -381,16 +406,19 @@ class WeddingThemeSampleData
                 'period'  => (string) ($year + $s[1]),
                 'content' => $s[2],
             ], $t['stories']),
-            'wishes'   => SampleInvitationData::wishes('wedding', $n, "{$g[1]} & {$b[1]}"),
+            'wishes'   => isset($t['wishes'])
+                ? array_map(fn ($w) => ['name' => $w[0], 'message' => $w[1]], $t['wishes'])
+                : SampleInvitationData::wishes('wedding', $n, "{$g[1]} & {$b[1]}"),
             'wishlist' => array_map(function ($i) use ($n) {
                 [$name, $description, $price, $category] = self::WISHLIST[($n + $i) % count(self::WISHLIST)];
 
                 return ['name' => $name, 'description' => $description, 'price' => $price, 'category' => $category];
             }, range(0, 3)),
-            'greeting'         => "Tanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di hari bahagia {$g[1]} & {$b[1]}.",
+            'greeting'         => $t['greeting'] ?? "Tanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di hari bahagia {$g[1]} & {$b[1]}.",
             'countdown_label'  => 'Menuju Hari Bahagia',
             'account_name'     => $g[0],
             'bank_second_name' => $b[0],
+            'banks'            => $t['banks'] ?? null,
             'child_order'      => ['groom' => $g[4], 'bride' => $b[4]],
         ];
     }

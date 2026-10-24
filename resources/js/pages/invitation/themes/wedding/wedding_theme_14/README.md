@@ -6,3 +6,4 @@
 - Adegan 3D (`three/`, three.js + React Three Fiber) dimuat malas hanya saat mode 3D; tanpa WebGL, saat gagal render, atau `?mode=lite` tampil versi ringan dengan fitur lengkap.
 - Parameter URL: `?to=Nama+Tamu`, `?mode=lite`, `?quality=high|medium|low`.
 - Proyek Vite asli (sumber desain + build) dipindah ke `resources/views/themes/weddingThemes/wedding_theme_14/` agar tidak ikut dikompilasi glob halaman Inertia; pratinjau: `/preview/themes/wedding/wedding_theme_14/index.html`.
+- Contoh undangan (seeder `WeddingThemeSampleData`) memakai data bernuansa Jawa Yogyakarta dan ilustrasi busana pengantin adat (paes ageng, blangkon & beskap) dari `database/seeders/assets/sample-invitations/wedding_theme_14/`, bukan foto stok umum. Sumber ilustrasinya ada di `resources/views/themes/weddingThemes/wedding_theme_14/sample-art/`.

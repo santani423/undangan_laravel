@@ -184,7 +184,7 @@ class SampleInvitationSeeder extends Seeder
 
         $this->resetChildren($invitation);
 
-        $photos = $this->photoPicker($type, $variant);
+        $photos = isset($data['photo_set']) ? $this->photoSet($data['photo_set']) : $this->photoPicker($type, $variant);
 
         $this->seedSettings($invitation, $data);
         $this->seedContents($invitation, $data, $photos);
@@ -505,6 +505,23 @@ class SampleInvitationSeeder extends Seeder
                 // Single profile photo: rotate within its own pool.
                 default   => ($pools[$pool] ?? throw new \RuntimeException("Pool foto '{$type}/{$pool}' kosong."))[$variant % count($pools[$pool])],
             };
+        };
+    }
+
+    /**
+     * Same contract as photoPicker() for a theme that ships its own artwork
+     * (WeddingThemeSampleData 'photos', files in assets/sample-invitations/{folder}/):
+     * profile pools map to one file, gallery/story to an ordered list.
+     *
+     * @return \Closure(string $pool, int $countOrIndex): (string|array<int, string>)
+     */
+    private function photoSet(array $set): \Closure
+    {
+        $path = fn (string $file) => self::ASSET_DIR."/{$set['folder']}/{$file}";
+
+        return fn (string $pool, int $n) => match ($pool) {
+            'gallery', 'story' => array_map($path, array_slice($set[$pool], 0, $n)),
+            default            => $path($set[$pool] ?? throw new \RuntimeException("Foto '{$pool}' tidak ada di {$set['folder']}.")),
         };
     }
 

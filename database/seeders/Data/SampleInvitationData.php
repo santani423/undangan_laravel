@@ -90,6 +90,7 @@ class SampleInvitationData
      *     city: string,
      *     fields: array<string, string>,
      *     photos: array<string, string>,
+     *     photo_set?: array<string, mixed>|null,
      *     events: array<int, array<string, mixed>>,
      *     stories: array<int, array{title: string, period: string, content: string}>,
      *     wishes: array<int, array{name: string, message: string}>,
@@ -115,10 +116,10 @@ class SampleInvitationData
             default         => throw new \InvalidArgumentException("Tipe undangan '{$type}' tidak dikenal."),
         };
 
-        $data['bank_accounts'] = self::bankAccounts($variant, $data['account_name'], $data['bank_second_name'] ?? null);
+        $data['bank_accounts'] = self::bankAccounts($variant, $data['account_name'], $data['bank_second_name'] ?? null, $data['banks'] ?? null);
         $data['wallet'] = self::wallet($variant, $data['account_name']);
         $data['child_order'] ??= ['groom' => null, 'bride' => null];
-        unset($data['bank_second_name']);
+        unset($data['bank_second_name'], $data['banks']);
 
         return $data;
     }
@@ -571,21 +572,23 @@ class SampleInvitationData
 
     /**
      * Digital envelope bank accounts. Numbers start with 000 so they can't
-     * be mistaken for (or collide with) a real account.
+     * be mistaken for (or collide with) a real account. $banks (curated
+     * themes) names the bank of each account instead of the rotation.
      *
+     * @param  array<int, string>|null  $banks
      * @return array<int, array{bankName: string, accountNumber: string, accountName: string}>
      */
-    private static function bankAccounts(int $v, string $name, ?string $secondName): array
+    private static function bankAccounts(int $v, string $name, ?string $secondName, ?array $banks = null): array
     {
         $accounts = [[
-            'bankName'      => self::pick(self::BANKS, $v),
+            'bankName'      => $banks[0] ?? self::pick(self::BANKS, $v),
             'accountNumber' => sprintf('000%07d', 1200000 + $v * 137),
             'accountName'   => $name,
         ]];
 
         if ($secondName) {
             $accounts[] = [
-                'bankName'      => self::pick(self::BANKS, $v + 3),
+                'bankName'      => $banks[1] ?? self::pick(self::BANKS, $v + 3),
                 'accountNumber' => sprintf('000%07d', 3400000 + $v * 211),
                 'accountName'   => $secondName,
             ];
