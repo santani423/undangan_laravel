@@ -26,6 +26,7 @@ import BirthdayTheme06 from './themes/birthday/birthday_theme_06/BirthdayTheme06
 import BirthdayTheme07 from './themes/birthday/birthday_theme_07/BirthdayTheme07';
 import BirthdayTheme08 from './themes/birthday/birthday_theme_08/BirthdayTheme08';
 import BirthdayTheme09 from './themes/birthday/birthday_theme_09/BirthdayTheme09';
+import BirthdayTheme10 from './themes/birthday/birthday_theme_10/BirthdayTheme10';
 
 import GenderRevealTheme01 from './themes/gender_reveal/gender_reveal_theme_01/GenderRevealTheme01';
 import GenderRevealTheme02 from './themes/gender_reveal/gender_reveal_theme_02/GenderRevealTheme02';
@@ -119,6 +120,12 @@ function resolveThemeComponent(themeSlug: string, invitation: InvitationData, vi
         case 'birthday-theme-09':
             return (
                 <BirthdayTheme09 invitation={invitation as BirthdayInvitation} visitor={visitor} greeting={invitation.greeting} />
+            );
+
+        case 'birthday_theme_10':
+        case 'birthday-theme-10':
+            return (
+                <BirthdayTheme10 invitation={invitation as BirthdayInvitation} visitor={visitor} greeting={invitation.greeting} />
             );
 
         // Aqiqah themes
