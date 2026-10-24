@@ -1,0 +1,233 @@
+/*
+ * Layout per screen size.
+ * Narrow (phones in portrait): each section leaves the top ~45% of the screen for its 3D scene,
+ * then the panel scrolls up over it.
+ * Side layout (tablets, laptops, phones in landscape): panels sit on one side, the camera frames
+ * the scene on the other. Keep this media query in sync with isSideLayout() in main.js.
+ */
+
+/* --------------------------------------------------------- narrow / base */
+
+.scene {
+  min-height: 100svh;
+  padding: 46svh 16px 24svh;
+  align-content: start;
+}
+
+.scene--hero {
+  padding: calc(var(--header-h) + 36svh) 16px 112px;
+  align-content: end;
+}
+
+.scene--finale {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 210svh;
+  padding-bottom: 5svh;
+}
+
+.finale-panel {
+  position: sticky;
+  bottom: max(16px, 4svh);
+  gap: 0.7rem;
+}
+
+/* Compact finale on phones so the celebration above stays visible. */
+.finale-panel .actions .btn {
+  flex: 1 1 40%;
+  min-height: 46px;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.95rem;
+}
+
+.finale-panel .actions .btn--ghost {
+  flex-basis: 100%;
+}
+
+.trail {
+  display: none;
+}
+
+.facts {
+  grid-template-columns: 1fr;
+}
+
+.photo-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 420px) {
+  .facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 600px) {
+  .photo-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 399px) {
+  .brand__text {
+    display: none;
+  }
+
+  .brand {
+    padding-right: 6px;
+  }
+
+  .header-actions {
+    gap: 6px;
+  }
+}
+
+/* ---------------------------------------------------------- side layout */
+
+@media (min-width: 900px), (orientation: landscape) and (min-width: 640px) {
+  .scene {
+    padding: calc(var(--header-h) + 12svh) clamp(20px, 4vw, 64px) 34svh;
+  }
+
+  .scene[data-side='left'] {
+    justify-items: start;
+  }
+
+  .scene[data-side='right'] {
+    justify-items: end;
+  }
+
+  .scene__panel {
+    width: min(33rem, 44vw);
+  }
+
+  .scene__panel--wide {
+    width: min(42rem, 52vw);
+  }
+
+  .scene--hero {
+    min-height: 100svh;
+    padding: calc(var(--header-h) + 4svh) clamp(20px, 4vw, 64px) 12svh;
+    align-content: center;
+  }
+
+  .scene--hero .scene__panel {
+    width: min(29rem, 40vw);
+  }
+
+  .scene--finale {
+    align-items: center;
+    padding: calc(var(--header-h) + 12svh) clamp(20px, 4vw, 64px) 5svh;
+  }
+
+  .finale-panel {
+    width: min(44rem, 92vw);
+    gap: 1rem;
+  }
+
+  .finale-panel .actions .btn,
+  .finale-panel .actions .btn--ghost {
+    flex: 0 1 auto;
+    min-height: 48px;
+    padding: 0.8rem 1.35rem;
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 1180px) {
+  .trail {
+    display: block;
+  }
+
+  .menu-btn {
+    display: none;
+  }
+}
+
+/* Short landscape screens (phones on their side). */
+@media (orientation: landscape) and (max-height: 540px) {
+  .scene {
+    padding-top: calc(var(--header-h) + 6svh);
+  }
+
+  .scene--hero {
+    align-content: start;
+    padding-top: calc(var(--header-h) + 8px);
+  }
+
+  .hero {
+    gap: 0.6rem;
+  }
+
+  .hero__child {
+    font-size: 2.8rem;
+  }
+
+  .scroll-cue {
+    display: none;
+  }
+
+  .lightbox__figure img {
+    max-height: 60dvh;
+  }
+
+  /* Too short for a pinned panel: let the finale scroll normally. */
+  .finale-panel {
+    position: relative;
+    bottom: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .lightbox__nav {
+    top: auto;
+    bottom: max(18px, env(safe-area-inset-bottom));
+    margin-top: 0;
+  }
+
+  .lightbox__nav--prev {
+    left: calc(50% - 72px);
+  }
+
+  .lightbox__nav--next {
+    right: calc(50% - 72px);
+  }
+
+  .lightbox__figure {
+    margin-bottom: 64px;
+  }
+
+  .sheet__footer {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .actions .btn {
+    flex: 1 1 auto;
+  }
+}
+
+/* ------------------------------------------------- no-WebGL fallback */
+
+html.no-webgl .scene {
+  padding-top: calc(var(--header-h) + 2.5rem);
+  padding-bottom: 4rem;
+  justify-items: center;
+  align-content: center;
+  min-height: auto;
+}
+
+html.no-webgl .scene--hero {
+  min-height: 100svh;
+}
+
+html.no-webgl .scene--finale {
+  min-height: 100svh;
+  align-items: center;
+  justify-content: center;
+}
+
+html.no-webgl .finale-panel {
+  position: static;
+}

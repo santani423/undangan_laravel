@@ -1,0 +1,47 @@
+{
+  "project": "Little Smile Dental Adventure",
+  "note": "Status: 'supplied' = from little_smile_dental_adventure_assets.zip, 'created' = made for this project, 'optional' = empty slot you can fill (the site works without it).",
+  "images": [
+    { "path": "assets/images/dr-smiley.svg", "status": "supplied", "usedFor": ["loading screen", "hero fallback art", "RSVP board artwork (3D)", "gallery placeholder 6"] },
+    { "path": "assets/images/tooth-friend.svg", "status": "supplied", "usedFor": ["header brand", "favicon", "invitation card artwork (3D)", "gallery fallback art", "gallery placeholder 1"] },
+    { "path": "assets/images/birthday-cake.svg", "status": "supplied", "usedFor": ["'Cake cutting' activity icon", "cake fallback art", "gallery placeholder 3"] },
+    { "path": "assets/images/gift-box.svg", "status": "supplied", "usedFor": ["'Gift exchange' activity icon", "RSVP fallback art", "gallery placeholder 5"] },
+    { "path": "assets/images/balloons.svg", "status": "supplied", "usedFor": ["'Balloon goodbye' activity icon", "invitation card artwork (3D)", "activities and finale fallback art", "gallery placeholder 2"] },
+    { "path": "assets/images/toothbrush.svg", "status": "supplied", "usedFor": ["'Dental adventure' activity icon", "gallery placeholder 4"] },
+    { "path": "assets/images/envelope.svg", "status": "supplied", "usedFor": ["invitation fallback art", "reference for the 3D envelope"] },
+    { "path": "assets/images/calendar.svg", "status": "supplied", "usedFor": ["details fallback art", "reference for the 3D calendar face"] },
+    { "path": "assets/images/location-pin.svg", "status": "supplied", "usedFor": ["reference for the 3D map pin"] },
+    { "path": "assets/images/icons/games.svg", "status": "created", "usedFor": ["'Party games' activity icon"] },
+    { "path": "assets/images/icons/camera.svg", "status": "created", "usedFor": ["'Photo booth' activity icon"] },
+    { "path": "assets/images/gallery/photo-placeholder-1.svg", "status": "created", "usedFor": ["gallery slot 1 — replace with a real photo"] },
+    { "path": "assets/images/gallery/photo-placeholder-2.svg", "status": "created", "usedFor": ["gallery slot 2 — replace with a real photo"] },
+    { "path": "assets/images/gallery/photo-placeholder-3.svg", "status": "created", "usedFor": ["gallery slot 3 — replace with a real photo"] },
+    { "path": "assets/images/gallery/photo-placeholder-4.svg", "status": "created", "usedFor": ["gallery slot 4 — replace with a real photo"] },
+    { "path": "assets/images/gallery/photo-placeholder-5.svg", "status": "created", "usedFor": ["gallery slot 5 — replace with a real photo"] },
+    { "path": "assets/images/gallery/photo-placeholder-6.svg", "status": "created", "usedFor": ["gallery slot 6 — replace with a real photo"] }
+  ],
+  "fonts": [
+    { "path": "assets/fonts/fredoka-bold.typeface.json", "status": "created", "license": "SIL Open Font License 1.1 (Fredoka)", "usedFor": ["3D extruded title letters"] },
+    { "path": "bundled by Vite from @fontsource/fredoka and @fontsource/nunito", "status": "created", "license": "SIL Open Font License 1.1", "usedFor": ["all page text"] }
+  ],
+  "styles": [
+    { "path": "src/styles/theme.css", "status": "supplied", "usedFor": ["colour tokens, base button/card styles (extended by main.css)"] }
+  ],
+  "data": [
+    { "path": "src/config/scene-plan.json", "status": "supplied", "usedFor": ["section ids, titles and camera names"] }
+  ],
+  "models": [
+    { "path": "assets/models/dr-smiley.glb", "status": "optional", "configKey": "models.mascot", "fallback": "procedural Dr. Smiley" },
+    { "path": "assets/models/tooth-friend.glb", "status": "optional", "configKey": "models.toothFriend", "fallback": "procedural tooth friends" },
+    { "path": "assets/models/birthday-cake.glb", "status": "optional", "configKey": "models.cake", "fallback": "procedural three-tier cake" }
+  ],
+  "audio": [
+    { "path": "assets/audio/birthday-background.mp3", "status": "optional", "configKey": "audio.files.music", "fallback": "synthesised music-box 'Happy Birthday to You' (public domain)" },
+    { "path": "assets/audio/ui-pop.mp3", "status": "optional", "configKey": "audio.files.pop", "fallback": "synthesised pop" },
+    { "path": "assets/audio/magic-chime.mp3", "status": "optional", "configKey": "audio.files.chime", "fallback": "synthesised chime" },
+    { "path": "assets/audio/celebration.mp3", "status": "optional", "configKey": "audio.files.celebration", "fallback": "synthesised celebration" }
+  ],
+  "textures": [
+    { "path": "none required", "status": "created", "usedFor": ["all 3D textures (stripes, swirls, card faces, sky) are drawn at runtime on canvas"] }
+  ]
+}

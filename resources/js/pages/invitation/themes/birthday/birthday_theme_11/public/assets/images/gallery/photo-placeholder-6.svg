@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600">
+ <title>Placeholder for photo 6</title>
+ <rect width="600" height="600" fill="#fde3d4"/>
+ <g fill="#ffffff" opacity=".55">
+  <circle cx="70" cy="80" r="14"/><circle cx="530" cy="110" r="10"/><circle cx="500" cy="520" r="16"/><circle cx="90" cy="500" r="9"/>
+ </g>
+ <rect x="40" y="40" width="520" height="520" rx="36" fill="none" stroke="#ffffff" stroke-width="6" stroke-dasharray="4 18" stroke-linecap="round"/>
+ <svg x="150" y="110" width="300" height="300" viewBox="0 0 512 512">
+ <defs>
+  <linearGradient id="tooth" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#e8f8ff"/></linearGradient>
+  <linearGradient id="coat" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#dff5ff"/></linearGradient>
+  <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="14" stdDeviation="12" flood-color="#5e9eb5" flood-opacity=".22"/></filter>
+ </defs>
+ <ellipse cx="256" cy="454" rx="128" ry="22" fill="#75c8db" opacity=".22"/>
+ <g filter="url(#shadow)">
+  <path d="M165 116 C112 133 98 191 117 247 C132 292 148 320 158 372 C164 407 184 424 203 401 L233 355 Q256 337 279 355 L309 401 C328 424 348 407 354 372 C364 320 380 292 395 247 C414 191 400 133 347 116 C312 104 286 120 256 120 C226 120 200 104 165 116Z" fill="url(#tooth)" stroke="#b9e7f5" stroke-width="7"/>
+  <ellipse cx="204" cy="231" rx="17" ry="24" fill="#17364b"/><ellipse cx="308" cy="231" rx="17" ry="24" fill="#17364b"/>
+  <circle cx="210" cy="223" r="6" fill="#fff"/><circle cx="314" cy="223" r="6" fill="#fff"/>
+  <ellipse cx="166" cy="267" rx="22" ry="12" fill="#ff9db5" opacity=".7"/><ellipse cx="346" cy="267" rx="22" ry="12" fill="#ff9db5" opacity=".7"/>
+  <path d="M217 270 Q256 314 295 270 Q287 323 256 323 Q225 323 217 270Z" fill="#f05b78"/>
+  <path d="M224 278 Q256 297 288 278" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+  <!-- dentist cap -->
+  <path d="M157 129 Q163 64 256 61 Q349 64 355 129 L335 150 Q256 126 177 150Z" fill="#69c9f0" stroke="#2d94c6" stroke-width="6"/>
+  <path d="M173 129 Q256 102 339 129" fill="none" stroke="#dff8ff" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="256" cy="96" r="25" fill="#fff" stroke="#2d94c6" stroke-width="5"/>
+  <path d="M244 96h24M256 84v24" stroke="#69c9f0" stroke-width="6" stroke-linecap="round"/>
+  <!-- coat -->
+  <path d="M174 329 Q210 305 232 324 L256 350 L280 324 Q302 305 338 329 L355 407 Q307 431 256 431 Q205 431 157 407Z" fill="url(#coat)" stroke="#a8dced" stroke-width="5"/>
+  <path d="M232 324 L256 350 L280 324 L270 420 L242 420Z" fill="#70c9e9"/>
+  <circle cx="211" cy="365" r="7" fill="#5bb4d8"/><circle cx="301" cy="365" r="7" fill="#5bb4d8"/>
+  <!-- toothbrush -->
+  <g transform="rotate(-28 102 303)"><rect x="82" y="237" width="28" height="142" rx="14" fill="#ff8eb4" stroke="#df6696" stroke-width="5"/><rect x="78" y="207" width="36" height="53" rx="10" fill="#7bd4f2" stroke="#3ba9d2" stroke-width="5"/><path d="M84 218h24M84 230h24M84 242h24" stroke="#fff" stroke-width="4" stroke-linecap="round"/></g>
+ </g>
+</svg>
+ <text x="300" y="470" font-family="Fredoka, Nunito, Arial, sans-serif" font-size="40" font-weight="700" text-anchor="middle" fill="#c4673c">Your photo here</text>
+ <text x="300" y="515" font-family="Nunito, Arial, sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#c4673c" opacity=".8">Photo slot 6</text>
+</svg>

@@ -1,0 +1,65 @@
+{
+  "project": "Little Smile Dental Adventure",
+  "format": "scroll-driven 3D birthday invitation",
+  "sections": [
+    {
+      "id": "hero",
+      "title": "Welcome to Smile Adventure",
+      "camera": "entrance_gate",
+      "feature": "cover and countdown"
+    },
+    {
+      "id": "invitation",
+      "title": "A Special Invitation",
+      "camera": "invitation_envelope",
+      "feature": "invitation message"
+    },
+    {
+      "id": "details",
+      "title": "When & Where?",
+      "camera": "calendar_location",
+      "feature": "date, time, venue, map"
+    },
+    {
+      "id": "activities",
+      "title": "Let's Play Together!",
+      "camera": "playground",
+      "feature": "party activities"
+    },
+    {
+      "id": "gallery",
+      "title": "Little Moments, Big Smiles",
+      "camera": "photo_gallery",
+      "feature": "interactive photo gallery"
+    },
+    {
+      "id": "cake",
+      "title": "Make a Birthday Wish!",
+      "camera": "birthday_cake",
+      "feature": "cake, candles, music"
+    },
+    {
+      "id": "rsvp",
+      "title": "Will You Join the Party?",
+      "camera": "rsvp_board",
+      "feature": "attendance confirmation"
+    },
+    {
+      "id": "finale",
+      "title": "Thank You!",
+      "camera": "party_overview",
+      "feature": "sharing and return to top"
+    }
+  ],
+  "asset_paths": {
+    "mascot": "images/dr-smiley.svg",
+    "tooth_friend": "images/tooth-friend.svg",
+    "cake": "images/birthday-cake.svg",
+    "gift": "images/gift-box.svg",
+    "balloons": "images/balloons.svg",
+    "toothbrush": "images/toothbrush.svg",
+    "envelope": "images/envelope.svg",
+    "calendar": "images/calendar.svg",
+    "location_pin": "images/location-pin.svg"
+  }
+}
