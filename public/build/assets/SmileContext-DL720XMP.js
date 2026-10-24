@@ -1,0 +1,1 @@
+import{r as t}from"./app-a14SgvEg.js";const r=t.createContext(null);function s(){const e=t.useContext(r);if(!e)throw new Error("useSmile must be used inside <BirthdayTheme11>.");return e}export{r as S,s as u};

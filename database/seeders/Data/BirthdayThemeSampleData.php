@@ -13,7 +13,7 @@ use Illuminate\Support\Carbon;
  *
  * build() returns the same shape as SampleInvitationData's birthday() and is
  * used by both SampleInvitationSeeder (full run) and ResetBirthdaySampleSeeder
- * (only these themes). Themes 11–20 have no design yet, so their entries
+ * (only these themes). Themes 12–20 have no design yet, so their entries
  * follow the theme's description in ThemeSeeder.
  */
 class BirthdayThemeSampleData
@@ -248,22 +248,22 @@ class BirthdayThemeSampleData
         ],
         'birthday_theme_11' => [
             'city'     => 'Bandung',
-            'child'    => ['Bintang Arkana Putra', 'Bintang', 5, 'L', 'Teguh Prasetyo', 'Lestari Wulandari'],
-            'party'    => 'Misi Luar Angkasa',
-            'opening'  => '3… 2… 1… meluncur! Astronaut cilik kita, Bintang, genap 5 tahun. Bergabunglah dalam misi menjelajah planet dan bintang di pesta ulang tahunnya.',
+            'child'    => ['Raka Senandika Putra', 'Raka', 5, 'L', 'Teguh Prasetyo', 'Lestari Wulandari'],
+            'party'    => 'Petualangan Gigi Ceria',
+            'opening'  => 'Dr. Senyum dan para Sahabat Gigi sedang menyiapkan pesta yang berkilau! Raka genap 5 tahun dan ingin merayakannya bersamamu dengan permainan seru, kue tiga tingkat, dan banyak senyum lebar.',
             'events'   => [[null, 'home', '15:30', '18:00']],
             'photo'    => 'child-01.jpg',
             'moments'  => [2, 10, 6, 5, 12, 15, 1, 11, 3],
             'stories'  => [
-                ['Bintang Kecil Lahir', 0, 'Ayah dan Bunda memberinya nama Bintang, berharap ia selalu bersinar ke mana pun melangkah.'],
-                ['Roket Kardus', 3, 'Bintang dan Ayah membuat roket dari kardus bekas. Seharian penuh ia "terbang" keliling ruang tamu.'],
-                ['Mengintip Langit', 4, 'Kunjungan ke Observatorium Bosscha di Lembang membuat Bintang jatuh cinta pada planet dan rasi bintang.'],
-                ['Ulang Tahun ke-5', 5, 'Tahun ini Bintang merayakan ulang tahun ke-5 dengan misi luar angkasa. Kenakan helm astronautmu!'],
+                ['Senyum Pertama', 0, 'Raka lahir di Bandung dan senyum ompongnya langsung membuat seisi rumah ikut tersenyum.'],
+                ['Gigi Pertama', 1, 'Gigi susu pertama Raka muncul tepat di hari ulang tahunnya yang pertama. Sejak itu ia senang memamerkan senyumnya.'],
+                ['Jagoan Sikat Gigi', 4, 'Setiap pagi dan malam Raka menyikat gigi sambil bernyanyi, lengkap dengan sikat gigi biru kesayangannya.'],
+                ['Ulang Tahun ke-5', 5, 'Tahun ini Raka merayakan ulang tahun ke-5 bersama Dr. Senyum di pulau kue. Bawa senyum terbaikmu!'],
             ],
             'wishlist' => [
-                ['Teleskop Anak', 'Pembesaran 60x, ringan dibawa', 650000, 'edukasi'],
-                ['Proyektor Planetarium Mini', 'Menampilkan rasi bintang di langit-langit kamar', 280000, 'kamar'],
-                ['Ensiklopedia Tata Surya', 'Untuk usia 5–8 tahun', 175000, 'buku'],
+                ['Sikat Gigi Elektrik Anak', 'Bulu lembut dengan lampu pengingat 2 menit', 185000, 'kesehatan'],
+                ['Set Mainan Dokter Gigi', 'Lengkap dengan model gigi dan cermin kecil', 165000, 'mainan'],
+                ['Buku Cerita Gigi Sehat', 'Buku bergambar untuk usia 4–6 tahun', 85000, 'buku'],
             ],
         ],
         'birthday_theme_12' => [

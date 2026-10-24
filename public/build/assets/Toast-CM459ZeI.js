@@ -1,0 +1,1 @@
+import{j as s}from"./app-a14SgvEg.js";import{c as o}from"./helpers-CV3OVm-g.js";import"./app-BoNnqKgU.js";function m({message:t,visible:i}){return s.jsx("div",{className:o("bt11-toast",i&&"is-visible"),role:"status","aria-live":"polite",children:t})}export{m as Toast};

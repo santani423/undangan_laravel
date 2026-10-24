@@ -1,1 +1,0 @@
-import{j as i}from"./app-Yha1Uw5b.js";import{t as a}from"./assets-DnnVhvHU.js";import{c}from"./cx-Cldy_05B.js";import"./app-DEwS9Yj4.js";function u({name:o,size:t=20,className:r}){const s={width:t,height:t,"--icon":`url("${a.ui[o]}")`};return i.jsx("span",{"aria-hidden":"true",className:c("bt10-pack-icon",r),style:s})}export{u as PackIcon};
