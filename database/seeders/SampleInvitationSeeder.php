@@ -36,7 +36,8 @@ use Illuminate\Support\Str;
  *   never touches customer invitations.
  * - Each run rewrites the sample's child rows (contents, events, gallery…)
  *   from SampleInvitationData, so the demo always reflects the latest data.
- *   Themes with curated content (WeddingThemeSampleData) use that instead.
+ *   Themes with curated content (WeddingThemeSampleData,
+ *   BirthdayThemeSampleData) use that instead.
  */
 class SampleInvitationSeeder extends Seeder
 {
@@ -509,9 +510,10 @@ class SampleInvitationSeeder extends Seeder
     }
 
     /**
-     * Same contract as photoPicker() for a theme that ships its own artwork
-     * (WeddingThemeSampleData 'photos', files in assets/sample-invitations/{folder}/):
-     * profile pools map to one file, gallery/story to an ordered list.
+     * Same contract as photoPicker() for a theme with hand-picked photos: its
+     * own artwork (WeddingThemeSampleData 'photos') or chosen files from a
+     * shared pool (BirthdayThemeSampleData), in assets/sample-invitations/{folder}/.
+     * Profile pools map to one file, gallery/story to an ordered list.
      *
      * @return \Closure(string $pool, int $countOrIndex): (string|array<int, string>)
      */

@@ -24,3 +24,7 @@ theme's own artwork. It sits outside the shared pools and is only used where
 `wedding_theme_14` files are flat illustrations made for this project (bride in
 paes ageng, groom in blangkon & beskap, Yogyakarta scenes). They are not stock
 photos.
+
+`BirthdayThemeSampleData` has no folders of its own: for each birthday theme it
+names files from the shared `birthday/` pool (profile photo, then the gallery
+and story order). Renaming or removing a file there breaks those samples.

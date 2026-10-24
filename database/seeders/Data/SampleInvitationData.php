@@ -104,7 +104,11 @@ class SampleInvitationData
     public static function build(string $type, int $variant, Carbon $today, ?string $themeSlug = null): array
     {
         // Themes with their own curated content skip the shared rotation below.
-        $curated = $type === 'wedding' ? WeddingThemeSampleData::build($themeSlug, $today) : null;
+        $curated = match ($type) {
+            'wedding'  => WeddingThemeSampleData::build($themeSlug, $today),
+            'birthday' => BirthdayThemeSampleData::build($themeSlug, $today),
+            default    => null,
+        };
 
         $data = $curated ?? match ($type) {
             'wedding'       => self::wedding($variant, $today),

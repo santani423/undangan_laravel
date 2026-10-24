@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
  * account. Customer invitations, the demo customers' invitations
  * (InvitationSeeder) and files on disk are never touched. Everything runs in
  * one transaction, so a failed run leaves the old samples as they were.
+ * Subclasses reset only some themes (ResetBirthdaySampleSeeder).
  */
 class ResetSampleInvitationSeeder extends SampleInvitationSeeder
 {
@@ -32,12 +33,19 @@ class ResetSampleInvitationSeeder extends SampleInvitationSeeder
         });
     }
 
-    private function wipeSamples(): void
+    /**
+     * Force-deletes the system account's samples: all of them, or only the
+     * samples of $themeIds.
+     *
+     * @param  array<int, int>|null  $themeIds
+     */
+    protected function wipeSamples(?array $themeIds = null): void
     {
+        $seeder = class_basename(static::class);
         $owner = User::withTrashed()->where('email', self::OWNER_EMAIL)->first();
 
         if (! $owner) {
-            $this->command?->info('ResetSampleInvitationSeeder: belum ada contoh undangan, langsung seeding.');
+            $this->command?->info("{$seeder}: belum ada contoh undangan, langsung seeding.");
 
             return;
         }
@@ -50,6 +58,7 @@ class ResetSampleInvitationSeeder extends SampleInvitationSeeder
         $ids = Invitation::withTrashed()
             ->where('is_sample', true)
             ->where('user_id', $owner->id)
+            ->when($themeIds !== null, fn ($q) => $q->whereIn('theme_id', $themeIds))
             ->pluck('id');
 
         // These payment tables reference invitations without ON DELETE CASCADE. Money
@@ -66,12 +75,16 @@ class ResetSampleInvitationSeeder extends SampleInvitationSeeder
         // Wallets that only belonged to the deleted samples.
         DigitalWallet::where('user_id', $owner->id)->whereDoesntHave('invitations')->delete();
 
-        $this->command?->info("ResetSampleInvitationSeeder: {$ids->count()} contoh undangan dihapus.");
+        $this->command?->info("{$seeder}: {$ids->count()} contoh undangan dihapus.");
         if ($kept->isNotEmpty()) {
             $this->command?->warn("  {$kept->count()} contoh dipertahankan karena punya transaksi (id: {$kept->implode(', ')}); isinya tetap diperbarui.");
         }
 
-        $foreign = Invitation::withTrashed()->where('is_sample', true)->where('user_id', '!=', $owner->id)->pluck('id');
+        $foreign = Invitation::withTrashed()
+            ->where('is_sample', true)
+            ->where('user_id', '!=', $owner->id)
+            ->when($themeIds !== null, fn ($q) => $q->whereIn('theme_id', $themeIds))
+            ->pluck('id');
         if ($foreign->isNotEmpty()) {
             $this->command?->warn("  {$foreign->count()} undangan bertanda is_sample milik akun lain tidak disentuh (id: {$foreign->implode(', ')}); periksa manual.");
         }
