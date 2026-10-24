@@ -1,0 +1,1 @@
+import{r as e}from"./app-Yha1Uw5b.js";const n=e.createContext(null);function r(){const t=e.useContext(n);if(!t)throw new Error("useInvitation must be used inside <BirthdayTheme10>.");return t}export{n as I,r as u};

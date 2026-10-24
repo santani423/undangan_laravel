@@ -1,1 +1,0 @@
-import{j as r}from"./app-Uj8zEl3A.js";import{i as o}from"./aset-ClIC7y4x.js";import{c as s}from"./cx-2dOUpm6k.js";import"./app-IqrQmINv.js";function n({name:t,className:i}){return r.jsx("img",{src:o(t),alt:"","aria-hidden":"true",className:s("wt16-asset-icon",i),width:40,height:40,decoding:"async"})}export{n as AssetIcon};

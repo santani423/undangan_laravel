@@ -1,1 +1,0 @@
-import{r as o}from"./app-Uj8zEl3A.js";let e={phase:"idle",progress:0};const r=new Set,n={get:()=>e,set(s){const t={...e,...s};t.phase===e.phase&&t.progress===e.progress||(e=t,r.forEach(a=>a()))},subscribe(s){return r.add(s),()=>r.delete(s)}};function u(){return o.useSyncExternalStore(n.subscribe,n.get,n.get)}export{n as s,u};
