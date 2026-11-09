@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What Will Baby Be? — Undangan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pink:#ffb5c8; --pink-2:#ffe0e8; --pink-ink:#e05a82;
+    --blue:#a6d4f7; --blue-2:#dff0fd; --blue-ink:#3a86c4;
+    --yellow:#ffe08a; --yellow-2:#fff6d6; --yellow-ink:#c99a14;
+    --ink:#3b3350; --muted:#7d7690; --paper:#fffdf7; --edge:#3b3350;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Nunito',sans-serif;color:var(--ink);background:var(--paper);line-height:1.6;overflow-x:hidden}
+  h1,h2,h3,.bl2{font-family:'Baloo 2',sans-serif;line-height:1.1}
+  section{padding:80px 18px;position:relative;overflow:hidden}
+  .wrap{max-width:680px;margin:0 auto;text-align:center;position:relative;z-index:2}
+  .pk{color:var(--pink-ink)} .bu{color:var(--blue-ink)} .ye{color:var(--yellow-ink)}
+
+  /* confetti-dot pattern backgrounds */
+  .dots{background-color:var(--yellow-2);
+    background-image:radial-gradient(var(--pink) 3px,transparent 4px),radial-gradient(var(--blue) 3px,transparent 4px),radial-gradient(var(--yellow) 3px,transparent 4px);
+    background-size:70px 70px,90px 90px,60px 60px;background-position:0 0,30px 40px,15px 25px}
+  .dots.pink{background-color:var(--pink-2)} .dots.blue{background-color:var(--blue-2)}
+
+  /* sticker card style */
+  .sticker{background:#fff;border:3px solid var(--edge);border-radius:24px;box-shadow:6px 6px 0 var(--edge)}
+  .label{display:inline-block;font:800 .82rem 'Baloo 2';letter-spacing:.12em;text-transform:uppercase;background:var(--yellow);border:2.5px solid var(--edge);border-radius:99px;padding:4px 16px;box-shadow:3px 3px 0 var(--edge);transform:rotate(-2deg)}
+  h2.t{font-size:clamp(2rem,7vw,2.8rem);font-weight:800;margin:16px 0 8px}
+
+  /* floating deco */
+  .float{position:absolute;z-index:1;animation:fl 5s ease-in-out infinite;pointer-events:none}
+  @keyframes fl{50%{transform:translateY(-16px) rotate(6deg)}}
+  .qm{font:800 3rem 'Baloo 2';opacity:.9}
+  .balloon{width:52px;height:64px;border-radius:50% 50% 47% 47%/55% 55% 45% 45%;border:2.5px solid var(--edge);position:relative}
+  .balloon::before{content:"";position:absolute;left:24%;top:16%;width:16%;height:22%;border-radius:50%;background:rgba(255,255,255,.7)}
+  .balloon::after{content:"";position:absolute;left:50%;top:100%;width:2px;height:60px;background:var(--edge);opacity:.5}
+
+  /* ===== COVER ===== */
+  #cover{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:20px;transition:transform .8s cubic-bezier(.7,0,.3,1)}
+  #cover.hide{transform:translateY(-105%)}
+  #cover .card{padding:34px 24px 30px;max-width:370px;width:100%;text-align:center}
+  #cover .big-q{font:800 5rem/1 'Baloo 2';display:flex;justify-content:center;gap:4px}
+  #cover .big-q span{display:inline-block;animation:jump 1.6s ease-in-out infinite}
+  #cover .big-q span:nth-child(2){animation-delay:.2s} #cover .big-q span:nth-child(3){animation-delay:.4s}
+  @keyframes jump{30%{transform:translateY(-14px) rotate(-8deg)}}
+  #cover h1{font-size:clamp(2rem,8.5vw,2.6rem);font-weight:800;margin:8px 0 4px}
+  #cover .to{margin:18px 0 22px;color:var(--muted)}
+  #cover .to b{display:block;font:700 1.3rem 'Baloo 2';color:var(--ink)}
+  .btn{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font:800 1.05rem 'Baloo 2';padding:12px 28px;border-radius:99px;
+    background:var(--pink);color:var(--ink);border:3px solid var(--edge);box-shadow:4px 4px 0 var(--edge);transition:transform .1s,box-shadow .1s;text-decoration:none}
+  .btn:active{transform:translate(4px,4px);box-shadow:0 0 0 var(--edge)}
+  .btn:focus-visible{outline:3px solid var(--blue-ink);outline-offset:4px}
+  .btn.blue{background:var(--blue)} .btn.yellow{background:var(--yellow)}
+
+  /* ===== HERO ===== */
+  #hero{min-height:100vh;display:grid;place-items:center}
+  #hero h1{font-size:clamp(3rem,13vw,5.2rem);font-weight:800;line-height:1.08;margin:18px 0}
+  #hero h1 .w{display:inline-block}
+  #hero h1 .w:nth-child(1){color:var(--pink-ink);transform:rotate(-3deg)}
+  #hero h1 .w:nth-child(2){color:var(--blue-ink);transform:rotate(2deg)}
+  #hero h1 .w:nth-child(3){color:var(--yellow-ink);transform:rotate(-2deg)}
+  #hero .lead{max-width:470px;margin:0 auto;padding:18px 20px;font-size:1.05rem}
+  .hero-date{display:flex;justify-content:center;gap:10px;margin-top:22px;flex-wrap:wrap}
+  .hero-date span{font:700 1rem 'Baloo 2';padding:6px 16px;border:2.5px solid var(--edge);border-radius:14px;background:#fff}
+
+  /* ===== PARENTS ===== */
+  .parents{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:28px}
+  .par{padding:24px 10px 20px}
+  .par:first-child{transform:rotate(-2deg);background:var(--blue-2)} .par:last-child{transform:rotate(2deg);background:var(--pink-2)}
+  .par .init{width:76px;height:76px;margin:0 auto 10px;border-radius:50%;border:3px solid var(--edge);display:grid;place-items:center;font:800 2rem 'Baloo 2';background:#fff}
+  .par h3{font-size:1.2rem;font-weight:700}
+  .par p{font-size:.88rem;color:var(--muted)}
+
+  /* ===== EVENT ===== */
+  .ev-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:26px}
+  .ev{padding:20px 14px;text-align:left}
+  .ev.wide{grid-column:1/-1}
+  .ev:nth-child(1){background:var(--pink-2)} .ev:nth-child(2){background:var(--blue-2)} .ev:nth-child(3){background:var(--yellow-2)} .ev:nth-child(4){background:#fff}
+  .ev .ic{font-size:1.6rem}
+  .ev small{display:block;font:800 .76rem 'Baloo 2';letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+  .ev b{font-weight:700;display:block;line-height:1.4}
+  .countdown{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:22px}
+  .cd{padding:12px 0}
+  .cd:nth-child(1){background:var(--pink)} .cd:nth-child(2){background:var(--blue)} .cd:nth-child(3){background:var(--yellow)} .cd:nth-child(4){background:var(--pink)}
+  .cd b{display:block;font:800 2rem/1 'Baloo 2';font-variant-numeric:tabular-nums}
+  .cd span{font:700 .72rem 'Baloo 2';letter-spacing:.1em;text-transform:uppercase}
+  .ev-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:24px}
+
+  /* ===== POLL ===== */
+  .poll{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:26px}
+  .opt{cursor:pointer;padding:22px 10px;font:800 1.2rem 'Baloo 2';color:var(--ink);transition:transform .15s}
+  .opt .e{display:block;font-size:2.4rem;line-height:1.2}
+  .opt.boy{background:var(--blue)} .opt.girl{background:var(--pink)}
+  .opt.sel{transform:translate(3px,3px);box-shadow:3px 3px 0 var(--edge)}
+  .opt.sel::after{content:"✓ pilihanmu";display:block;font:700 .8rem 'Nunito';margin-top:4px}
+  .bar{display:flex;height:34px;margin-top:22px;border:3px solid var(--edge);border-radius:99px;overflow:hidden;box-shadow:4px 4px 0 var(--edge);background:#fff}
+  .bar i{display:flex;align-items:center;font:800 .9rem 'Baloo 2';font-style:normal;padding:0 12px;transition:width .6s;white-space:nowrap}
+  .bar .b{background:var(--blue)} .bar .g{background:var(--pink);justify-content:flex-end;border-left:3px solid var(--edge)}
+
+  /* ===== REVEAL (press & hold) ===== */
+  #reveal{background:var(--ink);color:#fff}
+  #reveal .label{background:var(--blue)} #reveal .t{color:#fff}
+  .hold-area{position:relative;height:420px;display:grid;place-items:center;margin-top:10px}
+  .hold{position:relative;width:220px;height:260px;border:none;background:none;cursor:pointer;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  .hold .bal{position:absolute;inset:0;border-radius:50% 50% 47% 47%/55% 55% 45% 45%;border:4px solid #fff;
+    background:conic-gradient(from 0deg,var(--pink),var(--yellow),var(--blue),var(--pink));transition:transform .1s linear}
+  .hold .bal::before{content:"";position:absolute;left:22%;top:14%;width:16%;height:22%;border-radius:50%;background:rgba(255,255,255,.7)}
+  .hold .knot{position:absolute;left:50%;bottom:-14px;transform:translateX(-50%);border:12px solid transparent;border-bottom:16px solid #fff}
+  .hold .str{position:absolute;left:50%;top:calc(100% + 14px);width:3px;height:50px;background:#fff;opacity:.6}
+  .hold .q{position:absolute;inset:0;display:grid;place-items:center;font:800 6rem 'Baloo 2';color:var(--ink);pointer-events:none}
+  .hold.shaking .bal{animation:jit .08s infinite}
+  @keyframes jit{50%{transform:scale(var(--s,1)) translate(2px,-1px)}}
+  .hold.popped{animation:boom .3s forwards;pointer-events:none}
+  @keyframes boom{50%{transform:scale(1.3)}100%{transform:scale(0);opacity:0}}
+  .meter{width:min(280px,80%);height:18px;margin:0 auto;border:3px solid #fff;border-radius:99px;overflow:hidden}
+  .meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--pink),var(--yellow),var(--blue))}
+  .hold-hint{margin-top:12px;opacity:.8;font-weight:600}
+  .answer{position:absolute;inset:0;display:grid;place-items:center;opacity:0;pointer-events:none;transform:scale(.5) rotate(-6deg);transition:all .6s cubic-bezier(.3,1.7,.5,1)}
+  .answer.show{opacity:1;transform:none}
+  .answer .sticker{padding:28px 34px;color:var(--ink)}
+  .answer h3{font-size:clamp(2.4rem,10vw,3.4rem);font-weight:800}
+
+  /* ===== RSVP ===== */
+  form{display:grid;gap:14px;margin-top:24px;text-align:left;padding:24px 20px}
+  label{font:700 .95rem 'Baloo 2'}
+  input,select,textarea{width:100%;margin-top:4px;padding:11px 14px;border-radius:14px;border:2.5px solid var(--edge);font:400 1rem 'Nunito';color:var(--ink);background:var(--paper)}
+  input:focus,select:focus,textarea:focus{outline:none;box-shadow:3px 3px 0 var(--blue)}
+  .wishes{display:grid;gap:14px;margin-top:26px;text-align:left}
+  .wish{padding:14px 16px}
+  .wish:nth-child(3n+1){background:var(--pink-2)} .wish:nth-child(3n+2){background:var(--blue-2)} .wish:nth-child(3n){background:var(--yellow-2)}
+  .wish b{font:700 1.1rem 'Baloo 2'} .wish small{color:var(--muted);margin-left:6px}
+
+  footer{padding:50px 18px 80px;text-align:center;border-top:3px solid var(--edge)}
+  footer .bl2{font-size:2rem;font-weight:800}
+
+  #music{position:fixed;right:16px;bottom:16px;z-index:50;width:50px;height:50px;border-radius:50%;border:3px solid var(--edge);background:var(--yellow);box-shadow:3px 3px 0 var(--edge);font-size:1.2rem;cursor:pointer}
+  .up{opacity:0;transform:translateY(26px);transition:opacity .7s,transform .7s}
+  .up.on{opacity:1;transform:none}
+  .cf{position:fixed;z-index:70;pointer-events:none;width:10px;height:14px;border-radius:2px}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ============ COVER ============ -->
+<div id="cover" class="dots">
+  <div class="float" style="left:6%;top:8%"><div class="balloon" style="background:var(--pink)"></div></div>
+  <div class="float" style="right:8%;top:12%;animation-delay:1s"><div class="balloon" style="background:var(--blue)"></div></div>
+  <div class="float qm bu" style="left:12%;bottom:12%;animation-delay:2s">?</div>
+  <div class="float" style="right:10%;bottom:10%;font-size:2.6rem;animation-delay:.5s">🎁</div>
+  <div class="card sticker">
+    <div class="big-q"><span class="pk">?</span><span class="ye">?</span><span class="bu">?</span></div>
+    <h1>What Will Baby Be?</h1>
+    <p style="color:var(--muted);font-weight:700">Gender Reveal Party 🎈</p>
+    <div class="to">Kepada Yth.<b id="guest">Tamu Undangan</b></div>
+    <button class="btn" id="openBtn">🎉 Buka Undangan</button>
+  </div>
+</div>
+
+<!-- ============ HERO ============ -->
+<section id="hero" class="dots">
+  <div class="float" style="left:5%;top:9%"><div class="balloon" style="background:var(--yellow)"></div></div>
+  <div class="float" style="right:6%;top:15%;animation-delay:1.4s"><div class="balloon" style="background:var(--pink)"></div></div>
+  <div class="float" style="left:78%;bottom:14%;animation-delay:.7s"><div class="balloon" style="background:var(--blue)"></div></div>
+  <div class="float qm pk" style="left:10%;bottom:20%;animation-delay:2.2s">?</div>
+  <div class="float qm ye" style="right:22%;top:36%;animation-delay:1s;font-size:2.2rem">?</div>
+  <div class="wrap up">
+    <span class="label">You're invited!</span>
+    <h1><span class="w">What</span> <span class="w">Will Baby</span> <span class="w">Be?</span></h1>
+    <p class="lead sticker" id="heroMsg"></p>
+    <div class="hero-date"><span>🎈 <span id="hDate"></span></span><span>⏰ <span id="hTime"></span></span></div>
+  </div>
+</section>
+
+<!-- ============ PARENTS ============ -->
+<section>
+  <div class="float" style="right:6%;top:40px;font-size:2.4rem">🎁</div>
+  <div class="wrap up">
+    <span class="label" style="background:var(--pink)">Hosted by</span>
+    <h2 class="t">Calon Orang Tua</h2>
+    <div class="parents">
+      <div class="par sticker"><div class="init bu" id="dadI"></div><h3 id="dad"></h3><p>Calon Ayah</p></div>
+      <div class="par sticker"><div class="init pk" id="momI"></div><h3 id="mom"></h3><p>Calon Ibu</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EVENT ============ -->
+<section class="dots blue">
+  <div class="wrap up">
+    <span class="label" style="background:var(--blue)">Save the Date</span>
+    <h2 class="t">Detail Pesta</h2>
+    <div class="ev-grid">
+      <div class="ev sticker"><div class="ic">📅</div><small>Tanggal</small><b id="evDate"></b></div>
+      <div class="ev sticker"><div class="ic">⏰</div><small>Waktu</small><b id="evTime"></b></div>
+      <div class="ev sticker wide"><div class="ic">📍</div><small>Lokasi</small><b id="evPlace"></b></div>
+      <div class="ev sticker wide"><div class="ic">👕</div><small>Dress Code</small><b id="evDress"></b></div>
+    </div>
+    <div class="countdown" aria-live="polite">
+      <div class="cd sticker"><b id="cdD">0</b><span>Hari</span></div>
+      <div class="cd sticker"><b id="cdH">0</b><span>Jam</span></div>
+      <div class="cd sticker"><b id="cdM">0</b><span>Menit</span></div>
+      <div class="cd sticker"><b id="cdS">0</b><span>Detik</span></div>
+    </div>
+    <div class="ev-actions">
+      <a class="btn yellow" id="maps" target="_blank" rel="noopener">📍 Google Maps</a>
+      <a class="btn blue" id="gcal" target="_blank" rel="noopener">🗓️ Simpan ke Kalender</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ POLL ============ -->
+<section>
+  <div class="float qm bu" style="left:5%;top:50px">?</div>
+  <div class="float qm pk" style="right:6%;bottom:40px;animation-delay:1.2s">?</div>
+  <div class="wrap up">
+    <span class="label">Cast your vote</span>
+    <h2 class="t"><span class="bu">Boy</span> or <span class="pk">Girl</span>?</h2>
+    <p style="color:var(--muted)">Apa tebakanmu untuk si kecil?</p>
+    <div class="poll">
+      <button class="opt boy sticker" data-v="boy"><span class="e">👶🏻💙</span>Boy</button>
+      <button class="opt girl sticker" data-v="girl"><span class="e">👶🏻💗</span>Girl</button>
+    </div>
+    <div class="bar"><i class="b" id="bB"></i><i class="g" id="bG"></i></div>
+  </div>
+</section>
+
+<!-- ============ REVEAL ============ -->
+<section id="reveal">
+  <div class="wrap up">
+    <span class="label">The Big Moment</span>
+    <h2 class="t">Tahan &amp; Letuskan!</h2>
+    <p style="opacity:.8">Tekan dan <b>tahan</b> balon sampai meletus 🎈</p>
+    <div class="hold-area">
+      <button class="hold" id="hold" aria-label="Tekan dan tahan balon">
+        <span class="bal"></span><span class="knot"></span><span class="str"></span><span class="q">?</span>
+      </button>
+      <div class="answer" id="answer"><div class="sticker"><div style="font-size:3rem" id="aEmo"></div><h3 id="aTitle"></h3><p id="aSub" style="color:var(--muted);font-weight:700"></p></div></div>
+    </div>
+    <div class="meter" id="meterWrap"><i id="meter"></i></div>
+    <p class="hold-hint" id="hint">Lepas tanganmu, balonnya mengempis lagi 😉</p>
+  </div>
+</section>
+
+<!-- ============ RSVP ============ -->
+<section class="dots pink">
+  <div class="wrap up" style="max-width:520px">
+    <span class="label" style="background:var(--pink)">RSVP</span>
+    <h2 class="t">Konfirmasi Kehadiran</h2>
+    <form id="rsvp" class="sticker">
+      <label>Nama<input name="nama" required placeholder="Nama lengkap"></label>
+      <label>Kehadiran<select name="hadir"><option>Hadir 🎉</option><option>Tidak hadir</option><option>Masih ragu</option></select></label>
+      <label>Tebakanmu<select name="tebak"><option>💙 Boy</option><option>💗 Girl</option></select></label>
+      <label>Ucapan &amp; Doa<textarea name="ucapan" rows="3" placeholder="Tulis ucapan untuk si kecil…"></textarea></label>
+      <button class="btn yellow" type="submit" style="justify-content:center">Kirim 🎈</button>
+    </form>
+    <div class="wishes" id="wishes"></div>
+  </div>
+</section>
+
+<footer>
+  <p style="font-size:2rem">🎈🎁🎉</p>
+  <p style="color:var(--muted);margin-top:6px">Terima kasih atas doa dan kehadirannya</p>
+  <p class="bl2" id="foot"></p>
+</footer>
+
+<button id="music" aria-label="Musik" hidden>🎵</button>
+<audio id="bgm" loop></audio>
+
+<script>
+/* ==================================================
+   CONFIG — ubah sesuai acara Anda
+   ================================================== */
+const CONFIG = {
+  ayah: "Kevin Wijaya",
+  ibu:  "Putri Maharani",
+  pesan: "Pink atau biru? Cuma satu cara untuk tahu! Datang dan rayakan bersama kami saat rahasia terbesar tahun ini terungkap 🎉",
+  mulai:   "2026-12-13T15:00:00+07:00",   // format ISO
+  selesai: "2026-12-13T18:00:00+07:00",
+  waktu: "15.00 – 18.00 WIB",
+  lokasi: "Balloon Party Hall, Jl. Mawar No. 17, Semarang",
+  maps: "https://maps.google.com/?q=Semarang",
+  dressCode: "Pink kalau tebak Girl, biru kalau tebak Boy, kuning kalau belum bisa memutuskan 😄",
+  hasil: "boy",           // "boy" atau "girl"
+  lamaTahan: 2.5,         // detik menahan balon sampai meletus
+  musik: "",              // URL mp3 (opsional)
+};
+/* ================================================== */
+
+const $ = id => document.getElementById(id);
+const ev = new Date(CONFIG.mulai), evEnd = new Date(CONFIG.selesai);
+const isBoy = CONFIG.hasil === "boy";
+
+const to = new URLSearchParams(location.search).get("to");
+if (to) $("guest").textContent = to;
+$("heroMsg").textContent = CONFIG.pesan;
+$("hDate").textContent = ev.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"});
+$("hTime").textContent = CONFIG.waktu;
+$("dad").textContent = CONFIG.ayah; $("mom").textContent = CONFIG.ibu;
+$("dadI").textContent = CONFIG.ayah[0]; $("momI").textContent = CONFIG.ibu[0];
+$("evDate").textContent = ev.toLocaleDateString("id-ID",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+$("evTime").textContent = CONFIG.waktu; $("evPlace").textContent = CONFIG.lokasi; $("evDress").textContent = CONFIG.dressCode;
+$("maps").href = CONFIG.maps;
+$("foot").textContent = CONFIG.ayah.split(" ")[0] + " & " + CONFIG.ibu.split(" ")[0];
+
+// Link "Simpan ke Kalender" (Google Calendar)
+const gfmt = d => d.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");
+$("gcal").href = "https://calendar.google.com/calendar/render?action=TEMPLATE"
+  + "&text=" + encodeURIComponent("Gender Reveal " + CONFIG.ayah.split(" ")[0] + " & " + CONFIG.ibu.split(" ")[0])
+  + "&dates=" + gfmt(ev) + "/" + gfmt(evEnd)
+  + "&location=" + encodeURIComponent(CONFIG.lokasi)
+  + "&details=" + encodeURIComponent(CONFIG.pesan);
+
+// Cover
+const bgm = $("bgm");
+if (CONFIG.musik){ bgm.src = CONFIG.musik; $("music").hidden = false; }
+document.body.style.overflow = "hidden";
+$("openBtn").onclick = () => {
+  $("cover").classList.add("hide"); document.body.style.overflow = "";
+  confetti(60, ["#ffb5c8","#a6d4f7","#ffe08a"]);
+  if (CONFIG.musik) bgm.play().catch(()=>{});
+};
+$("music").onclick = () => { bgm.paused ? bgm.play() : bgm.pause(); $("music").textContent = bgm.paused ? "🔇" : "🎵"; };
+
+const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add("on")), {threshold:.12});
+document.querySelectorAll(".up").forEach(el => io.observe(el));
+
+// Countdown
+function tick(){
+  let t = Math.max(0, ev - Date.now());
+  $("cdD").textContent = Math.floor(t/864e5); t %= 864e5;
+  $("cdH").textContent = Math.floor(t/36e5);  t %= 36e5;
+  $("cdM").textContent = Math.floor(t/6e4);
+  $("cdS").textContent = Math.floor(t%6e4/1e3);
+}
+tick(); setInterval(tick, 1000);
+
+// Poll (angka awal contoh — ganti/hapus sesuai kebutuhan)
+const votes = { boy: 16, girl: 16 }; let mine = null;
+function drawPoll(){
+  const t = votes.boy + votes.girl, b = Math.round(votes.boy / t * 100);
+  $("bB").style.width = b + "%"; $("bG").style.width = (100 - b) + "%";
+  $("bB").textContent = b >= 18 ? `💙 ${b}%` : ""; $("bG").textContent = 100 - b >= 18 ? `${100 - b}% 💗` : "";
+}
+document.querySelectorAll(".opt").forEach(o => o.onclick = () => {
+  if (mine) votes[mine]--;
+  mine = o.dataset.v; votes[mine]++;
+  document.querySelectorAll(".opt").forEach(x => x.classList.toggle("sel", x === o));
+  drawPoll();
+});
+drawPoll();
+
+// Press & hold reveal
+$("aEmo").textContent = isBoy ? "💙👶🏻💙" : "💗👶🏻💗";
+$("aTitle").textContent = isBoy ? "It's a Boy!" : "It's a Girl!";
+$("aTitle").className = isBoy ? "bu" : "pk";
+$("aSub").textContent = isBoy ? "Jagoan kecil sedang dalam perjalanan!" : "Putri kecil sedang dalam perjalanan!";
+const hold = $("hold"), bal = hold.querySelector(".bal"), dur = CONFIG.lamaTahan * 1000;
+let prog = 0, holding = false, last = 0, done = false;
+function loop(ts){
+  if (done) return;
+  const dt = last ? ts - last : 16; last = ts;
+  prog = Math.min(1, Math.max(0, prog + (holding ? dt / dur : -dt / (dur * .6))));
+  const s = 1 + prog * .35;
+  bal.style.setProperty("--s", s); bal.style.transform = `scale(${s})`;
+  hold.classList.toggle("shaking", holding && prog > .55);
+  $("meter").style.width = (prog * 100) + "%";
+  if (prog >= 1){ pop(); return; }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+const start = e => { e.preventDefault(); holding = true; };
+const stop = () => { holding = false; };
+hold.addEventListener("pointerdown", start);
+["pointerup","pointerleave","pointercancel"].forEach(t => hold.addEventListener(t, stop));
+hold.addEventListener("contextmenu", e => e.preventDefault());
+// Keyboard: tahan Spasi/Enter
+hold.addEventListener("keydown", e => { if (e.key === " " || e.key === "Enter"){ e.preventDefault(); holding = true; } });
+hold.addEventListener("keyup", stop);
+function pop(){
+  done = true; hold.classList.remove("shaking"); hold.classList.add("popped");
+  $("answer").classList.add("show");
+  $("meterWrap").style.visibility = "hidden";
+  $("hint").textContent = isBoy ? "🎉 Selamat datang, baby boy! 🎉" : "🎉 Selamat datang, baby girl! 🎉";
+  confetti(160, isBoy ? ["#a6d4f7","#3a86c4","#dff0fd","#ffe08a"] : ["#ffb5c8","#e05a82","#ffe0e8","#ffe08a"], true);
+}
+
+// Confetti (JS physics, burst from the center when popping)
+function confetti(n, colors, burst){
+  const W = innerWidth, H = innerHeight, parts = [];
+  for (let i = 0; i < n; i++){
+    const el = document.createElement("span"); el.className = "cf";
+    el.style.background = colors[i % colors.length];
+    document.body.appendChild(el);
+    const a = Math.random() * Math.PI * 2, sp = 6 + Math.random() * 9;
+    parts.push({ el, x: burst ? W/2 : Math.random() * W, y: burst ? H/2 : -20,
+      vx: burst ? Math.cos(a) * sp : (Math.random() - .5) * 2, vy: burst ? Math.sin(a) * sp - 6 : 2 + Math.random() * 3,
+      r: Math.random() * 360, vr: (Math.random() - .5) * 20 });
+  }
+  let t = 0;
+  (function step(){
+    t++;
+    parts.forEach(p => { p.vy += .25; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      p.el.style.transform = `translate(${p.x}px,${p.y}px) rotate(${p.r}deg)`; });
+    if (t < 260) requestAnimationFrame(step); else parts.forEach(p => p.el.remove());
+  })();
+}
+
+// RSVP (hanya tampil di halaman — sambungkan ke backend/Google Form bila perlu)
+const wishes = [
+  { nama:"Citra", hadir:"Hadir 🎉", tebak:"💗 Girl", ucapan:"Aku yakin cewek! Nggak sabar lihat balonnya meletus 🎈" },
+  { nama:"Reza", hadir:"Hadir 🎉", tebak:"💙 Boy", ucapan:"Sehat-sehat ya Putri & dedek bayi!" },
+];
+function drawWishes(){
+  const box = $("wishes"); box.innerHTML = "";
+  wishes.slice().reverse().forEach(w => {
+    const d = document.createElement("div"); d.className = "wish sticker";
+    const n = document.createElement("b"); n.textContent = w.nama;
+    const s = document.createElement("small"); s.textContent = `${w.hadir} · ${w.tebak}`;
+    const p = document.createElement("p"); p.textContent = w.ucapan;
+    d.append(n, s, p); box.appendChild(d);
+  });
+}
+$("rsvp").onsubmit = e => {
+  e.preventDefault(); const f = new FormData(e.target);
+  wishes.push({ nama: f.get("nama"), hadir: f.get("hadir"), tebak: f.get("tebak"), ucapan: f.get("ucapan") || "🎈" });
+  drawWishes(); e.target.reset();
+};
+drawWishes();
+</script>
+</body>
+</html>

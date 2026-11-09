@@ -1,0 +1,536 @@
+<!-- Safari & Animal Adventure -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Undangan Ulang Tahun Nara — Ekspedisi Safari</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Work+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --matahari:#F5B942;
+    --langit-1:#FBD08A;
+    --langit-2:#F08A4B;
+    --rumput:#7A8F3C;
+    --rumput-tua:#5A6D2A;
+    --tanah:#B4703C;
+    --kayu:#3B2A1C;
+    --kayu-2:#54402C;
+    --gading:#FDF4E3;
+    --pirus:#2E9E8F;
+    --display:"Lilita One","Arial Black",system-ui,sans-serif;
+    --teks:"Work Sans","Segoe UI",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;font-family:var(--teks);color:var(--kayu);
+    background-color:#2F2419;
+    background-image:
+      radial-gradient(circle at 50% 0%, #6B5335 0, transparent 60%),
+      radial-gradient(circle, rgba(255,255,255,.05) 1.4px, transparent 1.5px);
+    background-size:auto,16px 16px;
+    min-height:100vh;padding:26px 14px 54px;overflow-x:hidden;
+  }
+
+  .kartu{
+    max-width:680px;margin:0 auto;background:var(--gading);
+    border-radius:26px;overflow:hidden;
+    box-shadow:0 26px 60px rgba(0,0,0,.5);
+  }
+
+  /* ---------- panggung savana ---------- */
+  .savana{
+    position:relative;overflow:hidden;text-align:center;padding:16px 18px 0;
+    background:linear-gradient(180deg,var(--langit-1) 0%,var(--langit-2) 78%,#D9723F 100%);
+    border-bottom:5px solid var(--kayu);
+  }
+  .eyebrow{
+    position:relative;font-family:var(--display);font-size:1rem;letter-spacing:.2em;
+    color:var(--kayu);margin:0 0 2px;
+  }
+  .adegan{position:relative;width:min(380px,92vw);height:auto;display:block;margin:0 auto -5px;overflow:visible;}
+
+  /* jip masuk */
+  .jip{transform-box:fill-box;transform-origin:center;}
+  .jalan .jip{animation:datang 1.3s cubic-bezier(.25,.8,.35,1) .2s both;}
+  @keyframes datang{
+    0%{transform:translateX(-420px);}
+    76%{transform:translateX(18px);}
+    90%{transform:translateX(-6px);}
+    100%{transform:translateX(0);}
+  }
+  .badan-jip{transform-box:fill-box;transform-origin:center;}
+  .jalan .badan-jip{animation:berguncang .3s ease-in-out .2s 6, oleng .9s ease-in-out 1.6s infinite alternate;}
+  @keyframes berguncang{0%,100%{transform:translateY(0) rotate(0);}50%{transform:translateY(-4px) rotate(-.8deg);}}
+  @keyframes oleng{from{transform:translateY(0) rotate(-.4deg);}to{transform:translateY(-2px) rotate(.4deg);}}
+  .roda{transform-box:fill-box;transform-origin:center;}
+  .jalan .roda{animation:putar .4s linear .2s 4;}
+  @keyframes putar{to{transform:rotate(360deg);}}
+  .debu{opacity:0;}
+  .jalan .debu{animation:kepul .8s ease-out .5s 2;}
+  @keyframes kepul{0%{opacity:.7;transform:translateX(0) scale(.4);}100%{opacity:0;transform:translateX(-40px) scale(1.5);}}
+
+  /* hewan mengintip */
+  .hewan{transform-box:fill-box;transform-origin:bottom center;transform:translateY(96px);}
+  .jalan .hewan{animation:muncul .7s cubic-bezier(.3,1.5,.45,1) both;animation-delay:var(--tunda,0s);}
+  @keyframes muncul{
+    0%{transform:translateY(96px);}
+    70%{transform:translateY(-8px);}
+    100%{transform:translateY(0);}
+  }
+  .monyet{transform-box:fill-box;transform-origin:top center;opacity:0;}
+  .jalan .monyet{animation:hadir .3s ease 3.1s both, berayun 1.8s ease-in-out 3.4s infinite alternate;}
+  @keyframes hadir{to{opacity:1;}}
+  @keyframes berayun{from{transform:rotate(-11deg);}to{transform:rotate(11deg);}}
+  .ilalang{transform-box:fill-box;transform-origin:bottom center;}
+  .jalan .ilalang{animation:tertiup 2.6s ease-in-out infinite alternate;}
+  @keyframes tertiup{from{transform:skewX(-4deg);}to{transform:skewX(5deg);}}
+  .burung{transform-box:fill-box;}
+  .jalan .burung{animation:melintas 14s linear infinite;}
+  @keyframes melintas{from{transform:translateX(-60px);}to{transform:translateX(460px);}}
+
+  .teks-hero{opacity:0;background:var(--gading);padding:18px 20px 0;}
+  .jalan .teks-hero{animation:naik .6s ease 3.4s both;}
+  @keyframes naik{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+
+  .tiket{
+    display:inline-block;font-family:var(--display);font-size:.9rem;letter-spacing:.14em;
+    background:var(--pirus);color:#fff;padding:7px 18px;border-radius:6px;
+  }
+  .nama{
+    font-family:var(--display);font-size:clamp(2.9rem,13vw,4.6rem);line-height:.95;
+    margin:12px 0 8px;color:var(--kayu);letter-spacing:.02em;
+    text-shadow:4px 4px 0 var(--matahari);
+  }
+  .umur{
+    display:inline-block;font-family:var(--display);font-size:1rem;letter-spacing:.08em;
+    background:var(--rumput);color:#fff;padding:7px 20px;border-radius:999px;transform:rotate(-2deg);
+  }
+  .pengantar{max-width:34ch;margin:16px auto 0;font-weight:600;font-size:.95rem;color:#6B5A48;}
+  .ulang{
+    font-family:var(--display);font-size:.98rem;letter-spacing:.1em;
+    background:transparent;color:var(--kayu);border:3px solid var(--kayu);
+    border-radius:10px;padding:11px 24px;cursor:pointer;margin:18px auto 22px;display:block;
+    transition:background .18s,color .18s,transform .15s;
+  }
+  .ulang:hover{background:var(--kayu);color:var(--gading);transform:translateY(-2px);}
+
+  /* ---------- isi ---------- */
+  .isi{padding:6px 20px 28px;}
+  .blok + .blok{margin-top:26px;}
+  .judul{
+    font-family:var(--display);font-size:1.35rem;letter-spacing:.04em;color:var(--kayu);
+    margin:0 0 14px;display:flex;align-items:center;gap:12px;
+  }
+  .judul::after{
+    content:"";flex:1;height:16px;opacity:.55;
+    background:
+      radial-gradient(ellipse 7px 5px at 8px 5px, var(--tanah) 98%, transparent 100%),
+      radial-gradient(ellipse 5px 4px at 24px 11px, var(--tanah) 98%, transparent 100%),
+      radial-gradient(ellipse 6px 5px at 38px 4px, var(--tanah) 98%, transparent 100%);
+    background-size:48px 16px;
+  }
+
+  .mundur{display:flex;gap:8px;justify-content:center;}
+  .mundur div{flex:1;text-align:center;background:var(--kayu);border-radius:16px;padding:12px 4px;}
+  .mundur b{display:block;font-family:var(--display);font-size:2rem;line-height:1;color:var(--matahari);}
+  .mundur span{font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:rgba(253,244,227,.6);}
+
+  .detail{list-style:none;margin:0;padding:0;display:grid;gap:10px;}
+  .detail li{display:flex;gap:14px;align-items:flex-start;background:#fff;border:2px solid #EADCC2;border-left:6px solid var(--rumput);border-radius:0 14px 14px 0;padding:13px 16px;}
+  .ikon{flex:none;width:40px;height:40px;border-radius:12px;background:#F3E7CE;display:grid;place-items:center;font-size:1.15rem;}
+  .detail dt{font-family:var(--display);font-size:.82rem;letter-spacing:.1em;color:var(--pirus);margin:0 0 2px;}
+  .detail dd{margin:0;font-weight:700;font-size:1rem;}
+  .detail small{display:block;font-weight:500;color:#7E6C58;margin-top:3px;}
+
+  .acara{list-style:none;margin:0;padding:0;}
+  .acara li{display:flex;gap:16px;align-items:baseline;padding:11px 0;border-bottom:2px dashed #E2D3B8;}
+  .acara li:last-child{border-bottom:0;}
+  .jam{font-family:var(--display);font-size:1.05rem;color:var(--tanah);min-width:62px;}
+  .acara p{margin:0;font-weight:600;font-size:.95rem;}
+
+  .catatan{background:var(--rumput-tua);color:#fff;border-radius:18px;padding:20px 22px;}
+  .catatan .judul{color:var(--matahari);}
+  .catatan .judul::after{opacity:.4;background:
+      radial-gradient(ellipse 7px 5px at 8px 5px, #FDF4E3 98%, transparent 100%),
+      radial-gradient(ellipse 5px 4px at 24px 11px, #FDF4E3 98%, transparent 100%),
+      radial-gradient(ellipse 6px 5px at 38px 4px, #FDF4E3 98%, transparent 100%);
+      background-size:48px 16px;}
+  .catatan ul{margin:0;padding-left:20px;}
+  .catatan li{margin:7px 0;font-weight:600;font-size:.95rem;}
+
+  .rsvp{display:grid;gap:12px;}
+  label{font-family:var(--display);font-size:.82rem;letter-spacing:.08em;color:#8A7660;display:block;margin-bottom:5px;}
+  input,select{width:100%;font:inherit;font-weight:600;padding:12px 14px;border:2px solid #E5D6BC;border-radius:12px;background:#fff;color:var(--kayu);}
+  input::placeholder{color:#BCAE99;}
+  input:focus,select:focus,button:focus-visible{outline:3px solid var(--pirus);outline-offset:2px;}
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  button{font-family:var(--display);font-size:1rem;letter-spacing:.08em;border:0;border-radius:12px;padding:14px 18px;cursor:pointer;transition:transform .15s,box-shadow .15s;}
+  button:hover{transform:translateY(-2px);}
+  .utama{background:var(--tanah);color:#fff;box-shadow:0 5px 0 #8E5529;}
+  .utama:hover{box-shadow:0 7px 0 #8E5529;}
+  .kedua{background:#fff;color:var(--kayu);border:2px solid #E5D6BC;box-shadow:0 4px 0 #E5D6BC;}
+  .kedua:hover{box-shadow:0 6px 0 #E5D6BC;}
+  .pesan-galat{color:#B93A2E;font-weight:700;font-size:.85rem;min-height:1.2em;margin:0;}
+
+  footer{text-align:center;padding:22px 20px 26px;background:var(--kayu);color:rgba(253,244,227,.62);font-weight:600;font-size:.86rem;}
+  footer span{display:block;font-family:var(--display);font-size:1.15rem;letter-spacing:.06em;color:var(--matahari);margin-bottom:6px;}
+
+  .konfeti{position:fixed;top:-16px;width:10px;height:16px;border-radius:0 8px 0 8px;z-index:5;pointer-events:none;animation:turun linear forwards;}
+  @keyframes turun{to{transform:translateY(108vh) rotate(680deg);opacity:0;}}
+
+  @media (max-width:420px){
+    .isi{padding:6px 16px 26px;}
+    .duo{grid-template-columns:1fr;}
+    .mundur b{font-size:1.6rem;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none !important;transition:none !important;}
+    .hewan{transform:none;}
+    .monyet,.teks-hero{opacity:1;}
+  }
+</style>
+</head>
+<body>
+
+<main class="kartu">
+
+  <!-- ============ SAVANA ============ -->
+  <header class="jalan" id="panggung">
+    <div class="savana">
+      <p class="eyebrow">Ekspedisi safari</p>
+
+      <svg class="adegan" viewBox="0 0 400 280" role="img"
+           aria-label="Animasi jip safari melaju masuk lalu jerapah, zebra, singa, gajah, dan monyet bermunculan dari balik rumput">
+
+        <!-- matahari & burung -->
+        <circle cx="316" cy="58" r="34" fill="#FFE7A8" opacity=".55"/>
+        <circle cx="316" cy="58" r="24" fill="#FFF3CE"/>
+        <g class="burung" stroke="#6B4A2A" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".7">
+          <path d="M40 46 q7 -7 14 0 q7 -7 14 0 M84 66 q6 -6 12 0 q6 -6 12 0"/>
+        </g>
+
+        <!-- pohon akasia -->
+        <path d="M52 205 v-64" stroke="#6B4A2A" stroke-width="9" stroke-linecap="round"/>
+        <path d="M52 148 l-24 -18 M52 152 l26 -16" stroke="#6B4A2A" stroke-width="7" stroke-linecap="round"/>
+        <path d="M8 122 q44 -30 92 0 q-46 12 -92 0 z" fill="#5A6D2A"/>
+        <path d="M14 116 q40 -24 82 0 q-42 10 -82 0 z" fill="#6E8434"/>
+        <path d="M368 205 v-42" stroke="#6B4A2A" stroke-width="7" stroke-linecap="round"/>
+        <path d="M340 146 q30 -22 62 0 q-32 10 -62 0 z" fill="#5A6D2A"/>
+
+        <!-- monyet bergelantungan -->
+        <g class="monyet">
+          <path d="M78 132 q10 12 4 24" fill="none" stroke="#8A5A32" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="80" cy="170" r="15" fill="#A66C3C"/>
+          <circle cx="80" cy="152" r="12" fill="#A66C3C"/>
+          <circle cx="69" cy="150" r="5" fill="#C99565"/>
+          <circle cx="91" cy="150" r="5" fill="#C99565"/>
+          <ellipse cx="80" cy="155" rx="8" ry="6" fill="#E6C39A"/>
+          <circle cx="77" cy="150" r="2" fill="#3B2A1C"/>
+          <circle cx="84" cy="150" r="2" fill="#3B2A1C"/>
+        </g>
+
+        <!-- JERAPAH -->
+        <g class="hewan" style="--tunda:1.5s">
+          <path d="M128 208 L124 124 L150 120 L152 208 Z" fill="#EDBB5E"/>
+          <ellipse cx="130" cy="140" rx="6" ry="5" fill="#B57B34"/>
+          <ellipse cx="144" cy="164" rx="6" ry="5" fill="#B57B34"/>
+          <ellipse cx="131" cy="186" rx="6" ry="5" fill="#B57B34"/>
+          <path d="M126 108 v-10 M146 106 v-10" stroke="#8A5A32" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="126" cy="94" r="5" fill="#8A5A32"/>
+          <circle cx="146" cy="92" r="5" fill="#8A5A32"/>
+          <ellipse cx="140" cy="114" rx="28" ry="17" fill="#EDBB5E" transform="rotate(-8 140 114)"/>
+          <ellipse cx="160" cy="118" rx="12" ry="9" fill="#D9A24C" transform="rotate(-8 160 118)"/>
+          <circle cx="134" cy="107" r="3.2" fill="#3B2A1C"/>
+          <path d="M118 106 l-12 -6" stroke="#EDBB5E" stroke-width="9" stroke-linecap="round"/>
+        </g>
+
+        <!-- ZEBRA -->
+        <g class="hewan" style="--tunda:1.95s">
+          <path d="M186 156 l-4 -16 l12 8 z M206 152 l6 -16 l6 16 z" fill="#F7F2E6" stroke="#2B2620" stroke-width="3"/>
+          <ellipse cx="198" cy="180" rx="27" ry="22" fill="#F7F2E6"/>
+          <path d="M186 162 q10 6 8 18 M198 158 q2 10 0 22 M210 162 q-8 6 -6 18 M176 182 q10 2 12 10 M220 182 q-10 2 -12 10"
+                stroke="#2B2620" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <ellipse cx="198" cy="199" rx="13" ry="10" fill="#4A4139"/>
+          <circle cx="194" cy="199" r="2.5" fill="#2B2620"/>
+          <circle cx="203" cy="199" r="2.5" fill="#2B2620"/>
+          <circle cx="188" cy="174" r="3.4" fill="#2B2620"/>
+          <circle cx="209" cy="174" r="3.4" fill="#2B2620"/>
+        </g>
+
+        <!-- SINGA -->
+        <g class="hewan" style="--tunda:2.4s">
+          <circle cx="266" cy="176" r="34" fill="#C8873D"/>
+          <circle cx="266" cy="176" r="27" fill="#B3762F" opacity=".5"/>
+          <circle cx="250" cy="152" r="8" fill="#E8B978"/>
+          <circle cx="282" cy="152" r="8" fill="#E8B978"/>
+          <circle cx="266" cy="180" r="23" fill="#E8B978"/>
+          <circle cx="258" cy="174" r="3.4" fill="#3B2A1C"/>
+          <circle cx="274" cy="174" r="3.4" fill="#3B2A1C"/>
+          <path d="M266 184 l-6 4 h12 z" fill="#8A5A32"/>
+          <path d="M266 188 v5 M266 193 q-7 6 -12 0 M266 193 q7 6 12 0" fill="none" stroke="#8A5A32" stroke-width="3" stroke-linecap="round"/>
+        </g>
+
+        <!-- GAJAH -->
+        <g class="hewan" style="--tunda:2.85s">
+          <ellipse cx="308" cy="180" rx="22" ry="27" fill="#7E8B98"/>
+          <ellipse cx="340" cy="178" rx="30" ry="29" fill="#94A1AE"/>
+          <path d="M352 196 q10 14 2 26 q-2 8 -10 6" fill="none" stroke="#94A1AE" stroke-width="15" stroke-linecap="round"/>
+          <path d="M330 200 q-4 10 -10 12 M348 202 q4 8 10 10" stroke="#F7F2E6" stroke-width="6" stroke-linecap="round" fill="none"/>
+          <circle cx="334" cy="170" r="3.4" fill="#3B2A1C"/>
+          <circle cx="352" cy="170" r="3.4" fill="#3B2A1C"/>
+        </g>
+
+        <!-- tanah -->
+        <rect x="-20" y="205" width="440" height="90" fill="#7A8F3C"/>
+        <path d="M-20 205 h440" stroke="#5A6D2A" stroke-width="5"/>
+        <g class="ilalang" fill="#5A6D2A">
+          <path d="M10 206 q4 -20 10 -24 q-2 16 2 24 z M40 206 q-4 -18 -10 -22 q3 14 0 22 z M96 206 q4 -22 12 -26 q-4 18 0 26 z
+                   M240 206 q-5 -20 -12 -24 q4 16 1 24 z M300 206 q5 -18 12 -22 q-4 14 -1 22 z M368 206 q4 -22 12 -25 q-5 17 -1 25 z"/>
+        </g>
+
+        <!-- JIP -->
+        <g class="jip">
+          <g class="debu">
+            <circle cx="96" cy="246" r="12" fill="#E8DCC0"/>
+            <circle cx="76" cy="238" r="8" fill="#F2EAD6"/>
+          </g>
+          <g class="badan-jip">
+            <!-- atap & tiang -->
+            <rect x="136" y="186" width="112" height="9" rx="4" fill="#FDF4E3"/>
+            <rect x="140" y="182" width="104" height="6" rx="3" fill="#3B2A1C" opacity=".25"/>
+            <rect x="140" y="192" width="7" height="30" fill="#6B4A2A"/>
+            <rect x="238" y="192" width="7" height="30" fill="#6B4A2A"/>
+            <!-- bodi -->
+            <path d="M118 250 h164 c8 0 12 -5 12 -12 v-14 h-32 l-12 -18 h-120 c-8 0 -12 5 -12 12 v22 c0 6 4 10 0 10 z" fill="#C89F5D"/>
+            <rect x="118" y="228" width="164" height="22" rx="6" fill="#C89F5D"/>
+            <rect x="118" y="240" width="176" height="10" rx="5" fill="#A5813F"/>
+            <path d="M262 224 h32 v10 h-32 z" fill="#A5813F"/>
+            <!-- corak safari -->
+            <ellipse cx="150" cy="236" rx="10" ry="7" fill="#6B4A2A"/>
+            <ellipse cx="180" cy="234" rx="7" ry="5" fill="#6B4A2A"/>
+            <ellipse cx="212" cy="237" rx="9" ry="6" fill="#6B4A2A"/>
+            <!-- kaca depan -->
+            <path d="M248 224 l10 -16 h6 l-6 16 z" fill="#BFE0E6"/>
+            <!-- lampu -->
+            <circle cx="290" cy="230" r="5" fill="#FFE7A8"/>
+          </g>
+          <!-- roda -->
+          <circle cx="152" cy="252" r="19" fill="#2B2620"/>
+          <circle cx="256" cy="252" r="19" fill="#2B2620"/>
+          <circle cx="152" cy="252" r="9" fill="#D9CDB4"/>
+          <circle cx="256" cy="252" r="9" fill="#D9CDB4"/>
+          <g class="roda" stroke="#8A7C63" stroke-width="3" stroke-linecap="round">
+            <path d="M152 244 v16 M144 252 h16 M146 246 l12 12 M158 246 l-12 12"/>
+          </g>
+          <g class="roda" stroke="#8A7C63" stroke-width="3" stroke-linecap="round">
+            <path d="M256 244 v16 M248 252 h16 M250 246 l12 12 M262 246 l-12 12"/>
+          </g>
+        </g>
+      </svg>
+    </div>
+
+    <div class="teks-hero">
+      <p class="tiket">Tiket ekspedisi · 1 orang</p>
+      <h1 class="nama">Nara</h1>
+      <p class="umur">Genap 6 tahun</p>
+      <p class="pengantar">Ada jejak yang belum terbaca, hewan yang belum disapa, dan kue yang belum dipotong. Ikut jelajah bareng kami ya.</p>
+      <button class="ulang" id="tombolUlang">Jalan lagi</button>
+    </div>
+  </header>
+
+  <!-- ============ ISI ============ -->
+  <div class="isi">
+
+    <section class="blok">
+      <h2 class="judul">Ekspedisi dimulai dalam</h2>
+      <div class="mundur" id="mundur" aria-live="polite">
+        <div><b id="hari">–</b><span>hari</span></div>
+        <div><b id="jam">–</b><span>jam</span></div>
+        <div><b id="menit">–</b><span>menit</span></div>
+        <div><b id="detik">–</b><span>detik</span></div>
+      </div>
+    </section>
+
+    <section class="blok">
+      <h2 class="judul">Titik kumpul</h2>
+      <ul class="detail">
+        <li><span class="ikon" aria-hidden="true">📅</span>
+          <dl><dt>Tanggal</dt><dd>Sabtu, 7 November 2026</dd></dl></li>
+        <li><span class="ikon" aria-hidden="true">⏰</span>
+          <dl><dt>Jam</dt><dd>08.30 – 11.30 WIB<small>Berangkat jelajah tepat 09.00. Hewannya paling aktif pagi hari.</small></dd></dl></li>
+        <li><span class="ikon" aria-hidden="true">📍</span>
+          <dl><dt>Lokasi</dt><dd>Taman Satwa Ceria<small>Jl. Rimba Raya No. 4, Jakarta Timur · kumpul di gerbang timur, dekat patung jerapah</small></dd></dl></li>
+      </ul>
+      <div class="duo" style="margin-top:14px">
+        <button class="kedua" id="tombolKalender">Simpan ke kalender</button>
+        <button class="kedua" id="tombolPeta">Buka peta lokasi</button>
+      </div>
+    </section>
+
+    <section class="blok">
+      <h2 class="judul">Rencana jelajah</h2>
+      <ul class="acara">
+        <li><span class="jam">08.30</span><p>Kumpul, bagi topi safari dan teropong kertas</p></li>
+        <li><span class="jam">09.00</span><p>Jelajah jejak: mencocokkan tapak kaki hewan</p></li>
+        <li><span class="jam">09.45</span><p>Memberi makan kambing dan kelinci di kandang sentuh</p></li>
+        <li><span class="jam">10.15</span><p>Safari foto bersama pawang</p></li>
+        <li><span class="jam">10.45</span><p>Tiup lilin, potong kue, piknik di rumput</p></li>
+        <li><span class="jam">11.15</span><p>Bagi bingkisan dan foto seluruh tim</p></li>
+      </ul>
+    </section>
+
+    <section class="blok catatan">
+      <h2 class="judul">Aturan rimba</h2>
+      <ul>
+        <li>Pakai sepatu tertutup dan baju yang boleh kotor. Jalurnya berumput dan berpasir.</li>
+        <li>Bawa topi dan tabir surya. Air minum kami sediakan di titik kumpul.</li>
+        <li>Hewan hanya diberi makan pakan dari petugas, bukan bekal sendiri.</li>
+        <li>Cuci tangan setelah kandang sentuh — wastafel ada di setiap pos.</li>
+        <li>Menu piknik ada versi bebas kacang. Beri tahu kami kalau ada alergi lain.</li>
+      </ul>
+    </section>
+
+    <section class="blok">
+      <h2 class="judul">Daftar penjelajah</h2>
+      <div class="rsvp">
+        <div>
+          <label for="nama">Nama kamu</label>
+          <input id="nama" type="text" placeholder="Contoh: Keluarga Putri" autocomplete="name">
+        </div>
+        <div class="duo">
+          <div>
+            <label for="jumlah">Jumlah yang datang</label>
+            <input id="jumlah" type="number" min="1" max="12" value="2">
+          </div>
+          <div>
+            <label for="status">Ikut jelajah?</label>
+            <select id="status">
+              <option value="hadir">Siap berangkat</option>
+              <option value="tidak">Maaf, belum bisa</option>
+            </select>
+          </div>
+        </div>
+        <p class="pesan-galat" id="galat" role="alert"></p>
+        <button class="utama" id="tombolKirim">Kirim lewat WhatsApp</button>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>
+    <span>Sampai jumpa di gerbang timur</span>
+    Ayah, Bunda, dan Nara · 0812-3456-7890
+  </footer>
+</main>
+
+<script>
+/* ============================================================
+   GANTI DATA ACARA DI SINI
+   ============================================================ */
+const ACARA = {
+  judul: "Ulang Tahun Nara ke-6",
+  mulai: "2026-11-07T08:30:00+07:00",
+  selesai: "2026-11-07T11:30:00+07:00",
+  lokasi: "Taman Satwa Ceria, Jl. Rimba Raya No. 4, Jakarta Timur",
+  waLatar: "6281234567890"   // nomor tujuan RSVP, format internasional tanpa tanda +
+};
+const DETIK_KONFETI = 3300;   // konfeti pecah setelah semua hewan muncul (mili detik)
+
+const el = id => document.getElementById(id);
+const diamSaja = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- ulangi ekspedisi ---------- */
+const panggung = el("panggung");
+let jadwalKonfeti;
+function jalanLagi(){
+  if (diamSaja) return;
+  clearTimeout(jadwalKonfeti);
+  panggung.classList.remove("jalan");
+  void panggung.offsetWidth;          // paksa browser menggambar ulang
+  panggung.classList.add("jalan");
+  jadwalKonfeti = setTimeout(hujanKonfeti, DETIK_KONFETI);
+}
+el("tombolUlang").addEventListener("click", jalanLagi);
+if (!diamSaja) jadwalKonfeti = setTimeout(hujanKonfeti, DETIK_KONFETI);
+
+function hujanKonfeti(){
+  const warna = ["#F5B942","#7A8F3C","#B4703C","#2E9E8F","#FDF4E3"];
+  for (let i = 0; i < 75; i++){
+    const k = document.createElement("span");
+    k.className = "konfeti";
+    k.style.left = Math.random() * 100 + "vw";
+    k.style.background = warna[i % warna.length];
+    k.style.animationDuration = (2.4 + Math.random() * 2.2) + "s";
+    k.style.animationDelay = (Math.random() * .5) + "s";
+    document.body.appendChild(k);
+    setTimeout(() => k.remove(), 5400);
+  }
+}
+
+/* ---------- hitung mundur ---------- */
+const target = new Date(ACARA.mulai).getTime();
+function perbarui(){
+  const sisa = target - Date.now();
+  if (sisa <= 0){
+    el("mundur").innerHTML = '<div style="flex:1"><b>Berangkat!</b><span>ekspedisinya sudah dimulai</span></div>';
+    clearInterval(jamTangan);
+    return;
+  }
+  el("hari").textContent  = Math.floor(sisa / 86400000);
+  el("jam").textContent   = String(Math.floor(sisa / 3600000) % 24).padStart(2,"0");
+  el("menit").textContent = String(Math.floor(sisa / 60000) % 60).padStart(2,"0");
+  el("detik").textContent = String(Math.floor(sisa / 1000) % 60).padStart(2,"0");
+}
+perbarui();
+const jamTangan = setInterval(perbarui, 1000);
+
+/* ---------- simpan ke kalender (.ics) ---------- */
+el("tombolKalender").addEventListener("click", () => {
+  const rapi = t => new Date(t).toISOString().replace(/[-:]/g,"").split(".")[0] + "Z";
+  const isi = [
+    "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Undangan Safari//ID","BEGIN:VEVENT",
+    "UID:" + Date.now() + "@undangan-safari",
+    "DTSTAMP:" + rapi(Date.now()),
+    "DTSTART:" + rapi(ACARA.mulai),
+    "DTEND:" + rapi(ACARA.selesai),
+    "SUMMARY:" + ACARA.judul,
+    "LOCATION:" + ACARA.lokasi,
+    "DESCRIPTION:Kumpul di gerbang timur 08.30. Pakai sepatu tertutup, bawa topi.",
+    "END:VEVENT","END:VCALENDAR"
+  ].join("\r\n");
+  const tautan = document.createElement("a");
+  tautan.href = URL.createObjectURL(new Blob([isi], {type:"text/calendar"}));
+  tautan.download = "ulang-tahun-nara.ics";
+  tautan.click();
+  URL.revokeObjectURL(tautan.href);
+});
+
+/* ---------- buka peta ---------- */
+el("tombolPeta").addEventListener("click", () => {
+  window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(ACARA.lokasi), "_blank");
+});
+
+/* ---------- kirim RSVP ---------- */
+el("tombolKirim").addEventListener("click", () => {
+  const nama = el("nama").value.trim();
+  const galat = el("galat");
+  if (!nama){
+    galat.textContent = "Isi nama dulu supaya kami bisa siapkan tiket ekspedisinya.";
+    el("nama").focus();
+    return;
+  }
+  galat.textContent = "";
+  const jumlah = el("jumlah").value || 1;
+  const hadir = el("status").value === "hadir";
+  const pesan = hadir
+    ? `Halo! ${nama} ikut ekspedisi ${ACARA.judul} bersama ${jumlah} orang. Sampai ketemu di gerbang timur!`
+    : `Halo! Maaf, ${nama} belum bisa ikut ${ACARA.judul}. Selamat ulang tahun untuk Nara ya!`;
+  window.open(`https://wa.me/${ACARA.waLatar}?text=` + encodeURIComponent(pesan), "_blank");
+});
+</script>
+</body>
+</html>

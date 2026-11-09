@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6d9d3"/>
+      <stop offset="1" stop-color="#fbf1e4"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="900" height="1200" fill="url(#sky)" />
+  <rect x="0" y="940" width="900" height="260" fill="#4d8a43" />
+  <rect x="0" y="940" width="40" height="14" fill="#5f9a4a" /><rect x="40" y="940" width="40" height="14" fill="#79ad57" /><rect x="80" y="940" width="40" height="14" fill="#5f9a4a" /><rect x="120" y="940" width="40" height="14" fill="#79ad57" /><rect x="160" y="940" width="40" height="14" fill="#5f9a4a" /><rect x="200" y="940" width="40" height="14" fill="#79ad57" /><rect x="240" y="940" width="40" height="14" fill="#5f9a4a" /><rect x="280" y="940" width="40" height="14" fill="#79ad57" /><rect x="320" y="940" width="40" height="14" fill="#5f9a4a" /><rect x="360" y="940" width="40" height="14" fill="#79ad57" /><rect x="400" y="940" width="40" height="14" fill="#5f9a4a" /><rect x="440" y="940" width="40" height="14" fill="#79ad57" /><rect x="480" y="940" width="40" height="14" fill="#5f9a4a" /><rect x="520" y="940" width="40" height="14" fill="#79ad57" /><rect x="560" y="940" width="40" height="14" fill="#5f9a4a" /><rect x="600" y="940" width="40" height="14" fill="#79ad57" /><rect x="640" y="940" width="40" height="14" fill="#5f9a4a" /><rect x="680" y="940" width="40" height="14" fill="#79ad57" /><rect x="720" y="940" width="40" height="14" fill="#5f9a4a" /><rect x="760" y="940" width="40" height="14" fill="#79ad57" /><rect x="800" y="940" width="40" height="14" fill="#5f9a4a" /><rect x="840" y="940" width="40" height="14" fill="#79ad57" /><rect x="880" y="940" width="40" height="14" fill="#5f9a4a" />
+  <rect x="315" y="550" width="39" height="390" fill="#f1e3c6" /><rect x="546" y="550" width="39" height="390" fill="#f1e3c6" /><rect x="300" y="520" width="300" height="39" fill="#c9a25c" /><rect x="375" y="487" width="45" height="36" fill="#c56f78" /><rect x="427.5" y="478" width="45" height="45" fill="#eda6a6" /><rect x="480" y="487" width="45" height="36" fill="#c56f78" /><rect x="300" y="565" width="66" height="42" fill="#eda6a6" /><rect x="534" y="610" width="66" height="42" fill="#c56f78" /><rect x="128.8" y="814" width="22.4" height="125.99999999999999" fill="#80532f" /><rect x="72.80000000000001" y="730" width="134.39999999999998" height="98" fill="#c56f78" /><rect x="95.2" y="685.2" width="89.6" height="53.199999999999996" fill="#eda6a6" /><rect x="72.80000000000001" y="730" width="42" height="36.4" fill="#eda6a6" opacity="0.6"/><rect x="759.6" y="823" width="20.8" height="117" fill="#80532f" /><rect x="707.6" y="745" width="124.80000000000001" height="91" fill="#c56f78" /><rect x="728.4" y="703.4" width="83.2" height="49.4" fill="#eda6a6" /><rect x="707.6" y="745" width="39" height="33.800000000000004" fill="#eda6a6" opacity="0.6"/><rect x="280.8" y="967.2" width="38.400000000000006" height="12.8" fill="#80532f" /><rect x="285.6" y="916" width="28.8" height="51.2" fill="#ffe2a8" /><rect x="279.2" y="903.2" width="41.6" height="14.4" fill="#c9a25c" /><rect x="580.8" y="967.2" width="38.400000000000006" height="12.8" fill="#80532f" /><rect x="585.6" y="916" width="28.8" height="51.2" fill="#ffe2a8" /><rect x="579.2" y="903.2" width="41.6" height="14.4" fill="#c9a25c" />
+  
+    <g>
+      <rect x="140" y="1010" width="620" height="130" fill="#fbf6ec" opacity="0.92" rx="10"/>
+      <rect x="150" y="1020" width="14" height="14" fill="#c9a25c" />
+      <rect x="736" y="1116" width="14" height="14" fill="#c9a25c" />
+      <text x="450" y="1068" text-anchor="middle" font-family="Georgia, serif" font-size="40" font-weight="700" letter-spacing="6" fill="#74552a">FOTO CONTOH</text>
+      <text x="450" y="1108" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#564e42">Ganti dengan foto potret pasangan</text>
+    </g>
+</svg>

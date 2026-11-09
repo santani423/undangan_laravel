@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600">
+ <title>Contoh foto 2</title>
+ <rect width="600" height="600" fill="#ffe0eb"/>
+ <g fill="#ffffff" opacity=".55">
+  <circle cx="70" cy="80" r="14"/><circle cx="530" cy="110" r="10"/><circle cx="500" cy="520" r="16"/><circle cx="90" cy="500" r="9"/>
+ </g>
+ <rect x="40" y="40" width="520" height="520" rx="36" fill="none" stroke="#ffffff" stroke-width="6" stroke-dasharray="4 18" stroke-linecap="round"/>
+ <svg x="150" y="110" width="300" height="300" viewBox="0 0 320 360">
+ <path d="M90 112 Q70 205 135 290 M168 91 Q180 200 150 300 M240 135 Q222 220 164 300" fill="none" stroke="#b9a9ca" stroke-width="3"/>
+ <g><ellipse cx="91" cy="87" rx="48" ry="62" fill="#ff9fc2"/><path d="M85 147l6 13 7-13" fill="#ff9fc2"/><ellipse cx="77" cy="64" rx="10" ry="19" fill="#fff" opacity=".32" transform="rotate(22 77 64)"/></g>
+ <g><ellipse cx="168" cy="69" rx="47" ry="61" fill="#78d5f4"/><path d="M162 129l6 13 7-13" fill="#78d5f4"/><ellipse cx="154" cy="46" rx="10" ry="19" fill="#fff" opacity=".35" transform="rotate(22 154 46)"/></g>
+ <g><ellipse cx="241" cy="110" rx="46" ry="60" fill="#ffd76f"/><path d="M235 170l6 13 7-13" fill="#ffd76f"/><ellipse cx="227" cy="87" rx="10" ry="18" fill="#fff" opacity=".35" transform="rotate(22 227 87)"/></g>
+</svg>
+ <text x="300" y="470" font-family="Fredoka, Nunito, Arial, sans-serif" font-size="40" font-weight="700" text-anchor="middle" fill="#e46d99">Fotomu di sini</text>
+ <text x="300" y="515" font-family="Nunito, Arial, sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#e46d99" opacity=".8">Slot foto 2</text>
+</svg>

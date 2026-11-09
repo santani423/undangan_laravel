@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Undangan Ulang Tahun Kirana — Pesta Kucing Manis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gula:#FFB7D5;
+    --stroberi:#F2557E;
+    --krim:#FFF7FB;
+    --lila:#B49BE8;
+    --mint:#7FDDC4;
+    --kuning:#FFD86B;
+    --tinta:#5A3348;
+    --abu:#9B7E8D;
+    --display:"Fredoka","Trebuchet MS",system-ui,sans-serif;
+    --teks:"Quicksand","Segoe UI",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:var(--teks);
+    font-weight:500;
+    color:var(--tinta);
+    background-color:#FFE3F0;
+    background-image:
+      radial-gradient(circle at 10% 12%, rgba(180,155,232,.35) 0, transparent 42%),
+      radial-gradient(circle at 90% 80%, rgba(127,221,196,.35) 0, transparent 42%),
+      radial-gradient(circle, rgba(255,255,255,.7) 2.5px, transparent 2.6px);
+    background-size:auto,auto,26px 26px;
+    min-height:100vh;
+    padding:28px 16px 56px;
+    overflow-x:hidden;
+  }
+
+  /* bintang melayang di latar */
+  .kilau{position:fixed;font-size:20px;opacity:.65;pointer-events:none;z-index:0;}
+  .kilau.a{top:14%;left:6%;animation:apung 9s ease-in-out infinite;}
+  .kilau.b{top:38%;right:7%;animation:apung 11s ease-in-out infinite 1.5s;}
+  .kilau.c{top:66%;left:9%;animation:apung 10s ease-in-out infinite 3s;}
+  .kilau.d{top:86%;right:12%;animation:apung 12s ease-in-out infinite 2s;}
+  @keyframes apung{0%,100%{transform:translateY(0) rotate(-8deg);}50%{transform:translateY(-22px) rotate(8deg);}}
+
+  .kartu{
+    position:relative;z-index:1;
+    max-width:680px;margin:0 auto;
+    background:var(--krim);
+    border-radius:38px;
+    overflow:hidden;
+    box-shadow:0 26px 60px rgba(160,80,120,.28);
+  }
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;
+    background:linear-gradient(180deg,#FFD3E6 0%,var(--gula) 100%);
+    padding:26px 24px 0;
+    text-align:center;
+  }
+  .eyebrow{
+    font-weight:700;font-size:.72rem;letter-spacing:.24em;
+    text-transform:uppercase;color:#B4436A;margin:0 0 4px;
+  }
+  .kucing{width:min(320px,78vw);height:auto;display:block;margin:0 auto;}
+  .kepala{transform-box:fill-box;transform-origin:center bottom;animation:miring 6s ease-in-out infinite;}
+  @keyframes miring{0%,100%{transform:rotate(-2.5deg);}50%{transform:rotate(2.5deg);}}
+  .balon{transform-box:fill-box;transform-origin:bottom center;animation:melayang 4s ease-in-out infinite;}
+  @keyframes melayang{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-12px) rotate(3deg);}}
+  .kedip-kanan{opacity:0;transition:opacity .2s;}
+  .pipi{transition:opacity .3s;}
+  .senang .kedip-kanan{opacity:1;}
+  .senang .mata-kanan{opacity:0;}
+  .senang .pipi{opacity:1;}
+  .pipi{opacity:.55;}
+
+  .nama{
+    font-family:var(--display);font-weight:700;
+    font-size:clamp(2.9rem,12.5vw,4.4rem);line-height:.92;
+    margin:6px 0 6px;color:#fff;
+    text-shadow:0 4px 0 var(--stroberi);
+  }
+  .umur{
+    display:inline-block;background:#fff;color:var(--stroberi);
+    font-family:var(--display);font-weight:700;font-size:1.05rem;
+    padding:6px 20px;border-radius:999px;transform:rotate(-2deg);
+    box-shadow:0 4px 0 rgba(242,85,126,.35);
+  }
+  .pengantar{max-width:34ch;margin:14px auto 0;font-weight:700;color:#8C3D5C;}
+  .tombol-manis{
+    font-family:var(--display);font-weight:700;font-size:1.05rem;
+    border:0;border-radius:18px;padding:13px 24px;cursor:pointer;
+    background:#fff;color:var(--stroberi);box-shadow:0 5px 0 #F3A9C6;
+    margin:18px auto 0;display:block;transition:transform .15s,box-shadow .15s;
+  }
+  .tombol-manis:hover{transform:translateY(-2px);box-shadow:0 7px 0 #F3A9C6;}
+  .ucapan{
+    font-family:var(--display);font-weight:700;color:#fff;
+    margin:10px 0 0;opacity:0;transform:translateY(8px);
+    transition:opacity .4s,transform .4s;
+  }
+  .ucapan.tampil{opacity:1;transform:none;}
+  .renda{display:block;width:100%;height:auto;margin-top:14px;}
+
+  /* ---------- isi ---------- */
+  .isi{padding:24px 24px 30px;}
+  .blok + .blok{margin-top:30px;}
+  .judul{
+    font-family:var(--display);font-weight:700;font-size:1.3rem;
+    color:var(--stroberi);margin:0 0 14px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .judul::after{
+    content:"";flex:1;height:4px;border-radius:4px;
+    background:repeating-linear-gradient(90deg,var(--gula) 0 12px,transparent 12px 20px);
+  }
+
+  .mundur{display:flex;gap:10px;justify-content:center;}
+  .mundur div{
+    flex:1;background:linear-gradient(180deg,var(--lila),#9C7FE0);
+    color:#fff;border-radius:20px;padding:12px 4px;text-align:center;
+  }
+  .mundur b{display:block;font-family:var(--display);font-size:1.9rem;line-height:1;color:var(--kuning);}
+  .mundur span{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;opacity:.9;}
+
+  .detail{list-style:none;margin:0;padding:0;display:grid;gap:12px;}
+  .detail li{
+    display:flex;gap:14px;align-items:flex-start;
+    background:#fff;border:2px solid #FFE0EE;border-radius:22px;padding:14px 16px;
+  }
+  .ikon{flex:none;width:44px;height:44px;border-radius:50%;background:#FFE0EE;display:grid;place-items:center;font-size:1.25rem;}
+  .detail dt{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--abu);font-weight:700;margin:0 0 2px;}
+  .detail dd{margin:0;font-weight:700;font-size:1.02rem;}
+  .detail small{display:block;font-weight:600;color:var(--abu);margin-top:3px;}
+
+  .acara{list-style:none;margin:0;padding:0;}
+  .acara li{display:flex;gap:16px;padding:11px 0;border-bottom:2px dotted #FBD3E4;}
+  .acara li:last-child{border-bottom:0;}
+  .jam{font-family:var(--display);font-weight:700;color:var(--lila);min-width:62px;}
+  .acara p{margin:0;font-weight:600;}
+
+  .catatan{background:linear-gradient(160deg,#EAE2FF,#DFF7F0);border-radius:26px;padding:20px 22px;}
+  .catatan .judul{color:#6E52B8;}
+  .catatan .judul::after{background:repeating-linear-gradient(90deg,rgba(110,82,184,.4) 0 12px,transparent 12px 20px);}
+  .catatan ul{margin:0;padding-left:20px;}
+  .catatan li{margin:6px 0;font-weight:600;}
+
+  .rsvp{display:grid;gap:12px;}
+  label{font-weight:700;font-size:.8rem;color:var(--abu);display:block;margin-bottom:5px;}
+  input,select{
+    width:100%;font:inherit;font-weight:600;padding:12px 14px;
+    border:2px solid #FFD9EA;border-radius:16px;background:#fff;color:var(--tinta);
+  }
+  input:focus,select:focus,button:focus-visible{outline:3px solid var(--lila);outline-offset:2px;}
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  button{font-family:var(--display);font-weight:700;font-size:1.02rem;border:0;border-radius:18px;padding:14px 20px;cursor:pointer;transition:transform .15s,box-shadow .15s;}
+  button:hover{transform:translateY(-2px);}
+  .utama{background:var(--stroberi);color:#fff;box-shadow:0 5px 0 #C63C61;}
+  .utama:hover{box-shadow:0 7px 0 #C63C61;}
+  .kedua{background:#fff;color:var(--lila);border:2px solid #E3D8FF;box-shadow:0 5px 0 #E3D8FF;}
+  .kedua:hover{box-shadow:0 7px 0 #E3D8FF;}
+  .pesan-galat{color:#C0304C;font-weight:700;font-size:.86rem;min-height:1.2em;margin:0;}
+
+  footer{text-align:center;padding:22px 20px 26px;background:#FFE9F3;font-weight:600;color:var(--abu);font-size:.9rem;}
+  footer span{display:block;font-family:var(--display);font-size:1.1rem;color:var(--stroberi);margin-bottom:4px;}
+
+  .hati{position:fixed;top:-24px;font-size:22px;z-index:5;pointer-events:none;animation:turun linear forwards;}
+  @keyframes turun{to{transform:translateY(106vh) rotate(360deg);opacity:0;}}
+
+  @media (max-width:420px){
+    .isi{padding:22px 18px 26px;}
+    .duo{grid-template-columns:1fr;}
+    .mundur div{padding:10px 2px;}
+    .mundur b{font-size:1.45rem;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none !important;transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<span class="kilau a" aria-hidden="true">✦</span>
+<span class="kilau b" aria-hidden="true">♡</span>
+<span class="kilau c" aria-hidden="true">✦</span>
+<span class="kilau d" aria-hidden="true">♡</span>
+
+<main class="kartu">
+
+  <header class="hero">
+    <p class="eyebrow">Pesta kucing manis</p>
+
+    <svg id="kucing" class="kucing" viewBox="0 0 400 440" role="img"
+         aria-label="Ilustrasi kucing kartun berjepit bintang sambil memegang balon hati">
+      <!-- balon hati -->
+      <path d="M282 372 C 300 330 320 260 336 160" fill="none" stroke="#F2557E" stroke-width="4" stroke-linecap="round"/>
+      <g class="balon">
+        <path d="M336 150 c -26 -30 -56 -12 -56 14 c 0 26 34 44 56 62 c 22 -18 56 -36 56 -62 c 0 -26 -30 -44 -56 -14 z" fill="#F2557E"/>
+        <ellipse cx="316" cy="150" rx="10" ry="7" fill="#fff" opacity=".55" transform="rotate(-25 316 150)"/>
+      </g>
+
+      <!-- badan -->
+      <path d="M200 300 c -66 0 -96 44 -96 90 v30 h192 v-30 c 0 -46 -30 -90 -96 -90 z" fill="#FFF2F7" stroke="#F2557E" stroke-width="6"/>
+      <path d="M200 300 c -30 0 -50 12 -64 30 h128 c -14 -18 -34 -30 -64 -30 z" fill="#B49BE8"/>
+      <ellipse cx="118" cy="390" rx="26" ry="20" fill="#FFF2F7" stroke="#F2557E" stroke-width="6"/>
+      <ellipse cx="282" cy="374" rx="26" ry="20" fill="#FFF2F7" stroke="#F2557E" stroke-width="6"/>
+
+      <g class="kepala">
+        <!-- telinga -->
+        <path d="M112 128 L96 40 L176 88 Z" fill="#FFF2F7" stroke="#F2557E" stroke-width="6" stroke-linejoin="round"/>
+        <path d="M288 128 L304 40 L224 88 Z" fill="#FFF2F7" stroke="#F2557E" stroke-width="6" stroke-linejoin="round"/>
+        <path d="M124 118 L114 68 L156 96 Z" fill="#FFC2DC"/>
+        <path d="M276 118 L286 68 L244 96 Z" fill="#FFC2DC"/>
+
+        <!-- wajah -->
+        <ellipse cx="200" cy="184" rx="112" ry="94" fill="#FFF9FC" stroke="#F2557E" stroke-width="6"/>
+
+        <!-- kumis -->
+        <g stroke="#F2557E" stroke-width="5" stroke-linecap="round">
+          <path d="M92 168 h-42 M88 190 h-46 M92 212 h-40"/>
+          <path d="M308 168 h42 M312 190 h46 M308 212 h40"/>
+        </g>
+
+        <!-- pipi -->
+        <ellipse class="pipi" cx="136" cy="212" rx="24" ry="15" fill="#FF9DC4"/>
+        <ellipse class="pipi" cx="264" cy="212" rx="24" ry="15" fill="#FF9DC4"/>
+
+        <!-- mata -->
+        <ellipse cx="156" cy="178" rx="15" ry="19" fill="#4A2E3C"/>
+        <ellipse class="mata-kanan" cx="244" cy="178" rx="15" ry="19" fill="#4A2E3C"/>
+        <path class="kedip-kanan" d="M228 182 q16 -18 32 0" fill="none" stroke="#4A2E3C" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="161" cy="171" r="5" fill="#fff"/>
+        <circle cx="249" cy="171" r="5" fill="#fff"/>
+
+        <!-- hidung & mulut -->
+        <path d="M200 216 c -7 -9 -19 -3 -19 5 c 0 8 11 13 19 20 c 8 -7 19 -12 19 -20 c 0 -8 -12 -14 -19 -5 z" fill="#FF7FAE"/>
+        <path d="M200 244 q-13 14 -24 2 M200 244 q13 14 24 2" fill="none" stroke="#4A2E3C" stroke-width="5" stroke-linecap="round"/>
+
+        <!-- jepit bintang -->
+        <g transform="translate(292 96) rotate(18)">
+          <path d="M0 -26 L7 -8 L26 -8 L11 3 L17 22 L0 11 L-17 22 L-11 3 L-26 -8 L-7 -8 Z" fill="#FFD86B" stroke="#E9B62F" stroke-width="4" stroke-linejoin="round"/>
+        </g>
+      </g>
+    </svg>
+
+    <h1 class="nama">Kirana</h1>
+    <p class="umur">Genap 6 tahun!</p>
+    <p class="pengantar">Kucing kecil kami ulang tahun. Yuk datang, main, dan makan kue bersama.</p>
+
+    <button class="tombol-manis" id="tombolManis">Bikin kucingnya senang</button>
+    <p class="ucapan" id="ucapan">Nyaa~ Selamat ulang tahun, Kirana!</p>
+
+    <svg class="renda" viewBox="0 0 680 46" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 46 L0 24 a20 20 0 0 1 40 0 a20 20 0 0 1 40 0 a20 20 0 0 1 40 0 a20 20 0 0 1 40 0 a20 20 0 0 1 40 0 a20 20 0 0 1 40 0 a20 20 0 0 1 40 0 a20 20 0 0 1 40 0 a20 20 0 0 1 40 0 a20 20 0 0 1 40 0 a20 20 0 0 1 40 0 a20 20 0 0 1 40 0 a20 20 0 0 1 40 0 a20 20 0 0 1 40 0 a20 20 0 0 1 40 0 a20 20 0 0 1 40 0 a20 20 0 0 1 40 0 L680 46 Z" fill="#FFF7FB"/>
+    </svg>
+  </header>
+
+  <div class="isi">
+
+    <section class="blok">
+      <h2 class="judul">Kucingnya sudah tak sabar</h2>
+      <div class="mundur" id="mundur" aria-live="polite">
+        <div><b id="hari">–</b><span>hari</span></div>
+        <div><b id="jam">–</b><span>jam</span></div>
+        <div><b id="menit">–</b><span>menit</span></div>
+        <div><b id="detik">–</b><span>detik</span></div>
+      </div>
+    </section>
+
+    <section class="blok">
+      <h2 class="judul">Waktu &amp; tempat</h2>
+      <ul class="detail">
+        <li><span class="ikon" aria-hidden="true">🗓️</span>
+          <dl><dt>Tanggal</dt><dd>Minggu, 13 September 2026</dd></dl></li>
+        <li><span class="ikon" aria-hidden="true">⏰</span>
+          <dl><dt>Jam</dt><dd>15.00 – 18.00 WIB<small>Datang 15 menit lebih awal untuk ambil bando telinga kucing.</small></dd></dl></li>
+        <li><span class="ikon" aria-hidden="true">🏠</span>
+          <dl><dt>Tempat</dt><dd>Aula Taman Bunga Melati<small>Jl. Kenanga No. 8, Jakarta Selatan · parkir di sisi timur</small></dd></dl></li>
+      </ul>
+      <div class="duo" style="margin-top:14px">
+        <button class="kedua" id="tombolKalender">Simpan ke kalender</button>
+        <button class="kedua" id="tombolPeta">Buka peta lokasi</button>
+      </div>
+    </section>
+
+    <section class="blok">
+      <h2 class="judul">Susunan acara</h2>
+      <ul class="acara">
+        <li><span class="jam">15.00</span><p>Sambutan dan bagi bando telinga kucing</p></li>
+        <li><span class="jam">15.30</span><p>Lomba menghias kue bentuk kucing</p></li>
+        <li><span class="jam">16.15</span><p>Menari dan main balon</p></li>
+        <li><span class="jam">17.00</span><p>Tiup lilin dan makan bersama</p></li>
+        <li><span class="jam">17.40</span><p>Foto bersama, pulang bawa bingkisan</p></li>
+      </ul>
+    </section>
+
+    <section class="blok catatan">
+      <h2 class="judul">Sedikit catatan</h2>
+      <ul>
+        <li>Warna busana: pink, ungu muda, atau putih.</li>
+        <li>Acara di dalam ruangan ber-AC. Bawa jaket tipis kalau mudah kedinginan.</li>
+        <li>Ada menu bebas kacang. Beri tahu kami kalau ada alergi lain.</li>
+        <li>Orang tua boleh ikut duduk santai; teh dan kopi tersedia.</li>
+      </ul>
+    </section>
+
+    <section class="blok">
+      <h2 class="judul">Konfirmasi kehadiran</h2>
+      <div class="rsvp">
+        <div>
+          <label for="nama">Nama kamu</label>
+          <input id="nama" type="text" placeholder="Contoh: Keluarga Putri" autocomplete="name">
+        </div>
+        <div class="duo">
+          <div>
+            <label for="jumlah">Jumlah yang datang</label>
+            <input id="jumlah" type="number" min="1" max="12" value="2">
+          </div>
+          <div>
+            <label for="status">Bisa hadir?</label>
+            <select id="status">
+              <option value="hadir">Ya, kami datang</option>
+              <option value="tidak">Maaf, belum bisa</option>
+            </select>
+          </div>
+        </div>
+        <p class="pesan-galat" id="galat" role="alert"></p>
+        <button class="utama" id="tombolKirim">Kirim lewat WhatsApp</button>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>
+    <span>Sampai jumpa di pesta kami</span>
+    Ayah, Bunda, dan Kirana · 0812-3456-7890
+  </footer>
+</main>
+
+<script>
+/* ============================================================
+   GANTI DATA ACARA DI SINI
+   ============================================================ */
+const ACARA = {
+  judul: "Ulang Tahun Kirana ke-6",
+  mulai: "2026-09-13T15:00:00+07:00",
+  selesai: "2026-09-13T18:00:00+07:00",
+  lokasi: "Aula Taman Bunga Melati, Jl. Kenanga No. 8, Jakarta Selatan",
+  waLatar: "6281234567890"   // nomor tujuan RSVP, format internasional tanpa tanda +
+};
+
+const el = id => document.getElementById(id);
+
+/* ---------- hitung mundur ---------- */
+const target = new Date(ACARA.mulai).getTime();
+function perbarui(){
+  const sisa = target - Date.now();
+  if (sisa <= 0){
+    el("mundur").innerHTML = '<div style="flex:1"><b>Hari ini!</b><span>pestanya sudah dimulai</span></div>';
+    clearInterval(jamTangan);
+    return;
+  }
+  el("hari").textContent  = Math.floor(sisa / 86400000);
+  el("jam").textContent   = String(Math.floor(sisa / 3600000) % 24).padStart(2,"0");
+  el("menit").textContent = String(Math.floor(sisa / 60000) % 60).padStart(2,"0");
+  el("detik").textContent = String(Math.floor(sisa / 1000) % 60).padStart(2,"0");
+}
+perbarui();
+const jamTangan = setInterval(perbarui, 1000);
+
+/* ---------- kucing berkedip + hujan hati ---------- */
+const kucing = el("kucing"), tombolManis = el("tombolManis"), ucapan = el("ucapan");
+let senang = false;
+tombolManis.addEventListener("click", () => {
+  senang = !senang;
+  kucing.classList.toggle("senang", senang);
+  ucapan.classList.toggle("tampil", senang);
+  tombolManis.textContent = senang ? "Sudah, biarkan istirahat" : "Bikin kucingnya senang";
+  if (senang) hujanHati();
+});
+
+function hujanHati(){
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const bentuk = ["♡","✦","♥","★","♡"];
+  const warna = ["#F2557E","#B49BE8","#FFD86B","#7FDDC4","#FF9DC4"];
+  for (let i = 0; i < 60; i++){
+    const h = document.createElement("span");
+    h.className = "hati";
+    h.textContent = bentuk[i % bentuk.length];
+    h.style.color = warna[i % warna.length];
+    h.style.left = Math.random() * 100 + "vw";
+    h.style.animationDuration = (2.6 + Math.random() * 2) + "s";
+    h.style.animationDelay = (Math.random() * .7) + "s";
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 5500);
+  }
+}
+
+/* ---------- simpan ke kalender (.ics) ---------- */
+el("tombolKalender").addEventListener("click", () => {
+  const rapi = t => new Date(t).toISOString().replace(/[-:]/g,"").split(".")[0] + "Z";
+  const isi = [
+    "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Undangan Kucing//ID","BEGIN:VEVENT",
+    "UID:" + Date.now() + "@undangan-kucing",
+    "DTSTAMP:" + rapi(Date.now()),
+    "DTSTART:" + rapi(ACARA.mulai),
+    "DTEND:" + rapi(ACARA.selesai),
+    "SUMMARY:" + ACARA.judul,
+    "LOCATION:" + ACARA.lokasi,
+    "DESCRIPTION:Pesta ulang tahun tema kucing. Warna busana: pink, ungu muda, atau putih.",
+    "END:VEVENT","END:VCALENDAR"
+  ].join("\r\n");
+  const tautan = document.createElement("a");
+  tautan.href = URL.createObjectURL(new Blob([isi], {type:"text/calendar"}));
+  tautan.download = "ulang-tahun-kirana.ics";
+  tautan.click();
+  URL.revokeObjectURL(tautan.href);
+});
+
+/* ---------- buka peta ---------- */
+el("tombolPeta").addEventListener("click", () => {
+  window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(ACARA.lokasi), "_blank");
+});
+
+/* ---------- kirim RSVP ---------- */
+el("tombolKirim").addEventListener("click", () => {
+  const nama = el("nama").value.trim();
+  const galat = el("galat");
+  if (!nama){
+    galat.textContent = "Isi nama dulu supaya kami tahu siapa yang datang.";
+    el("nama").focus();
+    return;
+  }
+  galat.textContent = "";
+  const jumlah = el("jumlah").value || 1;
+  const hadir = el("status").value === "hadir";
+  const pesan = hadir
+    ? `Halo! ${nama} akan hadir di ${ACARA.judul} bersama ${jumlah} orang. Sampai ketemu Minggu!`
+    : `Halo! Maaf, ${nama} belum bisa hadir di ${ACARA.judul}. Selamat ulang tahun untuk Kirana ya!`;
+  window.open(`https://wa.me/${ACARA.waLatar}?text=` + encodeURIComponent(pesan), "_blank");
+});
+</script>
+</body>
+</html>

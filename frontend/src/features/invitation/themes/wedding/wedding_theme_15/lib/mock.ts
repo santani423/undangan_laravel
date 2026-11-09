@@ -1,0 +1,117 @@
+/* Data contoh untuk simulasi tema tanpa backend, mis. <WeddingTheme15 invitation={MOCK_INVITATION} />.
+   Tanpa rsvpEndpoint/wishesEndpoint, RSVP & buku tamu memakai penyimpanan demo di peramban. */
+import type { WeddingInvitation } from '@/types/invitation';
+import type { Wish } from './types';
+
+export const MOCK_INVITATION: WeddingInvitation = {
+    type: 'wedding',
+    code: 'demo-wt15',
+    slug: 'demo-wt15',
+    title: 'Pernikahan Alya & Raka',
+    guestName: '',
+    countdownDate: '2027-06-12T09:00:00',
+    pageTitle: 'Alya & Raka — Undangan Pernikahan',
+    mainDateFormatted: 'Sabtu, 12 Juni 2027',
+    events: [
+        {
+            name: 'Akad Nikah',
+            date: '2027-06-12',
+            dateFormatted: 'Sabtu, 12 Juni 2027',
+            time: '09:00',
+            timeEnd: '10:00',
+            locationName: 'Taman Senja',
+            location: 'Jl. Kenanga No. 12, Lembang, Bandung Barat',
+            locationUrl: '',
+            mapsEmbed: '',
+            mapsLat: '',
+            mapsLng: '',
+            isCountdown: true,
+        },
+        {
+            name: 'Resepsi',
+            date: '2027-06-12',
+            dateFormatted: 'Sabtu, 12 Juni 2027',
+            time: '11:00',
+            timeEnd: '13:00',
+            locationName: 'Taman Senja',
+            location: 'Jl. Kenanga No. 12, Lembang, Bandung Barat',
+            locationUrl: '',
+            mapsEmbed: '',
+            mapsLat: '',
+            mapsLng: '',
+            isCountdown: false,
+        },
+    ],
+    gallery: [],
+    coupleVideoUrl: '',
+    bankAccounts: [{ bankName: 'Bank Contoh', accountNumber: '1234567890', accountName: 'Alya Kirana' }],
+    digitalWallets: [{ provider: 'gopay', label: 'GoPay', accountNumber: '081234567890', accountName: 'Raka Pradipta', logoUrl: '' }],
+    allowComments: true,
+    rsvpEndpoint: '',
+    wishesEndpoint: '',
+    isSample: true,
+    groomFullName: 'Raka Pradipta',
+    groomNickname: 'Raka',
+    groomInitials: 'R',
+    groomChildOrder: '1',
+    groomFather: 'Bapak Hendra Pradipta',
+    groomMother: 'Ibu Laras Wulandari',
+    groomBio: '',
+    groomPhoto: '',
+    groomInstagram: '',
+    brideFullName: 'Alya Kirana',
+    brideNickname: 'Alya',
+    brideInitials: 'A',
+    brideChildOrder: '2',
+    brideFather: 'Bapak Arif Santoso',
+    brideMother: 'Ibu Dewi Anggraini',
+    brideBio: '',
+    bridePhoto: '',
+    brideInstagram: '',
+    couplePhoto: '',
+    loveStory: [
+        {
+            date: '2019',
+            title: 'Sebuah “halo” kecil',
+            desc: 'Kami pertama kali bertemu di sebuah acara kampus. Obrolan singkat soal lagu favorit ternyata berlanjut sampai larut malam.',
+        },
+        {
+            date: '2021',
+            title: 'Tumbuh bersama',
+            desc: 'Dari kopi pagi sampai perjalanan pulang yang panjang, kami belajar bahwa rumah bisa ditemukan di dalam hal-hal sederhana.',
+        },
+        {
+            date: '2026',
+            title: 'Satu pertanyaan, satu jawaban',
+            desc: 'Di bawah langit senja dan lampu-lampu kecil, sebuah pertanyaan sederhana dijawab dengan senyum dan air mata bahagia.',
+        },
+        {
+            date: '2027',
+            title: 'Selamanya dimulai di sini',
+            desc: 'Kini kami siap menulis bab berikutnya — dan kami ingin kamu ada di halaman pertamanya.',
+        },
+    ],
+    dressCodes: [
+        { name: 'Lavender', hex: '#8580b7' },
+        { name: 'Blush', hex: '#f2c5d2' },
+        { name: 'Sage', hex: '#a6c5a4' },
+    ],
+    rsvpDeadline: '2027-06-01',
+    openingQuote: '',
+};
+
+/** Ucapan contoh yang mengisi pohon harapan demo pada kunjungan pertama. */
+export const MOCK_WISHES: Wish[] = [
+    {
+        id: 'mock-1',
+        name: 'Nadia & Keluarga',
+        message: 'Selamat menempuh hidup baru, Alya & Raka! Semoga menjadi keluarga yang sakinah, mawaddah, warahmah ✨',
+        createdAt: new Date(Date.now() - 2 * 3600e3).toISOString(),
+    },
+    {
+        id: 'mock-2',
+        name: 'Bima',
+        message: 'Bahagia selalu kalian berdua. Sampai jumpa di hutan senja!',
+        createdAt: new Date(Date.now() - 26 * 3600e3).toISOString(),
+    },
+];

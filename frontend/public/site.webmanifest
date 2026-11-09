@@ -1,0 +1,14 @@
+{
+    "name": "Undesia - Undangan Pernikahan Digital",
+    "short_name": "Undesia",
+    "description": "Platform undangan digital untuk pernikahan dan acara keluarga.",
+    "lang": "id",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#f43f5e",
+    "icons": [
+        { "src": "/favicon-192x192.png", "sizes": "192x192", "type": "image/png" },
+        { "src": "/images/brand/undesia-icon.png", "sizes": "512x512", "type": "image/png" }
+    ]
+}

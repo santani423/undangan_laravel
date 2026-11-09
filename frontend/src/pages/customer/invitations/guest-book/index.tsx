@@ -1,0 +1,958 @@
+import CustomerLayout from '@/layouts/customer-layout';
+import { validateImageFile } from '@/lib/image-upload';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link, router } from '@/lib/navigation';
+import { api, downloadUrl } from '@/services/api';
+import {
+    ArrowLeft,
+    AlertCircle,
+    Check,
+    CheckCircle2,
+    CheckSquare,
+    Download,
+    ExternalLink,
+    Image,
+    Link2,
+    Palette,
+    Pencil,
+    Plus,
+    Search,
+    Sliders,
+    Trash2,
+    UserCheck,
+    UserMinus,
+    HelpCircle,
+    Users,
+    X,
+} from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface InvitationInfo {
+    id: number;
+    slug: string;
+    title: string;
+    max_gallery_uploads: number | null;
+}
+
+interface GuestRow {
+    id: number;
+    name: string;
+    slug: string | null;
+    email: string | null;
+    phone_number: string | null;
+    gender: 'male' | 'female' | null;
+    category: string | null;
+    rsvp_status: 'pending' | 'attending' | 'not_attending' | 'maybe';
+    rsvp_headcount: number | null;
+    rsvp_notes: string | null;
+    rsvp_submitted_at: string | null;
+    checked_in_at: string | null;
+    notes: string | null;
+}
+
+interface Stats {
+    total: number;
+    attending: number;
+    notAttending: number;
+    maybe: number;
+    pending: number;
+    checkedIn: number;
+    totalHeads: number;
+}
+
+interface PaginatedGuests {
+    data: GuestRow[];
+    current_page: number;
+    last_page: number;
+    total: number;
+    links: { url: string | null; label: string; active: boolean }[];
+}
+
+interface Filters {
+    search?: string;
+    rsvp_status?: string;
+    checked_in?: string;
+}
+
+interface Props {
+    invitation: InvitationInfo;
+    guests: PaginatedGuests;
+    stats: Stats;
+    displaySettings: DisplaySettings;
+    sliderImages: SliderImage[];
+    filters: Filters;
+}
+
+interface DisplaySettings {
+    background_image: string;
+    background_color: string;
+    overlay_color: string;
+    overlay_opacity: number;
+    slider_enabled: boolean;
+}
+
+interface SliderImage {
+    id?: number;
+    url: string;
+    preview?: string;
+    display_order?: number;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const RSVP_LABEL: Record<string, string> = {
+    pending: 'Belum Konfirmasi',
+    attending: 'Hadir',
+    not_attending: 'Tidak Hadir',
+    maybe: 'Masih Ragu',
+};
+
+const RSVP_CLASS: Record<string, string> = {
+    pending: 'bg-muted text-muted-foreground',
+    attending: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    not_attending: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
+    maybe: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-500',
+};
+
+function formatDateTime(dt: string | null): string {
+    if (!dt) return '—';
+    return new Date(dt).toLocaleString('id-ID', {
+        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+    });
+}
+
+function toSlug(text: string): string {
+    return text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+}
+
+// ─── Slug Field ───────────────────────────────────────────────────────────────
+
+function SlugField({
+    invitationSlug,
+    value,
+    onChange,
+    excludeId,
+}: {
+    invitationSlug: string;
+    value: string;
+    onChange: (v: string) => void;
+    excludeId?: number;
+}) {
+    const [status, setStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        if (!value) { setStatus('idle'); return; }
+
+        setStatus('checking');
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+
+        debounceRef.current = setTimeout(async () => {
+            try {
+                const res = await api.get<{ available: boolean }>(`/customer/invitations/${invitationSlug}/guests/check-slug`, {
+                    slug: value,
+                    exclude_id: excludeId,
+                });
+                setStatus(res.data?.available ? 'available' : 'taken');
+            } catch {
+                setStatus('idle');
+            }
+        }, 400);
+
+        return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+    }, [value, invitationSlug, excludeId]);
+
+    const borderClass =
+        status === 'taken' ? 'border-red-400 focus:ring-red-400' :
+        status === 'available' ? 'border-emerald-400 focus:ring-emerald-400' :
+        'border-border';
+
+    return (
+        <div>
+            <label className="text-sm font-medium text-foreground">Slug</label>
+            <input
+                value={value}
+                onChange={(e) => onChange(toSlug(e.target.value))}
+                placeholder="otomatis dari nama"
+                className={`mt-1 w-full rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 ${borderClass}`}
+            />
+            {status === 'checking' && (
+                <p className="mt-1 text-xs text-muted-foreground">Memeriksa ketersediaan…</p>
+            )}
+            {status === 'taken' && (
+                <p className="mt-1 text-xs text-red-500">Slug sudah digunakan pada undangan ini.</p>
+            )}
+            {status === 'available' && (
+                <p className="mt-1 text-xs text-emerald-600">Slug tersedia.</p>
+            )}
+        </div>
+    );
+}
+
+// ─── Stats Bar ────────────────────────────────────────────────────────────────
+
+function StatsBar({ stats }: { stats: Stats }) {
+    const cards = [
+        { label: 'Total Tamu', value: stats.total, icon: Users, color: 'text-blue-500' },
+        { label: 'Hadir', value: stats.attending, icon: UserCheck, color: 'text-emerald-500' },
+        { label: 'Tidak Hadir', value: stats.notAttending, icon: UserMinus, color: 'text-red-500' },
+        { label: 'Masih Ragu', value: stats.maybe, icon: HelpCircle, color: 'text-amber-500' },
+        { label: 'Check-in', value: stats.checkedIn, icon: CheckSquare, color: 'text-violet-500' },
+        { label: 'Jml Kepala', value: stats.totalHeads, icon: Users, color: 'text-sky-500' },
+    ];
+    return (
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
+            {cards.map(({ label, value, icon: Icon, color }) => (
+                <div key={label} className="bg-card rounded-2xl border border-border shadow-sm p-4 flex flex-col items-center gap-1">
+                    <Icon className={`size-5 ${color}`} />
+                    <span className="text-xl font-bold text-foreground">{value}</span>
+                    <span className="text-[10px] text-muted-foreground text-center leading-tight">{label}</span>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+// ─── Add Guest Modal ──────────────────────────────────────────────────────────
+
+function fileToDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result ?? ''));
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+function DisplaySettingsPanel({
+    invitation,
+    initialSettings,
+    initialSliderImages,
+}: {
+    invitation: InvitationInfo;
+    initialSettings: DisplaySettings;
+    initialSliderImages: SliderImage[];
+}) {
+    const [sliderImages, setSliderImages] = useState<SliderImage[]>(initialSliderImages);
+    const [backgroundImage, setBackgroundImage] = useState(initialSettings.background_image);
+    const [backgroundColor, setBackgroundColor] = useState(initialSettings.background_color);
+    const [overlayColor, setOverlayColor] = useState(initialSettings.overlay_color);
+    const [overlayOpacity, setOverlayOpacity] = useState(initialSettings.overlay_opacity);
+    const [sliderEnabled, setSliderEnabled] = useState(initialSettings.slider_enabled);
+    const [saving, setSaving] = useState(false);
+    const [saveAlert, setSaveAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+    const max = invitation.max_gallery_uploads;
+    const sliderLimit = max && max > 0 ? max : null;
+    const atLimit = sliderLimit !== null && sliderImages.length >= sliderLimit;
+
+    async function handleSliderFiles(files: FileList | null) {
+        if (!files) return;
+        const remaining = sliderLimit !== null ? sliderLimit - sliderImages.length : files.length;
+        const selected = Array.from(files).slice(0, Math.max(0, remaining));
+        const rejected: string[] = [];
+        const valid = selected.filter((file) => {
+            const error = validateImageFile(file);
+            if (error) {
+                rejected.push(`${file.name}: ${error}`);
+                return false;
+            }
+            return true;
+        });
+        if (rejected.length > 0) {
+            setSaveAlert({ type: 'error', message: rejected.join(' ') });
+        }
+        const next = await Promise.all(valid.map(async (file) => ({
+            url: URL.createObjectURL(file),
+            preview: await fileToDataUrl(file),
+        })));
+        setSliderImages((prev) => [...prev, ...next]);
+    }
+
+    async function handleBackgroundFile(file: File | undefined) {
+        if (!file) return;
+        const error = validateImageFile(file);
+        if (error) {
+            setSaveAlert({ type: 'error', message: error });
+            return;
+        }
+        setBackgroundImage(await fileToDataUrl(file));
+    }
+
+    useEffect(() => {
+        if (!saveAlert) return;
+        const id = window.setTimeout(() => setSaveAlert(null), 6000);
+        return () => window.clearTimeout(id);
+    }, [saveAlert]);
+
+    function handleSave() {
+        setSaving(true);
+        setSaveAlert(null);
+        router.patch(`/customer/invitations/${invitation.slug}/guests/display-settings`, {
+            slider_images: sliderImages.map((image, index) => ({
+                ...(image.id ? { id: image.id } : {}),
+                preview: image.preview,
+                display_order: index,
+            })),
+            background_image: backgroundImage,
+            background_color: backgroundColor,
+            overlay_color: overlayColor,
+            overlay_opacity: overlayOpacity,
+            slider_enabled: sliderEnabled,
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setSaveAlert({ type: 'success', message: 'Tampilan Buku Tamu berhasil disimpan. Mode Petugas akan memakai pengaturan terbaru.' });
+            },
+            onError: () => {
+                setSaveAlert({ type: 'error', message: 'Tampilan Buku Tamu gagal disimpan. Periksa ukuran/format gambar dan coba lagi.' });
+            },
+            onFinish: () => setSaving(false),
+        });
+    }
+
+    return (
+        <section id="display-settings" className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Sliders className="size-5" />
+                    </div>
+                    <div>
+                        <h2 className="text-sm font-semibold text-foreground">Pengaturan Tampilan Buku Tamu</h2>
+                        <p className="text-xs text-muted-foreground">Atur tampilan Mode Petugas: slider, background, overlay, dan opacity.</p>
+                    </div>
+                </div>
+                <button type="button" onClick={handleSave} disabled={saving} className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60">
+                    {saving ? 'Menyimpan...' : 'Simpan Tampilan'}
+                </button>
+            </div>
+
+            {saveAlert && (
+                <div className={`mb-5 flex items-start gap-3 rounded-xl border px-4 py-3 text-sm ${saveAlert.type === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'}`}>
+                    {saveAlert.type === 'success' ? <CheckCircle2 className="mt-0.5 size-4 shrink-0" /> : <AlertCircle className="mt-0.5 size-4 shrink-0" />}
+                    <p className="flex-1">{saveAlert.message}</p>
+                    <button type="button" onClick={() => setSaveAlert(null)} className="rounded-lg p-1 hover:bg-black/5">
+                        <X className="size-3.5" />
+                    </button>
+                </div>
+            )}
+
+            <div className="grid gap-5 lg:grid-cols-[1.15fr_.85fr]">
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-muted/30 px-4 py-3">
+                        <div>
+                            <p className="text-sm font-medium text-foreground">Tampilkan Slider di Mode Petugas</p>
+                            <p className="text-xs text-muted-foreground">Nonaktifkan jika layar petugas hanya ingin menampilkan data tamu tanpa gambar slider.</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setSliderEnabled((value) => !value)}
+                            aria-pressed={sliderEnabled}
+                            className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${sliderEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                        >
+                            <span className={`absolute left-0 top-1 size-5 rounded-full bg-white shadow transition-transform ${sliderEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                        </button>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                        <div>
+                            <p className="text-sm font-medium text-foreground">Upload Slider Buku Tamu</p>
+                            <p className="text-xs text-muted-foreground">
+                                Maksimal {sliderLimit ?? 'tak terbatas'} gambar mengikuti batas galeri paket. ({sliderImages.length}{sliderLimit ? `/${sliderLimit}` : ''})
+                                {!sliderEnabled && ' Slider sedang nonaktif.'}
+                            </p>
+                        </div>
+                        {sliderEnabled && !atLimit && (
+                            <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border px-3 py-2 text-xs font-medium text-foreground hover:bg-muted">
+                                <Image className="size-4" /> Tambah
+                                <input type="file" accept="image/*" multiple className="sr-only" onChange={(e) => { void handleSliderFiles(e.target.files); e.target.value = ''; }} />
+                            </label>
+                        )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                        {sliderImages.map((image, index) => (
+                            <div key={`${image.id ?? 'new'}-${index}`} className="group relative overflow-hidden rounded-xl border border-border bg-muted">
+                                <img src={image.url} alt="" className="aspect-[4/3] w-full object-cover" />
+                                <button type="button" onClick={() => setSliderImages((prev) => prev.filter((_, i) => i !== index))} className="absolute right-1.5 top-1.5 flex size-6 items-center justify-center rounded-full bg-black/60 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
+                                    x
+                                </button>
+                            </div>
+                        ))}
+                        {!sliderImages.length && (
+                            <div className="col-span-full rounded-xl border border-dashed border-border py-8 text-center text-xs text-muted-foreground">
+                                Belum ada slider. Tambahkan gambar untuk layar petugas.
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="space-y-4">
+                    <div>
+                        <p className="mb-2 text-sm font-medium text-foreground">Background Buku Tamu</p>
+                        <div className="grid grid-cols-[1fr_auto] gap-2">
+                            <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-border px-3 py-2 text-xs font-medium text-foreground hover:bg-muted">
+                                <Image className="size-4" /> Upload Gambar
+                                <input type="file" accept="image/*" className="sr-only" onChange={(e) => { void handleBackgroundFile(e.target.files?.[0]); e.target.value = ''; }} />
+                            </label>
+                            <label className="flex items-center gap-2 rounded-xl border border-border px-3 py-2">
+                                <Palette className="size-4 text-muted-foreground" />
+                                <input type="color" value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} className="size-7 cursor-pointer bg-transparent" />
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className="relative min-h-36 overflow-hidden rounded-xl border border-border" style={{ backgroundColor, backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                        <div className="absolute inset-0" style={{ backgroundColor: overlayColor, opacity: overlayOpacity }} />
+                        <div className="relative z-10 flex min-h-36 items-center justify-center p-4 text-center text-sm font-semibold text-white">
+                            Preview Background Buku Tamu
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <label className="space-y-1">
+                            <span className="text-xs font-medium text-foreground">Warna Overlay</span>
+                            <input type="color" value={overlayColor} onChange={(e) => setOverlayColor(e.target.value)} className="h-10 w-full cursor-pointer rounded-xl border border-border bg-background p-1" />
+                        </label>
+                        <label className="space-y-1">
+                            <span className="text-xs font-medium text-foreground">Opacity Overlay: {Math.round(overlayOpacity * 100)}%</span>
+                            <input type="range" min="0" max="1" step="0.05" value={overlayOpacity} onChange={(e) => setOverlayOpacity(Number(e.target.value))} className="h-10 w-full" />
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+}
+
+function AddGuestModal({ slug: invSlug, onClose }: { slug: string; onClose: () => void }) {
+    const [form, setForm] = useState({ name: '', slug: '', email: '', phone_number: '', gender: '', category: '', notes: '' });
+    const [slugManual, setSlugManual] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [slugTaken, setSlugTaken] = useState(false);
+
+    const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const val = e.target.value;
+        setForm((f) => {
+            const next = { ...f, [k]: val };
+            if (k === 'name' && !slugManual) {
+                next.slug = toSlug(val);
+            }
+            return next;
+        });
+    };
+
+    const handleSlugChange = (v: string) => {
+        setSlugManual(true);
+        setForm((f) => ({ ...f, slug: v }));
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (slugTaken) return;
+        setSaving(true);
+        router.post(`/customer/invitations/${invSlug}/guests`, form, {
+            onSuccess: onClose,
+            onFinish: () => setSaving(false),
+        });
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="bg-background rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                    <h2 className="font-semibold text-foreground">Tambah Tamu</h2>
+                    <button onClick={onClose} className="size-8 flex items-center justify-center rounded-lg hover:bg-muted"><X className="size-4" /></button>
+                </div>
+                <form onSubmit={handleSubmit} className="p-5 grid gap-4">
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="text-sm font-medium text-foreground">Nama *</label>
+                            <input required value={form.name} onChange={set('name')} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                        </div>
+                        <SlugField
+                            invitationSlug={invSlug}
+                            value={form.slug}
+                            onChange={(v) => { handleSlugChange(v); setSlugTaken(false); }}
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="text-sm font-medium text-foreground">Email</label>
+                            <input type="email" value={form.email} onChange={set('email')} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                        </div>
+                        <div>
+                            <label className="text-sm font-medium text-foreground">No HP</label>
+                            <input value={form.phone_number} onChange={set('phone_number')} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="text-sm font-medium text-foreground">Jenis Kelamin</label>
+                            <select value={form.gender} onChange={set('gender')} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                                <option value="">—</option>
+                                <option value="male">Laki-laki</option>
+                                <option value="female">Perempuan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="text-sm font-medium text-foreground">Kategori</label>
+                            <input placeholder="Keluarga, Rekan, dll." value={form.category} onChange={set('category')} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium text-foreground">Catatan</label>
+                        <textarea value={form.notes} onChange={set('notes')} rows={2} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                        <button type="submit" disabled={saving || slugTaken} className="flex-1 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors">
+                            {saving ? 'Menyimpan…' : 'Simpan'}
+                        </button>
+                        <button type="button" onClick={onClose} className="flex-1 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">Batal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+// ─── Edit Guest Modal ─────────────────────────────────────────────────────────
+
+function EditGuestModal({ guest, invSlug, onClose }: { guest: GuestRow; invSlug: string; onClose: () => void }) {
+    const [form, setForm] = useState({
+        name: guest.name,
+        slug: guest.slug ?? '',
+        email: guest.email ?? '',
+        phone_number: guest.phone_number ?? '',
+        gender: guest.gender ?? '',
+        category: guest.category ?? '',
+        notes: guest.notes ?? '',
+        rsvp_status: guest.rsvp_status,
+        rsvp_headcount: String(guest.rsvp_headcount ?? 1),
+    });
+    const [slugTaken, setSlugTaken] = useState(false);
+    const [saving, setSaving] = useState(false);
+
+    const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+        setForm((f) => ({ ...f, [k]: e.target.value }));
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (slugTaken) return;
+        setSaving(true);
+        router.patch(`/customer/invitations/${invSlug}/guests/${guest.id}`, form, {
+            onSuccess: onClose,
+            onFinish: () => setSaving(false),
+        });
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="bg-background rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                    <h2 className="font-semibold text-foreground">Edit Tamu</h2>
+                    <button onClick={onClose} className="size-8 flex items-center justify-center rounded-lg hover:bg-muted"><X className="size-4" /></button>
+                </div>
+                <form onSubmit={handleSubmit} className="p-5 grid gap-4">
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="text-sm font-medium text-foreground">Nama *</label>
+                            <input required value={form.name} onChange={set('name')} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                        </div>
+                        <SlugField
+                            invitationSlug={invSlug}
+                            value={form.slug}
+                            onChange={(v) => { setForm((f) => ({ ...f, slug: v })); setSlugTaken(false); }}
+                            excludeId={guest.id}
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="text-sm font-medium text-foreground">Email</label>
+                            <input type="email" value={form.email} onChange={set('email')} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                        </div>
+                        <div>
+                            <label className="text-sm font-medium text-foreground">No HP</label>
+                            <input value={form.phone_number} onChange={set('phone_number')} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="text-sm font-medium text-foreground">Jenis Kelamin</label>
+                            <select value={form.gender} onChange={set('gender')} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                                <option value="">—</option>
+                                <option value="male">Laki-laki</option>
+                                <option value="female">Perempuan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="text-sm font-medium text-foreground">Kategori</label>
+                            <input placeholder="Keluarga, Rekan, dll." value={form.category} onChange={set('category')} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="text-sm font-medium text-foreground">Status RSVP</label>
+                            <select value={form.rsvp_status} onChange={set('rsvp_status')} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                                <option value="pending">Belum Konfirmasi</option>
+                                <option value="attending">Hadir</option>
+                                <option value="not_attending">Tidak Hadir</option>
+                                <option value="maybe">Masih Ragu</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="text-sm font-medium text-foreground">Jml Tamu</label>
+                            <input type="number" min={0} max={100} value={form.rsvp_headcount} onChange={set('rsvp_headcount')} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium text-foreground">Catatan</label>
+                        <textarea value={form.notes} onChange={set('notes')} rows={2} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                        <button type="submit" disabled={saving || slugTaken} className="flex-1 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors">
+                            {saving ? 'Menyimpan…' : 'Simpan'}
+                        </button>
+                        <button type="button" onClick={onClose} className="flex-1 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">Batal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+// ─── Guest Row ────────────────────────────────────────────────────────────────
+
+function GuestTableRow({ guest, slug, onEdit, onCopied }: { guest: GuestRow; slug: string; onEdit: (g: GuestRow) => void; onCopied: (name: string) => void }) {
+    const [copied, setCopied] = useState(false);
+    const invitationUrl = guest.slug && typeof window !== 'undefined'
+        ? `${window.location.origin}/${slug}/${guest.slug}`
+        : null;
+
+    const handleCheckIn = () => {
+        router.patch(`/customer/invitations/${slug}/guests/${guest.id}/checkin`);
+    };
+    const handleDelete = () => {
+        if (!confirm(`Hapus tamu "${guest.name}"?`)) return;
+        router.delete(`/customer/invitations/${slug}/guests/${guest.id}`);
+    };
+    const handleCopyLink = async () => {
+        if (!invitationUrl) return;
+        try {
+            await navigator.clipboard.writeText(invitationUrl);
+            setCopied(true);
+            onCopied(guest.name);
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            window.prompt('Salin link undangan:', invitationUrl);
+        }
+    };
+
+    return (
+        <tr className="border-b border-border hover:bg-muted/30 transition-colors">
+            <td className="px-4 py-3">
+                <p className="font-medium text-foreground text-sm">{guest.name}</p>
+                {guest.email && <p className="text-xs text-muted-foreground">{guest.email}</p>}
+                {guest.phone_number && <p className="text-xs text-muted-foreground">{guest.phone_number}</p>}
+            </td>
+            <td className="px-4 py-3">
+                {guest.slug
+                    ? (
+                        <a
+                            href={invitationUrl ?? '#'}
+                            target="_blank"
+                            rel="noreferrer"
+                            title={`Buka undangan untuk ${guest.name}: ${invitationUrl}`}
+                            className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded text-muted-foreground hover:text-primary hover:underline"
+                        >
+                            {guest.slug}
+                        </a>
+                    )
+                    : <span className="text-xs text-muted-foreground">—</span>}
+            </td>
+            <td className="px-4 py-3 text-xs text-muted-foreground">{guest.category ?? '—'}</td>
+            <td className="px-4 py-3">
+                <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${RSVP_CLASS[guest.rsvp_status]}`}>
+                    {RSVP_LABEL[guest.rsvp_status]}
+                </span>
+            </td>
+            <td className="px-4 py-3 text-center text-sm text-foreground">{guest.rsvp_headcount ?? 1}</td>
+            <td className="px-4 py-3">
+                {guest.checked_in_at ? (
+                    <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+                        <CheckSquare className="size-3.5" />
+                        {formatDateTime(guest.checked_in_at)}
+                    </span>
+                ) : (
+                    <span className="text-xs text-muted-foreground">—</span>
+                )}
+            </td>
+            <td className="px-4 py-3">
+                <div className="flex items-center gap-1">
+                    <button
+                        title={guest.checked_in_at ? 'Batalkan Check-in' : 'Check-in'}
+                        onClick={handleCheckIn}
+                        className={`p-1.5 rounded-lg transition-colors ${guest.checked_in_at ? 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20' : 'text-muted-foreground hover:bg-muted'}`}
+                    >
+                        <CheckSquare className="size-4" />
+                    </button>
+                    <button
+                        title={guest.slug ? (copied ? 'Link tersalin!' : 'Salin Link Undangan Tamu') : 'Tambahkan slug agar tamu memiliki link personal'}
+                        onClick={handleCopyLink}
+                        disabled={!guest.slug}
+                        className={`p-1.5 rounded-lg transition-colors ${
+                            !guest.slug
+                                ? 'text-muted-foreground/30 cursor-not-allowed'
+                                : copied
+                                    ? 'text-emerald-600'
+                                    : 'text-muted-foreground hover:bg-muted'
+                        }`}
+                    >
+                        {copied ? <Check className="size-4" /> : <Link2 className="size-4" />}
+                    </button>
+                    <button
+                        title="Edit"
+                        onClick={() => onEdit(guest)}
+                        className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted transition-colors"
+                    >
+                        <Pencil className="size-4" />
+                    </button>
+                    <button
+                        title="Hapus"
+                        onClick={handleDelete}
+                        className="p-1.5 rounded-lg text-destructive hover:bg-destructive/5 transition-colors"
+                    >
+                        <Trash2 className="size-4" />
+                    </button>
+                </div>
+            </td>
+        </tr>
+    );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+
+export default function GuestBookIndex({ invitation, guests, stats, displaySettings, sliderImages, filters }: Props) {
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Dashboard', href: '/customer' },
+        { title: 'Undangan', href: '/customer/invitations' },
+        { title: invitation.title, href: `/customer/invitations/${invitation.slug}/edit` },
+        { title: 'Buku Tamu', href: '#' },
+    ];
+
+    const [search, setSearch] = useState(filters.search ?? '');
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [copyToast, setCopyToast] = useState<string | null>(null);
+
+    const handleGuestCopied = (name: string) => {
+        setCopyToast(name);
+        setTimeout(() => setCopyToast(null), 2500);
+    };
+    const [editingGuest, setEditingGuest] = useState<GuestRow | null>(null);
+    const exportStatus = filters.checked_in === 'yes' ? 'checked_in' : (filters.checked_in === 'no' ? 'not_checked_in' : '');
+
+    const applyFilter = (extra: Record<string, string>) => {
+        router.get(
+            `/customer/invitations/${invitation.slug}/guests`,
+            { ...filters, search, ...extra },
+            { preserveScroll: true, preserveState: true },
+        );
+    };
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        applyFilter({ search });
+    };
+
+    const clearFilter = (key: string) => {
+        const f = { ...filters, [key]: undefined };
+        if (key === 'search') setSearch('');
+        router.get(`/customer/invitations/${invitation.slug}/guests`, f, { preserveScroll: true });
+    };
+
+    return (
+        <CustomerLayout breadcrumbs={breadcrumbs}>
+            <Head title={`Buku Tamu — ${invitation.title}`} />
+            {showAddModal && <AddGuestModal slug={invitation.slug} onClose={() => setShowAddModal(false)} />}
+            {editingGuest && (
+                <EditGuestModal
+                    guest={editingGuest}
+                    invSlug={invitation.slug}
+                    onClose={() => setEditingGuest(null)}
+                />
+            )}
+
+            {copyToast && (
+                <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-medium text-white shadow-lg animate-in fade-in slide-in-from-bottom-2">
+                    <CheckCircle2 className="size-4 shrink-0" />
+                    Link undangan untuk {copyToast} berhasil disalin
+                </div>
+            )}
+
+            <div className="flex flex-col gap-6 p-6">
+
+                {/* Header */}
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <div className="flex items-center gap-3">
+                        <Link
+                            href={`/customer/invitations/${invitation.slug}/edit`}
+                            className="size-9 rounded-xl border border-border flex items-center justify-center hover:bg-muted transition-colors"
+                        >
+                            <ArrowLeft className="size-4 text-muted-foreground" />
+                        </Link>
+                        <div>
+                            <h1 className="text-xl font-bold text-foreground">Buku Tamu</h1>
+                            <p className="text-sm text-muted-foreground">{invitation.title}</p>
+                        </div>
+                    </div>
+                    <div className="flex gap-2">
+                        <a
+                            href={`/customer/invitations/${invitation.slug}/guests/operator`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition-colors"
+                        >
+                            <ExternalLink className="size-4" /> Mode Petugas
+                        </a>
+                        <a
+                            href={downloadUrl(`/customer/invitations/${invitation.slug}/guests/export/csv`)}
+                            className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                        >
+                            <Download className="size-4" /> Export CSV
+                        </a>
+                        <a
+                            href={downloadUrl(`/customer/invitations/${invitation.slug}/guests/export/excel`, { status: exportStatus })}
+                            className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                        >
+                            <Download className="size-4" /> Excel
+                        </a>
+                        <a
+                            href={downloadUrl(`/customer/invitations/${invitation.slug}/guests/export/pdf`, { status: exportStatus })}
+                            target="_blank"
+                            className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                        >
+                            <Download className="size-4" /> PDF
+                        </a>
+                        <button
+                            onClick={() => setShowAddModal(true)}
+                            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                        >
+                            <Plus className="size-4" /> Tambah Tamu
+                        </button>
+                    </div>
+                </div>
+
+                {/* Stats */}
+                <StatsBar stats={stats} />
+
+                <DisplaySettingsPanel invitation={invitation} initialSettings={displaySettings} initialSliderImages={sliderImages} />
+
+                {/* Filters */}
+                <div className="flex flex-wrap items-center gap-3">
+                    <form onSubmit={handleSearch} className="flex-1 min-w-48 flex items-center gap-2 bg-card border border-border rounded-xl px-3">
+                        <Search className="size-4 text-muted-foreground shrink-0" />
+                        <input
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Cari nama, email, no HP…"
+                            className="flex-1 py-2 text-sm bg-transparent focus:outline-none text-foreground placeholder:text-muted-foreground"
+                        />
+                        {search && (
+                            <button type="button" onClick={() => { setSearch(''); clearFilter('search'); }}>
+                                <X className="size-3.5 text-muted-foreground" />
+                            </button>
+                        )}
+                    </form>
+
+                    <select
+                        value={filters.rsvp_status ?? ''}
+                        onChange={(e) => applyFilter({ rsvp_status: e.target.value })}
+                        className="rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                        <option value="">Semua Status</option>
+                        <option value="attending">Hadir</option>
+                        <option value="not_attending">Tidak Hadir</option>
+                        <option value="maybe">Masih Ragu</option>
+                        <option value="pending">Belum Konfirmasi</option>
+                    </select>
+
+                    <select
+                        value={filters.checked_in ?? ''}
+                        onChange={(e) => applyFilter({ checked_in: e.target.value })}
+                        className="rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                        <option value="">Semua Check-in</option>
+                        <option value="yes">Sudah Check-in</option>
+                        <option value="no">Belum Check-in</option>
+                    </select>
+                </div>
+
+                {/* Table */}
+                <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+                    {guests.data.length === 0 ? (
+                        <div className="p-12 flex flex-col items-center text-center gap-3">
+                            <Users className="size-8 text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground">Tidak ada tamu yang ditemukan.</p>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead className="bg-muted/40 border-b border-border">
+                                    <tr>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Nama</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Slug</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Kategori</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Status RSVP</th>
+                                        <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide">Jml</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Check-in</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {guests.data.map((g) => (
+                                        <GuestTableRow key={g.id} guest={g} slug={invitation.slug} onEdit={setEditingGuest} onCopied={handleGuestCopied} />
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+
+                    {/* Pagination */}
+                    {guests.last_page > 1 && (
+                        <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+                            <p className="text-xs text-muted-foreground">
+                                Total {guests.total} tamu
+                            </p>
+                            <div className="flex gap-1">
+                                {guests.links.map((link, i) => (
+                                    link.url ? (
+                                        <Link
+                                            key={i}
+                                            href={link.url}
+                                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${link.active ? 'bg-primary text-primary-foreground' : 'border border-border text-foreground hover:bg-muted'}`}
+                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                        />
+                                    ) : (
+                                        <span
+                                            key={i}
+                                            className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground opacity-40"
+                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                        />
+                                    )
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </CustomerLayout>
+    );
+}

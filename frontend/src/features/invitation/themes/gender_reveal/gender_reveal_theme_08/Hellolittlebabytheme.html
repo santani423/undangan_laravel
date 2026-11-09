@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hello Little Baby — Undangan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Parisienne&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#faf6ee; --cream-2:#f2ebdd; --paper:#fffdf9;
+    --sage:#a9b89c; --sage-2:#dfe6d6; --sage-3:#eef2e9; --sage-ink:#5f7152;
+    --peach:#f6cdb8; --lilac:#d9cce8; --pink:#f3c3cf; --blue:#bcd6ea; --butter:#f5e6b3;
+    --pink-ink:#c2647d; --blue-ink:#4d7fa6;
+    --ink:#3f4238; --muted:#85897c; --line:rgba(63,66,56,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--cream);line-height:1.7;overflow-x:hidden}
+  .pf{font-family:'Playfair Display',serif;font-weight:500}
+  .script{font-family:'Parisienne',cursive;font-weight:400}
+  section{padding:90px 20px;position:relative;overflow:hidden}
+  .wrap{max-width:660px;margin:0 auto;text-align:center;position:relative;z-index:2}
+  .eyebrow{font-size:.74rem;letter-spacing:.3em;text-transform:uppercase;color:var(--sage-ink);font-weight:700}
+  h2.t{font-family:'Playfair Display',serif;font-weight:500;font-size:clamp(2rem,6.5vw,2.7rem);line-height:1.15;margin:10px 0 10px}
+  .sprig{display:block;margin:12px auto;width:90px;height:auto}
+
+  /* clouds (CSS) */
+  .cloud{position:absolute;background:#fff;border-radius:100px;z-index:1}
+  .cloud::before,.cloud::after{content:"";position:absolute;background:inherit;border-radius:50%}
+  .cloud::before{width:55%;height:180%;left:12%;bottom:20%}
+  .cloud::after{width:40%;height:140%;right:12%;bottom:25%}
+  .drift{animation:drift 30s ease-in-out infinite alternate}
+  @keyframes drift{from{transform:translateX(-24px)}to{transform:translateX(24px)}}
+  .floaty{animation:floaty 5s ease-in-out infinite}
+  @keyframes floaty{50%{transform:translateY(-10px) rotate(4deg)}}
+
+  /* ===== COVER ===== */
+  #cover{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:20px;background:var(--sage-3);transition:opacity .9s,visibility .9s}
+  #cover.hide{opacity:0;visibility:hidden}
+  .arch{background:var(--paper);border-radius:220px 220px 26px 26px;padding:70px 26px 34px;max-width:360px;width:100%;text-align:center;
+    box-shadow:0 20px 50px rgba(95,113,82,.15);border:1px solid var(--line);position:relative}
+  .arch::before{content:"";position:absolute;inset:10px;border-radius:210px 210px 18px 18px;border:1px solid var(--sage-2);pointer-events:none}
+  #cover .script{font-size:clamp(2.6rem,11vw,3.3rem);color:var(--sage-ink);line-height:1}
+  #cover h1{font-family:'Playfair Display',serif;font-weight:500;font-size:clamp(1.8rem,7.5vw,2.3rem);line-height:1.1}
+  #cover .to{margin:22px 0 24px;color:var(--muted);font-size:.92rem}
+  #cover .to b{display:block;font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--ink);font-weight:500}
+  .btn{border:none;cursor:pointer;font:500 .95rem 'DM Sans';letter-spacing:.08em;padding:14px 30px;border-radius:99px;background:var(--sage-ink);color:var(--paper);transition:transform .2s,background .2s}
+  .btn:hover{transform:translateY(-2px);background:#52634a}
+  .btn:focus-visible{outline:3px solid var(--sage);outline-offset:3px}
+  .btn.ghost{background:transparent;color:var(--sage-ink);border:1.5px solid var(--sage-ink)}
+
+  /* ===== HERO ===== */
+  #hero{min-height:100vh;display:grid;place-items:center;background:linear-gradient(180deg,var(--sage-3),var(--cream))}
+  #hero .script{font-size:clamp(3.2rem,15vw,5.4rem);color:var(--sage-ink);line-height:1}
+  #hero h1{font-family:'Playfair Display',serif;font-weight:500;font-size:clamp(2.2rem,9vw,3.6rem);line-height:1.05}
+  #hero .lead{max-width:460px;margin:16px auto 0;color:var(--muted);font-size:1.05rem}
+  .icons{display:flex;justify-content:center;align-items:flex-end;gap:26px;margin-top:32px}
+  .icons svg{height:84px;width:auto}
+  .icons svg:nth-child(2){height:62px;animation-delay:.8s}
+  .icons svg:nth-child(3){animation-delay:1.6s}
+  .date-line{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:30px;font-family:'Playfair Display',serif;font-size:1.1rem}
+  .date-line::before,.date-line::after{content:"";height:1px;width:40px;background:var(--sage)}
+
+  /* ===== PARENTS ===== */
+  .parents{display:flex;justify-content:center;align-items:center;gap:18px;margin-top:28px;flex-wrap:wrap}
+  .pc{flex:1 1 200px;max-width:250px}
+  .pc .ph{width:130px;height:160px;margin:0 auto 14px;border-radius:70px 70px 16px 16px;display:grid;place-items:center;font:500 2.6rem 'Playfair Display',serif;color:var(--paper)}
+  .pc:first-child .ph{background:var(--blue)} .pc:last-child .ph{background:var(--pink)}
+  .pc h3{font-family:'Playfair Display',serif;font-weight:500;font-size:1.4rem}
+  .pc p{color:var(--muted);font-size:.9rem}
+  .amp{font-family:'Parisienne',cursive;font-size:3rem;color:var(--sage-ink)}
+
+  /* ===== JOURNEY ===== */
+  #journey{background:var(--sage-3)}
+  .timeline{position:relative;margin:30px auto 0;max-width:460px;text-align:left}
+  .timeline::before{content:"";position:absolute;left:21px;top:6px;bottom:6px;width:2px;background:var(--sage-2)}
+  .tl{position:relative;display:flex;gap:18px;padding:0 0 26px}
+  .tl .dot{flex:none;width:44px;height:44px;border-radius:50%;background:var(--paper);border:2px solid var(--sage);display:grid;place-items:center;font-size:1.2rem;z-index:1}
+  .tl small{display:block;font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--sage-ink);font-weight:700}
+  .tl b{font-family:'Playfair Display',serif;font-weight:500;font-size:1.15rem;display:block}
+  .tl p{color:var(--muted);font-size:.93rem}
+
+  /* ===== EVENT ===== */
+  .ev{background:var(--paper);border:1px solid var(--line);border-radius:28px;padding:34px 24px;margin-top:26px}
+  .ev-big{display:flex;justify-content:center;align-items:center;gap:18px;margin-bottom:22px}
+  .ev-big .num{font:500 4rem/1 'Playfair Display',serif;color:var(--sage-ink)}
+  .ev-big .side{text-align:left;font-size:.85rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);border-left:1px solid var(--line);padding-left:18px;line-height:1.6}
+  .ev-rows{display:grid;gap:12px;text-align:left}
+  .ev-row{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border-radius:18px;background:var(--cream)}
+  .ev-row .ic{flex:none;width:38px;height:38px;border-radius:50%;background:var(--sage-2);display:grid;place-items:center}
+  .ev-row small{display:block;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .swatch{display:flex;gap:6px;margin-top:6px}
+  .swatch i{width:20px;height:20px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line)}
+  .countdown{display:flex;justify-content:center;gap:0;margin-top:28px;background:var(--paper);border:1px solid var(--line);border-radius:22px;overflow:hidden}
+  .cd{flex:1;padding:14px 0;border-right:1px solid var(--line)}
+  .cd:last-child{border-right:none}
+  .cd b{display:block;font:500 2rem/1.1 'Playfair Display',serif;color:var(--sage-ink);font-variant-numeric:tabular-nums}
+  .cd span{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .ev-act{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:22px}
+  .ev-act a{text-decoration:none}
+
+  /* ===== GUESS ===== */
+  .guess{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:26px}
+  .gs{cursor:pointer;border:1.5px solid transparent;border-radius:24px;padding:24px 10px 18px;font:500 1.15rem 'Playfair Display',serif;color:var(--ink);transition:transform .2s,border-color .2s}
+  .gs svg{height:70px;width:auto;display:block;margin:0 auto 8px}
+  .gs.boy{background:#e6f0f8} .gs.girl{background:#fbecef}
+  .gs.boy.sel{border-color:var(--blue-ink)} .gs.girl.sel{border-color:var(--pink-ink)}
+  .gs:hover{transform:translateY(-3px)}
+  .gs small{display:block;font:500 .85rem 'DM Sans';color:var(--muted)}
+
+  /* ===== REVEAL: fill the bottle ===== */
+  #reveal{background:var(--sage-ink);color:var(--paper)}
+  #reveal .eyebrow{color:var(--sage-2)}
+  .bottle-stage{position:relative;display:flex;flex-direction:column;align-items:center;margin-top:18px}
+  .bottle{position:relative;width:170px;height:330px;border:none;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .bottle svg{width:100%;height:100%;overflow:visible}
+  .bottle.tip{animation:tip .35s}
+  @keyframes tip{40%{transform:rotate(-4deg)}80%{transform:rotate(3deg)}}
+  #milk{transition:y .5s cubic-bezier(.3,1.3,.5,1),height .5s cubic-bezier(.3,1.3,.5,1),fill 1.2s}
+  .drops{position:absolute;top:-10px;left:50%;pointer-events:none}
+  .drop{position:absolute;width:10px;height:14px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#fff;opacity:.9;animation:drip .6s ease-in forwards}
+  @keyframes drip{from{transform:translateY(-40px);opacity:0}30%{opacity:1}to{transform:translateY(60px);opacity:0}}
+  .fill-count{margin-top:14px;font-size:.95rem;opacity:.85}
+  .reveal-msg{margin-top:18px;min-height:110px;opacity:0;transform:translateY(12px);transition:all .8s .4s}
+  .reveal-msg.show{opacity:1;transform:none}
+  .reveal-msg .script{font-size:clamp(3rem,12vw,4rem);line-height:1}
+  .reveal-msg .pf{font-size:1.1rem;opacity:.9}
+
+  /* ===== RSVP ===== */
+  form{display:grid;gap:14px;margin-top:24px;text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:28px;padding:28px 22px}
+  label{font-weight:700;font-size:.85rem;letter-spacing:.04em}
+  input,select,textarea{width:100%;margin-top:6px;padding:12px 15px;border-radius:14px;border:1px solid var(--line);background:var(--cream);font:400 1rem 'DM Sans';color:var(--ink)}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--sage);border-color:transparent;background:#fff}
+  .wishes{display:grid;gap:12px;margin-top:26px;text-align:left}
+  .wish{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:16px 18px}
+  .wish b{font-family:'Playfair Display',serif;font-weight:500;font-size:1.1rem}
+  .wish small{color:var(--muted);margin-left:8px;font-size:.8rem}
+  .wish p{margin-top:4px;color:var(--ink)}
+
+  footer{text-align:center;padding:60px 20px 90px;background:var(--sage-3)}
+  footer .script{font-size:2.6rem;color:var(--sage-ink)}
+
+  #music{position:fixed;right:16px;bottom:16px;z-index:50;width:48px;height:48px;border-radius:50%;border:1px solid var(--line);background:var(--paper);box-shadow:0 6px 20px rgba(0,0,0,.12);font-size:1.2rem;cursor:pointer}
+  .soft{opacity:0;transform:translateY(22px);transition:opacity 1s,transform 1s}
+  .soft.in{opacity:1;transform:none}
+  .petal{position:fixed;top:-20px;z-index:70;pointer-events:none;border-radius:50%;animation:fall linear forwards}
+  @keyframes fall{to{transform:translate(var(--sx,0),115vh) rotate(300deg)}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- Ikon SVG yang dipakai ulang -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-bottle" viewBox="0 0 60 110">
+      <path d="M24 4 h12 q4 0 4 5 v6 h-20 v-6 q0 -5 4 -5z" fill="#f6cdb8"/>
+      <rect x="16" y="15" width="28" height="10" rx="3" fill="#a9b89c"/>
+      <rect x="12" y="25" width="36" height="80" rx="12" fill="#fffdf9" stroke="#a9b89c" stroke-width="3"/>
+      <rect x="15" y="60" width="30" height="42" rx="9" fill="#faf6ee"/>
+      <path d="M19 42 h8 M19 52 h8 M19 62 h8" stroke="#a9b89c" stroke-width="2.5" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-paci" viewBox="0 0 80 80">
+      <circle cx="40" cy="60" r="13" fill="none" stroke="#d9cce8" stroke-width="6"/>
+      <ellipse cx="40" cy="38" rx="30" ry="12" fill="#bcd6ea"/>
+      <circle cx="40" cy="38" r="5" fill="#fffdf9"/>
+      <ellipse cx="40" cy="20" rx="10" ry="12" fill="#f5e6b3"/>
+    </symbol>
+    <symbol id="i-onesie" viewBox="0 0 100 110">
+      <path d="M32 6 Q50 20 68 6 L92 20 L82 42 L72 38 L72 88 Q72 104 58 104 L58 96 Q50 90 42 96 L42 104 Q28 104 28 88 L28 38 L18 42 L8 20 Z" fill="currentColor"/>
+      <path d="M40 9 Q50 18 60 9" fill="none" stroke="#fff" stroke-width="3" opacity=".7"/>
+      <circle cx="50" cy="46" r="2.6" fill="#fff"/><circle cx="50" cy="58" r="2.6" fill="#fff"/>
+    </symbol>
+    <symbol id="i-sprig" viewBox="0 0 120 30">
+      <path d="M4 15 H116" stroke="#a9b89c" stroke-width="1.5"/>
+      <g fill="#a9b89c"><ellipse cx="40" cy="9" rx="7" ry="3.5" transform="rotate(-25 40 9)"/><ellipse cx="52" cy="21" rx="7" ry="3.5" transform="rotate(25 52 21)"/>
+      <ellipse cx="68" cy="9" rx="7" ry="3.5" transform="rotate(-25 68 9)"/><ellipse cx="80" cy="21" rx="7" ry="3.5" transform="rotate(25 80 21)"/></g>
+      <circle cx="60" cy="15" r="4" fill="#f3c3cf"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ============ COVER ============ -->
+<div id="cover">
+  <span class="cloud drift" style="width:120px;height:34px;left:4%;top:12%"></span>
+  <span class="cloud drift" style="width:150px;height:42px;right:2%;bottom:4%;animation-duration:40s"></span>
+  <div class="arch">
+    <svg viewBox="0 0 60 110" width="46" class="floaty" style="position:absolute;left:50%;top:-30px;margin-left:-23px"><use href="#i-bottle"/></svg>
+    <div class="script">Hello</div>
+    <h1>Little Baby</h1>
+    <svg class="sprig" viewBox="0 0 120 30"><use href="#i-sprig"/></svg>
+    <p style="color:var(--muted);font-size:.9rem;letter-spacing:.2em;text-transform:uppercase">Gender Reveal</p>
+    <div class="to">Kepada Yth.<b id="guest">Tamu Undangan</b></div>
+    <button class="btn" id="openBtn">Buka Undangan</button>
+  </div>
+</div>
+
+<!-- ============ HERO ============ -->
+<section id="hero">
+  <span class="cloud drift" style="width:130px;height:38px;left:3%;top:14%"></span>
+  <span class="cloud drift" style="width:170px;height:46px;right:-20px;top:30%;animation-duration:38s"></span>
+  <span class="cloud drift" style="width:110px;height:32px;left:10%;bottom:14%;animation-duration:44s"></span>
+  <div class="wrap soft">
+    <div class="eyebrow">Gender Reveal Celebration</div>
+    <div class="script" style="margin-top:14px">Hello</div>
+    <h1>Little Baby</h1>
+    <svg class="sprig" viewBox="0 0 120 30"><use href="#i-sprig"/></svg>
+    <p class="lead" id="heroMsg"></p>
+    <div class="icons" aria-hidden="true">
+      <svg viewBox="0 0 60 110" class="floaty"><use href="#i-bottle"/></svg>
+      <svg viewBox="0 0 80 80" class="floaty"><use href="#i-paci"/></svg>
+      <svg viewBox="0 0 100 110" class="floaty" style="color:var(--sage)"><use href="#i-onesie"/></svg>
+    </div>
+    <div class="date-line" id="heroDate"></div>
+  </div>
+</section>
+
+<!-- ============ PARENTS ============ -->
+<section>
+  <div class="wrap soft">
+    <div class="eyebrow">Calon Orang Tua</div>
+    <h2 class="t">Dengan penuh cinta</h2>
+    <p style="color:var(--muted);max-width:440px;margin:0 auto">Kami mengundang Anda untuk berbagi kebahagiaan bersama kami menyambut buah hati tercinta.</p>
+    <div class="parents">
+      <div class="pc"><div class="ph" id="dadI"></div><h3 id="dad"></h3><p>Calon Ayah</p></div>
+      <div class="amp">&amp;</div>
+      <div class="pc"><div class="ph" id="momI"></div><h3 id="mom"></h3><p>Calon Ibu</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ JOURNEY ============ -->
+<section id="journey">
+  <span class="cloud drift" style="width:120px;height:34px;right:4%;top:40px"></span>
+  <div class="wrap soft">
+    <div class="eyebrow">Our Little Journey</div>
+    <h2 class="t">Perjalanan Kami</h2>
+    <div class="timeline" id="timeline"></div>
+  </div>
+</section>
+
+<!-- ============ EVENT ============ -->
+<section>
+  <div class="wrap soft">
+    <div class="eyebrow">Save the Date</div>
+    <h2 class="t">Detail Acara</h2>
+    <div class="ev">
+      <div class="ev-big"><div class="num" id="evNum"></div><div class="side"><span id="evDay"></span><br><span id="evMonth"></span></div></div>
+      <div class="ev-rows">
+        <div class="ev-row"><span class="ic">🕰️</span><div><small>Waktu</small><span id="evTime"></span></div></div>
+        <div class="ev-row"><span class="ic">📍</span><div><small>Lokasi</small><span id="evPlace"></span></div></div>
+        <div class="ev-row"><span class="ic">👗</span><div><small>Dress Code</small><span id="evDress"></span>
+          <div class="swatch"><i style="background:var(--cream-2)"></i><i style="background:var(--sage)"></i><i style="background:var(--pink)"></i><i style="background:var(--blue)"></i><i style="background:var(--butter)"></i></div></div></div>
+      </div>
+    </div>
+    <div class="countdown" aria-live="polite">
+      <div class="cd"><b id="cdD">0</b><span>Hari</span></div>
+      <div class="cd"><b id="cdH">0</b><span>Jam</span></div>
+      <div class="cd"><b id="cdM">0</b><span>Menit</span></div>
+      <div class="cd"><b id="cdS">0</b><span>Detik</span></div>
+    </div>
+    <div class="ev-act">
+      <a class="btn" id="maps" target="_blank" rel="noopener">Petunjuk Lokasi</a>
+      <a class="btn ghost" id="gcal" target="_blank" rel="noopener">Simpan ke Kalender</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GUESS ============ -->
+<section style="background:var(--cream-2)">
+  <div class="wrap soft">
+    <div class="eyebrow">Tebak Yuk</div>
+    <h2 class="t">Baju Mungil yang Mana?</h2>
+    <p style="color:var(--muted)">Pilih tebakanmu untuk si kecil</p>
+    <div class="guess">
+      <button class="gs boy" data-g="boy"><svg viewBox="0 0 100 110" style="color:var(--blue)"><use href="#i-onesie"/></svg>Baby Boy<small id="cB"></small></button>
+      <button class="gs girl" data-g="girl"><svg viewBox="0 0 100 110" style="color:var(--pink)"><use href="#i-onesie"/></svg>Baby Girl<small id="cG"></small></button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ REVEAL ============ -->
+<section id="reveal">
+  <span class="cloud drift" style="width:120px;height:34px;left:4%;top:60px;opacity:.15"></span>
+  <span class="cloud drift" style="width:150px;height:40px;right:0;bottom:80px;opacity:.12;animation-duration:40s"></span>
+  <div class="wrap soft">
+    <div class="eyebrow">The Reveal</div>
+    <h2 class="t" style="color:var(--paper)">Isi Botol Susunya!</h2>
+    <p style="opacity:.85">Ketuk botol untuk menuang susu. Saat penuh, warnanya akan menjawab 🍼</p>
+    <div class="bottle-stage">
+      <button class="bottle" id="bottle" aria-label="Ketuk untuk menuang susu">
+        <div class="drops" id="drops"></div>
+        <svg viewBox="0 0 170 330">
+          <defs><clipPath id="bodyClip"><rect x="22" y="92" width="126" height="228" rx="34"/></clipPath></defs>
+          <!-- nipple -->
+          <path d="M70 8 q15 -10 30 0 q6 6 6 20 v22 h-42 v-22 q0 -14 6 -20z" fill="#f6cdb8"/>
+          <!-- collar -->
+          <rect x="40" y="50" width="90" height="42" rx="10" fill="#dfe6d6" stroke="#fffdf9" stroke-width="3"/>
+          <!-- body -->
+          <rect x="22" y="92" width="126" height="228" rx="34" fill="rgba(255,253,249,.18)" stroke="#fffdf9" stroke-width="4"/>
+          <g clip-path="url(#bodyClip)"><rect id="milk" x="22" y="320" width="126" height="0" fill="#fffdf9"/></g>
+          <!-- measure lines -->
+          <g stroke="#fffdf9" stroke-width="3" stroke-linecap="round" opacity=".8">
+            <path d="M40 140 h22"/><path d="M40 180 h16"/><path d="M40 220 h22"/><path d="M40 260 h16"/>
+          </g>
+          <text id="bq" x="100" y="232" text-anchor="middle" font-family="Playfair Display, serif" font-size="64" fill="#5f7152" stroke="#fffdf9" stroke-width="3" paint-order="stroke">?</text>
+        </svg>
+      </button>
+      <div class="fill-count" id="fillCount"></div>
+      <div class="reveal-msg" id="revealMsg"><div class="script" id="rTitle"></div><p class="pf" id="rSub"></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RSVP ============ -->
+<section>
+  <div class="wrap soft" style="max-width:520px">
+    <div class="eyebrow">RSVP</div>
+    <h2 class="t">Konfirmasi Kehadiran</h2>
+    <form id="rsvp">
+      <label>Nama<input name="nama" required placeholder="Nama lengkap"></label>
+      <label>Kehadiran<select name="hadir"><option>Hadir</option><option>Tidak hadir</option><option>Masih ragu</option></select></label>
+      <label>Tebakanmu<select name="tebak"><option>Baby Boy</option><option>Baby Girl</option></select></label>
+      <label>Doa &amp; Harapan<textarea name="ucapan" rows="3" placeholder="Tulis doa untuk si kecil…"></textarea></label>
+      <button class="btn" type="submit">Kirim Ucapan</button>
+    </form>
+    <div class="wishes" id="wishes"></div>
+  </div>
+</section>
+
+<footer>
+  <svg viewBox="0 0 60 110" width="36" class="floaty"><use href="#i-bottle"/></svg>
+  <p style="color:var(--muted);margin-top:10px">Terima kasih atas doa dan kehadirannya</p>
+  <p class="script" id="foot"></p>
+</footer>
+
+<button id="music" aria-label="Musik" hidden>🎵</button>
+<audio id="bgm" loop></audio>
+
+<script>
+/* ===================================================
+   CONFIG — ubah sesuai acara Anda
+   =================================================== */
+const CONFIG = {
+  ayah: "Arya Nugraha",
+  ibu:  "Salsa Kirana",
+  pesan: "Sebentar lagi rumah kami akan dipenuhi tawa kecil dan wangi bayi. Datang dan rayakan bersama kami saat kami mengetahui siapa si kecil 🍼",
+  mulai:   "2026-12-20T11:00:00+07:00",   // format ISO
+  selesai: "2026-12-20T14:00:00+07:00",
+  waktu: "11.00 – 14.00 WIB",
+  lokasi: "Sage & Co. Garden, Jl. Dahlia No. 3, Malang",
+  maps: "https://maps.google.com/?q=Malang",
+  dressCode: "Nuansa cream, sage, atau pastel",
+  perjalanan: [                                  // bisa ditambah / dikurangi
+    { ikon:"💌", waktu:"Maret 2026",   judul:"Dua garis kecil",  teks:"Hari ketika kami tahu hidup kami akan berubah selamanya." },
+    { ikon:"🩺", waktu:"Mei 2026",     judul:"Detak jantung pertama", teks:"Suara terindah yang pernah kami dengar." },
+    { ikon:"🍼", waktu:"Desember 2026", judul:"Gender reveal",   teks:"Dan hari ini, kami ingin tahu bersamamu!" },
+  ],
+  hasil: "girl",          // "boy" atau "girl"
+  jumlahTuang: 6,         // berapa kali ketuk sampai botol penuh
+  musik: "",              // URL mp3 (opsional)
+};
+/* =================================================== */
+
+const $ = id => document.getElementById(id);
+const ev = new Date(CONFIG.mulai), evEnd = new Date(CONFIG.selesai);
+const isBoy = CONFIG.hasil === "boy";
+
+const to = new URLSearchParams(location.search).get("to");
+if (to) $("guest").textContent = to;
+$("heroMsg").textContent = CONFIG.pesan;
+$("heroDate").textContent = ev.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"});
+$("dad").textContent = CONFIG.ayah; $("mom").textContent = CONFIG.ibu;
+$("dadI").textContent = CONFIG.ayah[0]; $("momI").textContent = CONFIG.ibu[0];
+$("evNum").textContent = ev.getDate();
+$("evDay").textContent = ev.toLocaleDateString("id-ID",{weekday:"long"});
+$("evMonth").textContent = ev.toLocaleDateString("id-ID",{month:"long",year:"numeric"});
+$("evTime").textContent = CONFIG.waktu; $("evPlace").textContent = CONFIG.lokasi; $("evDress").textContent = CONFIG.dressCode;
+$("maps").href = CONFIG.maps;
+$("foot").textContent = CONFIG.ayah.split(" ")[0] + " & " + CONFIG.ibu.split(" ")[0];
+
+// Timeline
+CONFIG.perjalanan.forEach(s => {
+  const d = document.createElement("div"); d.className = "tl";
+  const dot = document.createElement("span"); dot.className = "dot"; dot.textContent = s.ikon;
+  const body = document.createElement("div");
+  const sm = document.createElement("small"); sm.textContent = s.waktu;
+  const b = document.createElement("b"); b.textContent = s.judul;
+  const p = document.createElement("p"); p.textContent = s.teks;
+  body.append(sm, b, p); d.append(dot, body); $("timeline").appendChild(d);
+});
+
+// Google Calendar
+const gfmt = d => d.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");
+$("gcal").href = "https://calendar.google.com/calendar/render?action=TEMPLATE"
+  + "&text=" + encodeURIComponent("Gender Reveal " + CONFIG.ayah.split(" ")[0] + " & " + CONFIG.ibu.split(" ")[0])
+  + "&dates=" + gfmt(ev) + "/" + gfmt(evEnd)
+  + "&location=" + encodeURIComponent(CONFIG.lokasi);
+
+// Cover
+const bgm = $("bgm");
+if (CONFIG.musik){ bgm.src = CONFIG.musik; $("music").hidden = false; }
+document.body.style.overflow = "hidden";
+$("openBtn").onclick = () => {
+  $("cover").classList.add("hide"); document.body.style.overflow = "";
+  if (CONFIG.musik) bgm.play().catch(()=>{});
+};
+$("music").onclick = () => { bgm.paused ? bgm.play() : bgm.pause(); $("music").textContent = bgm.paused ? "🔇" : "🎵"; };
+
+const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add("in")), {threshold:.12});
+document.querySelectorAll(".soft").forEach(el => io.observe(el));
+
+// Countdown
+function tick(){
+  let t = Math.max(0, ev - Date.now());
+  $("cdD").textContent = Math.floor(t/864e5); t %= 864e5;
+  $("cdH").textContent = Math.floor(t/36e5);  t %= 36e5;
+  $("cdM").textContent = Math.floor(t/6e4);
+  $("cdS").textContent = Math.floor(t%6e4/1e3);
+}
+tick(); setInterval(tick, 1000);
+
+// Guess (angka awal contoh — ganti/hapus sesuai kebutuhan)
+const votes = { boy: 10, girl: 12 }; let mine = null;
+const drawVotes = () => { $("cB").textContent = votes.boy + " tebakan"; $("cG").textContent = votes.girl + " tebakan"; };
+document.querySelectorAll(".gs").forEach(b => b.onclick = () => {
+  if (mine) votes[mine]--;
+  mine = b.dataset.g; votes[mine]++;
+  document.querySelectorAll(".gs").forEach(x => x.classList.toggle("sel", x === b));
+  drawVotes();
+});
+drawVotes();
+
+// Reveal: fill the bottle
+const steps = CONFIG.jumlahTuang, TOP = 92, BOTTOM = 320;
+let poured = 0, done = false;
+const milk = $("milk");
+$("fillCount").textContent = `0 / ${steps}`;
+$("rTitle").textContent = isBoy ? "It's a Boy" : "It's a Girl";
+$("rSub").textContent = isBoy ? "Pangeran kecil kami akan segera tiba 💙" : "Putri kecil kami akan segera tiba 💗";
+$("bottle").onclick = () => {
+  if (done) return;
+  poured++;
+  const h = (BOTTOM - TOP) * poured / steps;
+  milk.setAttribute("y", BOTTOM - h); milk.setAttribute("height", h);
+  $("fillCount").textContent = `${poured} / ${steps}`;
+  const b = $("bottle"); b.classList.remove("tip"); void b.offsetWidth; b.classList.add("tip");
+  for (let i = 0; i < 3; i++){
+    const d = document.createElement("span"); d.className = "drop";
+    d.style.left = (i * 12 - 12) + "px"; d.style.animationDelay = (i * .08) + "s";
+    $("drops").appendChild(d); setTimeout(() => d.remove(), 900);
+  }
+  if (poured >= steps){
+    done = true;
+    setTimeout(() => {
+      milk.style.fill = isBoy ? "#bcd6ea" : "#f3c3cf";
+      $("bq").textContent = isBoy ? "♂" : "♀";
+      $("bq").setAttribute("fill", isBoy ? "#4d7fa6" : "#c2647d");
+      $("fillCount").textContent = "";
+      $("revealMsg").classList.add("show");
+      $("rTitle").style.color = isBoy ? "var(--blue)" : "var(--pink)";
+      petals();
+    }, 500);
+  }
+};
+function petals(){
+  const cols = isBoy ? ["#bcd6ea","#dfe6d6","#fffdf9","#a9b89c"] : ["#f3c3cf","#dfe6d6","#fffdf9","#f6cdb8"];
+  for (let i = 0; i < 70; i++){
+    const p = document.createElement("span"); p.className = "petal";
+    const s = 8 + Math.random() * 10;
+    Object.assign(p.style, { width:s+"px", height:s*.7+"px", background:cols[i % cols.length], left:Math.random()*100+"vw",
+      animationDuration:(4 + Math.random()*3)+"s", animationDelay:(Math.random()*1.2)+"s" });
+    p.style.setProperty("--sx", (Math.random()*120 - 60) + "px");
+    document.body.appendChild(p); setTimeout(() => p.remove(), 9000);
+  }
+}
+
+// RSVP (hanya tampil di halaman — sambungkan ke backend/Google Form bila perlu)
+const wishes = [
+  { nama:"Mbak Dewi", hadir:"Hadir", tebak:"Baby Girl", ucapan:"Semoga persalinannya lancar dan dedek sehat selalu 🌿" },
+  { nama:"Raka", hadir:"Hadir", tebak:"Baby Boy", ucapan:"Selamat Arya & Salsa! Nggak sabar ketemu si kecil." },
+];
+function drawWishes(){
+  const box = $("wishes"); box.innerHTML = "";
+  wishes.slice().reverse().forEach(w => {
+    const d = document.createElement("div"); d.className = "wish";
+    const n = document.createElement("b"); n.textContent = w.nama;
+    const s = document.createElement("small"); s.textContent = `${w.hadir} · ${w.tebak}`;
+    const p = document.createElement("p"); p.textContent = w.ucapan;
+    d.append(n, s, p); box.appendChild(d);
+  });
+}
+$("rsvp").onsubmit = e => {
+  e.preventDefault(); const f = new FormData(e.target);
+  wishes.push({ nama: f.get("nama"), hadir: f.get("hadir"), tebak: f.get("tebak"), ucapan: f.get("ucapan") || "🍼" });
+  drawWishes(); e.target.reset();
+};
+drawWishes();
+</script>
+</body>
+</html>

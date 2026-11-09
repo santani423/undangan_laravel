@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Twinkle Little Baby — Undangan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Pinyon+Script&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0f1733; --navy-2:#18234a; --navy-3:#243266; --gold:#e9c46a; --gold-2:#f6dfa0; --gold-3:#b8923a;
+    --pink:#f5b3c8; --pink-ink:#f28bab; --blue:#a9cdf5; --blue-ink:#7fb4ee;
+    --text:#eef1fb; --muted:#a8b0cf; --glass:rgba(255,255,255,.06); --line:rgba(233,196,106,.28);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Nunito Sans',sans-serif;color:var(--text);line-height:1.7;overflow-x:hidden;background:var(--navy)}
+  #sky{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse at 50% -10%,var(--navy-3),var(--navy-2) 40%,var(--navy) 80%)}
+  #particles{position:fixed;inset:0;z-index:0;pointer-events:none}
+  .ci{font-family:'Cinzel',serif}
+  .ps{font-family:'Pinyon Script',cursive;font-weight:400}
+  section{padding:92px 18px;position:relative;z-index:1;overflow:hidden}
+  .wrap{max-width:660px;margin:0 auto;text-align:center;position:relative;z-index:2}
+  .tag{font-size:.74rem;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);font-weight:700}
+  h2.t{font-family:'Cinzel',serif;font-weight:400;font-size:clamp(1.8rem,6.5vw,2.5rem);line-height:1.2;margin:12px 0 8px;letter-spacing:.04em}
+  .gold{color:var(--gold);text-shadow:0 0 18px rgba(233,196,106,.45)}
+  .glow-line{width:140px;height:1px;margin:16px auto;background:linear-gradient(90deg,transparent,var(--gold),transparent);position:relative}
+  .glow-line::after{content:"✦";position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);color:var(--gold);font-size:.9rem;background:var(--navy-2);padding:0 8px}
+  .glass{background:var(--glass);border:1px solid var(--line);border-radius:24px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+
+  /* moon & clouds */
+  .moon{border-radius:50%;box-shadow:inset -22px -4px 0 0 var(--gold);transform:rotate(-24deg);filter:drop-shadow(0 0 22px rgba(233,196,106,.55))}
+  .cloud{position:absolute;background:rgba(255,255,255,.1);border-radius:100px;z-index:1}
+  .cloud::before,.cloud::after{content:"";position:absolute;background:inherit;border-radius:50%}
+  .cloud::before{width:55%;height:180%;left:12%;bottom:20%}
+  .cloud::after{width:40%;height:140%;right:12%;bottom:25%}
+  .drift{animation:drift 30s ease-in-out infinite alternate}
+  @keyframes drift{from{transform:translateX(-30px)}to{transform:translateX(30px)}}
+  .hang{position:absolute;top:0;z-index:1;display:flex;flex-direction:column;align-items:center;animation:swing 5s ease-in-out infinite;transform-origin:top center}
+  .hang::before{content:"";width:1px;background:linear-gradient(transparent,var(--gold-3))}
+  .hang span{color:var(--gold);text-shadow:0 0 12px rgba(233,196,106,.7)}
+  @keyframes swing{50%{transform:rotate(4deg)}}
+
+  /* ===== COVER ===== */
+  #cover{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:20px;background:radial-gradient(ellipse at 50% 0%,var(--navy-3),var(--navy) 75%);transition:opacity 1.1s,visibility 1.1s}
+  #cover.hide{opacity:0;visibility:hidden}
+  #cover .inner{position:relative;z-index:2;text-align:center;max-width:360px;width:100%;padding:40px 24px 34px}
+  #cover .moon{width:84px;height:84px;margin:0 auto 18px}
+  #cover .ps{font-size:2.6rem;color:var(--pink);line-height:1}
+  #cover h1{font-family:'Cinzel',serif;font-weight:400;font-size:clamp(1.7rem,7.5vw,2.2rem);letter-spacing:.08em;line-height:1.25}
+  #cover .to{margin:22px 0 24px;color:var(--muted);font-size:.92rem}
+  #cover .to b{display:block;font-family:'Cinzel',serif;font-weight:400;font-size:1.2rem;color:var(--text);letter-spacing:.06em}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--gold);cursor:pointer;font:700 .8rem 'Nunito Sans';letter-spacing:.24em;text-transform:uppercase;padding:14px 28px;border-radius:99px;
+    color:var(--navy);background:linear-gradient(90deg,var(--gold-3),var(--gold),var(--gold-2),var(--gold));box-shadow:0 0 24px rgba(233,196,106,.35);transition:transform .2s,box-shadow .2s;text-decoration:none}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 0 34px rgba(233,196,106,.55)}
+  .btn:focus-visible{outline:2px solid var(--gold-2);outline-offset:4px}
+  .btn.ghost{background:transparent;color:var(--gold);box-shadow:none}
+
+  /* ===== HERO ===== */
+  #hero{min-height:100vh;display:grid;place-items:center}
+  #hero .moon{width:120px;height:120px;margin:0 auto 22px}
+  #hero .ps{font-size:clamp(2.8rem,12vw,4rem);color:var(--pink);line-height:1}
+  #hero h1{font-family:'Cinzel',serif;font-weight:400;font-size:clamp(2.2rem,10vw,4rem);letter-spacing:.06em;line-height:1.15}
+  #hero .lead{max-width:460px;margin:16px auto 0;color:var(--muted);font-size:1.05rem}
+  .hero-date{margin-top:26px;display:inline-block;padding:10px 24px;font:400 1rem 'Cinzel';letter-spacing:.14em}
+
+  /* ===== PARENTS ===== */
+  .parents{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:28px}
+  .par{padding:26px 12px 22px}
+  .par .orb{width:86px;height:86px;margin:0 auto 12px;border-radius:50%;display:grid;place-items:center;font:400 2rem 'Cinzel';color:var(--navy)}
+  .par.d .orb{background:radial-gradient(circle at 35% 30%,#fff,var(--blue));box-shadow:0 0 26px rgba(169,205,245,.5)}
+  .par.m .orb{background:radial-gradient(circle at 35% 30%,#fff,var(--pink));box-shadow:0 0 26px rgba(245,179,200,.5)}
+  .par h3{font-family:'Cinzel',serif;font-weight:400;font-size:1.1rem;letter-spacing:.04em;line-height:1.3}
+  .par p{color:var(--muted);font-size:.85rem}
+
+  /* ===== EVENT ===== */
+  .ev{margin-top:26px;padding:30px 22px}
+  .ev .big{font:400 4.2rem/1 'Cinzel';margin:6px 0}
+  .ev .dm{letter-spacing:.3em;text-transform:uppercase;color:var(--muted);font-size:.82rem}
+  .ev-rows{display:grid;gap:16px;margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}
+  .ev-rows small{display:block;color:var(--gold);font-size:.7rem;letter-spacing:.24em;text-transform:uppercase;font-weight:700}
+  .countdown{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:22px}
+  .cd{padding:14px 0}
+  .cd b{display:block;font:400 1.9rem/1.1 'Cinzel';font-variant-numeric:tabular-nums;color:var(--gold-2)}
+  .cd span{font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+  .ev-act{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:24px}
+
+  /* ===== GUESS ===== */
+  .guess{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:26px}
+  .gs{cursor:pointer;padding:26px 10px 20px;font:400 1.3rem 'Cinzel';color:var(--text);transition:transform .2s,box-shadow .2s,border-color .2s}
+  .gs .st{display:block;font-size:2.4rem;line-height:1.2}
+  .gs.boy .st{color:var(--blue);text-shadow:0 0 18px var(--blue)} .gs.girl .st{color:var(--pink);text-shadow:0 0 18px var(--pink)}
+  .gs.boy.sel{border-color:var(--blue);box-shadow:0 0 26px rgba(169,205,245,.35)} .gs.girl.sel{border-color:var(--pink);box-shadow:0 0 26px rgba(245,179,200,.35)}
+  .gs:hover{transform:translateY(-3px)}
+  .gs small{display:block;font:600 .82rem 'Nunito Sans';color:var(--muted);letter-spacing:0}
+
+  /* ===== REVEAL: connect the stars ===== */
+  .constel{position:relative;max-width:380px;margin:20px auto 0;aspect-ratio:1/1;touch-action:manipulation}
+  .constel svg{width:100%;height:100%;overflow:visible}
+  .constel .ln{stroke:var(--gold);stroke-width:1.6;stroke-linecap:round;filter:drop-shadow(0 0 4px rgba(233,196,106,.9));stroke-dasharray:200;stroke-dashoffset:200;animation:drawl .5s forwards}
+  @keyframes drawl{to{stroke-dashoffset:0}}
+  .constel .star{cursor:pointer}
+  .constel .star circle.core{fill:#fff;transition:fill .3s}
+  .constel .star circle.halo{fill:rgba(233,196,106,.18);transition:r .3s}
+  .constel .star text{fill:var(--muted);font:700 11px 'Nunito Sans';text-anchor:middle;pointer-events:none}
+  .constel .star.next circle.halo{animation:pulse 1.2s ease-in-out infinite}
+  @keyframes pulse{50%{r:20px;fill:rgba(233,196,106,.35)}}
+  .constel .star.done circle.core{fill:var(--gold-2)}
+  .constel .star:focus-visible{outline:none}
+  .constel .star:focus-visible circle.halo{stroke:var(--gold);stroke-width:1.5}
+  #heartFill{opacity:0;transition:opacity 1.4s}
+  .answer{position:absolute;left:0;right:0;top:50%;transform:translateY(-40%);opacity:0;transition:opacity 1.2s .6s;pointer-events:none}
+  .answer.show{opacity:1}
+  .answer .ps{font-size:clamp(2.6rem,11vw,3.4rem);line-height:1;text-shadow:0 0 20px currentColor}
+  .answer p{font:400 .9rem 'Cinzel';letter-spacing:.14em;color:var(--text)}
+  .c-hint{margin-top:10px;color:var(--muted)}
+
+  /* ===== RSVP ===== */
+  form{display:grid;gap:14px;margin-top:24px;text-align:left;padding:26px 20px}
+  label{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:700}
+  input,select,textarea{width:100%;margin-top:6px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(15,23,51,.6);font:400 1rem 'Nunito Sans';color:var(--text);letter-spacing:0;text-transform:none}
+  input::placeholder,textarea::placeholder{color:#7780a3}
+  select option{background:var(--navy)}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(233,196,106,.15)}
+  .wishes{display:grid;gap:12px;margin-top:26px;text-align:left}
+  .wish{padding:16px 18px}
+  .wish b{font-family:'Cinzel';font-weight:400;letter-spacing:.04em} .wish small{color:var(--muted);margin-left:8px;font-size:.78rem}
+  .wish p{color:#d6dbf0}
+
+  footer{position:relative;z-index:1;text-align:center;padding:60px 18px 100px;border-top:1px solid var(--line)}
+  footer .ps{font-size:2.6rem;color:var(--pink)}
+
+  /* music box */
+  #musicBox{position:fixed;right:16px;bottom:16px;z-index:55;display:flex;align-items:center;gap:8px;padding:8px 14px 8px 8px;border-radius:99px;border:1px solid var(--line);background:rgba(15,23,51,.85);color:var(--text);cursor:pointer;font:600 .8rem 'Nunito Sans';box-shadow:0 0 20px rgba(0,0,0,.35)}
+  #musicBox .ic{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--gold);color:var(--navy);font-size:1rem}
+  #musicBox.on .ic{animation:spin 4s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .fade{opacity:0;transform:translateY(24px);transition:opacity 1s,transform 1s}
+  .fade.in{opacity:1;transform:none}
+  .sparkle{position:fixed;z-index:70;pointer-events:none;color:var(--gold);text-shadow:0 0 10px currentColor}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="sky"></div>
+<canvas id="particles"></canvas>
+
+<!-- ============ COVER ============ -->
+<div id="cover">
+  <span class="cloud drift" style="width:150px;height:42px;left:-20px;top:16%"></span>
+  <span class="cloud drift" style="width:180px;height:50px;right:-30px;bottom:14%;animation-duration:40s"></span>
+  <div class="inner">
+    <div class="moon"></div>
+    <div class="ps">Twinkle Twinkle</div>
+    <h1 class="gold">Little Baby</h1>
+    <p class="tag" style="margin-top:8px;color:var(--muted)">Gender Reveal</p>
+    <div class="to">Kepada Yth.<b id="guest">Tamu Undangan</b></div>
+    <button class="btn" id="openBtn">✦ Buka Undangan</button>
+  </div>
+</div>
+
+<!-- ============ HERO ============ -->
+<section id="hero">
+  <div class="hang" style="left:14%"><i style="height:90px;width:1px;background:linear-gradient(transparent,var(--gold-3))"></i><span style="font-size:1.6rem">★</span></div>
+  <div class="hang" style="left:30%;animation-delay:1s"><i style="height:50px;width:1px;background:linear-gradient(transparent,var(--gold-3))"></i><span style="font-size:1.1rem">★</span></div>
+  <div class="hang" style="right:16%;animation-delay:.5s"><i style="height:120px;width:1px;background:linear-gradient(transparent,var(--gold-3))"></i><span style="font-size:1.8rem">★</span></div>
+  <div class="hang" style="right:32%;animation-delay:1.6s"><i style="height:66px;width:1px;background:linear-gradient(transparent,var(--gold-3))"></i><span style="font-size:1rem">★</span></div>
+  <span class="cloud drift" style="width:150px;height:42px;left:-20px;bottom:18%"></span>
+  <span class="cloud drift" style="width:130px;height:36px;right:-10px;bottom:30%;animation-duration:36s"></span>
+  <div class="wrap fade">
+    <div class="moon"></div>
+    <div class="tag">A Gender Reveal Under the Stars</div>
+    <div class="ps" style="margin-top:14px">Twinkle Twinkle</div>
+    <h1 class="gold">Little Baby</h1>
+    <div class="glow-line"></div>
+    <p class="lead" id="heroMsg"></p>
+    <div class="hero-date glass" id="heroDate"></div>
+  </div>
+</section>
+
+<!-- ============ PARENTS ============ -->
+<section>
+  <div class="wrap fade">
+    <div class="tag">Calon Orang Tua</div>
+    <h2 class="t">Two Hearts, One Little Star</h2>
+    <p style="color:var(--muted);max-width:440px;margin:0 auto">Dengan penuh cinta kami menantikan bintang kecil yang akan menerangi hari-hari kami.</p>
+    <div class="parents">
+      <div class="par d glass"><div class="orb" id="dadI"></div><h3 id="dad"></h3><p>Calon Ayah</p></div>
+      <div class="par m glass"><div class="orb" id="momI"></div><h3 id="mom"></h3><p>Calon Ibu</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EVENT ============ -->
+<section>
+  <div class="wrap fade">
+    <div class="tag">Save the Date</div>
+    <h2 class="t">Detail Acara</h2>
+    <div class="ev glass">
+      <div class="dm" id="evDay"></div>
+      <div class="big gold" id="evNum"></div>
+      <div class="dm" id="evMY"></div>
+      <div class="ev-rows">
+        <div><small>Waktu</small><span id="evTime"></span></div>
+        <div><small>Lokasi</small><span id="evPlace"></span></div>
+        <div><small>Dress Code</small><span id="evDress"></span></div>
+      </div>
+    </div>
+    <div class="countdown" aria-live="polite">
+      <div class="cd glass"><b id="cdD">0</b><span>Hari</span></div>
+      <div class="cd glass"><b id="cdH">0</b><span>Jam</span></div>
+      <div class="cd glass"><b id="cdM">0</b><span>Menit</span></div>
+      <div class="cd glass"><b id="cdS">0</b><span>Detik</span></div>
+    </div>
+    <div class="ev-act">
+      <a class="btn" id="maps" target="_blank" rel="noopener">Google Maps</a>
+      <a class="btn ghost" id="gcal" target="_blank" rel="noopener">Simpan ke Kalender</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GUESS ============ -->
+<section>
+  <div class="wrap fade">
+    <div class="tag">Make Your Wish</div>
+    <h2 class="t">Boy or Girl?</h2>
+    <p style="color:var(--muted)">Bintang mana yang akan bersinar?</p>
+    <div class="guess">
+      <button class="gs boy glass" data-g="boy"><span class="st">★</span>Boy<small id="cB"></small></button>
+      <button class="gs girl glass" data-g="girl"><span class="st">★</span>Girl<small id="cG"></small></button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ REVEAL ============ -->
+<section id="reveal">
+  <div class="wrap fade">
+    <div class="tag">Written in the Stars</div>
+    <h2 class="t">Sambungkan Bintangnya</h2>
+    <p style="color:var(--muted)">Ketuk bintang sesuai urutan angkanya. Rasi bintang akan membentuk jawabannya ✨</p>
+    <div class="constel">
+      <svg viewBox="0 0 300 300" id="cSvg">
+        <defs>
+          <radialGradient id="gBoy"><stop offset="0" stop-color="#a9cdf5" stop-opacity=".55"/><stop offset="1" stop-color="#a9cdf5" stop-opacity=".05"/></radialGradient>
+          <radialGradient id="gGirl"><stop offset="0" stop-color="#f5b3c8" stop-opacity=".55"/><stop offset="1" stop-color="#f5b3c8" stop-opacity=".05"/></radialGradient>
+        </defs>
+        <path id="heartFill" d=""/>
+        <g id="lines"></g>
+        <g id="stars"></g>
+      </svg>
+      <div class="answer" id="answer"><div class="ps" id="aTitle"></div><p id="aSub"></p></div>
+    </div>
+    <p class="c-hint" id="cHint"></p>
+  </div>
+</section>
+
+<!-- ============ RSVP ============ -->
+<section>
+  <div class="wrap fade" style="max-width:520px">
+    <div class="tag">RSVP</div>
+    <h2 class="t">Konfirmasi Kehadiran</h2>
+    <form id="rsvp" class="glass">
+      <label>Nama<input name="nama" required placeholder="Nama lengkap"></label>
+      <label>Kehadiran<select name="hadir"><option>Hadir</option><option>Tidak hadir</option><option>Masih ragu</option></select></label>
+      <label>Tebakan<select name="tebak"><option>💙 Boy</option><option>💗 Girl</option></select></label>
+      <label>Doa &amp; Harapan<textarea name="ucapan" rows="3" placeholder="Tulis doa untuk si kecil…"></textarea></label>
+      <button class="btn" type="submit">Kirim ✦</button>
+    </form>
+    <div class="wishes" id="wishes"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="moon" style="width:56px;height:56px;margin:0 auto 16px"></div>
+  <p style="color:var(--muted)">Terima kasih atas doa dan kehadirannya</p>
+  <p class="ps" id="foot"></p>
+</footer>
+
+<button id="musicBox" aria-label="Putar kotak musik"><span class="ic">♪</span><span id="mbTxt">Kotak Musik</span></button>
+
+<script>
+/* ===================================================
+   CONFIG — ubah sesuai acara Anda
+   =================================================== */
+const CONFIG = {
+  ayah: "Fikri Ananda",
+  ibu:  "Aulia Maharani",
+  pesan: "Di antara jutaan bintang, ada satu yang sebentar lagi akan menjadi milik kami. Temani kami di malam istimewa untuk mengetahui: pink atau biru?",
+  mulai:   "2027-02-20T18:30:00+07:00",   // format ISO
+  selesai: "2027-02-20T21:00:00+07:00",
+  waktu: "18.30 WIB – selesai",
+  lokasi: "Starlight Rooftop, Jl. Bintang No. 9, Bandung",
+  maps: "https://maps.google.com/?q=Bandung",
+  dressCode: "Navy, emas, pink, atau biru ✨",
+  hasil: "boy",            // "boy" atau "girl"
+  kotakMusik: true,        // tombol kotak musik "Twinkle Twinkle Little Star"
+};
+/* =================================================== */
+
+const $ = id => document.getElementById(id);
+const ev = new Date(CONFIG.mulai), evEnd = new Date(CONFIG.selesai);
+const isBoy = CONFIG.hasil === "boy";
+
+const to = new URLSearchParams(location.search).get("to");
+if (to) $("guest").textContent = to;
+$("heroMsg").textContent = CONFIG.pesan;
+$("heroDate").textContent = ev.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"});
+$("dad").textContent = CONFIG.ayah; $("mom").textContent = CONFIG.ibu;
+$("dadI").textContent = CONFIG.ayah[0]; $("momI").textContent = CONFIG.ibu[0];
+$("evDay").textContent = ev.toLocaleDateString("id-ID",{weekday:"long"});
+$("evNum").textContent = ev.getDate();
+$("evMY").textContent = ev.toLocaleDateString("id-ID",{month:"long",year:"numeric"});
+$("evTime").textContent = CONFIG.waktu; $("evPlace").textContent = CONFIG.lokasi; $("evDress").textContent = CONFIG.dressCode;
+$("maps").href = CONFIG.maps;
+$("foot").textContent = CONFIG.ayah.split(" ")[0] + " & " + CONFIG.ibu.split(" ")[0];
+
+const gfmt = d => d.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");
+$("gcal").href = "https://calendar.google.com/calendar/render?action=TEMPLATE"
+  + "&text=" + encodeURIComponent("Gender Reveal " + CONFIG.ayah.split(" ")[0] + " & " + CONFIG.ibu.split(" ")[0])
+  + "&dates=" + gfmt(ev) + "/" + gfmt(evEnd) + "&location=" + encodeURIComponent(CONFIG.lokasi);
+
+/* ---------- Glowing particles (canvas) ---------- */
+const cv = $("particles"), ctx = cv.getContext("2d");
+let W, H, P = [];
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function resize(){
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight; cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + "px"; cv.style.height = H + "px";
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const n = Math.round(W * H / 9000);
+  const cols = ["233,196,106","255,255,255","245,179,200","169,205,245"];
+  P = Array.from({ length: n }, () => ({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.8 + .4,
+    vx: (Math.random() - .5) * .15, vy: -Math.random() * .25 - .05, t: Math.random() * 6.28, c: cols[Math.random() * 4 | 0] }));
+}
+function frame(){
+  ctx.clearRect(0, 0, W, H);
+  P.forEach(p => {
+    p.t += .02; p.x += p.vx; p.y += p.vy;
+    if (p.y < -10){ p.y = H + 10; p.x = Math.random() * W; }
+    const a = .35 + Math.sin(p.t) * .35;
+    const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 5);
+    g.addColorStop(0, `rgba(${p.c},${a})`); g.addColorStop(1, `rgba(${p.c},0)`);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 5, 0, 6.28); ctx.fill();
+  });
+  if (!reduce) requestAnimationFrame(frame);
+}
+resize(); frame(); addEventListener("resize", resize);
+
+/* ---------- Music box: Twinkle Twinkle Little Star (lagu tradisional, domain publik) ---------- */
+let actx = null, playing = false, loopTimer = null;
+const N = { C:523.25, D:587.33, E:659.25, F:698.46, G:783.99, A:880.00 };
+const tune = "C C G G A A G- F F E E D D C- G G F F E E D- G G F F E E D- C C G G A A G- F F E E D D C-".split(" ");
+function note(f, t, d){
+  const o = actx.createOscillator(), o2 = actx.createOscillator(), g = actx.createGain();
+  o.type = "sine"; o2.type = "triangle"; o.frequency.value = f; o2.frequency.value = f * 2;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.18, t + .01); g.gain.exponentialRampToValueAtTime(.0008, t + d * 1.8);
+  const g2 = actx.createGain(); g2.gain.value = .25; o2.connect(g2); g2.connect(g);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o2.start(t); o.stop(t + d * 2); o2.stop(t + d * 2);
+}
+function playTune(){
+  const beat = .42; let t = actx.currentTime + .05;
+  tune.forEach(n => { const long = n.endsWith("-"); const d = long ? beat * 2 : beat; note(N[n[0]], t, d); t += d; });
+  const total = tune.reduce((s, n) => s + (n.endsWith("-") ? 2 : 1), 0) * beat;
+  loopTimer = setTimeout(() => { if (playing) playTune(); }, (total + 1) * 1000);
+}
+function toggleMusic(force){
+  const want = typeof force === "boolean" ? force : !playing;
+  if (want === playing) return;
+  playing = want;
+  $("musicBox").classList.toggle("on", playing); $("mbTxt").textContent = playing ? "Sedang diputar" : "Kotak Musik";
+  if (playing){
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    actx.resume(); playTune();
+  } else { clearTimeout(loopTimer); if (actx) actx.suspend(); }
+}
+if (!CONFIG.kotakMusik) $("musicBox").hidden = true;
+$("musicBox").onclick = () => toggleMusic();
+
+// Cover
+document.body.style.overflow = "hidden";
+$("openBtn").onclick = () => {
+  $("cover").classList.add("hide"); document.body.style.overflow = "";
+  if (CONFIG.kotakMusik) { try { toggleMusic(true); } catch {} }
+};
+
+const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add("in")), {threshold:.12});
+document.querySelectorAll(".fade").forEach(el => io.observe(el));
+
+// Countdown
+function tick(){
+  let t = Math.max(0, ev - Date.now());
+  $("cdD").textContent = Math.floor(t/864e5); t %= 864e5;
+  $("cdH").textContent = Math.floor(t/36e5);  t %= 36e5;
+  $("cdM").textContent = Math.floor(t/6e4);
+  $("cdS").textContent = Math.floor(t%6e4/1e3);
+}
+tick(); setInterval(tick, 1000);
+
+// Guess (angka awal contoh — ganti/hapus sesuai kebutuhan)
+const votes = { boy: 17, girl: 16 }; let mine = null;
+const drawVotes = () => { $("cB").textContent = votes.boy + " tebakan"; $("cG").textContent = votes.girl + " tebakan"; };
+document.querySelectorAll(".gs").forEach(b => b.onclick = () => {
+  if (mine) votes[mine]--;
+  mine = b.dataset.g; votes[mine]++;
+  document.querySelectorAll(".gs").forEach(x => x.classList.toggle("sel", x === b));
+  drawVotes();
+});
+drawVotes();
+
+/* ---------- Constellation reveal (heart shape) ---------- */
+const NS = "http://www.w3.org/2000/svg";
+const pts = [[150,262],[92,210],[48,152],[46,98],[78,60],[122,58],[150,96],[178,58],[222,60],[254,98],[252,152],[208,210]];
+let step = 0, finished = false;
+const starEls = pts.map(([x, y], i) => {
+  const g = document.createElementNS(NS, "g"); g.setAttribute("class", "star"); g.setAttribute("tabindex", "0");
+  g.setAttribute("role", "button"); g.setAttribute("aria-label", "Bintang " + (i + 1));
+  const halo = document.createElementNS(NS, "circle"); halo.setAttribute("class", "halo"); halo.setAttribute("cx", x); halo.setAttribute("cy", y); halo.setAttribute("r", 14);
+  const core = document.createElementNS(NS, "circle"); core.setAttribute("class", "core"); core.setAttribute("cx", x); core.setAttribute("cy", y); core.setAttribute("r", 4);
+  const hit = document.createElementNS(NS, "circle"); hit.setAttribute("cx", x); hit.setAttribute("cy", y); hit.setAttribute("r", 22); hit.setAttribute("fill", "transparent");
+  const tx = document.createElementNS(NS, "text"); tx.setAttribute("x", x); tx.setAttribute("y", y - 18); tx.textContent = i + 1;
+  g.append(halo, core, hit, tx);
+  g.addEventListener("click", () => tap(i));
+  g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); tap(i); } });
+  $("stars").appendChild(g);
+  return g;
+});
+function line(a, b){
+  const l = document.createElementNS(NS, "line"); l.setAttribute("class", "ln");
+  l.setAttribute("x1", a[0]); l.setAttribute("y1", a[1]); l.setAttribute("x2", b[0]); l.setAttribute("y2", b[1]);
+  $("lines").appendChild(l);
+}
+function mark(){
+  starEls.forEach((s, i) => { s.classList.toggle("next", i === step && !finished); });
+  $("cHint").textContent = finished ? "" : `${step} / ${pts.length} bintang`;
+}
+function tap(i){
+  if (finished || i !== step) return;
+  starEls[i].classList.add("done");
+  if (i > 0) line(pts[i - 1], pts[i]);
+  sparkle(i);
+  step++;
+  if (step === pts.length){ line(pts[pts.length - 1], pts[0]); finish(); }
+  mark();
+}
+function sparkle(i){
+  const r = $("cSvg").getBoundingClientRect(), [x, y] = pts[i];
+  for (let k = 0; k < 6; k++){
+    const s = document.createElement("span"); s.className = "sparkle"; s.textContent = "✦";
+    s.style.left = (r.left + x / 300 * r.width) + "px"; s.style.top = (r.top + y / 300 * r.height) + "px";
+    s.style.fontSize = (8 + Math.random() * 8) + "px";
+    const a = Math.random() * 6.28, d = 20 + Math.random() * 26;
+    s.animate([{ transform:"translate(-50%,-50%) scale(1)", opacity:1 }, { transform:`translate(calc(-50% + ${Math.cos(a)*d}px),calc(-50% + ${Math.sin(a)*d}px)) scale(.3)`, opacity:0 }], { duration:700, easing:"ease-out" });
+    document.body.appendChild(s); setTimeout(() => s.remove(), 700);
+  }
+}
+$("aTitle").textContent = isBoy ? "It's a Boy" : "It's a Girl";
+$("aTitle").style.color = isBoy ? "var(--blue)" : "var(--pink)";
+$("aSub").textContent = isBoy ? "Our little star is a boy" : "Our little star is a girl";
+function finish(){
+  finished = true;
+  const hf = $("heartFill");
+  hf.setAttribute("d", "M" + pts.map(p => p.join(" ")).join(" L") + " Z");
+  hf.setAttribute("fill", isBoy ? "url(#gBoy)" : "url(#gGirl)");
+  setTimeout(() => {
+    hf.style.opacity = 1;
+    document.querySelectorAll("#lines .ln").forEach(l => l.style.stroke = isBoy ? "var(--blue)" : "var(--pink)");
+    $("answer").classList.add("show");
+    shower();
+  }, 500);
+}
+function shower(){
+  const set = isBoy ? ["★","✦","💙"] : ["★","✦","💗"];
+  for (let i = 0; i < 70; i++){
+    const s = document.createElement("span"); s.className = "sparkle"; s.textContent = set[i % set.length];
+    s.style.color = i % 2 ? "var(--gold)" : (isBoy ? "var(--blue)" : "var(--pink)");
+    s.style.left = Math.random() * 100 + "vw"; s.style.top = "-20px"; s.style.fontSize = (10 + Math.random() * 16) + "px";
+    const dur = 3000 + Math.random() * 3000;
+    s.animate([{ transform:"translateY(0)", opacity:1 }, { transform:`translate(${Math.random()*80-40}px,110vh) rotate(360deg)`, opacity:.6 }], { duration:dur, delay:Math.random()*1000, easing:"linear", fill:"forwards" });
+    document.body.appendChild(s); setTimeout(() => s.remove(), dur + 1200);
+  }
+}
+mark();
+
+// RSVP (hanya tampil di halaman — sambungkan ke backend/Google Form bila perlu)
+const wishes = [
+  { nama:"Kak Sinta", hadir:"Hadir", tebak:"💗 Girl", ucapan:"Semoga si kecil secerah bintang dan sehat selalu ✨" },
+  { nama:"Arief", hadir:"Hadir", tebak:"💙 Boy", ucapan:"Selamat Fikri & Aulia! Sampai jumpa di rooftop 🌙" },
+];
+function drawWishes(){
+  const box = $("wishes"); box.innerHTML = "";
+  wishes.slice().reverse().forEach(w => {
+    const d = document.createElement("div"); d.className = "wish glass";
+    const n = document.createElement("b"); n.textContent = "★ " + w.nama;
+    const s = document.createElement("small"); s.textContent = `${w.hadir} · ${w.tebak}`;
+    const p = document.createElement("p"); p.textContent = w.ucapan;
+    d.append(n, s, p); box.appendChild(d);
+  });
+}
+$("rsvp").onsubmit = e => {
+  e.preventDefault(); const f = new FormData(e.target);
+  wishes.push({ nama: f.get("nama"), hadir: f.get("hadir"), tebak: f.get("tebak"), ucapan: f.get("ucapan") || "✨" });
+  drawWishes(); e.target.reset();
+};
+drawWishes();
+</script>
+</body>
+</html>

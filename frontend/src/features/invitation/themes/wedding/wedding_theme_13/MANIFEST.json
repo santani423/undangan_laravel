@@ -1,0 +1,363 @@
+[
+ {
+  "nama": "air_n",
+  "path": "assets/air_n.jpg",
+  "format": "JPG",
+  "ukuran_px": "512x512",
+  "kb": 84,
+  "metode": "Prosedural (Python numpy/OpenCV, make_sunda_assets.py)",
+  "fungsi": "Normal map riak air kolam (dianimasikan)"
+ },
+ {
+  "nama": "bambu",
+  "path": "assets/bambu.jpg",
+  "format": "JPG",
+  "ukuran_px": "128x512",
+  "kb": 5,
+  "metode": "Prosedural (Python numpy/OpenCV, make_sunda_assets.py)",
+  "fungsi": "Kulit batang bambu, obor, lantai saung"
+ },
+ {
+  "nama": "batik_rereng",
+  "path": "assets/batik_rereng.jpg",
+  "format": "JPG",
+  "ukuran_px": "512x512",
+  "kb": 107,
+  "metode": "Prosedural (Python numpy/OpenCV, make_sunda_assets.py)",
+  "fungsi": "Batik rereng berdasar gumading ala Garutan: taplak tiang uleman, karpet pelaminan, lapisan tutup amplop"
+ },
+ {
+  "nama": "batu",
+  "path": "assets/batu.jpg",
+  "format": "JPG",
+  "ukuran_px": "512x512",
+  "kb": 27,
+  "metode": "Prosedural (Python numpy/OpenCV, make_sunda_assets.py)",
+  "fungsi": "Tekstur batu andesit berlumut untuk jalan setapak, umpak, tepi kolam"
+ },
+ {
+  "nama": "batu_n",
+  "path": "assets/batu_n.jpg",
+  "format": "JPG",
+  "ukuran_px": "512x512",
+  "kb": 90,
+  "metode": "Prosedural (Python numpy/OpenCV, make_sunda_assets.py)",
+  "fungsi": "Normal map batu"
+ },
+ {
+  "nama": "bilik",
+  "path": "assets/bilik.jpg",
+  "format": "JPG",
+  "ukuran_px": "512x512",
+  "kb": 43,
+  "metode": "Prosedural (Python numpy/OpenCV, make_sunda_assets.py)",
+  "fungsi": "Anyaman bambu (bilik): dinding pelana, saung, lampion"
+ },
+ {
+  "nama": "bilik_n",
+  "path": "assets/bilik_n.jpg",
+  "format": "JPG",
+  "ukuran_px": "512x512",
+  "kb": 53,
+  "metode": "Prosedural (Python numpy/OpenCV, make_sunda_assets.py)",
+  "fungsi": "Normal map bilik"
+ },
+ {
+  "nama": "daun_bambu",
+  "path": "assets/daun_bambu.png",
+  "format": "PNG",
+  "ukuran_px": "96x512",
+  "kb": 51,
+  "metode": "Prosedural (Python numpy/OpenCV, make_sunda_assets.py)",
+  "fungsi": "Daun bambu ramping (RGBA)"
+ },
+ {
+  "nama": "daun_pisang",
+  "path": "assets/daun_pisang.png",
+  "format": "PNG",
+  "ukuran_px": "384x1024",
+  "kb": 415,
+  "metode": "Prosedural (Python numpy/OpenCV, make_sunda_assets.py)",
+  "fungsi": "Daun pisang dengan sobekan (RGBA)"
+ },
+ {
+  "nama": "fabric",
+  "path": "assets/fabric.jpg",
+  "format": "JPG",
+  "ukuran_px": "512x512",
+  "kb": 36,
+  "metode": "Prosedural (Python, make_assets.py — dipakai bersama)",
+  "fungsi": "Kain linen (cadangan)"
+ },
+ {
+  "nama": "fabric_n",
+  "path": "assets/fabric_n.jpg",
+  "format": "JPG",
+  "ukuran_px": "512x512",
+  "kb": 141,
+  "metode": "Prosedural (Python, make_assets.py — dipakai bersama)",
+  "fungsi": "Normal map kain (cadangan)"
+ },
+ {
+  "nama": "flame",
+  "path": "assets/flame.png",
+  "format": "PNG",
+  "ukuran_px": "128x256",
+  "kb": 12,
+  "metode": "Prosedural (Python, make_assets.py — dipakai bersama)",
+  "fungsi": "Api pelita/obor"
+ },
+ {
+  "nama": "galeri-1",
+  "path": "assets/galeri-1.jpg",
+  "format": "JPG",
+  "ukuran_px": "800x800",
+  "kb": 113,
+  "metode": "Render dari adegan 3D proyek ini (Three.js, kamera diatur skrip)",
+  "fungsi": "Foto contoh galeri ke-1 (ganti di WEDDING.galeri)"
+ },
+ {
+  "nama": "galeri-2",
+  "path": "assets/galeri-2.jpg",
+  "format": "JPG",
+  "ukuran_px": "800x800",
+  "kb": 88,
+  "metode": "Render dari adegan 3D proyek ini (Three.js, kamera diatur skrip)",
+  "fungsi": "Foto contoh galeri ke-2 (ganti di WEDDING.galeri)"
+ },
+ {
+  "nama": "galeri-3",
+  "path": "assets/galeri-3.jpg",
+  "format": "JPG",
+  "ukuran_px": "800x800",
+  "kb": 112,
+  "metode": "Render dari adegan 3D proyek ini (Three.js, kamera diatur skrip)",
+  "fungsi": "Foto contoh galeri ke-3 (ganti di WEDDING.galeri)"
+ },
+ {
+  "nama": "galeri-4",
+  "path": "assets/galeri-4.jpg",
+  "format": "JPG",
+  "ukuran_px": "800x800",
+  "kb": 105,
+  "metode": "Render dari adegan 3D proyek ini (Three.js, kamera diatur skrip)",
+  "fungsi": "Foto contoh galeri ke-4 (ganti di WEDDING.galeri)"
+ },
+ {
+  "nama": "galeri-5",
+  "path": "assets/galeri-5.jpg",
+  "format": "JPG",
+  "ukuran_px": "800x800",
+  "kb": 69,
+  "metode": "Render dari adegan 3D proyek ini (Three.js, kamera diatur skrip)",
+  "fungsi": "Foto contoh galeri ke-5 (ganti di WEDDING.galeri)"
+ },
+ {
+  "nama": "galeri-6",
+  "path": "assets/galeri-6.jpg",
+  "format": "JPG",
+  "ukuran_px": "800x800",
+  "kb": 81,
+  "metode": "Render dari adegan 3D proyek ini (Three.js, kamera diatur skrip)",
+  "fungsi": "Foto contoh galeri ke-6 (ganti di WEDDING.galeri)"
+ },
+ {
+  "nama": "grass",
+  "path": "assets/grass.jpg",
+  "format": "JPG",
+  "ukuran_px": "1024x1024",
+  "kb": 253,
+  "metode": "Prosedural (Python, make_assets.py — dipakai bersama)",
+  "fungsi": "Rumput tanah"
+ },
+ {
+  "nama": "grass_n",
+  "path": "assets/grass_n.jpg",
+  "format": "JPG",
+  "ukuran_px": "1024x1024",
+  "kb": 490,
+  "metode": "Prosedural (Python, make_assets.py — dipakai bersama)",
+  "fungsi": "Normal map rumput"
+ },
+ {
+  "nama": "ijuk",
+  "path": "assets/ijuk.jpg",
+  "format": "JPG",
+  "ukuran_px": "512x512",
+  "kb": 48,
+  "metode": "Prosedural (Python numpy/OpenCV, make_sunda_assets.py)",
+  "fungsi": "Atap ijuk (serat aren) julang ngapak"
+ },
+ {
+  "nama": "ijuk_n",
+  "path": "assets/ijuk_n.jpg",
+  "format": "JPG",
+  "ukuran_px": "512x512",
+  "kb": 129,
+  "metode": "Prosedural (Python numpy/OpenCV, make_sunda_assets.py)",
+  "fungsi": "Normal map ijuk"
+ },
+ {
+  "nama": "jati",
+  "path": "assets/jati.jpg",
+  "format": "JPG",
+  "ukuran_px": "256x1024",
+  "kb": 22,
+  "metode": "Prosedural (Python numpy/OpenCV, make_sunda_assets.py)",
+  "fungsi": "Serat kayu jati: pendopo, saung, gapura, sasak, bingkai"
+ },
+ {
+  "nama": "jati_n",
+  "path": "assets/jati_n.jpg",
+  "format": "JPG",
+  "ukuran_px": "256x1024",
+  "kb": 20,
+  "metode": "Prosedural (Python numpy/OpenCV, make_sunda_assets.py)",
+  "fungsi": "Normal map kayu jati"
+ },
+ {
+  "nama": "kisah-1",
+  "path": "assets/kisah-1.jpg",
+  "format": "JPG",
+  "ukuran_px": "640x800",
+  "kb": 111,
+  "metode": "Render dari adegan 3D proyek ini (Three.js, kamera diatur skrip)",
+  "fungsi": "Foto contoh kisah ke-1 (ganti di WEDDING.kisah)"
+ },
+ {
+  "nama": "kisah-2",
+  "path": "assets/kisah-2.jpg",
+  "format": "JPG",
+  "ukuran_px": "640x800",
+  "kb": 86,
+  "metode": "Render dari adegan 3D proyek ini (Three.js, kamera diatur skrip)",
+  "fungsi": "Foto contoh kisah ke-2 (ganti di WEDDING.kisah)"
+ },
+ {
+  "nama": "kisah-3",
+  "path": "assets/kisah-3.jpg",
+  "format": "JPG",
+  "ukuran_px": "640x800",
+  "kb": 82,
+  "metode": "Render dari adegan 3D proyek ini (Three.js, kamera diatur skrip)",
+  "fungsi": "Foto contoh kisah ke-3 (ganti di WEDDING.kisah)"
+ },
+ {
+  "nama": "kisah-4",
+  "path": "assets/kisah-4.jpg",
+  "format": "JPG",
+  "ukuran_px": "640x800",
+  "kb": 52,
+  "metode": "Render dari adegan 3D proyek ini (Three.js, kamera diatur skrip)",
+  "fungsi": "Foto contoh kisah ke-4 (ganti di WEDDING.kisah)"
+ },
+ {
+  "nama": "latar-panganten",
+  "path": "assets/latar-panganten.jpg",
+  "format": "JPG",
+  "ukuran_px": "900x1200",
+  "kb": 42,
+  "metode": "Ilustrasi vektor SVG dirasterisasi Chromium",
+  "fungsi": "Latar lengkung emas untuk komposisi 2.5D"
+ },
+ {
+  "nama": "leaf",
+  "path": "assets/leaf.png",
+  "format": "PNG",
+  "ukuran_px": "256x512",
+  "kb": 133,
+  "metode": "Prosedural (Python, make_assets.py — dipakai bersama)",
+  "fungsi": "Daun rangkaian bunga"
+ },
+ {
+  "nama": "leaf_n",
+  "path": "assets/leaf_n.jpg",
+  "format": "JPG",
+  "ukuran_px": "256x512",
+  "kb": 22,
+  "metode": "Prosedural (Python, make_assets.py — dipakai bersama)",
+  "fungsi": "Normal map daun / semak"
+ },
+ {
+  "nama": "melati",
+  "path": "assets/melati.png",
+  "format": "PNG",
+  "ukuran_px": "256x256",
+  "kb": 25,
+  "metode": "Prosedural (Python numpy/OpenCV, make_sunda_assets.py)",
+  "fungsi": "Bunga melati 5 kelopak (RGBA) untuk rangkaian & semak"
+ },
+ {
+  "nama": "panganten",
+  "path": "assets/panganten.png",
+  "format": "PNG",
+  "ukuran_px": "900x1650",
+  "kb": 584,
+  "metode": "Ilustrasi vektor SVG (make_panganten_svg.py) dirasterisasi Chromium",
+  "fungsi": "Ilustrasi 2.5D pengantin Sunda Siger: bendo, jas, samping batik, keris; siger gunungan, 7 kembang goyang, roncean melati 5 & 3 untai, kelat bahu"
+ },
+ {
+  "nama": "paper",
+  "path": "assets/paper.jpg",
+  "format": "JPG",
+  "ukuran_px": "1024x1024",
+  "kb": 63,
+  "metode": "Prosedural (Python, make_assets.py — dipakai bersama)",
+  "fungsi": "Kertas undangan berserat"
+ },
+ {
+  "nama": "paper_n",
+  "path": "assets/paper_n.jpg",
+  "format": "JPG",
+  "ukuran_px": "1024x1024",
+  "kb": 161,
+  "metode": "Prosedural (Python, make_assets.py — dipakai bersama)",
+  "fungsi": "Normal map kertas"
+ },
+ {
+  "nama": "petal",
+  "path": "assets/petal.png",
+  "format": "PNG",
+  "ukuran_px": "256x256",
+  "kb": 23,
+  "metode": "Prosedural (Python, make_assets.py — dipakai bersama)",
+  "fungsi": "Kelopak (mawar putih & kelopak melayang)"
+ },
+ {
+  "nama": "sky_golden",
+  "path": "assets/sky_golden.jpg",
+  "format": "JPG",
+  "ukuran_px": "2048x1024",
+  "kb": 67,
+  "metode": "Prosedural (Python, make_golden.py)",
+  "fungsi": "Langit equirectangular golden hour + pantulan lingkungan"
+ },
+ {
+  "nama": "geometri-3d",
+  "path": "src/adegan.js",
+  "format": "Three.js prosedural",
+  "metode": "Kode",
+  "fungsi": "Pendopo panggung beratap julang ngapak + capit gunting, saung, gapura, sasak, kolam, rumpun bambu, pisang, semak melati, mawar putih, roncean melati, obor bambu, tiang uleman, amplop, segel, kartu lipat"
+ },
+ {
+  "nama": "tekstur-kanvas",
+  "path": "src/adegan.js",
+  "format": "Canvas 2D runtime",
+  "metode": "Kode",
+  "fungsi": "Ornamen sulur bergaya ukiran Sunda pada amplop, kartu, panel pelaminan; segel lilin marun bermonogram; papan keterangan kisah"
+ },
+ {
+  "nama": "ikon-ui",
+  "path": "src/index.html",
+  "format": "SVG inline",
+  "metode": "Gambar tangan (SVG)",
+  "fungsi": "Ikon RSVP, kalender, lokasi, hadiah, buku tamu, musik, rumah beratap capit gunting; pembatas ornamen; artwork pemuat siger-gunungan"
+ },
+ {
+  "nama": "musik",
+  "path": "src/musik.js",
+  "format": "Web Audio (sintesis)",
+  "metode": "Kode",
+  "fungsi": "Nuansa kecapi suling: petikan Karplus-Strong + suling sinus, tangga nada pendekatan salendro"
+ }
+]

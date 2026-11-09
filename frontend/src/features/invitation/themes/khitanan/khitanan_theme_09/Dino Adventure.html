@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dino Adventure Khitanan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Fredoka:wght@400;500;600;700&family=Luckiest+Guy&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --hijau:#4caf50;
+    --hijau-tua:#2e7d32;
+    --hijau-gelap:#1b5e20;
+    --hijau-muda:#a5d6a7;
+    --biru:#4fc3f7;
+    --biru-tua:#0288d1;
+    --biru-muda:#e1f5fe;
+    --oranye:#ff9800;
+    --oranye-tua:#e65100;
+    --oranye-muda:#ffe0b2;
+    --krem:#fffaf0;
+    --teks:#2d3a2e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Nunito',sans-serif;
+    background:var(--krem);
+    color:var(--teks);
+    line-height:1.75;
+    overflow-x:hidden;
+  }
+  body.terkunci{overflow:hidden}
+
+  /* ===== Latar ===== */
+  .langit{
+    position:relative;overflow:hidden;
+    background:linear-gradient(180deg,#81d4fa 0%,var(--biru-muda) 70%);
+  }
+  .hutan-bg{
+    position:relative;overflow:hidden;color:#fff;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(255,255,255,.08) 0 60px, transparent 61px),
+      radial-gradient(circle at 85% 70%, rgba(255,255,255,.06) 0 80px, transparent 81px),
+      linear-gradient(180deg,var(--hijau-tua) 0%,var(--hijau-gelap) 100%);
+  }
+  .krem-bg{
+    position:relative;overflow:hidden;background-color:var(--krem);
+  }
+  .jejak{
+    position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.09;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='%232e7d32'%3E%3Cellipse cx='30' cy='36' rx='9' ry='11'/%3E%3Ccircle cx='20' cy='20' r='4'/%3E%3Ccircle cx='30' cy='16' r='4'/%3E%3Ccircle cx='40' cy='20' r='4'/%3E%3Cellipse cx='84' cy='92' rx='9' ry='11'/%3E%3Ccircle cx='74' cy='76' r='4'/%3E%3Ccircle cx='84' cy='72' r='4'/%3E%3Ccircle cx='94' cy='76' r='4'/%3E%3C/g%3E%3C/svg%3E");
+    background-size:120px 120px;
+  }
+  .oranye-bg{
+    position:relative;overflow:hidden;
+    background:linear-gradient(180deg,var(--oranye-muda),#ffcc80);
+  }
+
+  /* ===== Hiasan ===== */
+  .pemandangan{position:absolute;left:0;right:0;bottom:0;width:100%;height:auto;z-index:1;pointer-events:none}
+  .awan{position:absolute;z-index:0;pointer-events:none;animation:melayang 10s ease-in-out infinite}
+  .awan.b{animation-duration:14s;animation-delay:-5s}
+  @keyframes melayang{0%,100%{transform:translateX(0)}50%{transform:translateX(26px)}}
+  .matahari{position:absolute;z-index:0;animation:putar 30s linear infinite}
+  @keyframes putar{to{transform:rotate(360deg)}}
+  .dino-intip{position:absolute;z-index:2;pointer-events:none;animation:intip 4s ease-in-out infinite}
+  @keyframes intip{0%,100%{transform:translateY(8px)}40%,60%{transform:translateY(-6px)}}
+  .goyang{animation:goyang 2.6s ease-in-out infinite;transform-origin:bottom center}
+  @keyframes goyang{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+  .lompat{animation:lompat 2.4s ease-in-out infinite}
+  @keyframes lompat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  .daun-hias{position:absolute;z-index:1;pointer-events:none}
+
+  /* Pemisah bergerigi (punggung dino) */
+  .gerigi{height:22px;width:100%;position:relative;z-index:3}
+  .gerigi.hijau{background:
+      linear-gradient(135deg,transparent 50%,var(--hijau-tua) 50%) 0 0/22px 22px repeat-x,
+      linear-gradient(225deg,transparent 50%,var(--hijau-tua) 50%) 0 0/22px 22px repeat-x}
+  .gerigi.hijau-krem{background-color:var(--hijau-tua);background-image:
+      linear-gradient(135deg,var(--krem) 50%,transparent 50%),
+      linear-gradient(225deg,var(--krem) 50%,transparent 50%);background-size:22px 22px;background-repeat:repeat-x}
+
+  /* ===== Sampul ===== */
+  #sampul{
+    position:fixed;inset:0;z-index:100;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:24px 22px 150px;
+    transition:transform .9s cubic-bezier(.6,-0.3,.7,1), opacity .9s;
+  }
+  #sampul.tutup{transform:translateY(110%);opacity:0;pointer-events:none}
+  .papan{
+    position:relative;z-index:3;max-width:340px;width:100%;
+    background:var(--krem);
+    border:5px solid var(--hijau-tua);
+    border-radius:32px;
+    padding:18px 22px 26px;
+    box-shadow:0 8px 0 var(--hijau-gelap), 0 22px 40px rgba(27,94,32,.25);
+  }
+  .tokoh-sampul{width:190px;height:150px;margin:-95px auto 0;display:block}
+  .kecil{font-size:.72rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--biru-tua);font-weight:800}
+  .judul-tema{
+    font-family:'Luckiest Guy',cursive;font-size:1.6rem;letter-spacing:1px;line-height:1.1;
+    color:var(--oranye);-webkit-text-stroke:1.5px var(--oranye-tua);margin-top:4px;
+  }
+  .nama-besar{
+    font-family:'Fredoka',sans-serif;font-weight:700;font-size:2.5rem;line-height:1.1;color:var(--hijau-tua);
+    margin:6px 0 2px;
+  }
+  .kepada{margin-top:12px;font-size:.82rem;opacity:.8}
+  .tamu{font-size:1.08rem;font-weight:800;margin:2px 0 18px;color:var(--biru-tua)}
+  .tombol{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--oranye);color:#fff;
+    border:3px solid var(--oranye-tua);border-radius:40px;padding:10px 26px;
+    font-family:'Fredoka',sans-serif;font-weight:700;font-size:1.05rem;cursor:pointer;
+    text-decoration:none;
+    box-shadow:0 5px 0 var(--oranye-tua);
+    transition:transform .15s, box-shadow .15s;
+  }
+  .tombol:hover{transform:translateY(3px);box-shadow:0 2px 0 var(--oranye-tua)}
+  .tombol.hijau{background:var(--hijau);border-color:var(--hijau-tua);box-shadow:0 5px 0 var(--hijau-tua)}
+  .tombol.hijau:hover{box-shadow:0 2px 0 var(--hijau-tua)}
+
+  /* ===== Bagian umum ===== */
+  section{padding:80px 20px;text-align:center;position:relative}
+  .wadah{max-width:560px;margin:0 auto;position:relative;z-index:3}
+  .judul{
+    font-family:'Luckiest Guy',cursive;font-size:2rem;letter-spacing:1px;line-height:1.15;
+    color:var(--hijau-tua);
+  }
+  .hutan-bg .judul{color:var(--oranye-muda)}
+  .pemisah{display:flex;justify-content:center;gap:6px;margin:8px auto 24px}
+  .pemisah svg{width:22px;height:22px}
+  .arab{font-family:'Amiri',serif;font-size:2rem;color:var(--hijau-gelap);direction:rtl;margin-bottom:6px}
+
+  /* Hero */
+  #hero{min-height:100vh;display:flex;align-items:center;justify-content:center;padding-bottom:210px}
+  #hero p{max-width:440px;margin:0 auto;font-weight:600}
+
+  /* Anak */
+  .potret{position:relative;width:260px;margin:0 auto 20px}
+  .foto{
+    width:210px;height:210px;margin:0 auto;border-radius:50%;
+    border:8px solid var(--oranye);
+    background:linear-gradient(180deg,#81d4fa,var(--biru-muda));
+    display:flex;align-items:flex-end;justify-content:center;overflow:hidden;
+    box-shadow:0 0 0 6px var(--krem), 0 0 0 10px var(--hijau), 0 14px 30px rgba(0,0,0,.3);
+  }
+  .foto svg{width:94%;height:94%}
+  .dino-foto{position:absolute;bottom:-14px;right:-18px;width:110px;z-index:2}
+  .telur{position:absolute;bottom:-4px;left:4px;width:52px;z-index:2}
+  .gelar{
+    display:inline-block;margin:12px 0 4px;
+    font-family:'Fredoka',sans-serif;font-weight:700;font-size:.95rem;
+    padding:3px 18px;border-radius:20px;background:var(--oranye);color:#fff;
+  }
+  .nama-anak{font-family:'Fredoka',sans-serif;font-weight:700;font-size:2.1rem;line-height:1.2;color:#fff}
+  .ortu{margin-top:8px;font-size:.95rem}
+  .ortu b{color:var(--oranye-muda)}
+
+  /* Kartu acara */
+  .kartu-daftar{display:grid;gap:20px}
+  .kartu{
+    position:relative;background:#fff;
+    padding:24px 22px 22px;border-radius:28px;
+    border:4px solid var(--hijau);
+    box-shadow:0 6px 0 var(--hijau-tua);
+  }
+  .kartu:nth-child(2){border-color:var(--biru);box-shadow:0 6px 0 var(--biru-tua)}
+  .kartu svg.ikon{width:70px;height:56px}
+  .kartu h3{font-family:'Luckiest Guy',cursive;letter-spacing:1px;font-size:1.5rem;color:var(--oranye)}
+  .kartu .tgl{font-weight:800;margin:2px 0;color:var(--hijau-tua)}
+  .kartu .jam{font-size:.9rem;color:#6b756c}
+  .alamat{margin:26px 0 4px;font-size:.95rem}
+  .alamat b{color:var(--hijau-tua)}
+
+  /* Hitung mundur: telur dino */
+  .hitung{display:flex;justify-content:center;gap:10px;margin:22px 0 28px}
+  .hitung div{
+    min-width:66px;padding:14px 6px 8px;
+    border-radius:50% 50% 46% 46% / 60% 60% 40% 40%;
+    background:#fff;border:3px solid var(--oranye);
+    background-image:radial-gradient(circle at 30% 30%, var(--oranye-muda) 0 5px, transparent 6px),radial-gradient(circle at 70% 75%, var(--oranye-muda) 0 4px, transparent 5px);
+  }
+  .hitung span{display:block;font-family:'Fredoka',sans-serif;font-size:1.6rem;font-weight:700;color:var(--hijau-tua);line-height:1.1}
+  .hitung small{font-size:.66rem;font-weight:800;text-transform:uppercase;color:var(--oranye-tua)}
+
+  .peta{
+    margin-top:22px;border-radius:24px;overflow:hidden;border:5px solid var(--hijau);
+    box-shadow:0 6px 0 var(--hijau-tua);
+    aspect-ratio:16/10;background:var(--biru-muda);
+  }
+  .peta iframe{width:100%;height:100%;border:0}
+
+  /* Doa */
+  .gelembung{
+    position:relative;max-width:440px;margin:0 auto;
+    background:#fff;border-radius:28px;padding:22px 24px;border:4px solid var(--oranye);
+    font-weight:600;
+  }
+  .gelembung::after{
+    content:"";position:absolute;bottom:-18px;left:50%;margin-left:-14px;
+    border:14px solid transparent;border-top-color:var(--oranye);border-bottom:0;
+  }
+  .dino-doa{width:130px;margin-top:22px}
+
+  /* RSVP */
+  form{display:grid;gap:12px;text-align:left;margin-top:8px}
+  label{font-size:.9rem;font-weight:800;color:var(--hijau-tua)}
+  input,select,textarea{
+    width:100%;padding:12px 16px;border-radius:18px;
+    border:3px solid var(--hijau-muda);background:#fff;color:var(--teks);
+    font-family:inherit;font-size:.95rem;
+  }
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--hijau)}
+  form .tombol{justify-self:center;margin-top:10px}
+
+  /* Amplop */
+  .rekening{
+    background:#fff;color:var(--teks);border-radius:28px;padding:24px;margin-top:18px;
+    border:4px dashed var(--oranye);
+  }
+  .rekening .no{font-family:'Fredoka',sans-serif;font-size:1.7rem;font-weight:700;letter-spacing:2px;color:var(--hijau-tua);margin:2px 0}
+  .salin{
+    border:3px solid var(--biru-tua);background:transparent;color:var(--biru-tua);
+    border-radius:30px;padding:4px 16px;font-family:inherit;font-weight:800;font-size:.8rem;cursor:pointer;margin-top:8px
+  }
+  .salin:hover{background:var(--biru-tua);color:#fff}
+
+  footer{text-align:center;padding:80px 20px 230px}
+  footer .nama-besar{font-size:2rem}
+  .kredit{margin-top:18px;font-size:.72rem;opacity:.6}
+
+  .muncul{opacity:0;transform:translateY(34px) scale(.95);transition:all .8s cubic-bezier(.2,.9,.3,1.3)}
+  .muncul.tampil{opacity:1;transform:none}
+
+  #toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);
+    background:var(--hijau-tua);color:#fff;padding:10px 20px;border-radius:30px;
+    font-weight:800;font-size:.85rem;transition:transform .4s;z-index:200
+  }
+  #toast.tampil{transform:translateX(-50%) translateY(0)}
+
+  @media (max-width:420px){
+    .nama-besar{font-size:2.2rem}
+    .hitung{gap:7px}
+    .hitung div{min-width:60px}
+    .hitung span{font-size:1.35rem}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .muncul{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body class="terkunci">
+
+<!-- ===== Simbol SVG (gambar original) ===== -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="awan" viewBox="0 0 160 70">
+      <path d="M30 62a22 22 0 0 1 2-44A30 30 0 0 1 90 14a24 24 0 0 1 40 14 17 17 0 0 1 4 34z" fill="#fff"/>
+    </symbol>
+
+    <symbol id="matahari" viewBox="0 0 100 100">
+      <g stroke="#ffb300" stroke-width="6" stroke-linecap="round">
+        <path d="M50 4v12M50 84v12M4 50h12M84 50h12M17 17l9 9M74 74l9 9M17 83l9-9M74 26l9-9"/>
+      </g>
+      <circle cx="50" cy="50" r="24" fill="#ffca28"/>
+    </symbol>
+
+    <!-- Daun pakis / palem -->
+    <symbol id="daun" viewBox="0 0 100 100">
+      <path d="M50 100C50 70 40 40 10 20" stroke="#2e7d32" stroke-width="4" fill="none"/>
+      <g fill="#4caf50">
+        <path d="M44 80c-14-2-24 4-30 12 14 2 24-2 30-12z"/>
+        <path d="M44 80c-2-14 4-24 14-30 2 14-4 24-14 30z"/>
+        <path d="M36 58c-14-2-24 2-30 10 14 2 24-2 30-10z"/>
+        <path d="M36 58c0-14 6-22 16-28 0 14-6 22-16 28z"/>
+        <path d="M24 38c-12-2-20 2-24 8 12 2 20-2 24-8z"/>
+        <path d="M24 38c0-12 6-18 14-22 0 12-6 18-14 22z"/>
+      </g>
+    </symbol>
+
+    <!-- Jejak kaki dino -->
+    <symbol id="jejak" viewBox="0 0 30 30">
+      <ellipse cx="15" cy="19" rx="7" ry="8" fill="#ff9800"/>
+      <circle cx="7" cy="8" r="3.5" fill="#ff9800"/><circle cx="15" cy="5" r="3.5" fill="#ff9800"/><circle cx="23" cy="8" r="3.5" fill="#ff9800"/>
+    </symbol>
+
+    <!-- Dino lucu (original) -->
+    <symbol id="dino" viewBox="0 0 160 140">
+      <!-- ekor -->
+      <path d="M30 100c-20 0-28-10-28-22 8 8 20 10 34 8z" fill="#4caf50"/>
+      <!-- duri punggung -->
+      <g fill="#ff9800" stroke="#e65100" stroke-width="2" stroke-linejoin="round">
+        <path d="M58 38l8-16 8 14z"/><path d="M76 32l10-16 8 16z"/><path d="M96 34l10-14 6 16z"/>
+        <path d="M44 52l4-16 10 12z"/><path d="M34 72l0-14 12 8z"/>
+      </g>
+      <!-- badan -->
+      <ellipse cx="70" cy="90" rx="44" ry="38" fill="#4caf50"/>
+      <ellipse cx="74" cy="100" rx="26" ry="24" fill="#c8e6c9"/>
+      <g stroke="#a5d6a7" stroke-width="2"><path d="M54 92h40M52 102h44M56 112h36"/></g>
+      <!-- kepala -->
+      <ellipse cx="112" cy="58" rx="36" ry="30" fill="#4caf50"/>
+      <circle cx="118" cy="50" r="9" fill="#fff"/><circle cx="120" cy="51" r="5.5" fill="#1b2a1c"/><circle cx="122" cy="49" r="2" fill="#fff"/>
+      <circle cx="140" cy="60" r="2" fill="#1b5e20"/><circle cx="146" cy="58" r="2" fill="#1b5e20"/>
+      <path d="M118 72c8 6 18 6 24 0" stroke="#1b5e20" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <ellipse cx="104" cy="68" rx="7" ry="4.5" fill="#ffab91" opacity=".8"/>
+      <!-- bintik -->
+      <circle cx="96" cy="42" r="4" fill="#388e3c"/><circle cx="46" cy="84" r="5" fill="#388e3c"/><circle cx="58" cy="70" r="3.5" fill="#388e3c"/>
+      <!-- tangan -->
+      <path d="M100 92c8 0 12 4 12 10" stroke="#388e3c" stroke-width="8" stroke-linecap="round" fill="none"/>
+      <!-- kaki -->
+      <rect x="44" y="116" width="22" height="22" rx="10" fill="#388e3c"/>
+      <rect x="80" y="116" width="22" height="22" rx="10" fill="#388e3c"/>
+      <path d="M46 136h4M54 136h4M82 136h4M90 136h4" stroke="#c8e6c9" stroke-width="3" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- Dino biru kecil (teman) -->
+    <symbol id="dino-biru" viewBox="0 0 160 140">
+      <path d="M30 100c-20 0-28-10-28-22 8 8 20 10 34 8z" fill="#4fc3f7"/>
+      <g fill="#ff9800" stroke="#e65100" stroke-width="2" stroke-linejoin="round">
+        <path d="M58 38l8-16 8 14z"/><path d="M76 32l10-16 8 16z"/><path d="M96 34l10-14 6 16z"/>
+        <path d="M44 52l4-16 10 12z"/>
+      </g>
+      <ellipse cx="70" cy="90" rx="44" ry="38" fill="#4fc3f7"/>
+      <ellipse cx="74" cy="100" rx="26" ry="24" fill="#e1f5fe"/>
+      <ellipse cx="112" cy="58" rx="36" ry="30" fill="#4fc3f7"/>
+      <path d="M112 50c3-4 9-4 12 0" stroke="#01579b" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+      <path d="M116 70c6 8 20 8 26 0z" fill="#01579b"/>
+      <path d="M122 73c3 3 8 3 11 0" fill="#ff8a80"/>
+      <ellipse cx="102" cy="66" rx="7" ry="4.5" fill="#ffab91" opacity=".8"/>
+      <circle cx="46" cy="84" r="5" fill="#0288d1"/><circle cx="96" cy="40" r="4" fill="#0288d1"/>
+      <path d="M100 92c10-6 16-14 16-22" stroke="#0288d1" stroke-width="8" stroke-linecap="round" fill="none"/>
+      <rect x="44" y="116" width="22" height="22" rx="10" fill="#0288d1"/>
+      <rect x="80" y="116" width="22" height="22" rx="10" fill="#0288d1"/>
+    </symbol>
+
+    <!-- Telur dino -->
+    <symbol id="telur" viewBox="0 0 60 72">
+      <path d="M30 2C14 2 4 28 4 44c0 16 12 26 26 26s26-10 26-26C56 28 46 2 30 2z" fill="#fff3e0" stroke="#ff9800" stroke-width="3"/>
+      <circle cx="20" cy="30" r="5" fill="#ffcc80"/><circle cx="38" cy="46" r="6" fill="#ffcc80"/><circle cx="24" cy="56" r="3.5" fill="#ffcc80"/>
+      <path d="M8 40l8 6 7-8 7 8 8-8 7 8 7-6" stroke="#e65100" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+    </symbol>
+
+    <!-- Anak petualang (original): peci hijau, baju oranye -->
+    <symbol id="anak" viewBox="0 0 160 170">
+      <path d="M38 170c0-34 18-54 42-54s42 20 42 54z" fill="#ff9800"/>
+      <path d="M72 118l8 12 8-12" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M80 130v40" stroke="#e65100" stroke-width="3"/>
+      <circle cx="80" cy="142" r="2.5" fill="#fff"/><circle cx="80" cy="156" r="2.5" fill="#fff"/>
+      <path d="M50 124c14 12 22 30 26 46h-8c-4-14-12-30-24-40z" fill="#2e7d32"/>
+      <rect x="72" y="104" width="16" height="16" rx="6" fill="#f6d5b8"/>
+      <circle cx="42" cy="78" r="10" fill="#f6d5b8"/><circle cx="118" cy="78" r="10" fill="#f6d5b8"/>
+      <ellipse cx="80" cy="74" rx="38" ry="36" fill="#fbe0c7"/>
+      <path d="M44 62c4-6 10-8 16-6M116 62c-4-6-10-8-16-6" stroke="#4b3f36" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <path d="M40 58c0-20 18-30 40-30s40 10 40 30z" fill="#2e7d32"/>
+      <rect x="38" y="52" width="84" height="10" rx="5" fill="#1b5e20"/>
+      <path d="M52 44l6-6 6 6 6-6 6 6 6-6 6 6 6-6 6 6 6-6" stroke="#a5d6a7" stroke-width="2" fill="none"/>
+      <ellipse cx="66" cy="78" rx="5" ry="6" fill="#3a2e25"/>
+      <ellipse cx="94" cy="78" rx="5" ry="6" fill="#3a2e25"/>
+      <circle cx="67.8" cy="75.5" r="1.8" fill="#fff"/><circle cx="95.8" cy="75.5" r="1.8" fill="#fff"/>
+      <ellipse cx="56" cy="92" rx="7" ry="4.5" fill="#f7b9b0" opacity=".8"/>
+      <ellipse cx="104" cy="92" rx="7" ry="4.5" fill="#f7b9b0" opacity=".8"/>
+      <path d="M70 92c4 7 16 7 20 0z" fill="#8d3b2a"/>
+    </symbol>
+
+    <!-- Pemandangan gunung & hutan -->
+    <symbol id="pemandangan" viewBox="0 0 800 260" preserveAspectRatio="xMidYMax slice">
+      <!-- gunung jauh -->
+      <path d="M0 170L120 60l90 80 110-110 130 120 100-70 130 100 120-60v140H0z" fill="#90caf9"/>
+      <path d="M320 30l-30 30 16 6 14-12 14 12 18-8z" fill="#fff"/>
+      <path d="M120 60l-22 20 12 4 10-8 10 8 12-6z" fill="#fff"/>
+      <!-- gunung api kecil -->
+      <path d="M560 200l60-110h30l60 110z" fill="#8d6e63"/>
+      <path d="M620 90h30l-6 14c-6-4-12-4-18 0z" fill="#ff7043"/>
+      <!-- bukit hijau -->
+      <path d="M0 200c80-40 160-40 240-10s160 30 240 0 200-40 320 0v70H0z" fill="#66bb6a"/>
+      <!-- pohon -->
+      <g fill="#2e7d32">
+        <path d="M60 210l24-60 24 60z"/><path d="M100 214l20-50 20 50z"/>
+        <path d="M680 210l24-60 24 60z"/><path d="M720 214l20-50 20 50z"/>
+        <circle cx="200" cy="200" r="22"/><circle cx="222" cy="192" r="18"/>
+        <circle cx="560" cy="204" r="20"/><circle cx="584" cy="198" r="16"/>
+      </g>
+      <g fill="#6d4c41">
+        <rect x="80" y="210" width="8" height="14"/><rect x="116" y="214" width="8" height="12"/>
+        <rect x="700" y="210" width="8" height="14"/><rect x="736" y="214" width="8" height="12"/>
+        <rect x="208" y="214" width="8" height="14"/><rect x="568" y="216" width="8" height="12"/>
+      </g>
+      <!-- tanah depan -->
+      <path d="M0 230c100-16 200-16 300 0s200 16 300 0 150-10 200-4v34H0z" fill="#43a047"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ================= SAMPUL ================= -->
+<div id="sampul" class="langit">
+  <svg class="matahari" style="top:4%;right:6%;width:74px;height:74px" viewBox="0 0 100 100"><use href="#matahari"/></svg>
+  <svg class="awan" style="top:9%;left:4%;width:110px;height:48px" viewBox="0 0 160 70"><use href="#awan"/></svg>
+  <svg class="awan b" style="top:20%;right:20%;width:80px;height:35px" viewBox="0 0 160 70"><use href="#awan"/></svg>
+
+  <div class="papan">
+    <svg class="tokoh-sampul lompat" viewBox="0 0 160 140"><use href="#dino"/></svg>
+    <div class="kecil">Undangan Tasyakuran Khitanan</div>
+    <div class="judul-tema">DINO ADVENTURE</div>
+    <div class="nama-besar">Muhammad Rafa</div>
+    <div class="kepada">Kepada Yth. Bapak/Ibu/Saudara/i</div>
+    <div class="tamu" id="namaTamu">Tamu Undangan</div>
+    <button class="tombol" id="bukaUndangan">🦕 Buka Undangan</button>
+  </div>
+  <svg class="pemandangan" viewBox="0 0 800 260" preserveAspectRatio="xMidYMax slice"><use href="#pemandangan"/></svg>
+  <svg class="dino-intip" style="bottom:10px;left:4%;width:90px;height:79px" viewBox="0 0 160 140"><use href="#dino-biru"/></svg>
+</div>
+
+<!-- ================= HERO ================= -->
+<section id="hero" class="langit">
+  <svg class="matahari" style="top:5%;left:6%;width:64px;height:64px" viewBox="0 0 100 100"><use href="#matahari"/></svg>
+  <svg class="awan" style="top:10%;right:6%;width:110px;height:48px" viewBox="0 0 160 70"><use href="#awan"/></svg>
+  <svg class="awan b" style="top:24%;left:12%;width:80px;height:35px" viewBox="0 0 160 70"><use href="#awan"/></svg>
+  <div class="wadah muncul">
+    <div class="arab">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</div>
+    <div class="kecil">Assalamu'alaikum Warahmatullahi Wabarakatuh</div>
+    <div class="pemisah">
+      <svg viewBox="0 0 30 30"><use href="#jejak"/></svg><svg viewBox="0 0 30 30" style="transform:translateY(6px)"><use href="#jejak"/></svg><svg viewBox="0 0 30 30"><use href="#jejak"/></svg>
+    </div>
+    <p>Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud menyelenggarakan tasyakuran khitanan putra kami tercinta. Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.</p>
+  </div>
+  <svg class="pemandangan" viewBox="0 0 800 260" preserveAspectRatio="xMidYMax slice"><use href="#pemandangan"/></svg>
+  <svg class="dino-intip" style="bottom:6px;right:6%;width:100px;height:88px;animation-delay:-2s" viewBox="0 0 160 140"><use href="#dino"/></svg>
+</section>
+
+<!-- ================= ANAK ================= -->
+<section id="anak-sec" class="hutan-bg">
+  <svg class="daun-hias" style="top:-10px;left:-14px;width:110px;height:110px;transform:rotate(180deg)" viewBox="0 0 100 100"><use href="#daun"/></svg>
+  <svg class="daun-hias" style="top:-10px;right:-14px;width:110px;height:110px;transform:scale(-1,-1)" viewBox="0 0 100 100"><use href="#daun"/></svg>
+  <div class="wadah muncul">
+    <div class="judul">SANG PETUALANG CILIK</div>
+    <div class="pemisah">
+      <svg viewBox="0 0 30 30"><use href="#jejak"/></svg><svg viewBox="0 0 30 30" style="transform:translateY(6px)"><use href="#jejak"/></svg><svg viewBox="0 0 30 30"><use href="#jejak"/></svg>
+    </div>
+    <div class="potret">
+      <!-- Untuk memakai foto: ganti <svg> di bawah dengan
+           <img src="foto.jpg" style="width:100%;height:100%;object-fit:cover"> -->
+      <div class="foto"><svg viewBox="0 0 160 170"><use href="#anak"/></svg></div>
+      <svg class="dino-foto goyang" viewBox="0 0 160 140"><use href="#dino"/></svg>
+      <svg class="telur goyang" viewBox="0 0 60 72" style="animation-delay:-1s"><use href="#telur"/></svg>
+    </div>
+    <div class="gelar">🦖 Little Dino Explorer 🦖</div>
+    <div class="nama-anak">Muhammad Rafa Alfarizi</div>
+    <p class="ortu">Putra dari<br><b>Bapak Ahmad Santani</b> &amp; <b>Ibu Siti Nurhaliza</b></p>
+  </div>
+</section>
+
+<div class="gerigi hijau-krem"></div>
+
+<!-- ================= ACARA ================= -->
+<section id="acara" class="krem-bg">
+  <div class="jejak"></div>
+  <div class="wadah muncul">
+    <div class="judul">WAKTU &amp; TEMPAT</div>
+    <div class="pemisah">
+      <svg viewBox="0 0 30 30"><use href="#jejak"/></svg><svg viewBox="0 0 30 30" style="transform:translateY(6px)"><use href="#jejak"/></svg><svg viewBox="0 0 30 30"><use href="#jejak"/></svg>
+    </div>
+
+    <div class="kartu-daftar">
+      <div class="kartu">
+        <svg class="ikon" viewBox="0 0 160 140"><use href="#dino"/></svg>
+        <h3>KHITANAN</h3>
+        <div class="tgl">Sabtu, 17 Oktober 2026</div>
+        <div class="jam">Pukul 08.00 WIB – Selesai</div>
+      </div>
+      <div class="kartu">
+        <svg class="ikon" viewBox="0 0 160 140"><use href="#dino-biru"/></svg>
+        <h3>TASYAKURAN</h3>
+        <div class="tgl">Minggu, 18 Oktober 2026</div>
+        <div class="jam">Pukul 10.00 – 15.00 WIB</div>
+      </div>
+    </div>
+
+    <p class="alamat"><b>🌋 Markas Petualangan: Kediaman Bapak Ahmad Santani</b><br>
+      Jl. Melati No. 12, RT 03/RW 05, Kel. Sukamaju,<br>Kec. Cibeunying, Kota Bandung</p>
+
+    <div class="hitung">
+      <div><span id="hari">0</span><small>Hari</small></div>
+      <div><span id="jam">0</span><small>Jam</small></div>
+      <div><span id="menit">0</span><small>Menit</small></div>
+      <div><span id="detik">0</span><small>Detik</small></div>
+    </div>
+
+    <a class="tombol" id="tombolPeta" target="_blank" rel="noopener">🗺️ Buka Google Maps</a>
+    <div class="peta">
+      <iframe id="iframePeta" loading="lazy" title="Lokasi acara"></iframe>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DOA ================= -->
+<section id="doa" class="oranye-bg">
+  <div class="wadah muncul">
+    <div class="judul" style="color:var(--oranye-tua)">DOA UNTUK ANANDA</div>
+    <div class="pemisah">
+      <svg viewBox="0 0 30 30"><use href="#jejak"/></svg><svg viewBox="0 0 30 30" style="transform:translateY(6px)"><use href="#jejak"/></svg><svg viewBox="0 0 30 30"><use href="#jejak"/></svg>
+    </div>
+    <div class="gelembung">Semoga Allah SWT menjadikan ananda anak yang sholeh, sehat, kuat, berani, dan berbakti kepada ayah dan bunda. Semoga petualangan hidupnya selalu penuh berkah. Aamiin ya Rabbal 'alamin 🤲</div>
+    <svg class="dino-doa lompat" viewBox="0 0 160 140"><use href="#dino"/></svg>
+  </div>
+</section>
+
+<!-- ================= RSVP ================= -->
+<section id="rsvp" class="krem-bg">
+  <div class="jejak"></div>
+  <div class="wadah muncul">
+    <div class="judul">KONFIRMASI KEHADIRAN</div>
+    <div class="pemisah">
+      <svg viewBox="0 0 30 30"><use href="#jejak"/></svg><svg viewBox="0 0 30 30" style="transform:translateY(6px)"><use href="#jejak"/></svg><svg viewBox="0 0 30 30"><use href="#jejak"/></svg>
+    </div>
+    <p style="font-weight:600">Mohon konfirmasi kehadiran Anda melalui WhatsApp.</p>
+    <form id="formRsvp">
+      <div>
+        <label for="nama">Nama</label>
+        <input id="nama" required placeholder="Nama lengkap">
+      </div>
+      <div>
+        <label for="hadir">Kehadiran</label>
+        <select id="hadir">
+          <option>Insya Allah hadir</option>
+          <option>Maaf, belum bisa hadir</option>
+          <option>Masih ragu</option>
+        </select>
+      </div>
+      <div>
+        <label for="jumlah">Jumlah tamu</label>
+        <select id="jumlah">
+          <option>1 orang</option><option>2 orang</option>
+          <option>3 orang</option><option>4 orang</option>
+        </select>
+      </div>
+      <div>
+        <label for="ucapan">Ucapan &amp; doa</label>
+        <textarea id="ucapan" rows="3" placeholder="Tulis ucapan dan doa untuk Rafa..."></textarea>
+      </div>
+      <button class="tombol hijau" type="submit">Kirim via WhatsApp</button>
+    </form>
+  </div>
+</section>
+
+<div class="gerigi hijau"></div>
+
+<!-- ================= AMPLOP DIGITAL ================= -->
+<section id="amplop" class="hutan-bg">
+  <svg class="daun-hias goyang" style="bottom:-10px;left:-14px;width:110px;height:110px" viewBox="0 0 100 100"><use href="#daun"/></svg>
+  <div class="wadah muncul">
+    <div class="judul">TANDA KASIH</div>
+    <div class="pemisah">
+      <svg viewBox="0 0 30 30"><use href="#jejak"/></svg><svg viewBox="0 0 30 30" style="transform:translateY(6px)"><use href="#jejak"/></svg><svg viewBox="0 0 30 30"><use href="#jejak"/></svg>
+    </div>
+    <p style="font-weight:600">Doa restu Anda adalah hadiah terindah bagi kami. Namun jika ingin memberikan tanda kasih, dapat melalui:</p>
+    <div class="rekening">
+      <div class="kecil" style="color:var(--oranye-tua)">Bank BCA</div>
+      <div class="no" id="noRek">1234567890</div>
+      <div>a.n. Ahmad Santani</div>
+      <button class="salin" data-salin="noRek">Salin Nomor</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PENUTUP ================= -->
+<footer class="langit">
+  <svg class="matahari" style="top:5%;right:8%;width:60px;height:60px" viewBox="0 0 100 100"><use href="#matahari"/></svg>
+  <svg class="awan" style="top:12%;left:6%;width:100px;height:44px" viewBox="0 0 160 70"><use href="#awan"/></svg>
+  <div class="wadah muncul">
+    <svg class="lompat" style="width:70px;height:84px" viewBox="0 0 60 72"><use href="#telur"/></svg>
+    <p style="margin-top:8px;font-weight:600">Atas kehadiran dan doa restu Bapak/Ibu/Saudara/i, kami ucapkan terima kasih.</p>
+    <div class="kecil" style="margin-top:12px">Wassalamu'alaikum Warahmatullahi Wabarakatuh</div>
+    <div class="pemisah" style="margin-top:12px;margin-bottom:10px">
+      <svg viewBox="0 0 30 30"><use href="#jejak"/></svg><svg viewBox="0 0 30 30" style="transform:translateY(6px)"><use href="#jejak"/></svg><svg viewBox="0 0 30 30"><use href="#jejak"/></svg>
+    </div>
+    <div style="font-weight:600">Kami yang berbahagia,</div>
+    <div class="nama-besar">Keluarga Ahmad Santani</div>
+    <div class="kredit">Dino Adventure · Undangan Digital Khitanan</div>
+  </div>
+  <svg class="pemandangan" viewBox="0 0 800 260" preserveAspectRatio="xMidYMax slice"><use href="#pemandangan"/></svg>
+  <svg class="dino-intip" style="bottom:8px;left:6%;width:90px;height:79px" viewBox="0 0 160 140"><use href="#dino"/></svg>
+  <svg class="dino-intip" style="bottom:8px;right:6%;width:80px;height:70px;animation-delay:-2s" viewBox="0 0 160 140"><g transform="translate(160 0) scale(-1 1)"><use href="#dino-biru"/></g></svg>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+  /* ========= PENGATURAN — ubah sesuai kebutuhan ========= */
+  const TANGGAL_ACARA = "2026-10-18T10:00:00+07:00";   // tanggal tasyakuran (WIB)
+  const NOMOR_WA      = "6281234567890";                // nomor WhatsApp tujuan RSVP (format 62...)
+  const ALAMAT_PETA   = "Jl. Melati No. 12, Sukamaju, Bandung"; // kata kunci lokasi di Google Maps
+  /* ====================================================== */
+
+  // Nama tamu dari URL, contoh: undangan-khitanan-dino.html?to=Bapak+Budi
+  const tamu = new URLSearchParams(location.search).get("to");
+  if (tamu) {
+    document.getElementById("namaTamu").textContent = tamu;
+    document.getElementById("nama").value = tamu;
+  }
+
+  // Buka undangan
+  document.getElementById("bukaUndangan").addEventListener("click", () => {
+    document.getElementById("sampul").classList.add("tutup");
+    document.body.classList.remove("terkunci");
+  });
+
+  // Peta
+  const q = encodeURIComponent(ALAMAT_PETA);
+  document.getElementById("tombolPeta").href = "https://www.google.com/maps/search/?api=1&query=" + q;
+  document.getElementById("iframePeta").src = "https://maps.google.com/maps?q=" + q + "&output=embed";
+
+  // Hitung mundur
+  const target = new Date(TANGGAL_ACARA).getTime();
+  function perbarui(){
+    const sisa = Math.max(0, target - Date.now());
+    document.getElementById("hari").textContent  = Math.floor(sisa / 864e5);
+    document.getElementById("jam").textContent   = Math.floor(sisa % 864e5 / 36e5);
+    document.getElementById("menit").textContent = Math.floor(sisa % 36e5 / 6e4);
+    document.getElementById("detik").textContent = Math.floor(sisa % 6e4 / 1e3);
+  }
+  perbarui(); setInterval(perbarui, 1000);
+
+  // RSVP ke WhatsApp
+  document.getElementById("formRsvp").addEventListener("submit", e => {
+    e.preventDefault();
+    const pesan =
+      "Assalamu'alaikum, saya *" + document.getElementById("nama").value + "*\n" +
+      "Kehadiran: " + document.getElementById("hadir").value + "\n" +
+      "Jumlah: " + document.getElementById("jumlah").value + "\n" +
+      "Ucapan: " + (document.getElementById("ucapan").value || "-");
+    window.open("https://wa.me/" + NOMOR_WA + "?text=" + encodeURIComponent(pesan), "_blank");
+  });
+
+  // Salin nomor rekening
+  function toast(t){
+    const el = document.getElementById("toast");
+    el.textContent = t; el.classList.add("tampil");
+    setTimeout(() => el.classList.remove("tampil"), 2000);
+  }
+  document.querySelectorAll(".salin").forEach(b => b.addEventListener("click", () => {
+    const teks = document.getElementById(b.dataset.salin).textContent;
+    (navigator.clipboard ? navigator.clipboard.writeText(teks) : Promise.reject())
+      .then(() => toast("Nomor rekening disalin"))
+      .catch(() => toast(teks));
+  }));
+
+  // Animasi muncul saat di-scroll
+  const pengamat = new IntersectionObserver(entri => {
+    entri.forEach(x => { if (x.isIntersecting) x.target.classList.add("tampil"); });
+  }, {threshold: .15});
+  document.querySelectorAll(".muncul").forEach(el => pengamat.observe(el));
+</script>
+</body>
+</html>

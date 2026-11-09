@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500" viewBox="0 0 400 500">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f5ede0"/>
+      <stop offset="100%" style="stop-color:#e8c9b0"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="500" fill="url(#bg)"/>
+  <!-- Groom silhouette -->
+  <ellipse cx="155" cy="160" rx="40" ry="45" fill="#c4a882" opacity=".5"/>
+  <path d="M95 400 C95 310 115 280 155 275 C195 280 215 310 215 400" fill="#c4a882" opacity=".4"/>
+  <!-- Bride silhouette -->
+  <ellipse cx="245" cy="160" rx="40" ry="45" fill="#d4b896" opacity=".5"/>
+  <path d="M185 400 C180 310 210 280 245 275 C280 280 300 310 305 400" fill="#d4b896" opacity=".3"/>
+  <!-- Heart -->
+  <path d="M200 340 C200 340 170 315 170 295 A18 18 0 0 1 200 285 A18 18 0 0 1 230 295 C230 315 200 340 200 340Z" fill="#d4a96a" opacity=".6"/>
+  <text x="200" y="460" text-anchor="middle" font-family="serif" font-size="18" fill="#8b6348" opacity=".7">Rizky &amp; Nadira</text>
+</svg>

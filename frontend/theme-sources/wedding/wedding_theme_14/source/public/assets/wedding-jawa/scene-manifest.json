@@ -1,0 +1,174 @@
+{
+  "project": "Pawiwahan Agung \u2014 Javanese 3D Wedding Invitation",
+  "version": "0.1.0",
+  "note": "Starter asset pack. GLB models, real HDRI and licensed audio are listed as required production assets but are not fabricated as placeholder models.",
+  "scenes": [
+    {
+      "id": "gate",
+      "scroll": [
+        0,
+        0.1
+      ],
+      "feature": "Opening cover",
+      "required_models": [
+        "entrance-gate.glb",
+        "stone-path.glb"
+      ],
+      "ui": [
+        "guest-name",
+        "open-invitation"
+      ]
+    },
+    {
+      "id": "pendopo",
+      "scroll": [
+        0.1,
+        0.25
+      ],
+      "feature": "Couple profile",
+      "required_models": [
+        "joglo-pavilion.glb",
+        "gebyok-panel.glb"
+      ],
+      "ui": [
+        "couple-profile"
+      ]
+    },
+    {
+      "id": "garden",
+      "scroll": [
+        0.25,
+        0.4
+      ],
+      "feature": "Countdown",
+      "required_models": [
+        "tropical-tree.glb",
+        "jasmine-plant.glb"
+      ],
+      "ui": [
+        "countdown",
+        "calendar-link"
+      ]
+    },
+    {
+      "id": "ceremony",
+      "scroll": [
+        0.4,
+        0.55
+      ],
+      "feature": "Event details",
+      "required_models": [
+        "wedding-stage.glb"
+      ],
+      "ui": [
+        "event-schedule",
+        "maps-link"
+      ]
+    },
+    {
+      "id": "gallery",
+      "scroll": [
+        0.55,
+        0.63
+      ],
+      "feature": "Photo gallery",
+      "required_models": [
+        "photo-frame.glb"
+      ],
+      "ui": [
+        "gallery-lightbox",
+        "video"
+      ]
+    },
+    {
+      "id": "love-story",
+      "scroll": [
+        0.63,
+        0.7
+      ],
+      "feature": "Love story",
+      "required_models": [
+        "scroll-prop.glb"
+      ],
+      "ui": [
+        "timeline"
+      ]
+    },
+    {
+      "id": "rsvp",
+      "scroll": [
+        0.7,
+        0.85
+      ],
+      "feature": "RSVP and guestbook",
+      "required_models": [
+        "guest-table.glb"
+      ],
+      "ui": [
+        "rsvp-form",
+        "guestbook"
+      ]
+    },
+    {
+      "id": "gift",
+      "scroll": [
+        0.85,
+        0.94
+      ],
+      "feature": "Digital gifts",
+      "required_models": [
+        "gift-table.glb",
+        "gift-box.glb"
+      ],
+      "ui": [
+        "bank-details",
+        "qris-image",
+        "copy-account"
+      ]
+    },
+    {
+      "id": "closing",
+      "scroll": [
+        0.94,
+        1.0
+      ],
+      "feature": "Closing",
+      "required_models": [
+        "lantern.glb"
+      ],
+      "ui": [
+        "thank-you",
+        "back-to-top"
+      ]
+    }
+  ],
+  "asset_formats": {
+    "3d": [
+      ".glb",
+      ".gltf"
+    ],
+    "textures": [
+      ".png",
+      ".webp",
+      ".ktx2"
+    ],
+    "ui": [
+      ".svg",
+      ".webp",
+      ".avif"
+    ],
+    "audio": [
+      ".ogg",
+      ".mp3"
+    ]
+  },
+  "textures_included": [
+    "textures/wood/teak_basecolor.png",
+    "textures/batik/kawung_tile_basecolor.png",
+    "textures/batik/parang_tile_basecolor.png",
+    "textures/stone/stone_basecolor.png",
+    "textures/foliage/grass_ground_basecolor.png",
+    "textures/ground/soil_basecolor.png",
+    "textures/metal/brass_basecolor.png"
+  ]
+}

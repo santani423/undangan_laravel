@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Football Champion Khitanan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Anton&family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --hijau:#1f8a3b;
+    --hijau-tua:#146b2c;
+    --hijau-gelap:#0d4d1f;
+    --biru:#1565c0;
+    --biru-tua:#0d3f80;
+    --biru-muda:#e3f0ff;
+    --putih:#ffffff;
+    --abu:#f4f7f5;
+    --teks:#15251a;
+    --emas:#f5c518;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Poppins',sans-serif;
+    background:var(--putih);
+    color:var(--teks);
+    line-height:1.7;
+    overflow-x:hidden;
+  }
+  body.terkunci{overflow:hidden}
+
+  /* ===== Latar lapangan ===== */
+  .lapangan{
+    position:relative;overflow:hidden;color:var(--putih);
+    background:
+      repeating-linear-gradient(180deg,var(--hijau) 0 70px,var(--hijau-tua) 70px 140px);
+  }
+  .garis-lapangan{position:absolute;inset:0;pointer-events:none;z-index:0;width:100%;height:100%}
+  .biru-bg{
+    position:relative;overflow:hidden;color:var(--putih);
+    background:
+      repeating-linear-gradient(135deg,rgba(255,255,255,.04) 0 18px,transparent 18px 36px),
+      linear-gradient(160deg,var(--biru),var(--biru-tua));
+  }
+  .putih-bg{position:relative;overflow:hidden;background:var(--abu)}
+  .putih-bg .pola-jaring{
+    position:absolute;inset:0;pointer-events:none;opacity:.5;
+    background-image:
+      linear-gradient(45deg,rgba(21,101,192,.06) 1px,transparent 1px),
+      linear-gradient(-45deg,rgba(21,101,192,.06) 1px,transparent 1px);
+    background-size:22px 22px;
+  }
+
+  /* ===== Hiasan ===== */
+  .bola-gelinding{position:absolute;z-index:2;width:56px;height:56px;animation:gelinding 7s linear infinite}
+  @keyframes gelinding{
+    0%{left:-70px;transform:rotate(0)}
+    100%{left:calc(100% + 70px);transform:rotate(720deg)}
+  }
+  .mantul{animation:mantul 1.2s cubic-bezier(.5,0,.5,1) infinite}
+  @keyframes mantul{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+  .putar{animation:putar 6s linear infinite}
+  @keyframes putar{to{transform:rotate(360deg)}}
+  .kilau{animation:kilau 2.4s ease-in-out infinite}
+  @keyframes kilau{0%,100%{filter:drop-shadow(0 0 0 rgba(245,197,24,0))}50%{filter:drop-shadow(0 0 14px rgba(245,197,24,.8))}}
+  .konfeti{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+  .konfeti i{position:absolute;top:-12px;width:8px;height:12px;animation:jatuh linear infinite}
+  @keyframes jatuh{to{transform:translateY(110vh) rotate(540deg)}}
+
+  /* ===== Sampul ===== */
+  #sampul{
+    position:fixed;inset:0;z-index:100;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:24px 20px;
+    transition:transform .9s cubic-bezier(.7,0,.3,1), opacity .9s;
+  }
+  #sampul.tutup{transform:scale(1.15);opacity:0;pointer-events:none}
+  .tiket{
+    position:relative;z-index:3;max-width:340px;width:100%;
+    background:var(--putih);color:var(--teks);
+    border-radius:20px;
+    padding:0 0 24px;overflow:hidden;
+    box-shadow:0 20px 50px rgba(0,0,0,.4);
+  }
+  .tiket .atas{
+    background:linear-gradient(135deg,var(--biru),var(--biru-tua));color:#fff;
+    padding:18px 20px 16px;position:relative;
+  }
+  .tiket .atas::after{
+    content:"";position:absolute;left:0;right:0;bottom:-8px;height:16px;
+    background:radial-gradient(circle at 8px 8px,var(--putih) 5px,transparent 5.5px) 0 0/16px 16px repeat-x;
+  }
+  .tiket .bola-sampul{width:68px;height:68px;display:block;margin:0 auto 6px}
+  .kecil{font-size:.7rem;letter-spacing:3px;text-transform:uppercase;font-weight:600}
+  .judul-tema{
+    font-family:'Anton',sans-serif;font-size:1.7rem;letter-spacing:1.5px;line-height:1.1;margin-top:2px;
+  }
+  .judul-tema span{color:var(--emas)}
+  .nama-besar{
+    font-family:'Bebas Neue',sans-serif;font-size:3rem;line-height:1;letter-spacing:2px;color:var(--hijau-tua);
+    margin:20px 0 0;
+  }
+  .kepada{margin-top:12px;font-size:.82rem;color:#555}
+  .tamu{font-size:1.08rem;font-weight:700;margin:2px 0 18px;color:var(--biru)}
+  .tombol{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--hijau);color:#fff;
+    border:none;border-radius:40px;padding:11px 28px;
+    font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:2px;cursor:pointer;
+    text-decoration:none;
+    box-shadow:0 5px 0 var(--hijau-gelap);
+    transition:transform .15s, box-shadow .15s;
+  }
+  .tombol:hover{transform:translateY(3px);box-shadow:0 2px 0 var(--hijau-gelap)}
+  .tombol.biru{background:var(--biru);box-shadow:0 5px 0 var(--biru-tua)}
+  .tombol.biru:hover{box-shadow:0 2px 0 var(--biru-tua)}
+
+  /* ===== Bagian umum ===== */
+  section{padding:80px 20px;text-align:center;position:relative}
+  .wadah{max-width:560px;margin:0 auto;position:relative;z-index:3}
+  .judul{font-family:'Anton',sans-serif;font-size:2rem;letter-spacing:1.5px;line-height:1.15;color:var(--hijau-tua)}
+  .lapangan .judul,.biru-bg .judul{color:#fff}
+  .judul span{color:var(--biru)}
+  .lapangan .judul span,.biru-bg .judul span{color:var(--emas)}
+  .pemisah{display:flex;align-items:center;justify-content:center;gap:10px;margin:10px auto 26px}
+  .pemisah::before,.pemisah::after{content:"";width:50px;height:3px;background:currentColor;opacity:.35;border-radius:3px}
+  .pemisah svg{width:22px;height:22px}
+  .arab{font-family:'Amiri',serif;font-size:2rem;direction:rtl;margin-bottom:6px}
+
+  /* Hero */
+  #hero{min-height:100vh;display:flex;align-items:center;justify-content:center}
+  #hero .kotak-teks{
+    background:rgba(13,77,31,.55);border:2px solid rgba(255,255,255,.7);border-radius:18px;
+    padding:28px 22px;backdrop-filter:blur(2px);
+  }
+  #hero p{max-width:440px;margin:0 auto;font-weight:300}
+
+  /* Pemain: jersey */
+  .jersey-wrap{position:relative;width:260px;margin:0 auto 18px}
+  .jersey{width:240px;height:240px;display:block;margin:0 auto;filter:drop-shadow(0 12px 20px rgba(0,0,0,.25))}
+  .jersey-wrap .bola-kecil{position:absolute;bottom:0;right:4px;width:62px;height:62px}
+  .foto-bulat{
+    width:150px;height:150px;border-radius:50%;margin:0 auto 18px;overflow:hidden;
+    border:6px solid #fff;box-shadow:0 0 0 4px var(--hijau),0 10px 24px rgba(0,0,0,.2);
+    background:linear-gradient(160deg,var(--biru),var(--biru-tua));
+    display:none;
+  }
+  .gelar{
+    display:inline-block;margin:6px 0 4px;
+    font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:3px;
+    padding:3px 20px;border-radius:20px;background:var(--biru);color:#fff;
+  }
+  .nama-anak{font-family:'Anton',sans-serif;font-size:2.2rem;letter-spacing:1px;line-height:1.15;color:var(--hijau-tua)}
+  .ortu{margin-top:8px;font-size:.95rem}
+  .ortu b{color:var(--biru)}
+
+  /* Kartu pertandingan */
+  .kartu-daftar{display:grid;gap:18px}
+  .kartu{
+    position:relative;background:#fff;color:var(--teks);
+    border-radius:18px;overflow:hidden;
+    box-shadow:0 12px 28px rgba(0,0,0,.25);
+  }
+  .kartu .kepala{
+    display:flex;justify-content:space-between;align-items:center;
+    background:var(--biru);color:#fff;padding:8px 16px;
+    font-family:'Bebas Neue',sans-serif;letter-spacing:2.5px;font-size:1.05rem;
+  }
+  .kartu:nth-child(2) .kepala{background:var(--hijau-tua)}
+  .kartu .isi{padding:16px 20px 20px}
+  .kartu svg.ikon{width:48px;height:48px}
+  .kartu h3{font-family:'Anton',sans-serif;letter-spacing:1px;font-size:1.6rem;color:var(--hijau-tua)}
+  .kartu .tgl{font-weight:700;margin:2px 0;color:var(--biru)}
+  .kartu .jam{font-size:.9rem;color:#666}
+  .alamat{margin:28px auto 4px;font-size:.95rem;background:rgba(13,77,31,.6);border-radius:14px;padding:12px 16px;max-width:420px}
+  .alamat b{color:var(--emas)}
+
+  /* Papan skor */
+  .papan-skor{
+    margin:24px auto 28px;max-width:360px;background:#0b0f0c;border-radius:14px;padding:12px 12px 14px;
+    border:4px solid #2b2b2b;box-shadow:0 10px 24px rgba(0,0,0,.35);
+  }
+  .papan-skor .label{font-family:'Bebas Neue',sans-serif;letter-spacing:3px;color:var(--emas);font-size:1rem;margin-bottom:6px}
+  .hitung{display:flex;justify-content:center;gap:8px}
+  .hitung div{flex:1;background:#151a16;border-radius:8px;padding:6px 4px}
+  .hitung span{display:block;font-family:'Bebas Neue',sans-serif;font-size:2.2rem;line-height:1;color:#39ff6a;text-shadow:0 0 8px rgba(57,255,106,.6);letter-spacing:2px}
+  .hitung small{font-size:.62rem;letter-spacing:2px;text-transform:uppercase;color:#9aa}
+
+  .peta{
+    margin-top:22px;border-radius:18px;overflow:hidden;border:5px solid #fff;
+    aspect-ratio:16/10;background:var(--hijau-gelap);
+  }
+  .peta iframe{width:100%;height:100%;border:0}
+
+  /* Doa */
+  .trofi{width:110px;margin-bottom:6px}
+  .kutipan{max-width:460px;margin:0 auto;font-size:1.02rem;font-weight:300}
+
+  /* RSVP */
+  form{display:grid;gap:12px;text-align:left;margin-top:8px}
+  label{font-family:'Bebas Neue',sans-serif;font-size:1.05rem;letter-spacing:2px;color:var(--hijau-tua)}
+  input,select,textarea{
+    width:100%;padding:12px 16px;border-radius:12px;
+    border:2px solid #cfe0d4;background:#fff;color:var(--teks);
+    font-family:inherit;font-size:.95rem;
+  }
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--hijau)}
+  form .tombol{justify-self:center;margin-top:10px}
+
+  /* Amplop */
+  .rekening{
+    background:#fff;color:var(--teks);border-radius:18px;padding:24px;margin-top:18px;
+    border:3px dashed var(--emas);
+  }
+  .rekening .no{font-family:'Bebas Neue',sans-serif;font-size:2.3rem;letter-spacing:4px;color:var(--biru);line-height:1.1;margin:4px 0}
+  .salin{
+    border:2px solid var(--hijau);background:transparent;color:var(--hijau);
+    border-radius:30px;padding:4px 18px;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:2px;cursor:pointer;margin-top:8px
+  }
+  .salin:hover{background:var(--hijau);color:#fff}
+
+  footer{text-align:center;padding:90px 20px 110px}
+  footer .nama-besar{color:#fff;font-size:2.6rem}
+  .kredit{margin-top:18px;font-size:.72rem;opacity:.65}
+
+  .muncul{opacity:0;transform:translateY(34px);transition:all .8s cubic-bezier(.2,.9,.3,1.2)}
+  .muncul.tampil{opacity:1;transform:none}
+
+  #toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);
+    background:var(--hijau-tua);color:#fff;padding:10px 22px;border-radius:30px;
+    font-family:'Bebas Neue',sans-serif;letter-spacing:2px;font-size:1.05rem;transition:transform .4s;z-index:200
+  }
+  #toast.tampil{transform:translateX(-50%) translateY(0)}
+
+  @media (max-width:420px){
+    .nama-besar{font-size:2.6rem}
+    .hitung span{font-size:1.8rem}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .muncul{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body class="terkunci">
+
+<!-- ===== Simbol SVG (gambar original, tanpa logo klub) ===== -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="gEmas" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe680"/><stop offset=".55" stop-color="#f5c518"/><stop offset="1" stop-color="#c79a00"/>
+    </linearGradient>
+
+    <!-- Bola -->
+    <symbol id="bola" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="47" fill="#fff" stroke="#111" stroke-width="3"/>
+      <path d="M50 30l17 12-6 20H39l-6-20z" fill="#111"/>
+      <g fill="#111">
+        <path d="M50 3.5c-7 0-14 2-19 5l4 10 15-5 15 5 4-10c-5-3-12-5-19-5z"/>
+        <path d="M8 36c-3 7-4 15-3 22l11 2 5-14-9-12z"/>
+        <path d="M92 36c3 7 4 15 3 22l-11 2-5-14 9-12z"/>
+        <path d="M22 84c5 5 11 9 18 11l5-10-10-12-12 1z"/>
+        <path d="M78 84c-5 5-11 9-18 11l-5-10 10-12 12 1z"/>
+      </g>
+      <g stroke="#111" stroke-width="2.5">
+        <path d="M50 30V14M67 42l12-6M61 62l8 11M39 62l-8 11M33 42l-12-6"/>
+      </g>
+    </symbol>
+
+    <!-- Trofi -->
+    <symbol id="trofi" viewBox="0 0 100 120">
+      <path d="M26 8h48v30c0 18-11 30-24 30S26 56 26 38z" fill="url(#gEmas)" stroke="#a57f00" stroke-width="2"/>
+      <path d="M26 16H10c0 18 8 26 18 26M74 16h16c0 18-8 26-18 26" fill="none" stroke="#f5c518" stroke-width="6" stroke-linecap="round"/>
+      <path d="M44 68h12v14H44z" fill="#e0b000"/>
+      <path d="M32 82h36l4 10H28z" fill="url(#gEmas)" stroke="#a57f00" stroke-width="2"/>
+      <rect x="22" y="92" width="56" height="22" rx="3" fill="#1565c0"/>
+      <rect x="34" y="98" width="32" height="10" rx="2" fill="#f5c518"/>
+      <path d="M50 20l4 8 9 1.3-6.5 6.2 1.5 8.8L50 40l-8 4.3 1.5-8.8L37 29.3l9-1.3z" fill="#fff"/>
+      <path d="M34 14c0 14 4 22 8 26" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none" opacity=".6"/>
+    </symbol>
+
+    <!-- Garis lapangan (dipakai sebagai latar) -->
+    <symbol id="garis-lapangan" viewBox="0 0 400 800" preserveAspectRatio="none">
+      <g fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="3">
+        <rect x="20" y="20" width="360" height="760"/>
+        <path d="M20 400h360"/>
+        <circle cx="200" cy="400" r="60"/>
+        <rect x="100" y="20" width="200" height="110"/>
+        <rect x="150" y="20" width="100" height="40"/>
+        <rect x="100" y="670" width="200" height="110"/>
+        <rect x="150" y="740" width="100" height="40"/>
+        <path d="M150 130a60 60 0 0 0 100 0M150 670a60 60 0 0 1 100 0"/>
+      </g>
+      <circle cx="200" cy="400" r="5" fill="#fff" fill-opacity=".4"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ================= SAMPUL ================= -->
+<div id="sampul" class="lapangan">
+  <svg class="garis-lapangan" viewBox="0 0 400 800" preserveAspectRatio="none"><use href="#garis-lapangan"/></svg>
+  <div class="tiket">
+    <div class="atas">
+      <svg class="bola-sampul putar" viewBox="0 0 100 100"><use href="#bola"/></svg>
+      <div class="kecil">Undangan Tasyakuran Khitanan</div>
+      <div class="judul-tema">FOOTBALL <span>CHAMPION</span></div>
+    </div>
+    <div class="nama-besar">MUHAMMAD RAFA</div>
+    <div class="kepada">Kepada Yth. Bapak/Ibu/Saudara/i</div>
+    <div class="tamu" id="namaTamu">Tamu Undangan</div>
+    <button class="tombol" id="bukaUndangan">⚽ BUKA UNDANGAN</button>
+  </div>
+  <svg class="bola-gelinding" style="bottom:28px" viewBox="0 0 100 100"><use href="#bola"/></svg>
+</div>
+
+<!-- ================= HERO ================= -->
+<section id="hero" class="lapangan">
+  <svg class="garis-lapangan" viewBox="0 0 400 800" preserveAspectRatio="none"><use href="#garis-lapangan"/></svg>
+  <div class="wadah muncul">
+    <div class="kotak-teks">
+      <div class="arab">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</div>
+      <div class="kecil">Assalamu'alaikum Warahmatullahi Wabarakatuh</div>
+      <div class="pemisah"><svg viewBox="0 0 100 100"><use href="#bola"/></svg></div>
+      <p>Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud menyelenggarakan tasyakuran khitanan putra kami tercinta. Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.</p>
+    </div>
+  </div>
+  <svg class="bola-gelinding" style="bottom:24px;animation-delay:-3s" viewBox="0 0 100 100"><use href="#bola"/></svg>
+</section>
+
+<!-- ================= PEMAIN ================= -->
+<section id="anak" class="putih-bg">
+  <div class="pola-jaring"></div>
+  <div class="wadah muncul">
+    <div class="judul">SANG <span>BINTANG</span> LAPANGAN</div>
+    <div class="pemisah" style="color:var(--hijau)"><svg viewBox="0 0 100 100"><use href="#bola"/></svg></div>
+
+    <!-- Foto (opsional): ubah menjadi <div class="foto-bulat" style="display:block"> & isi dengan
+         <img src="foto.jpg" style="width:100%;height:100%;object-fit:cover"> -->
+    <div class="foto-bulat"></div>
+
+    <div class="jersey-wrap">
+      <svg class="jersey" viewBox="0 0 240 240">
+        <defs>
+          <clipPath id="klipJersey">
+            <path d="M78 20c10 10 24 16 42 16s32-6 42-16l50 22 24 52-34 16-10-20v150H58V90l-10 20-34-16 24-52z"/>
+          </clipPath>
+        </defs>
+        <g clip-path="url(#klipJersey)">
+          <rect width="240" height="240" fill="#1565c0"/>
+          <rect x="0" y="0" width="240" height="240" fill="url(#garisJersey)"/>
+          <path d="M0 40h240v14H0z" fill="#fff" opacity=".0"/>
+        </g>
+        <pattern id="garisJersey" width="40" height="240" patternUnits="userSpaceOnUse">
+          <rect width="20" height="240" fill="#1f8a3b"/>
+        </pattern>
+        <path d="M78 20c10 10 24 16 42 16s32-6 42-16l50 22 24 52-34 16-10-20v150H58V90l-10 20-34-16 24-52z" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>
+        <path d="M92 26c8 8 17 12 28 12s20-4 28-12" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+        <path d="M14 94l34 16M226 94l-34 16" stroke="#fff" stroke-width="7"/>
+        <!-- nama & nomor punggung -->
+        <rect x="64" y="64" width="112" height="26" rx="4" fill="#fff" opacity=".92"/>
+        <text x="120" y="84" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="20" letter-spacing="2" fill="#0d3f80" id="namaPunggung">RAFA</text>
+        <text x="120" y="180" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="84" fill="#fff" stroke="#0d3f80" stroke-width="4" paint-order="stroke" id="nomorPunggung">7</text>
+      </svg>
+      <svg class="bola-kecil mantul" viewBox="0 0 100 100"><use href="#bola"/></svg>
+    </div>
+
+    <div class="gelar">★ LITTLE CHAMPION ★</div>
+    <div class="nama-anak">MUHAMMAD RAFA ALFARIZI</div>
+    <p class="ortu">Putra dari<br><b>Bapak Ahmad Santani</b> &amp; <b>Ibu Siti Nurhaliza</b></p>
+  </div>
+</section>
+
+<!-- ================= PERTANDINGAN ================= -->
+<section id="acara" class="lapangan">
+  <svg class="garis-lapangan" viewBox="0 0 400 800" preserveAspectRatio="none"><use href="#garis-lapangan"/></svg>
+  <div class="wadah muncul">
+    <div class="judul">JADWAL <span>PERTANDINGAN</span></div>
+    <div class="pemisah"><svg viewBox="0 0 100 100"><use href="#bola"/></svg></div>
+
+    <div class="kartu-daftar">
+      <div class="kartu">
+        <div class="kepala"><span>BABAK 1</span><span>⚽</span></div>
+        <div class="isi">
+          <svg class="ikon" viewBox="0 0 100 100"><use href="#bola"/></svg>
+          <h3>KHITANAN</h3>
+          <div class="tgl">Sabtu, 17 Oktober 2026</div>
+          <div class="jam">Kick off 08.00 WIB – Selesai</div>
+        </div>
+      </div>
+      <div class="kartu">
+        <div class="kepala"><span>BABAK 2</span><span>🏆</span></div>
+        <div class="isi">
+          <svg class="ikon" viewBox="0 0 100 120"><use href="#trofi"/></svg>
+          <h3>TASYAKURAN</h3>
+          <div class="tgl">Minggu, 18 Oktober 2026</div>
+          <div class="jam">Kick off 10.00 – 15.00 WIB</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="alamat"><b>🏟️ STADION: Kediaman Bapak Ahmad Santani</b><br>
+      Jl. Melati No. 12, RT 03/RW 05, Kel. Sukamaju,<br>Kec. Cibeunying, Kota Bandung</p>
+
+    <div class="papan-skor">
+      <div class="label">MENUJU KICK OFF</div>
+      <div class="hitung">
+        <div><span id="hari">0</span><small>Hari</small></div>
+        <div><span id="jam">0</span><small>Jam</small></div>
+        <div><span id="menit">0</span><small>Menit</small></div>
+        <div><span id="detik">0</span><small>Detik</small></div>
+      </div>
+    </div>
+
+    <a class="tombol biru" id="tombolPeta" target="_blank" rel="noopener">📍 BUKA GOOGLE MAPS</a>
+    <div class="peta">
+      <iframe id="iframePeta" loading="lazy" title="Lokasi acara"></iframe>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DOA ================= -->
+<section id="doa" class="biru-bg">
+  <div class="konfeti" id="konfeti"></div>
+  <div class="wadah muncul">
+    <svg class="trofi kilau" viewBox="0 0 100 120"><use href="#trofi"/></svg>
+    <div class="judul">DOA UNTUK <span>SANG JUARA</span></div>
+    <div class="pemisah"><svg viewBox="0 0 100 100"><use href="#bola"/></svg></div>
+    <p class="kutipan">Semoga Allah SWT menjadikan ananda anak yang sholeh, sehat, kuat, sportif, dan berbakti kepada orang tua. Semoga selalu menjadi juara di dunia dan di akhirat. Aamiin ya Rabbal 'alamin.</p>
+  </div>
+</section>
+
+<!-- ================= RSVP ================= -->
+<section id="rsvp" class="putih-bg">
+  <div class="pola-jaring"></div>
+  <div class="wadah muncul">
+    <div class="judul">KONFIRMASI <span>KEHADIRAN</span></div>
+    <div class="pemisah" style="color:var(--hijau)"><svg viewBox="0 0 100 100"><use href="#bola"/></svg></div>
+    <p>Mohon konfirmasi kehadiran Anda melalui WhatsApp.</p>
+    <form id="formRsvp">
+      <div>
+        <label for="nama">Nama</label>
+        <input id="nama" required placeholder="Nama lengkap">
+      </div>
+      <div>
+        <label for="hadir">Kehadiran</label>
+        <select id="hadir">
+          <option>Insya Allah hadir</option>
+          <option>Maaf, belum bisa hadir</option>
+          <option>Masih ragu</option>
+        </select>
+      </div>
+      <div>
+        <label for="jumlah">Jumlah tamu</label>
+        <select id="jumlah">
+          <option>1 orang</option><option>2 orang</option>
+          <option>3 orang</option><option>4 orang</option>
+        </select>
+      </div>
+      <div>
+        <label for="ucapan">Ucapan &amp; doa</label>
+        <textarea id="ucapan" rows="3" placeholder="Tulis ucapan dan doa untuk Rafa..."></textarea>
+      </div>
+      <button class="tombol" type="submit">⚽ KIRIM VIA WHATSAPP</button>
+    </form>
+  </div>
+</section>
+
+<!-- ================= AMPLOP DIGITAL ================= -->
+<section id="amplop" class="biru-bg">
+  <div class="wadah muncul">
+    <div class="judul">TANDA <span>KASIH</span></div>
+    <div class="pemisah"><svg viewBox="0 0 100 100"><use href="#bola"/></svg></div>
+    <p style="font-weight:300">Doa restu Anda adalah hadiah terindah bagi kami. Namun jika ingin memberikan tanda kasih, dapat melalui:</p>
+    <div class="rekening">
+      <div class="kecil" style="color:var(--hijau-tua)">Bank BCA</div>
+      <div class="no" id="noRek">1234567890</div>
+      <div>a.n. Ahmad Santani</div>
+      <button class="salin" data-salin="noRek">SALIN NOMOR</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PENUTUP ================= -->
+<footer class="lapangan">
+  <svg class="garis-lapangan" viewBox="0 0 400 800" preserveAspectRatio="none"><use href="#garis-lapangan"/></svg>
+  <div class="wadah muncul">
+    <svg class="kilau" style="width:74px;height:89px" viewBox="0 0 100 120"><use href="#trofi"/></svg>
+    <p style="font-weight:300;margin-top:8px">Atas kehadiran dan doa restu Bapak/Ibu/Saudara/i, kami ucapkan terima kasih.</p>
+    <div class="kecil" style="margin-top:12px">Wassalamu'alaikum Warahmatullahi Wabarakatuh</div>
+    <div class="pemisah" style="margin-bottom:10px"><svg viewBox="0 0 100 100"><use href="#bola"/></svg></div>
+    <div>Kami yang berbahagia,</div>
+    <div class="nama-besar">KELUARGA AHMAD SANTANI</div>
+    <div class="kredit">Football Champion · Undangan Digital Khitanan</div>
+  </div>
+  <svg class="bola-gelinding" style="bottom:24px;animation-delay:-5s" viewBox="0 0 100 100"><use href="#bola"/></svg>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+  /* ========= PENGATURAN — ubah sesuai kebutuhan ========= */
+  const TANGGAL_ACARA  = "2026-10-18T10:00:00+07:00";   // tanggal tasyakuran (WIB)
+  const NOMOR_WA       = "6281234567890";                // nomor WhatsApp tujuan RSVP (format 62...)
+  const ALAMAT_PETA    = "Jl. Melati No. 12, Sukamaju, Bandung"; // kata kunci lokasi di Google Maps
+  const NAMA_PUNGGUNG  = "RAFA";                         // nama di punggung jersey
+  const NOMOR_PUNGGUNG = "7";                            // nomor punggung jersey
+  /* ====================================================== */
+
+  document.getElementById("namaPunggung").textContent = NAMA_PUNGGUNG;
+  document.getElementById("nomorPunggung").textContent = NOMOR_PUNGGUNG;
+
+  // Konfeti hijau-putih-biru-emas
+  const warna = ["#1f8a3b", "#ffffff", "#1565c0", "#f5c518"];
+  const konfeti = document.getElementById("konfeti");
+  for (let i = 0; i < 30; i++) {
+    const k = document.createElement("i");
+    k.style.cssText = `left:${Math.random()*100}%;background:${warna[i%4]};animation-duration:${4+Math.random()*5}s;animation-delay:${-Math.random()*8}s;opacity:.85`;
+    konfeti.appendChild(k);
+  }
+
+  // Nama tamu dari URL, contoh: undangan-khitanan-football.html?to=Bapak+Budi
+  const tamu = new URLSearchParams(location.search).get("to");
+  if (tamu) {
+    document.getElementById("namaTamu").textContent = tamu;
+    document.getElementById("nama").value = tamu;
+  }
+
+  // Buka undangan
+  document.getElementById("bukaUndangan").addEventListener("click", () => {
+    document.getElementById("sampul").classList.add("tutup");
+    document.body.classList.remove("terkunci");
+  });
+
+  // Peta
+  const q = encodeURIComponent(ALAMAT_PETA);
+  document.getElementById("tombolPeta").href = "https://www.google.com/maps/search/?api=1&query=" + q;
+  document.getElementById("iframePeta").src = "https://maps.google.com/maps?q=" + q + "&output=embed";
+
+  // Hitung mundur
+  const target = new Date(TANGGAL_ACARA).getTime();
+  const dua = n => String(n).padStart(2, "0");
+  function perbarui(){
+    const sisa = Math.max(0, target - Date.now());
+    document.getElementById("hari").textContent  = dua(Math.floor(sisa / 864e5));
+    document.getElementById("jam").textContent   = dua(Math.floor(sisa % 864e5 / 36e5));
+    document.getElementById("menit").textContent = dua(Math.floor(sisa % 36e5 / 6e4));
+    document.getElementById("detik").textContent = dua(Math.floor(sisa % 6e4 / 1e3));
+  }
+  perbarui(); setInterval(perbarui, 1000);
+
+  // RSVP ke WhatsApp
+  document.getElementById("formRsvp").addEventListener("submit", e => {
+    e.preventDefault();
+    const pesan =
+      "Assalamu'alaikum, saya *" + document.getElementById("nama").value + "*\n" +
+      "Kehadiran: " + document.getElementById("hadir").value + "\n" +
+      "Jumlah: " + document.getElementById("jumlah").value + "\n" +
+      "Ucapan: " + (document.getElementById("ucapan").value || "-");
+    window.open("https://wa.me/" + NOMOR_WA + "?text=" + encodeURIComponent(pesan), "_blank");
+  });
+
+  // Salin nomor rekening
+  function toast(t){
+    const el = document.getElementById("toast");
+    el.textContent = t; el.classList.add("tampil");
+    setTimeout(() => el.classList.remove("tampil"), 2000);
+  }
+  document.querySelectorAll(".salin").forEach(b => b.addEventListener("click", () => {
+    const teks = document.getElementById(b.dataset.salin).textContent;
+    (navigator.clipboard ? navigator.clipboard.writeText(teks) : Promise.reject())
+      .then(() => toast("NOMOR REKENING DISALIN"))
+      .catch(() => toast(teks));
+  }));
+
+  // Animasi muncul saat di-scroll
+  const pengamat = new IntersectionObserver(entri => {
+    entri.forEach(x => { if (x.isIntersecting) x.target.classList.add("tampil"); });
+  }, {threshold: .15});
+  document.querySelectorAll(".muncul").forEach(el => pengamat.observe(el));
+</script>
+</body>
+</html>

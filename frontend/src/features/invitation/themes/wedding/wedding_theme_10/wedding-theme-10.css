@@ -1,0 +1,111 @@
+@import url('./assets/css/fonts.css');
+@import url('./assets/css/style.css');
+
+.wt10-root {
+    position: relative;
+    isolation: isolate;
+}
+
+.wt10-root .section {
+    scroll-margin-top: 96px;
+}
+
+.wt10-root .main-content[aria-hidden='true'] {
+    pointer-events: none;
+    user-select: none;
+}
+
+.wt10-root .inline-error {
+    margin-top: 4px;
+    color: #a6483f;
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
+.wt10-root .form__row.is-error input,
+.wt10-root .form__row.is-error select,
+.wt10-root .form__row.is-error textarea,
+.wt10-root .form__row > div.is-error input,
+.wt10-root .form__row > div.is-error select,
+.wt10-root .form__row > div.is-error textarea {
+    border-color: #a6483f;
+    box-shadow: 0 0 0 3px rgba(166, 72, 63, 0.12);
+}
+
+.wt10-root .form__status {
+    min-height: 18px;
+}
+
+.wt10-root .cover-note {
+    font-size: 0.75rem;
+    color: var(--color-ink-soft);
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+.wt10-root .toast-msg {
+    bottom: 80px !important;
+}
+
+.wt10-root .footer {
+    padding: 28px 20px;
+}
+
+.wt10-root .footer__inner {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+}
+
+.wt10-root .footer__photo-wrap {
+    flex: 0 0 auto;
+}
+
+.wt10-root .footer__photo {
+    width: 84px;
+    height: 84px;
+    border-radius: 24px;
+    object-fit: cover;
+    border: 2px solid rgba(198, 161, 91, 0.28);
+    box-shadow: 0 16px 28px rgba(107, 90, 68, 0.16);
+}
+
+.wt10-root .footer__copy {
+    text-align: left;
+}
+
+.wt10-root .footer__eyebrow {
+    margin: 0 0 6px;
+    font-family: var(--font-label);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-sage-deep);
+}
+
+.wt10-root .footer__names {
+    margin: 0 0 6px;
+    font-family: var(--font-display);
+    font-size: clamp(22px, 4vw, 30px);
+    color: var(--color-ink);
+}
+
+.wt10-root .footer__meta {
+    margin: 0;
+    font-size: 12px;
+    color: #b5ab9c;
+}
+
+@media (max-width: 640px) {
+    .wt10-root .footer__inner {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .wt10-root .footer__copy {
+        text-align: center;
+    }
+}

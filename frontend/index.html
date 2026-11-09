@@ -1,0 +1,39 @@
+<!doctype html>
+<!-- The whole product is Indonesian-only. -->
+<html lang="id">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <!-- Defaults for the landing page; every route sets its own <title>/<meta>
+             at runtime. Link-preview bots that do not run JavaScript get
+             server-rendered tags from the backend crawler renderer (/seo/…),
+             see docs/DEPLOYMENT.md. -->
+        <title>Undesia - Undangan Pernikahan Digital</title>
+        <meta
+            name="description"
+            content="Undesia adalah platform undangan pernikahan digital. Buat undangan online dengan tema elegan, RSVP, buku tamu, dan amplop digital, lalu bagikan lewat WhatsApp."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Undesia" />
+        <meta property="og:locale" content="id_ID" />
+
+        <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+        <link rel="icon" href="/favicon-48x48.png" type="image/png" sizes="48x48" />
+        <link rel="icon" href="/favicon-96x96.png" type="image/png" sizes="96x96" />
+        <link rel="icon" href="/favicon-144x144.png" type="image/png" sizes="144x144" />
+        <link rel="icon" href="/favicon-192x192.png" type="image/png" sizes="192x192" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="theme-color" content="#f43f5e" />
+
+        <link rel="preconnect" href="https://fonts.bunny.net" />
+        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+    </head>
+    <body class="font-sans antialiased">
+        <div id="app"></div>
+        <noscript>Undesia membutuhkan JavaScript. Aktifkan JavaScript di browser Anda untuk membuka halaman ini.</noscript>
+        <script type="module" src="/src/main.tsx"></script>
+    </body>
+</html>

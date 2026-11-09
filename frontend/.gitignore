@@ -1,0 +1,13 @@
+node_modules
+# Build output only — theme source folders named "dist" are kept.
+/dist
+/dist-ssr
+*.local
+.env
+.env.production
+.env.*.local
+npm-debug.log*
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea

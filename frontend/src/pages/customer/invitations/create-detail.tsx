@@ -1,0 +1,2444 @@
+import ImageCropUpload, { compressImage } from '@/components/image-crop-upload';
+import { validateImageFile } from '@/lib/image-upload';
+import SlugField, { type SlugStatus } from '@/components/invitations/slug-field';
+import CustomerLayout from '@/layouts/customer-layout';
+import { normalizeInvitationSlug, resolveInvitationSlugBase, resolveInvitationSlugSourceLabel } from '@/lib/invitation-slug';
+import { type BreadcrumbItem } from '@/types';
+import { Head, router } from '@/lib/navigation';
+import { api } from '@/services/api';
+import {
+    AlertCircle,
+    BookOpen,
+    CalendarDays,
+    Check,
+    ChevronLeft,
+    ChevronRight,
+    Crown,
+    Gem,
+    Heart,
+    Image,
+    Link2,
+    Loader2,
+    MapPin,
+    Navigation,
+    Search,
+    Upload,
+    Users,
+    Video,
+    X,
+} from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Dashboard', href: '/customer' },
+    { title: 'Undangan Saya', href: '/customer/invitations' },
+    { title: 'Buat Undangan', href: '/customer/invitations/create' },
+    { title: 'Detail Acara', href: '#' },
+];
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface EventTypeField {
+    id: number;
+    field_key: string;
+    field_label: string;
+    field_type: string;
+    is_required: boolean;
+    placeholder: string | null;
+    help_text: string | null;
+    options: string[] | null;
+    display_order: number;
+}
+
+interface EventType {
+    id: number;
+    name: string;
+    label: string;
+    fields: EventTypeField[];
+}
+
+interface Theme {
+    id: number;
+    name: string;
+    slug: string;
+    thumbnail_url: string | null;
+    color_primary: string | null;
+    color_secondary: string | null;
+    is_premium: boolean;
+    is_exclusive: boolean;
+}
+
+interface PackageFeature {
+    id: number;
+    feature_key: string;
+    feature_type: string;
+    feature_value: string;
+}
+
+interface PackageItem {
+    id: number;
+    name: string;
+    label: string;
+    price: string;
+    currency: string;
+    billing_period: string;
+    max_gallery_uploads: number | null;
+    features: PackageFeature[];
+}
+
+interface Props {
+    eventType: EventType;
+    theme: Theme;
+    package: PackageItem;
+}
+
+// ─── Tab definitions ──────────────────────────────────────────────────────────
+
+type TabKey = 'couple' | 'acara' | 'gallery' | 'love_story' | 'info' | 'host';
+
+interface TabDef {
+    key: TabKey;
+    label: string;
+    icon: React.ReactNode;
+}
+
+const TAB_DEFINITIONS: Record<TabKey, TabDef> = {
+    couple:     { key: 'couple',     label: 'Couple',        icon: <Heart className="size-4" /> },
+    acara:      { key: 'acara',      label: 'Acara',         icon: <CalendarDays className="size-4" /> },
+    gallery:    { key: 'gallery',    label: 'Gallery',       icon: <Image className="size-4" /> },
+    love_story: { key: 'love_story', label: 'Love Story',    icon: <BookOpen className="size-4" /> },
+    info:       { key: 'info',       label: 'Info Acara',    icon: <CalendarDays className="size-4" /> },
+    host:       { key: 'host',       label: 'Penyelenggara', icon: <Users className="size-4" /> },
+};
+
+const EVENT_TYPE_TABS: Record<string, TabKey[]> = {
+    wedding:       ['couple', 'acara', 'gallery', 'love_story'],
+    birthday:      ['info', 'acara', 'gallery', 'love_story'],
+    khitanan:      ['info', 'acara', 'gallery'],
+    aqiqah:        ['info', 'acara', 'gallery'],
+    gender_reveal: ['info', 'acara', 'gallery'],
+    syukuran:      ['host', 'info', 'acara', 'gallery'],
+};
+
+// Per-event-type override for the shared "love_story" tab's display label —
+// it backs the same Story model for every event type, just framed differently.
+const TAB_LABEL_OVERRIDES: Partial<Record<string, Partial<Record<TabKey, string>>>> = {
+    birthday: { love_story: 'Story' },
+};
+
+function resolveTabLabel(key: TabKey, eventTypeName: string): string {
+    return TAB_LABEL_OVERRIDES[eventTypeName]?.[key] ?? TAB_DEFINITIONS[key].label;
+}
+
+// The video URL (stored under the shared "couple_video_url" field key) is displayed
+// on every theme's Video section, so its label is framed per event type.
+const VIDEO_FIELD_LABELS: Partial<Record<string, string>> = {
+    wedding:  'Video Mempelai',
+    birthday: 'Video Ulang Tahun',
+};
+
+function resolveVideoFieldLabel(eventTypeName: string): string {
+    return VIDEO_FIELD_LABELS[eventTypeName] ?? 'Video Acara';
+}
+
+const DEFAULT_TABS: TabKey[] = ['info', 'gallery'];
+
+const CHILD_ORDER_FIELD_KEYS = new Set(['groom_child_order', 'bride_child_order']);
+
+function isChildOrderFieldKey(fieldKey: string): boolean {
+    return CHILD_ORDER_FIELD_KEYS.has(fieldKey);
+}
+
+function getChildOrderInputValue(value: string): string {
+    return value.match(/\d+/)?.[0] ?? '';
+}
+
+function normalizeFieldValuesForSubmit(values: Record<string, string>): Record<string, string> {
+    const normalized = { ...values };
+
+    CHILD_ORDER_FIELD_KEYS.forEach((fieldKey) => {
+        const rawValue = normalized[fieldKey];
+        if (rawValue === undefined) return;
+
+        const inputValue = getChildOrderInputValue(rawValue);
+        const childOrder = inputValue ? Number.parseInt(inputValue, 10) : NaN;
+
+        if (Number.isInteger(childOrder) && childOrder >= 1 && childOrder <= 50) {
+            normalized[fieldKey] = String(childOrder);
+        } else {
+            delete normalized[fieldKey];
+        }
+    });
+
+    return normalized;
+}
+
+const WEDDING_TAB_FIELDS: Record<string, string[]> = {
+    couple: [
+        'groom_name', 'groom_nickname', 'groom_child_order', 'groom_photo', 'groom_father', 'groom_mother', 'groom_instagram',
+        'bride_name', 'bride_nickname', 'bride_child_order', 'bride_photo', 'bride_father', 'bride_mother', 'bride_instagram',
+        'couple_photo', 'opening_quote',
+    ],
+    acara: [],
+    gallery: [],
+    love_story: [],
+};
+
+// The dynamic fields shown on the "Penyelenggara" (host) tab — mirrors the hardcoded
+// filter used in renderTabContent's 'host' case.
+const HOST_TAB_FIELD_KEYS = ['host_name', 'host_photo', 'occasion', 'opening_message'];
+
+// Single source of truth for which dynamic fields live on which tab — used both to
+// render each tab's fields and to validate/route errors to the correct tab.
+function fieldsForTab(tabKey: TabKey, fields: EventTypeField[]): EventTypeField[] {
+    switch (tabKey) {
+        case 'couple':
+            return fields.filter((f) => WEDDING_TAB_FIELDS.couple.includes(f.field_key));
+        case 'host':
+            return fields.filter((f) => HOST_TAB_FIELD_KEYS.includes(f.field_key));
+        case 'info':
+            return fields;
+        default:
+            return [];
+    }
+}
+
+// ─── Field-level validation ─────────────────────────────────────────────────────
+// The backend applies almost no per-field-type validation for dynamic `field_values`
+// (only a Base64Image check for anything that looks like an uploaded image, plus a
+// fixed set of "title" fields that must be filled). So `is_required`/`field_type`
+// driven validation lives entirely on the frontend — this is the single place it's
+// implemented, reused by per-tab "Next" checks, the final Save check, and rendering.
+
+function isBlank(value: string): boolean {
+    return !value || !value.trim();
+}
+
+function isValidDateString(value: string): boolean {
+    return !Number.isNaN(Date.parse(value));
+}
+
+function isValidUrl(value: string): boolean {
+    try {
+        const url = new URL(value);
+        return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+        return false;
+    }
+}
+
+function isValidEmail(value: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function validateDynamicFields(fields: EventTypeField[], values: Record<string, string>): Record<string, string> {
+    const errors: Record<string, string> = {};
+
+    for (const field of fields) {
+        const rawValue = values[field.field_key] ?? '';
+
+        if (isChildOrderFieldKey(field.field_key)) {
+            const inputValue = getChildOrderInputValue(rawValue);
+            if (field.is_required && !inputValue) {
+                errors[field.field_key] = `${field.field_label} wajib diisi.`;
+                continue;
+            }
+            if (inputValue) {
+                const childOrder = Number.parseInt(inputValue, 10);
+                if (!Number.isInteger(childOrder) || childOrder < 1 || childOrder > 50) {
+                    errors[field.field_key] = `${field.field_label} harus berupa angka antara 1-50.`;
+                }
+            }
+            continue;
+        }
+
+        const blank = isBlank(rawValue);
+
+        if (field.is_required && blank) {
+            errors[field.field_key] = field.field_type === 'file'
+                ? `${field.field_label} wajib diunggah.`
+                : `${field.field_label} wajib diisi.`;
+            continue;
+        }
+
+        if (blank) continue;
+
+        switch (field.field_type) {
+            case 'select':
+                if (field.options && field.options.length > 0 && !field.options.includes(rawValue)) {
+                    errors[field.field_key] = `Pilih ${field.field_label.toLowerCase()} yang valid.`;
+                }
+                break;
+            case 'date':
+                if (!isValidDateString(rawValue)) {
+                    errors[field.field_key] = `${field.field_label} harus berupa tanggal yang valid.`;
+                }
+                break;
+            case 'number':
+                if (Number.isNaN(Number(rawValue))) {
+                    errors[field.field_key] = `${field.field_label} harus berupa angka.`;
+                }
+                break;
+            case 'email':
+                if (!isValidEmail(rawValue)) {
+                    errors[field.field_key] = `${field.field_label} harus berupa email yang valid.`;
+                }
+                break;
+            case 'url':
+                if (!isValidUrl(rawValue)) {
+                    errors[field.field_key] = `${field.field_label} harus berupa URL yang valid (diawali http:// atau https://).`;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    return errors;
+}
+
+function validateVideoUrl(value: string): string {
+    if (isBlank(value)) return '';
+    return isValidUrl(value) ? '' : 'Masukkan URL video yang valid (diawali http:// atau https://).';
+}
+
+function validateInvitationCode(code: string, required: boolean, isTaken: boolean): string {
+    if (required && isBlank(code)) return 'Kode undangan wajib diisi.';
+    if (!isBlank(code) && isTaken) return 'Kode undangan sudah digunakan, silakan pilih kode lain.';
+    return '';
+}
+
+type AcaraFieldErrors = Partial<Record<'name' | 'date' | 'location_name', string>>;
+
+function validateAcaraEvent(ev: { name: string; date: string; location_name: string }): AcaraFieldErrors {
+    const errors: AcaraFieldErrors = {};
+    if (isBlank(ev.name)) errors.name = 'Nama acara wajib diisi.';
+    if (isBlank(ev.date)) errors.date = 'Tanggal wajib diisi.';
+    else if (!isValidDateString(ev.date)) errors.date = 'Tanggal tidak valid.';
+    if (isBlank(ev.location_name)) errors.location_name = 'Nama lokasi wajib diisi.';
+    return errors;
+}
+
+function validateAcaraEvents<T extends { id: number; name: string; date: string; location_name: string }>(
+    events: T[],
+): Record<number, AcaraFieldErrors> {
+    const errors: Record<number, AcaraFieldErrors> = {};
+    for (const ev of events) {
+        const evErrors = validateAcaraEvent(ev);
+        if (Object.keys(evErrors).length > 0) errors[ev.id] = evErrors;
+    }
+    return errors;
+}
+
+function scrollToFirstError() {
+    requestAnimationFrame(() => {
+        const el = document.querySelector('[data-invalid="true"]');
+        if (!el) return;
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const focusable = el.matches('input, textarea, select')
+            ? (el as HTMLElement)
+            : el.querySelector<HTMLElement>('input, textarea, select');
+        focusable?.focus({ preventScroll: true });
+    });
+}
+
+// ─── Location Picker ──────────────────────────────────────────────────────────
+
+interface LocationResult {
+    embedUrl: string;
+    mapsUrl: string;
+    lat: string;
+    lng: string;
+    address: string;
+}
+
+interface NominatimResult {
+    place_id: string;
+    display_name: string;
+    lat: string;
+    lon: string;
+}
+
+function loadLeafletScript(cb: () => void) {
+    if ((window as any).L) { cb(); return; }
+
+    if (!document.getElementById('leaflet-css')) {
+        const link = document.createElement('link');
+        link.id = 'leaflet-css';
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        document.head.appendChild(link);
+    }
+
+    if (document.getElementById('leaflet-js')) {
+        const check = setInterval(() => {
+            if ((window as any).L) { clearInterval(check); cb(); }
+        }, 100);
+        return;
+    }
+
+    const script = document.createElement('script');
+    script.id = 'leaflet-js';
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    script.onload = cb;
+    document.head.appendChild(script);
+}
+
+function parseGoogleMapsUrl(url: string): { lat: number; lng: number } | null {
+    const atMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (atMatch) return { lat: parseFloat(atMatch[1]), lng: parseFloat(atMatch[2]) };
+
+    const qMatch = url.match(/[?&]q=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
+    if (qMatch) return { lat: parseFloat(qMatch[1]), lng: parseFloat(qMatch[2]) };
+
+    const llMatch = url.match(/ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (llMatch) return { lat: parseFloat(llMatch[1]), lng: parseFloat(llMatch[2]) };
+
+    return null;
+}
+
+function LocationPickerModal({
+    open,
+    onClose,
+    onConfirm,
+}: {
+    open: boolean;
+    onClose: () => void;
+    onConfirm: (result: LocationResult) => void;
+}) {
+    const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+    const [address, setAddress] = useState('');
+    const [addressLoading, setAddressLoading] = useState(false);
+
+    // Search
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState<NominatimResult[]>([]);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [showResults, setShowResults] = useState(false);
+
+    // Current location
+    const [geoLoading, setGeoLoading] = useState(false);
+    const [geoError, setGeoError] = useState('');
+
+    // Link input
+    const [linkInput, setLinkInput] = useState('');
+    const [linkMsg, setLinkMsg] = useState('');
+    const [linkIsError, setLinkIsError] = useState(false);
+
+    // Map refs
+    const mapDivRef = useRef<HTMLDivElement>(null);
+    const leafletMapRef = useRef<any>(null);
+    const markerRef = useRef<any>(null);
+    const externalMoveRef = useRef(false);
+
+    // Init Leaflet when modal opens
+    useEffect(() => {
+        if (!open) return;
+        let cancelled = false;
+
+        loadLeafletScript(() => {
+            if (cancelled || !mapDivRef.current || leafletMapRef.current) return;
+
+            const L = (window as any).L;
+            const map = L.map(mapDivRef.current, { zoomControl: true }).setView([-2.5, 118], 5);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            }).addTo(map);
+
+            map.on('click', (e: any) => {
+                const lat = parseFloat(e.latlng.lat.toFixed(6));
+                const lng = parseFloat(e.latlng.lng.toFixed(6));
+                externalMoveRef.current = false;
+                setCoords({ lat, lng });
+            });
+
+            leafletMapRef.current = map;
+        });
+
+        return () => { cancelled = true; };
+    }, [open]);
+
+    // Destroy map when modal closes
+    useEffect(() => {
+        if (!open) {
+            leafletMapRef.current?.remove();
+            leafletMapRef.current = null;
+            markerRef.current = null;
+        }
+    }, [open]);
+
+    // Update marker on map when coords change
+    useEffect(() => {
+        if (!leafletMapRef.current || !coords) return;
+        const L = (window as any).L;
+
+        if (markerRef.current) {
+            markerRef.current.setLatLng([coords.lat, coords.lng]);
+        } else {
+            const m = L.marker([coords.lat, coords.lng], { draggable: true }).addTo(leafletMapRef.current);
+            m.on('dragend', (e: any) => {
+                const pos = e.target.getLatLng();
+                externalMoveRef.current = false;
+                setCoords({
+                    lat: parseFloat(pos.lat.toFixed(6)),
+                    lng: parseFloat(pos.lng.toFixed(6)),
+                });
+            });
+            markerRef.current = m;
+        }
+
+        if (externalMoveRef.current) {
+            leafletMapRef.current.setView([coords.lat, coords.lng], 15);
+            externalMoveRef.current = false;
+        }
+    }, [coords]);
+
+    // Reverse geocode when coords change (debounced)
+    useEffect(() => {
+        if (!coords) return;
+        setAddressLoading(true);
+
+        const timer = setTimeout(async () => {
+            try {
+                const res = await fetch(
+                    `https://nominatim.openstreetmap.org/reverse?lat=${coords.lat}&lon=${coords.lng}&format=json`,
+                    { headers: { 'Accept-Language': 'id' } },
+                );
+                const data = await res.json();
+                setAddress(data.display_name ?? '');
+            } catch {
+                setAddress('');
+            } finally {
+                setAddressLoading(false);
+            }
+        }, 700);
+
+        return () => clearTimeout(timer);
+    }, [coords]);
+
+    // ── Handlers ─────────────────────────────────────────────────────────────
+
+    async function handleSearch() {
+        if (!searchQuery.trim()) return;
+        setSearchLoading(true);
+        setShowResults(true);
+        setSearchResults([]);
+        try {
+            const res = await fetch(
+                `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=5`,
+                { headers: { 'Accept-Language': 'id' } },
+            );
+            const data: NominatimResult[] = await res.json();
+            setSearchResults(data);
+        } catch {
+            setSearchResults([]);
+        } finally {
+            setSearchLoading(false);
+        }
+    }
+
+    function selectSearchResult(r: NominatimResult) {
+        externalMoveRef.current = true;
+        setCoords({
+            lat: parseFloat(parseFloat(r.lat).toFixed(6)),
+            lng: parseFloat(parseFloat(r.lon).toFixed(6)),
+        });
+        setSearchQuery(r.display_name.split(',')[0]);
+        setShowResults(false);
+    }
+
+    function handleCurrentLocation() {
+        if (!navigator.geolocation) {
+            setGeoError('Geolocation tidak didukung browser ini.');
+            return;
+        }
+        setGeoLoading(true);
+        setGeoError('');
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                externalMoveRef.current = true;
+                setCoords({
+                    lat: parseFloat(pos.coords.latitude.toFixed(6)),
+                    lng: parseFloat(pos.coords.longitude.toFixed(6)),
+                });
+                setGeoLoading(false);
+            },
+            (err) => {
+                setGeoError('Gagal mengambil lokasi: ' + err.message);
+                setGeoLoading(false);
+            },
+        );
+    }
+
+    function handleLinkProcess() {
+        setLinkMsg('');
+        setLinkIsError(false);
+        const url = linkInput.trim();
+        if (!url) return;
+
+        if (url.includes('maps.app.goo.gl')) {
+            // Try to at least store the URL; guide user to position via search/map
+            setLinkMsg(
+                'Link pendek terdeteksi. Sistem tidak dapat mengekstrak koordinat secara otomatis. ' +
+                'Silakan cari nama lokasi menggunakan kolom pencarian, lalu sesuaikan posisi marker pada peta.',
+            );
+            setLinkIsError(true);
+            return;
+        }
+
+        const parsed = parseGoogleMapsUrl(url);
+        if (parsed) {
+            externalMoveRef.current = true;
+            setCoords({ lat: parsed.lat, lng: parsed.lng });
+            setLinkMsg('Koordinat berhasil diekstrak dari link.');
+            setLinkIsError(false);
+        } else {
+            setLinkMsg(
+                'Koordinat tidak ditemukan. Pastikan menggunakan link Google Maps lengkap ' +
+                '(contoh: google.com/maps/place/.../@lat,lng,...).',
+            );
+            setLinkIsError(true);
+        }
+    }
+
+    function handleConfirm() {
+        if (!coords) return;
+        const result: LocationResult = {
+            embedUrl: `https://maps.google.com/maps?q=${coords.lat},${coords.lng}&output=embed`,
+            mapsUrl: `https://www.google.com/maps?q=${coords.lat},${coords.lng}`,
+            lat: String(coords.lat),
+            lng: String(coords.lng),
+            address,
+        };
+        onConfirm(result);
+        onClose();
+    }
+
+    if (!open) return null;
+
+    const inputCls =
+        'w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none ' +
+        'focus:border-primary focus:ring-2 focus:ring-primary/20 transition placeholder:text-muted-foreground';
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+
+            {/* Modal */}
+            <div className="relative w-full max-w-2xl bg-background rounded-2xl border border-border shadow-xl flex flex-col max-h-[92vh]">
+
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
+                    <div className="flex items-center gap-2">
+                        <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                            <MapPin className="size-4" />
+                        </div>
+                        <div>
+                            <h3 className="font-semibold text-foreground text-sm leading-tight">Pilih Lokasi</h3>
+                            <p className="text-xs text-muted-foreground">Cari, klik peta, atau gunakan lokasi saat ini</p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="rounded-lg p-1.5 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                    >
+                        <X className="size-4" />
+                    </button>
+                </div>
+
+                {/* Body — scrollable */}
+                <div className="flex-1 overflow-y-auto min-h-0">
+
+                    {/* ── Search + Current Location ── */}
+                    <div className="px-5 pt-5 pb-3 flex flex-col gap-3">
+                        {/* Search */}
+                        <div className="relative">
+                            <div className="flex gap-2">
+                                <div className="relative flex-1">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                                    <input
+                                        type="text"
+                                        value={searchQuery}
+                                        onChange={(e) => { setSearchQuery(e.target.value); if (!e.target.value) setShowResults(false); }}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                                        onFocus={() => searchResults.length > 0 && setShowResults(true)}
+                                        placeholder="Cari nama tempat, alamat, gedung..."
+                                        className={`${inputCls} pl-9`}
+                                    />
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={handleSearch}
+                                    disabled={searchLoading || !searchQuery.trim()}
+                                    className="shrink-0 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors flex items-center gap-1.5"
+                                >
+                                    {searchLoading ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
+                                    <span className="hidden sm:inline">Cari</span>
+                                </button>
+                            </div>
+
+                            {/* Search results dropdown */}
+                            {showResults && (searchLoading || searchResults.length > 0) && (
+                                <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-background border border-border rounded-xl shadow-lg overflow-hidden">
+                                    {searchLoading && (
+                                        <div className="flex items-center gap-2 px-4 py-3 text-sm text-muted-foreground">
+                                            <Loader2 className="size-4 animate-spin" /> Mencari lokasi...
+                                        </div>
+                                    )}
+                                    {!searchLoading && searchResults.length === 0 && (
+                                        <p className="px-4 py-3 text-sm text-muted-foreground">Tidak ada hasil.</p>
+                                    )}
+                                    {!searchLoading && searchResults.map((r) => (
+                                        <button
+                                            key={r.place_id}
+                                            type="button"
+                                            onClick={() => selectSearchResult(r)}
+                                            className="w-full text-left px-4 py-3 text-sm hover:bg-muted transition-colors border-b border-border/50 last:border-0"
+                                        >
+                                            <p className="font-medium text-foreground line-clamp-1">
+                                                {r.display_name.split(',')[0]}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                                                {r.display_name}
+                                            </p>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Current location button */}
+                        <button
+                            type="button"
+                            onClick={handleCurrentLocation}
+                            disabled={geoLoading}
+                            className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted hover:border-primary/40 disabled:opacity-60 transition-colors w-full sm:w-auto"
+                        >
+                            {geoLoading
+                                ? <><Loader2 className="size-4 animate-spin text-primary" /> Mengambil lokasi...</>
+                                : <><Navigation className="size-4 text-primary" /> Gunakan Lokasi Saat Ini</>
+                            }
+                        </button>
+                        {geoError && (
+                            <p className="text-xs text-destructive">{geoError}</p>
+                        )}
+                    </div>
+
+                    {/* ── Map ── */}
+                    <div className="px-5 pb-3">
+                        <div
+                            ref={mapDivRef}
+                            className="w-full rounded-2xl overflow-hidden border border-border"
+                            style={{ height: 320 }}
+                        />
+                        <p className="text-xs text-muted-foreground mt-2 text-center">
+                            Klik pada peta untuk memilih titik, atau geser marker untuk menyesuaikan posisi.
+                        </p>
+                    </div>
+
+                    {/* ── Link Google Maps ── */}
+                    <div className="px-5 pb-3">
+                        <div className="rounded-2xl border border-border p-4 flex flex-col gap-3">
+                            <div className="flex items-center gap-2">
+                                <Link2 className="size-4 text-primary shrink-0" />
+                                <span className="text-sm font-medium text-foreground">Input Link Google Maps</span>
+                            </div>
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={linkInput}
+                                    onChange={(e) => { setLinkInput(e.target.value); setLinkMsg(''); }}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleLinkProcess()}
+                                    placeholder="Tempel link Google Maps di sini..."
+                                    className={inputCls}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleLinkProcess}
+                                    disabled={!linkInput.trim()}
+                                    className="shrink-0 rounded-xl border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:opacity-60 transition-colors whitespace-nowrap"
+                                >
+                                    Proses
+                                </button>
+                            </div>
+                            {linkMsg && (
+                                <p className={`text-xs ${linkIsError ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                                    {linkMsg}
+                                </p>
+                            )}
+                            <p className="text-xs text-muted-foreground">
+                                Mendukung link lengkap (google.com/maps) maupun link pendek (maps.app.goo.gl).
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* ── Location preview ── */}
+                    <div className="px-5 pb-5">
+                        <div className={`rounded-2xl border p-4 flex flex-col gap-2 transition-colors ${
+                            coords ? 'border-primary/30 bg-primary/5' : 'border-border bg-muted/40'
+                        }`}>
+                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                Lokasi Terpilih
+                            </p>
+
+                            {coords ? (
+                                <>
+                                    <div className="flex items-start gap-2">
+                                        <MapPin className="size-4 text-primary shrink-0 mt-0.5" />
+                                        <div className="flex-1 min-w-0">
+                                            {addressLoading ? (
+                                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                    <Loader2 className="size-3.5 animate-spin" /> Mengambil alamat...
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-foreground leading-snug">
+                                                    {address || 'Alamat tidak tersedia'}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 pt-1 border-t border-border/50">
+                                        <div className="flex gap-4 text-xs text-muted-foreground font-mono">
+                                            <span>Lat: <span className="text-foreground font-semibold">{coords.lat}</span></span>
+                                            <span>Lng: <span className="text-foreground font-semibold">{coords.lng}</span></span>
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (
+                                <p className="text-sm text-muted-foreground">
+                                    Belum ada lokasi dipilih. Gunakan pencarian, klik peta, atau ambil lokasi saat ini.
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="flex items-center justify-between gap-3 px-5 py-4 border-t border-border shrink-0">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                    >
+                        Batal
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleConfirm}
+                        disabled={!coords || addressLoading}
+                        className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+                    >
+                        <Check className="size-4" />
+                        Konfirmasi Lokasi
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function SummaryBar({ theme, pkg }: { theme: Theme; pkg: PackageItem }) {
+    return (
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-4 text-sm">
+            <div className="flex items-center gap-2 shrink-0">
+                {theme.thumbnail_url ? (
+                    <img src={theme.thumbnail_url} alt={theme.name} className="size-10 rounded-lg object-cover border border-border" />
+                ) : (
+                    <div
+                        className="size-10 rounded-lg border border-border"
+                        style={{
+                            background: theme.color_primary
+                                ? `linear-gradient(135deg, ${theme.color_primary}55, ${theme.color_secondary ?? theme.color_primary}77)`
+                                : '#e5e7eb',
+                        }}
+                    />
+                )}
+                <div>
+                    <p className="font-medium text-foreground leading-tight">{theme.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                        {theme.is_exclusive ? (
+                            <span className="inline-flex items-center gap-1"><Gem className="size-3" /> Eksklusif</span>
+                        ) : theme.is_premium ? (
+                            <span className="inline-flex items-center gap-1"><Crown className="size-3" /> Premium</span>
+                        ) : 'Gratis'}
+                    </p>
+                </div>
+            </div>
+            <div className="h-8 w-px bg-border hidden sm:block" />
+            <div>
+                <p className="font-medium text-foreground leading-tight">{pkg.label}</p>
+                <p className="text-xs text-muted-foreground">
+                    {parseFloat(pkg.price) === 0
+                        ? 'Gratis'
+                        : `Rp ${parseFloat(pkg.price).toLocaleString('id-ID')}/${pkg.billing_period === 'month' ? 'bln' : 'thn'}`}
+                </p>
+            </div>
+        </div>
+    );
+}
+
+function FieldInput({ field, value, error, onChange }: {
+    field: EventTypeField;
+    value: string;
+    error?: string;
+    onChange: (val: string) => void;
+}) {
+    const isChildOrderField = isChildOrderFieldKey(field.field_key);
+    const inputValue = isChildOrderField ? getChildOrderInputValue(value) : value;
+    const base =
+        'w-full rounded-xl border bg-background px-4 py-2.5 text-sm outline-none ' +
+        'focus:ring-2 transition ' +
+        (error
+            ? 'border-destructive focus:border-destructive focus:ring-destructive/20'
+            : 'border-border focus:border-primary focus:ring-primary/20');
+
+    if (field.field_type === 'textarea') {
+        return (
+            <textarea
+                rows={3}
+                placeholder={field.placeholder ?? ''}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className={`${base} resize-none`}
+            />
+        );
+    }
+
+    if (field.field_type === 'select' && field.options) {
+        return (
+            <select value={value} onChange={(e) => onChange(e.target.value)} className={base}>
+                <option value="">— Pilih —</option>
+                {field.options.map((opt) => (
+                    <option key={opt} value={opt}>{opt}</option>
+                ))}
+            </select>
+        );
+    }
+
+    if (field.field_type === 'file') {
+        return (
+            <ImageCropUpload
+                label={field.field_label}
+                required={field.is_required}
+                helpText={field.help_text ?? undefined}
+                error={error}
+                aspectRatio={field.field_key === 'couple_photo' ? 4 / 3 : 1}
+                value={value || null}
+                onChange={(dataUrl) => onChange(dataUrl ?? '')}
+            />
+        );
+    }
+
+    const inputType = field.field_type === 'date' ? 'date'
+        : field.field_type === 'email' ? 'email'
+        : field.field_type === 'url' ? 'url'
+        : (field.field_type === 'number' || isChildOrderField) ? 'number'
+        : 'text';
+
+    return (
+        <input
+            type={inputType}
+            placeholder={isChildOrderField ? 'Contoh: 1' : (field.placeholder ?? '')}
+            value={inputValue}
+            onChange={(e) => onChange(isChildOrderField ? getChildOrderInputValue(e.target.value) : e.target.value)}
+            min={isChildOrderField ? 1 : undefined}
+            max={isChildOrderField ? 50 : undefined}
+            step={isChildOrderField ? 1 : undefined}
+            inputMode={isChildOrderField ? 'numeric' : undefined}
+            pattern={isChildOrderField ? '[0-9]*' : undefined}
+            className={base}
+        />
+    );
+}
+
+interface AdditionalInfoItem {
+    id: number;
+    label: string;
+    value: string;
+}
+
+function AdditionalInfoSection({ items, setItems }: {
+    items: AdditionalInfoItem[];
+    setItems: React.Dispatch<React.SetStateAction<AdditionalInfoItem[]>>;
+}) {
+    const inputCls = 'w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition';
+
+    function addItem() { setItems((prev) => [...prev, { id: Date.now() + Math.random(), label: '', value: '' }]); }
+    function updateItem(id: number, key: 'label' | 'value', val: string) { setItems((prev) => prev.map((i) => i.id === id ? { ...i, [key]: val } : i)); }
+    function removeItem(id: number) { setItems((prev) => prev.filter((i) => i.id !== id)); }
+
+    return (
+        <div className="flex flex-col gap-4">
+            <div>
+                <h3 className="font-semibold text-foreground text-sm">Informasi Tambahan</h3>
+                <p className="text-xs text-muted-foreground">Tambahkan detail lain seputar acara (opsional), misalnya dress code atau catatan khusus.</p>
+            </div>
+            {items.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Belum ada informasi tambahan.</p>}
+            <div className="flex flex-col gap-3">
+                {items.map((item, idx) => (
+                    <div key={item.id} className="rounded-2xl border border-border p-4 flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                            <p className="text-xs font-medium text-muted-foreground">Info #{idx + 1}</p>
+                            <button type="button" onClick={() => removeItem(item.id)} className="text-xs text-destructive hover:underline">Hapus</button>
+                        </div>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-xs font-medium text-foreground">Label</label>
+                                <input type="text" placeholder="cth. Dress Code" value={item.label} onChange={(e) => updateItem(item.id, 'label', e.target.value)} className={inputCls} />
+                            </div>
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-xs font-medium text-foreground">Keterangan</label>
+                                <input type="text" placeholder="cth. Kasual, warna pastel" value={item.value} onChange={(e) => updateItem(item.id, 'value', e.target.value)} className={inputCls} />
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+            <button type="button" onClick={addItem} className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border py-3 text-sm font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors">
+                + Tambah Informasi
+            </button>
+        </div>
+    );
+}
+
+function FieldGroup({ fields, values, errors = {}, onChange }: {
+    fields: EventTypeField[];
+    values: Record<string, string>;
+    errors?: Record<string, string>;
+    onChange: (key: string, val: string) => void;
+}) {
+    if (fields.length === 0) {
+        return (
+            <p className="text-sm text-muted-foreground py-6 text-center">
+                Tidak ada field untuk tab ini.
+            </p>
+        );
+    }
+    return (
+        <div className="flex flex-col gap-5">
+            {fields.map((f) => {
+                const error = errors[f.field_key];
+                return (
+                    <div key={f.id} className="flex flex-col gap-1.5" data-invalid={f.field_type !== 'file' && !!error}>
+                        {f.field_type !== 'file' && (
+                            <label className="text-sm font-medium text-foreground">
+                                {f.field_label}
+                                {f.is_required && <span className="ml-1 text-destructive">*</span>}
+                            </label>
+                        )}
+                        <FieldInput
+                            field={f}
+                            value={values[f.field_key] ?? ''}
+                            error={error}
+                            onChange={(val) => onChange(f.field_key, val)}
+                        />
+                        {f.field_type !== 'file' && error && (
+                            <p className="flex items-center gap-1 text-xs font-medium text-destructive">
+                                <AlertCircle className="size-3.5 shrink-0" />
+                                {error}
+                            </p>
+                        )}
+                        {f.field_type !== 'file' && !error && f.help_text && (
+                            <p className="text-xs text-muted-foreground">{f.help_text}</p>
+                        )}
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
+// ─── Tab content renderers ────────────────────────────────────────────────────
+
+type CodeStatus = 'idle' | 'checking' | 'available' | 'taken' | 'empty';
+
+function InvitationCodeInput({ value, error, onChange, onStatusChange }: {
+    value: string;
+    error?: string;
+    onChange: (val: string) => void;
+    onStatusChange?: (status: CodeStatus) => void;
+}) {
+    const [status, setStatus]         = useState<CodeStatus>('idle');
+    const debounceRef                 = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const onStatusChangeRef           = useRef(onStatusChange);
+
+    useEffect(() => {
+        onStatusChangeRef.current = onStatusChange;
+    }, [onStatusChange]);
+
+    useEffect(() => {
+        onStatusChangeRef.current?.(status);
+    }, [status]);
+
+    const checkCode = useCallback((code: string) => {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        if (!code.trim()) { setStatus('empty'); return; }
+
+        setStatus('checking');
+        debounceRef.current = setTimeout(async () => {
+            try {
+                const res = await api.get<{ available: boolean }>('/customer/invitations/check-code', { code });
+                setStatus(res.data?.available ? 'available' : 'taken');
+            } catch {
+                setStatus('idle');
+            }
+        }, 500);
+    }, []);
+
+    function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const raw = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+        onChange(raw);
+        checkCode(raw);
+    }
+
+    const base =
+        'w-full rounded-xl border bg-background px-4 py-2.5 text-sm outline-none ' +
+        'focus:ring-2 transition pr-10 ';
+
+    const hasError = !!error || status === 'taken';
+    const borderCls =
+        hasError                ? 'border-destructive  focus:border-destructive  focus:ring-destructive/20' :
+        status === 'available'  ? 'border-emerald-500 focus:border-emerald-500 focus:ring-emerald-200' :
+        'border-border focus:border-primary focus:ring-primary/20';
+
+    return (
+        <div className="flex flex-col gap-1.5" data-invalid={hasError}>
+            <label className="text-sm font-medium text-foreground">
+                Kode Undangan <span className="ml-1 text-destructive">*</span>
+            </label>
+            <div className="relative">
+                <input
+                    type="text"
+                    value={value}
+                    onChange={handleChange}
+                    placeholder="contoh: periska-dei"
+                    className={`${base}${borderCls}`}
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sm">
+                    {status === 'checking'  && <Loader2 className="size-4 animate-spin text-muted-foreground" />}
+                    {status === 'available' && !hasError && <Check className="size-4 text-emerald-500" />}
+                    {hasError && <X className="size-4 text-destructive" />}
+                </div>
+            </div>
+            <p className={`flex items-center gap-1 text-xs ${
+                hasError ? 'font-medium text-destructive' :
+                status === 'available' ? 'text-emerald-600 dark:text-emerald-400' :
+                'text-muted-foreground'
+            }`}>
+                {hasError && <AlertCircle className="size-3.5 shrink-0" />}
+                {error ? error :
+                    status === 'taken' ? 'Kode sudah digunakan, coba yang lain' :
+                    status === 'available' ? 'Kode tersedia' :
+                    'Kode ini akan menjadi URL undangan Anda. Hanya huruf kecil, angka, dan tanda -'}
+            </p>
+        </div>
+    );
+}
+
+function CoupleTab({ fields, values, errors, invitationCode, codeError, onFieldChange, onCodeChange, onCodeStatusChange }: {
+    fields: EventTypeField[];
+    values: Record<string, string>;
+    errors?: Record<string, string>;
+    invitationCode: string;
+    codeError?: string;
+    onFieldChange: (key: string, val: string) => void;
+    onCodeChange: (val: string) => void;
+    onCodeStatusChange?: (status: CodeStatus) => void;
+}) {
+    const coupleFields = fields.filter((f) => WEDDING_TAB_FIELDS.couple.includes(f.field_key));
+    const groomFields  = coupleFields.filter((f) => f.field_key.startsWith('groom'));
+    const brideFields  = coupleFields.filter((f) => f.field_key.startsWith('bride'));
+    const sharedFields = coupleFields.filter((f) => !f.field_key.startsWith('groom') && !f.field_key.startsWith('bride'));
+
+    // Auto-generate code from nicknames
+    const prevAutoRef = useRef('');
+    useEffect(() => {
+        const gNick = (values['groom_nickname'] ?? '').trim().toLowerCase().replace(/\s+/g, '');
+        const bNick = (values['bride_nickname']  ?? '').trim().toLowerCase().replace(/\s+/g, '');
+        const auto  = gNick && bNick ? `${gNick}-${bNick}` : gNick || bNick || '';
+
+        // Only auto-fill if code hasn't been manually changed from previous auto-value
+        if (auto && (invitationCode === prevAutoRef.current || invitationCode === '')) {
+            onCodeChange(auto);
+        }
+        prevAutoRef.current = auto;
+    }, [values['groom_nickname'], values['bride_nickname']]);
+
+    return (
+        <div className="flex flex-col gap-8">
+            <section>
+                <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <span className="size-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">♂</span>
+                    Pengantin Pria
+                </h3>
+                <FieldGroup fields={groomFields} values={values} errors={errors} onChange={onFieldChange} />
+            </section>
+
+            <div className="border-t border-border" />
+
+            <section>
+                <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <span className="size-6 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center text-xs font-bold">♀</span>
+                    Pengantin Wanita
+                </h3>
+                <FieldGroup fields={brideFields} values={values} errors={errors} onChange={onFieldChange} />
+            </section>
+
+            {sharedFields.length > 0 && (
+                <>
+                    <div className="border-t border-border" />
+                    <section>
+                        <h3 className="font-semibold text-foreground mb-4">Lainnya</h3>
+                        <FieldGroup fields={sharedFields} values={values} errors={errors} onChange={onFieldChange} />
+                    </section>
+                </>
+            )}
+
+            <div className="border-t border-border" />
+
+            <section>
+                <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <Heart className="size-4 text-primary" />
+                    Kode Undangan
+                </h3>
+                <InvitationCodeInput
+                    value={invitationCode}
+                    error={codeError}
+                    onChange={onCodeChange}
+                    onStatusChange={onCodeStatusChange}
+                />
+            </section>
+        </div>
+    );
+}
+
+// ─── Acara Tab ────────────────────────────────────────────────────────────────
+
+interface AcaraEvent {
+    id: number;
+    name: string;
+    date: string;
+    time_start: string;
+    time_end: string;
+    location_name: string;
+    location_address: string;
+    // Location data from picker
+    maps_embed: string;
+    maps_url: string;
+    maps_lat: string;
+    maps_lng: string;
+    maps_full_address: string;
+}
+
+const EMPTY_ACARA_LOCATION = {
+    maps_embed: '',
+    maps_url: '',
+    maps_lat: '',
+    maps_lng: '',
+    maps_full_address: '',
+};
+
+function AcaraTab({ events, setEvents, errors = {}, onClearError }: {
+    events: AcaraEvent[];
+    setEvents: React.Dispatch<React.SetStateAction<AcaraEvent[]>>;
+    errors?: Record<number, AcaraFieldErrors>;
+    onClearError?: (id: number, field: keyof AcaraFieldErrors) => void;
+}) {
+    const [locationPickerId, setLocationPickerId] = useState<number | null>(null);
+
+    function addEvent() {
+        setEvents((prev) => [
+            ...prev,
+            {
+                id: Date.now(),
+                name: '', date: '', time_start: '', time_end: '',
+                location_name: '', location_address: '',
+                ...EMPTY_ACARA_LOCATION,
+            },
+        ]);
+    }
+
+    function updateEvent<K extends keyof AcaraEvent>(id: number, key: K, val: AcaraEvent[K]) {
+        setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, [key]: val } : e)));
+        if (key === 'name' || key === 'date' || key === 'location_name') {
+            onClearError?.(id, key);
+        }
+    }
+
+    function applyLocation(id: number, result: LocationResult) {
+        setEvents((prev) => prev.map((e) =>
+            e.id === id
+                ? {
+                    ...e,
+                    maps_embed: result.embedUrl,
+                    maps_url: result.mapsUrl,
+                    maps_lat: result.lat,
+                    maps_lng: result.lng,
+                    maps_full_address: result.address,
+                    // Auto-fill location_address if empty
+                    location_address: e.location_address || result.address,
+                }
+                : e,
+        ));
+    }
+
+    function removeEvent(id: number) {
+        setEvents((prev) => prev.filter((e) => e.id !== id));
+    }
+
+    const inputCls =
+        'w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none ' +
+        'focus:border-primary focus:ring-2 focus:ring-primary/20 transition';
+
+    return (
+        <div className="flex flex-col gap-6">
+            {events.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-6">
+                    Belum ada jadwal acara. Klik tombol di bawah untuk menambahkan.
+                </p>
+            )}
+
+            {events.map((ev, idx) => {
+                const evErrors = errors[ev.id] ?? {};
+                const fieldCls = (hasError?: string) => hasError
+                    ? `${inputCls} border-destructive focus:border-destructive focus:ring-destructive/20`
+                    : inputCls;
+                return (
+                <div key={ev.id} className="rounded-2xl border border-border p-5 flex flex-col gap-4">
+                    {/* Card header */}
+                    <div className="flex items-center justify-between">
+                        <p className="font-semibold text-sm text-foreground">Acara {idx + 1}</p>
+                        <button
+                            type="button"
+                            onClick={() => removeEvent(ev.id)}
+                            className="text-xs text-destructive hover:underline"
+                        >
+                            Hapus
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        {/* Nama Acara */}
+                        <div className="flex flex-col gap-1.5 sm:col-span-2" data-invalid={!!evErrors.name}>
+                            <label className="text-sm font-medium text-foreground">
+                                Nama Acara <span className="text-destructive">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="cth. Akad Nikah"
+                                value={ev.name}
+                                onChange={(e) => updateEvent(ev.id, 'name', e.target.value)}
+                                className={fieldCls(evErrors.name)}
+                            />
+                            {evErrors.name && (
+                                <p className="flex items-center gap-1 text-xs font-medium text-destructive">
+                                    <AlertCircle className="size-3.5 shrink-0" />
+                                    {evErrors.name}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Tanggal */}
+                        <div className="flex flex-col gap-1.5" data-invalid={!!evErrors.date}>
+                            <label className="text-sm font-medium text-foreground">
+                                Tanggal <span className="text-destructive">*</span>
+                            </label>
+                            <input
+                                type="date"
+                                value={ev.date}
+                                onChange={(e) => updateEvent(ev.id, 'date', e.target.value)}
+                                className={fieldCls(evErrors.date)}
+                            />
+                            {evErrors.date && (
+                                <p className="flex items-center gap-1 text-xs font-medium text-destructive">
+                                    <AlertCircle className="size-3.5 shrink-0" />
+                                    {evErrors.date}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Waktu */}
+                        <div className="flex gap-3">
+                            <div className="flex flex-col gap-1.5 flex-1">
+                                <label className="text-sm font-medium text-foreground">Mulai</label>
+                                <input
+                                    type="time"
+                                    value={ev.time_start}
+                                    onChange={(e) => updateEvent(ev.id, 'time_start', e.target.value)}
+                                    className={inputCls}
+                                />
+                            </div>
+                            <div className="flex flex-col gap-1.5 flex-1">
+                                <label className="text-sm font-medium text-foreground">Selesai</label>
+                                <input
+                                    type="time"
+                                    value={ev.time_end}
+                                    onChange={(e) => updateEvent(ev.id, 'time_end', e.target.value)}
+                                    className={inputCls}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Nama Lokasi */}
+                        <div className="flex flex-col gap-1.5 sm:col-span-2" data-invalid={!!evErrors.location_name}>
+                            <label className="text-sm font-medium text-foreground">
+                                Nama Lokasi <span className="text-destructive">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="cth. Masjid Al-Ikhlas"
+                                value={ev.location_name}
+                                onChange={(e) => updateEvent(ev.id, 'location_name', e.target.value)}
+                                className={fieldCls(evErrors.location_name)}
+                            />
+                            {evErrors.location_name && (
+                                <p className="flex items-center gap-1 text-xs font-medium text-destructive">
+                                    <AlertCircle className="size-3.5 shrink-0" />
+                                    {evErrors.location_name}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Alamat Lengkap */}
+                        <div className="flex flex-col gap-1.5 sm:col-span-2">
+                            <label className="text-sm font-medium text-foreground">Alamat Lengkap</label>
+                            <textarea
+                                rows={2}
+                                placeholder="Jl. ..."
+                                value={ev.location_address}
+                                onChange={(e) => updateEvent(ev.id, 'location_address', e.target.value)}
+                                className={`${inputCls} resize-none`}
+                            />
+                        </div>
+
+                        {/* Lokasi di Peta */}
+                        <div className="flex flex-col gap-1.5 sm:col-span-2">
+                            <label className="text-sm font-medium text-foreground">Lokasi di Peta</label>
+
+                            {ev.maps_embed ? (
+                                /* Preview + meta */
+                                <div className="flex flex-col gap-2">
+                                    <div className="relative rounded-2xl overflow-hidden border border-border">
+                                        <iframe
+                                            src={ev.maps_embed}
+                                            className="w-full"
+                                            style={{ height: 200 }}
+                                            loading="lazy"
+                                            title="Peta lokasi"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setLocationPickerId(ev.id)}
+                                            className="absolute top-2 right-2 inline-flex items-center gap-1.5 rounded-lg bg-background/95 border border-border px-2.5 py-1.5 text-xs font-medium hover:bg-muted transition-colors shadow-sm"
+                                        >
+                                            <MapPin className="size-3 text-primary" />
+                                            Ubah Lokasi
+                                        </button>
+                                    </div>
+                                    {/* Coords + maps link */}
+                                    <div className="flex flex-wrap items-center gap-3 rounded-xl bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+                                        <span className="font-mono">
+                                            {ev.maps_lat}, {ev.maps_lng}
+                                        </span>
+                                        {ev.maps_url && (
+                                            <a
+                                                href={ev.maps_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-1 text-primary hover:underline"
+                                            >
+                                                <Link2 className="size-3" />
+                                                Buka Maps
+                                            </a>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => setEvents((prev) =>
+                                                prev.map((e) => e.id === ev.id ? { ...e, ...EMPTY_ACARA_LOCATION, location_address: e.location_address } : e)
+                                            )}
+                                            className="ml-auto text-destructive hover:underline"
+                                        >
+                                            Hapus
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                /* Trigger button */
+                                <button
+                                    type="button"
+                                    onClick={() => setLocationPickerId(ev.id)}
+                                    className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border py-5 text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+                                >
+                                    <MapPin className="size-4" />
+                                    Pilih Lokasi di Peta
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Location picker modal — rendered per event card */}
+                    <LocationPickerModal
+                        key={locationPickerId === ev.id ? `open-${ev.id}` : `closed-${ev.id}`}
+                        open={locationPickerId === ev.id}
+                        onClose={() => setLocationPickerId(null)}
+                        onConfirm={(result) => applyLocation(ev.id, result)}
+                    />
+                </div>
+                );
+            })}
+
+            <button
+                type="button"
+                onClick={addEvent}
+                className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border py-3 text-sm font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+            >
+                + Tambah Jadwal Acara
+            </button>
+        </div>
+    );
+}
+
+// ─── Gallery Tab ──────────────────────────────────────────────────────────────
+
+interface GalleryItem {
+    id: number;
+    file: File | null;
+    preview: string;
+    caption: string;
+}
+
+function GalleryTab({ items, setItems, maxUploads, videoUrl, videoUrlError, onVideoUrlChange, videoFieldLabel }: {
+    items: GalleryItem[];
+    setItems: React.Dispatch<React.SetStateAction<GalleryItem[]>>;
+    maxUploads: number | null;
+    videoUrl: string;
+    videoUrlError?: string;
+    onVideoUrlChange: (value: string) => void;
+    videoFieldLabel: string;
+}) {
+    const [dragOver, setDragOver] = useState(false);
+    const [dragId,   setDragId]   = useState<number | null>(null);
+    const [preview,  setPreview]  = useState<string | null>(null);
+    const fileInputRef            = useRef<HTMLInputElement>(null);
+
+    const atLimit    = maxUploads !== null && items.length >= maxUploads;
+    const remaining  = maxUploads !== null ? maxUploads - items.length : null;
+
+    async function processFiles(files: File[]) {
+        const slots = remaining !== null ? remaining : files.length;
+        const candidates = files.slice(0, slots);
+        const rejected: string[] = [];
+        const batch = candidates.filter((f) => {
+            const error = validateImageFile(f);
+            if (error) {
+                rejected.push(`${f.name}: ${error}`);
+                return false;
+            }
+            return true;
+        });
+
+        if (rejected.length > 0) {
+            alert(rejected.join('\n'));
+        }
+
+        for (const file of batch) {
+            await new Promise<void>((resolve) => {
+                const reader = new FileReader();
+                reader.onload = async (ev) => {
+                    const compressed = await compressImage(ev.target?.result as string);
+                    setItems((prev) => [
+                        ...prev,
+                        { id: Date.now() + Math.random(), file, preview: compressed, caption: '' },
+                    ]);
+                    resolve();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    }
+
+    function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+        processFiles(Array.from(e.target.files ?? []));
+        e.target.value = '';
+    }
+
+    function handleDropZoneDrop(e: React.DragEvent) {
+        e.preventDefault();
+        setDragOver(false);
+        if (atLimit) return;
+        processFiles(Array.from(e.dataTransfer.files));
+    }
+
+    function removeItem(id: number) {
+        setItems((prev) => prev.filter((i) => i.id !== id));
+        if (preview === items.find((i) => i.id === id)?.preview) setPreview(null);
+    }
+
+    function updateCaption(id: number, val: string) {
+        setItems((prev) => prev.map((i) => (i.id === id ? { ...i, caption: val } : i)));
+    }
+
+    // Drag-to-reorder
+    function handleDragStart(id: number) { setDragId(id); }
+    function handleDragEnter(targetId: number) {
+        if (dragId === null || dragId === targetId) return;
+        setItems((prev) => {
+            const arr  = [...prev];
+            const from = arr.findIndex((i) => i.id === dragId);
+            const to   = arr.findIndex((i) => i.id === targetId);
+            if (from === -1 || to === -1) return prev;
+            const [moved] = arr.splice(from, 1);
+            arr.splice(to, 0, moved);
+            return arr;
+        });
+    }
+
+    return (
+        <div className="flex flex-col gap-6">
+            {/* Video */}
+            <div className="rounded-2xl border border-border bg-card p-4" data-invalid={!!videoUrlError}>
+                <div className="mb-3 flex items-start gap-3">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Video className="size-4" />
+                    </div>
+                    <div>
+                        <p className="text-sm font-semibold text-foreground">{videoFieldLabel}</p>
+                        <p className="text-xs text-muted-foreground">Tambahkan link video highlight, cinematic, YouTube, Vimeo, atau Google Drive.</p>
+                    </div>
+                </div>
+                <input
+                    type="url"
+                    value={videoUrl}
+                    onChange={(e) => onVideoUrlChange(e.target.value)}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className={`w-full rounded-xl border bg-background px-3 py-2 text-sm outline-none transition focus:ring-2 ${
+                        videoUrlError
+                            ? 'border-destructive focus:border-destructive focus:ring-destructive/20'
+                            : 'border-border focus:border-primary focus:ring-primary/20'
+                    }`}
+                />
+                {videoUrlError ? (
+                    <p className="mt-2 flex items-center gap-1 text-xs font-medium text-destructive">
+                        <AlertCircle className="size-3.5 shrink-0" />
+                        {videoUrlError}
+                    </p>
+                ) : (
+                    <p className="mt-2 text-[11px] text-muted-foreground">Video akan tampil pada section Video jika fitur Video aktif di Pengaturan.</p>
+                )}
+            </div>
+
+            {/* Counter + progress */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <p className="text-sm font-medium text-foreground">Foto Gallery</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                        {maxUploads
+                            ? `${items.length} dari ${maxUploads} foto diunggah`
+                            : `${items.length} foto diunggah`}
+                    </p>
+                </div>
+                {maxUploads && (
+                    <div className="flex items-center gap-2">
+                        <div className="w-24 h-1.5 rounded-full bg-border overflow-hidden">
+                            <div
+                                className="h-full rounded-full bg-primary transition-all"
+                                style={{ width: `${Math.min(100, (items.length / maxUploads) * 100)}%` }}
+                            />
+                        </div>
+                        <span className="text-xs text-muted-foreground tabular-nums">
+                            {items.length}/{maxUploads}
+                        </span>
+                    </div>
+                )}
+            </div>
+
+            {/* Drop zone */}
+            {!atLimit && (
+                <div
+                    onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={handleDropZoneDrop}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed py-8 cursor-pointer transition-colors ${
+                        dragOver
+                            ? 'border-primary bg-primary/8 text-primary'
+                            : 'border-border hover:border-primary hover:bg-primary/5 text-muted-foreground'
+                    }`}
+                >
+                    <div className={`size-10 rounded-xl flex items-center justify-center transition-colors ${dragOver ? 'bg-primary/15' : 'bg-muted'}`}>
+                        <Upload className="size-5" />
+                    </div>
+                    <div className="text-center">
+                        <p className="text-sm font-medium">
+                            {dragOver ? 'Lepaskan untuk mengunggah' : 'Klik atau seret foto ke sini'}
+                        </p>
+                        <p className="text-xs mt-0.5">
+                            {remaining !== null
+                                ? `Maks. ${remaining} foto lagi · JPG, PNG, WEBP`
+                                : 'JPG, PNG, WEBP'}
+                        </p>
+                    </div>
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="sr-only"
+                        onChange={handleFileChange}
+                    />
+                </div>
+            )}
+
+            {atLimit && (
+                <div className="flex items-center gap-2 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-4 py-3 text-sm text-amber-700 dark:text-amber-400">
+                    <Image className="size-4 shrink-0" />
+                    Batas foto untuk paket ini telah tercapai ({maxUploads} foto).
+                </div>
+            )}
+
+            {/* Empty state */}
+            {items.length === 0 && (
+                <div className="flex flex-col items-center gap-2 py-6 text-center text-muted-foreground">
+                    <Image className="size-10 opacity-30" />
+                    <p className="text-sm">Belum ada foto. Mulai unggah di atas.</p>
+                </div>
+            )}
+
+            {/* Grid */}
+            {items.length > 0 && (
+                <>
+                    <p className="text-xs text-muted-foreground -mb-3">
+                        Seret kartu untuk mengubah urutan foto.
+                    </p>
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                        {items.map((item, idx) => (
+                            <div
+                                key={item.id}
+                                draggable
+                                onDragStart={() => handleDragStart(item.id)}
+                                onDragEnter={() => handleDragEnter(item.id)}
+                                onDragEnd={() => setDragId(null)}
+                                className={`flex flex-col rounded-2xl border bg-card overflow-hidden transition-all ${
+                                    dragId === item.id ? 'opacity-50 scale-95 border-primary' : 'border-border'
+                                }`}
+                            >
+                                {/* Image */}
+                                <div className="relative group aspect-square">
+                                    <img
+                                        src={item.preview}
+                                        alt={`Gallery ${idx + 1}`}
+                                        className="w-full h-full object-cover"
+                                    />
+                                    {/* Order badge */}
+                                    <div className="absolute top-2 left-2 size-5 rounded-full bg-black/60 text-white text-xs flex items-center justify-center font-medium">
+                                        {idx + 1}
+                                    </div>
+                                    {/* Action overlay */}
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                                        <button
+                                            type="button"
+                                            onClick={() => setPreview(item.preview)}
+                                            className="size-8 rounded-full bg-white/90 text-foreground flex items-center justify-center hover:bg-white transition-colors shadow"
+                                            title="Preview"
+                                        >
+                                            <Search className="size-3.5" />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => removeItem(item.id)}
+                                            className="size-8 rounded-full bg-white/90 text-destructive flex items-center justify-center hover:bg-white transition-colors shadow"
+                                            title="Hapus"
+                                        >
+                                            <X className="size-3.5" />
+                                        </button>
+                                    </div>
+                                </div>
+                                {/* Caption */}
+                                <div className="px-2.5 py-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Tambah caption..."
+                                        value={item.caption}
+                                        onChange={(e) => updateCaption(item.id, e.target.value)}
+                                        className="w-full text-xs bg-transparent outline-none text-foreground placeholder:text-muted-foreground border-b border-transparent focus:border-border transition-colors py-0.5"
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </>
+            )}
+
+            {/* Fullscreen preview modal */}
+            {preview && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+                    onClick={() => setPreview(null)}
+                >
+                    <img
+                        src={preview}
+                        alt="preview"
+                        className="max-w-full max-h-full rounded-2xl object-contain shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                    <button
+                        type="button"
+                        onClick={() => setPreview(null)}
+                        className="absolute top-4 right-4 size-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors"
+                    >
+                        <X className="size-5" />
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ─── Love Story Tab ───────────────────────────────────────────────────────────
+
+interface LoveStoryEntry {
+    id: number;
+    year: string;
+    title: string;
+    story: string;
+    photo: string;
+}
+
+function LoveStoryTab({ entries, setEntries }: {
+    entries: LoveStoryEntry[];
+    setEntries: React.Dispatch<React.SetStateAction<LoveStoryEntry[]>>;
+}) {
+    function addEntry() {
+        setEntries((prev) => [...prev, { id: Date.now(), year: '', title: '', story: '', photo: '' }]);
+    }
+
+    function updateEntry(id: number, key: keyof LoveStoryEntry, val: string) {
+        setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, [key]: val } : e)));
+    }
+
+    function removeEntry(id: number) {
+        setEntries((prev) => prev.filter((e) => e.id !== id));
+    }
+
+    const inputCls =
+        'w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none ' +
+        'focus:border-primary focus:ring-2 focus:ring-primary/20 transition';
+
+    return (
+        <div className="flex flex-col gap-6">
+            {entries.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-6">
+                    Belum ada cerita. Klik tombol di bawah untuk menambahkan.
+                </p>
+            )}
+            <div className="relative">
+                {entries.length > 0 && <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />}
+                <div className="flex flex-col gap-6">
+                    {entries.map((entry, idx) => (
+                        <div key={entry.id} className="relative pl-10">
+                            <div className="absolute left-0 size-8 rounded-full bg-primary/10 text-primary border-2 border-primary flex items-center justify-center text-xs font-bold">
+                                {idx + 1}
+                            </div>
+                            <div className="rounded-2xl border border-border p-4 flex flex-col gap-3">
+                                <div className="flex items-center justify-between">
+                                    <p className="font-semibold text-sm text-foreground">Momen #{idx + 1}</p>
+                                    <button type="button" onClick={() => removeEntry(entry.id)} className="text-xs text-destructive hover:underline">
+                                        Hapus
+                                    </button>
+                                </div>
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                    <div className="flex flex-col gap-1.5">
+                                        <label className="text-xs font-medium text-foreground">Tahun / Periode</label>
+                                        <input type="text" placeholder="cth. 2020" value={entry.year} onChange={(e) => updateEntry(entry.id, 'year', e.target.value)} className={inputCls} />
+                                    </div>
+                                    <div className="flex flex-col gap-1.5">
+                                        <label className="text-xs font-medium text-foreground">Judul Momen</label>
+                                        <input type="text" placeholder="cth. Pertama Bertemu" value={entry.title} onChange={(e) => updateEntry(entry.id, 'title', e.target.value)} className={inputCls} />
+                                    </div>
+                                    <div className="flex flex-col gap-1.5 sm:col-span-2">
+                                        <label className="text-xs font-medium text-foreground">Cerita</label>
+                                        <textarea rows={3} placeholder="Ceritakan momen ini..." value={entry.story} onChange={(e) => updateEntry(entry.id, 'story', e.target.value)} className={`${inputCls} resize-none`} />
+                                    </div>
+                                    <div className="flex flex-col gap-1.5 sm:col-span-2">
+                                        <label className="text-xs font-medium text-foreground">Foto (opsional)</label>
+                                        {entry.photo ? (
+                                            <div className="relative w-28 group">
+                                                <img
+                                                    src={entry.photo}
+                                                    alt="foto momen"
+                                                    className="w-28 h-28 rounded-xl object-cover border border-border"
+                                                />
+                                                <div className="absolute inset-0 rounded-xl bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                    <label className="size-7 rounded-full bg-white/90 text-foreground flex items-center justify-center hover:bg-white transition-colors shadow cursor-pointer" title="Ganti foto">
+                                                        <Upload className="size-3.5" />
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            className="sr-only"
+                                                            onChange={async (e) => {
+                                                                const file = e.target.files?.[0];
+                                                                if (!file) return;
+                                                                const reader = new FileReader();
+                                                                reader.onload = async (ev) => {
+                                                                    const compressed = await compressImage(ev.target?.result as string);
+                                                                    updateEntry(entry.id, 'photo', compressed);
+                                                                };
+                                                                reader.readAsDataURL(file);
+                                                                e.target.value = '';
+                                                            }}
+                                                        />
+                                                    </label>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => updateEntry(entry.id, 'photo', '')}
+                                                        title="Hapus foto"
+                                                        className="size-7 rounded-full bg-white/90 text-destructive flex items-center justify-center hover:bg-white transition-colors shadow"
+                                                    >
+                                                        <X className="size-3.5" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <label className="flex flex-col items-center justify-center gap-1.5 w-28 h-28 rounded-xl border-2 border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors cursor-pointer">
+                                                <Image className="size-5" />
+                                                <span className="text-xs font-medium">Upload Foto</span>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="sr-only"
+                                                    onChange={async (e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (!file) return;
+                                                        const error = validateImageFile(file);
+                                                        if (error) {
+                                                            alert(error);
+                                                            e.target.value = '';
+                                                            return;
+                                                        }
+                                                        const reader = new FileReader();
+                                                        reader.onload = async (ev) => {
+                                                            const compressed = await compressImage(ev.target?.result as string);
+                                                            updateEntry(entry.id, 'photo', compressed);
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                        e.target.value = '';
+                                                    }}
+                                                />
+                                            </label>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+            <button
+                type="button"
+                onClick={addEntry}
+                className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border py-3 text-sm font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+            >
+                + Tambah Momen
+            </button>
+        </div>
+    );
+}
+
+function GenericFieldTab({ fields, values, errors, onChange }: {
+    fields: EventTypeField[];
+    values: Record<string, string>;
+    errors?: Record<string, string>;
+    onChange: (key: string, val: string) => void;
+}) {
+    return <FieldGroup fields={fields} values={values} errors={errors} onChange={onChange} />;
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+
+export default function CreateDetail({ eventType, theme, package: pkg }: Props) {
+    const tabKeys: TabKey[] = EVENT_TYPE_TABS[eventType.name] ?? DEFAULT_TABS;
+    const [activeTab, setActiveTab] = useState<TabKey>(tabKeys[0]);
+
+    const currentTabIndex = tabKeys.indexOf(activeTab);
+    const isFirstTab = currentTabIndex === 0;
+    const isLastTab  = currentTabIndex === tabKeys.length - 1;
+
+    function goToPrevTab() { if (!isFirstTab) setActiveTab(tabKeys[currentTabIndex - 1]); }
+
+    const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
+
+    const defaultAcaraEvents: AcaraEvent[] = eventType.name === 'wedding'
+        ? [
+            { id: 1, name: 'Akad Nikah', date: '', time_start: '', time_end: '', location_name: '', location_address: '', ...EMPTY_ACARA_LOCATION },
+            { id: 2, name: 'Resepsi',    date: '', time_start: '', time_end: '', location_name: '', location_address: '', ...EMPTY_ACARA_LOCATION },
+          ]
+        : [{ id: 1, name: '', date: '', time_start: '', time_end: '', location_name: '', location_address: '', ...EMPTY_ACARA_LOCATION }];
+
+    const [acaraEvents,       setAcaraEvents]       = useState<AcaraEvent[]>(defaultAcaraEvents);
+    const [galleryItems,      setGalleryItems]      = useState<GalleryItem[]>([]);
+    const [loveStoryEntries,  setLoveStoryEntries]  = useState<LoveStoryEntry[]>([]);
+    const [additionalInfoItems, setAdditionalInfoItems] = useState<AdditionalInfoItem[]>([]);
+    const [invitationCode,    setInvitationCode]    = useState('');
+    const [codeStatus,        setCodeStatus]        = useState<CodeStatus>('idle');
+    const [codeError,         setCodeError]         = useState('');
+    const [slug,              setSlug]              = useState(() => resolveInvitationSlugBase(eventType.name, {}));
+    const [slugStatus,        setSlugStatus]        = useState<SlugStatus>('idle');
+    const [slugError,         setSlugError]         = useState('');
+    const [formError,         setFormError]         = useState('');
+    const [fieldErrors,       setFieldErrors]       = useState<Record<string, string>>({});
+    const [acaraErrors,       setAcaraErrors]       = useState<Record<number, AcaraFieldErrors>>({});
+    const [videoUrlError,     setVideoUrlError]     = useState('');
+
+    const hasCoupleTab = tabKeys.includes('couple');
+
+    // Default acara date to the birthday date until the user manually overrides it
+    const lastSyncedAcaraDateRef = useRef('');
+    const birthdayDateValue = fieldValues['birthday_date'];
+    useEffect(() => {
+        if (eventType.name !== 'birthday' || !birthdayDateValue) return;
+        setAcaraEvents((prev) => prev.map((ev) => (
+            !ev.date || ev.date === lastSyncedAcaraDateRef.current ? { ...ev, date: birthdayDateValue } : ev
+        )));
+        lastSyncedAcaraDateRef.current = birthdayDateValue;
+    }, [birthdayDateValue, eventType.name]);
+    const [submitting,        setSubmitting]        = useState(false);
+
+    function handleFieldChange(key: string, val: string) {
+        setFieldValues((prev) => ({ ...prev, [key]: val }));
+        setFieldErrors((prev) => {
+            if (!prev[key]) return prev;
+            const next = { ...prev };
+            delete next[key];
+            return next;
+        });
+        if (key === 'couple_video_url') setVideoUrlError('');
+    }
+
+    function handleCodeChange(val: string) {
+        setInvitationCode(val);
+        setCodeError('');
+    }
+
+    function clearAcaraFieldError(id: number, field: keyof AcaraFieldErrors) {
+        setAcaraErrors((prev) => {
+            if (!prev[id]?.[field]) return prev;
+            const nextEntry = { ...prev[id] };
+            delete nextEntry[field];
+            const next = { ...prev };
+            if (Object.keys(nextEntry).length > 0) next[id] = nextEntry;
+            else delete next[id];
+            return next;
+        });
+    }
+
+    // ── Centralized per-tab validation — the single source of truth reused by
+    // "Next", direct tab clicks, and the final Save/Create attempt. ──────────
+    function validateTab(tabKey: TabKey): boolean {
+        let valid = true;
+
+        const dynamicFields = fieldsForTab(tabKey, eventType.fields);
+        if (dynamicFields.length > 0) {
+            const errs = validateDynamicFields(dynamicFields, fieldValues);
+            setFieldErrors((prev) => {
+                const next = { ...prev };
+                for (const f of dynamicFields) delete next[f.field_key];
+                return { ...next, ...errs };
+            });
+            if (Object.keys(errs).length > 0) valid = false;
+        }
+
+        if (tabKey === 'couple') {
+            const err = validateInvitationCode(invitationCode, hasCoupleTab, codeStatus === 'taken');
+            setCodeError(err);
+            if (err) valid = false;
+        }
+
+        if (tabKey === 'acara') {
+            const errs = validateAcaraEvents(acaraEvents);
+            setAcaraErrors(errs);
+            if (Object.keys(errs).length > 0) valid = false;
+        }
+
+        if (tabKey === 'gallery') {
+            const err = validateVideoUrl(fieldValues.couple_video_url ?? '');
+            setVideoUrlError(err);
+            if (err) valid = false;
+        }
+
+        return valid;
+    }
+
+    // Validates every tab strictly before `targetIndex` (in order), so a user can
+    // never skip ahead — via "Next", a direct tab click, or repeated clicks — past
+    // a step that still has invalid/required fields.
+    function attemptNavigateTo(targetKey: TabKey) {
+        const targetIndex = tabKeys.indexOf(targetKey);
+        if (targetIndex <= currentTabIndex) {
+            setActiveTab(targetKey);
+            return;
+        }
+        for (let i = 0; i < targetIndex; i++) {
+            if (!validateTab(tabKeys[i])) {
+                setActiveTab(tabKeys[i]);
+                scrollToFirstError();
+                return;
+            }
+        }
+        setActiveTab(targetKey);
+    }
+
+    function goToNextTab() {
+        if (!isLastTab) attemptNavigateTo(tabKeys[currentTabIndex + 1]);
+    }
+
+    function validateAllTabs(): TabKey | null {
+        let firstInvalidTab: TabKey | null = null;
+        for (const key of tabKeys) {
+            if (!validateTab(key) && !firstInvalidTab) firstInvalidTab = key;
+        }
+        return firstInvalidTab;
+    }
+
+    function handleSubmit() {
+        if (submitting) return;
+
+        const firstInvalidTab = validateAllTabs();
+
+        const normalizedSlug = normalizeInvitationSlug(slug);
+        const slugMissing = !normalizedSlug;
+        const slugTaken = slugStatus === 'taken';
+        if (slugMissing) setSlugError('Slug wajib diisi.');
+        else if (slugTaken) setSlugError('Slug sudah digunakan, silakan pilih slug lain.');
+
+        if (firstInvalidTab || slugMissing || slugTaken) {
+            if (firstInvalidTab) setActiveTab(firstInvalidTab);
+            setFormError('Mohon periksa kembali data yang belum lengkap atau tidak valid pada form.');
+            scrollToFirstError();
+            return;
+        }
+
+        setFormError('');
+        setSubmitting(true);
+        router.post('/customer/invitations', {
+            event_type_id:    eventType.id,
+            theme_id:         theme.id,
+            package_id:       pkg.id,
+            invitation_code:  invitationCode || null,
+            slug:             normalizedSlug,
+            field_values:     normalizeFieldValuesForSubmit(fieldValues),
+            acara_events: acaraEvents.map((ev) => ({
+                name:             ev.name,
+                date:             ev.date,
+                time_start:       ev.time_start,
+                time_end:         ev.time_end,
+                location_name:    ev.location_name,
+                location_address: ev.location_address,
+                maps_embed:       ev.maps_embed,
+                maps_url:         ev.maps_url,
+                maps_lat:         ev.maps_lat,
+                maps_lng:         ev.maps_lng,
+            })),
+            gallery_items: galleryItems.map((item) => ({
+                preview: item.preview,
+                caption: item.caption,
+            })),
+            love_story: loveStoryEntries.map((entry) => ({
+                year:  entry.year,
+                title: entry.title,
+                story: entry.story,
+                photo: entry.photo,
+            })),
+            additional_info: additionalInfoItems.map((item) => ({
+                label: item.label,
+                value: item.value,
+            })),
+        }, {
+            onError: (errors) => {
+                const newFieldErrors: Record<string, string> = {};
+                const newAcaraErrors: Record<number, AcaraFieldErrors> = {};
+                let newSlugError = '';
+                let newCodeError = '';
+                let newVideoUrlError = '';
+                const bannerMessages: string[] = [];
+                const touchedTabs = new Set<TabKey>();
+
+                Object.entries(errors).forEach(([key, rawMsg]) => {
+                    const msg = Array.isArray(rawMsg) ? String(rawMsg[0]) : String(rawMsg);
+
+                    if (key === 'slug') { newSlugError = msg; return; }
+                    if (key === 'invitation_code') {
+                        newCodeError = msg;
+                        if (hasCoupleTab) touchedTabs.add('couple');
+                        return;
+                    }
+
+                    const fieldMatch = key.match(/^field_values\.(.+)$/);
+                    if (fieldMatch) {
+                        const fieldKey = fieldMatch[1];
+                        newFieldErrors[fieldKey] = msg;
+                        if (fieldKey === 'couple_video_url') {
+                            newVideoUrlError = msg;
+                            touchedTabs.add('gallery');
+                        }
+                        tabKeys.forEach((t) => {
+                            if (fieldsForTab(t, eventType.fields).some((f) => f.field_key === fieldKey)) touchedTabs.add(t);
+                        });
+                        return;
+                    }
+
+                    const acaraMatch = key.match(/^acara_events\.(\d+)\.(\w+)$/);
+                    if (acaraMatch) {
+                        const ev = acaraEvents[Number(acaraMatch[1])];
+                        const sub = acaraMatch[2];
+                        if (ev && (sub === 'name' || sub === 'date' || sub === 'location_name')) {
+                            newAcaraErrors[ev.id] = { ...newAcaraErrors[ev.id], [sub]: msg };
+                        } else {
+                            bannerMessages.push(msg);
+                        }
+                        touchedTabs.add('acara');
+                        return;
+                    }
+
+                    if (key.startsWith('gallery_items.'))   { touchedTabs.add('gallery');    bannerMessages.push(msg); return; }
+                    if (key.startsWith('love_story.'))      { touchedTabs.add('love_story');  bannerMessages.push(msg); return; }
+                    if (key.startsWith('additional_info.')) { touchedTabs.add('info');        bannerMessages.push(msg); return; }
+
+                    bannerMessages.push(msg);
+                });
+
+                if (Object.keys(newFieldErrors).length > 0) setFieldErrors((prev) => ({ ...prev, ...newFieldErrors }));
+                if (Object.keys(newAcaraErrors).length > 0) setAcaraErrors((prev) => ({ ...prev, ...newAcaraErrors }));
+                if (newSlugError) setSlugError(newSlugError);
+                if (newCodeError) setCodeError(newCodeError);
+                if (newVideoUrlError) setVideoUrlError(newVideoUrlError);
+
+                const firstErrorTab = tabKeys.find((t) => touchedTabs.has(t));
+                if (firstErrorTab) setActiveTab(firstErrorTab);
+
+                setFormError(
+                    bannerMessages.length > 0
+                        ? bannerMessages.join(' ')
+                        : 'Beberapa data belum valid. Periksa kembali field yang ditandai merah.',
+                );
+                scrollToFirstError();
+            },
+            onFinish: () => setSubmitting(false),
+        });
+    }
+
+    function renderTabContent() {
+        switch (activeTab) {
+            case 'couple':
+                return (
+                    <CoupleTab
+                        fields={eventType.fields}
+                        values={fieldValues}
+                        errors={fieldErrors}
+                        invitationCode={invitationCode}
+                        codeError={codeError}
+                        onFieldChange={handleFieldChange}
+                        onCodeChange={handleCodeChange}
+                        onCodeStatusChange={setCodeStatus}
+                    />
+                );
+            case 'acara':
+                return (
+                    <AcaraTab
+                        events={acaraEvents}
+                        setEvents={setAcaraEvents}
+                        errors={acaraErrors}
+                        onClearError={clearAcaraFieldError}
+                    />
+                );
+            case 'gallery':
+                return (
+                    <GalleryTab
+                        items={galleryItems}
+                        setItems={setGalleryItems}
+                        maxUploads={pkg.max_gallery_uploads}
+                        videoUrl={fieldValues.couple_video_url ?? ''}
+                        videoUrlError={videoUrlError}
+                        onVideoUrlChange={(value) => handleFieldChange('couple_video_url', value)}
+                        videoFieldLabel={resolveVideoFieldLabel(eventType.name)}
+                    />
+                );
+            case 'love_story':
+                return <LoveStoryTab entries={loveStoryEntries} setEntries={setLoveStoryEntries} />;
+            case 'info':
+                return (
+                    <div className="flex flex-col gap-8">
+                        <GenericFieldTab fields={fieldsForTab('info', eventType.fields)} values={fieldValues} errors={fieldErrors} onChange={handleFieldChange} />
+                        <div className="border-t border-border" />
+                        <AdditionalInfoSection items={additionalInfoItems} setItems={setAdditionalInfoItems} />
+                    </div>
+                );
+            case 'host':
+                return (
+                    <GenericFieldTab
+                        fields={fieldsForTab('host', eventType.fields)}
+                        values={fieldValues}
+                        errors={fieldErrors}
+                        onChange={handleFieldChange}
+                    />
+                );
+            default:
+                return null;
+        }
+    }
+
+    const tabsWithErrors = new Set<TabKey>();
+    for (const t of tabKeys) {
+        if (fieldsForTab(t, eventType.fields).some((f) => fieldErrors[f.field_key])) tabsWithErrors.add(t);
+    }
+    if (hasCoupleTab && codeError) tabsWithErrors.add('couple');
+    if (Object.keys(acaraErrors).length > 0) tabsWithErrors.add('acara');
+    if (videoUrlError) tabsWithErrors.add('gallery');
+
+    return (
+        <CustomerLayout breadcrumbs={breadcrumbs}>
+            <Head title="Detail Acara" />
+            <div className="flex flex-col gap-6 p-4 sm:p-6">
+                {/* Header */}
+                <div>
+                    <h1 className="text-2xl font-bold text-foreground">Detail Acara</h1>
+                    <p className="text-muted-foreground text-sm mt-1">
+                        Lengkapi informasi untuk undangan{' '}
+                        <span className="font-medium text-foreground">{eventType.label}</span>.
+                    </p>
+                </div>
+
+                {/* Step indicator */}
+                <div className="flex items-center gap-2 text-sm overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                    <div className="flex shrink-0 items-center gap-1.5 text-muted-foreground whitespace-nowrap">
+                        <div className="size-6 shrink-0 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
+                            <Check className="size-3" />
+                        </div>
+                        Jenis Undangan
+                    </div>
+                    <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+                    <div className="flex shrink-0 items-center gap-1.5 text-muted-foreground whitespace-nowrap">
+                        <div className="size-6 shrink-0 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
+                            <Check className="size-3" />
+                        </div>
+                        Tema & Paket
+                    </div>
+                    <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+                    <div className="flex shrink-0 items-center gap-1.5 font-medium text-primary whitespace-nowrap">
+                        <div className="size-6 shrink-0 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                            3
+                        </div>
+                        Detail Acara
+                    </div>
+                </div>
+
+                {/* Summary */}
+                <SummaryBar theme={theme} pkg={pkg} />
+
+                {/* Tab nav */}
+                <div className="flex gap-1 border-b border-border overflow-x-auto">
+                    {tabKeys.map((key) => {
+                        const tab = TAB_DEFINITIONS[key];
+                        const hasError = tabsWithErrors.has(key);
+                        return (
+                            <button
+                                key={key}
+                                type="button"
+                                onClick={() => attemptNavigateTo(key)}
+                                className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors -mb-px ${
+                                    activeTab === key
+                                        ? 'border-primary text-primary'
+                                        : 'border-transparent text-muted-foreground hover:text-foreground'
+                                }`}
+                            >
+                                {tab.icon}
+                                {resolveTabLabel(key, eventType.name)}
+                                {hasError && (
+                                    <span
+                                        title="Ada data yang belum lengkap atau tidak valid"
+                                        className="inline-flex size-1.5 shrink-0 rounded-full bg-destructive"
+                                    />
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {formError && (
+                    <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+                        {formError}
+                    </div>
+                )}
+
+                {/* Tab content */}
+                <div className="min-h-[300px]">
+                    {renderTabContent()}
+                </div>
+
+                <SlugField
+                    value={slug}
+                    onChange={(next) => {
+                        setSlugError('');
+                        setSlug(next);
+                    }}
+                    autoValue={resolveInvitationSlugBase(eventType.name, fieldValues)}
+                    autoSourceLabel={resolveInvitationSlugSourceLabel(eventType.name)}
+                    checkUrl="/customer/invitations/check-slug"
+                    disabled={submitting}
+                    serverError={slugError}
+                    onStatusChange={setSlugStatus}
+                />
+
+                {/* Actions */}
+                <div className="flex flex-col-reverse gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                    {isFirstTab ? (
+                        <button
+                            type="button"
+                            onClick={() => window.history.back()}
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors sm:w-auto"
+                        >
+                            <ChevronLeft className="size-4" />
+                            Kembali
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={goToPrevTab}
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors sm:w-auto"
+                        >
+                            <ChevronLeft className="size-4" />
+                            {resolveTabLabel(tabKeys[currentTabIndex - 1], eventType.name)}
+                        </button>
+                    )}
+
+                    {isLastTab ? (
+                        <button
+                            type="button"
+                            onClick={handleSubmit}
+                            disabled={submitting}
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors sm:w-auto"
+                        >
+                            {submitting ? (
+                                <><Loader2 className="size-4 animate-spin" /> Menyimpan...</>
+                            ) : (
+                                <>Simpan & Buat Undangan <ChevronRight className="size-4" /></>
+                            )}
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={goToNextTab}
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors sm:w-auto"
+                        >
+                            {resolveTabLabel(tabKeys[currentTabIndex + 1], eventType.name)}
+                            <ChevronRight className="size-4" />
+                        </button>
+                    )}
+                </div>
+            </div>
+        </CustomerLayout>
+    );
+}

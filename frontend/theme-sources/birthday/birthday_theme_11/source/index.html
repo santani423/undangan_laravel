@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en" class="is-loading">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Little Smile Dental Adventure — Birthday Invitation</title>
+    <meta name="description" content="You're invited! An interactive 3D birthday adventure with Dr. Smiley and the Tooth Friends." />
+    <meta name="theme-color" content="#b8e8f5" />
+    <meta property="og:title" content="Little Smile Dental Adventure — Birthday Invitation" />
+    <meta property="og:description" content="You're invited! Open the invitation to see the party details and RSVP." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body class="is-loading">
+    <a class="skip-link" href="#details">Skip to party details</a>
+
+    <!-- Loading screen -->
+    <div class="loader" id="loader">
+      <div class="loader__inner">
+        <img class="loader__mascot" src="/assets/images/dr-smiley.svg" alt="" width="148" height="148" />
+        <p class="loader__title">Little Smile Dental Adventure</p>
+        <div class="loader__track" role="progressbar" aria-label="Loading the adventure" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <span data-loader-bar></span>
+        </div>
+        <p class="loader__status" data-loader-status aria-live="polite">Brushing up the invitation…</p>
+      </div>
+    </div>
+
+    <!-- 3D world (decorative mirror of the content below; every action also has an HTML control) -->
+    <canvas class="world" data-world aria-hidden="true"></canvas>
+    <div class="world-fallback" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="brand" href="#hero">
+        <img src="/assets/images/tooth-friend.svg" alt="" width="34" height="34" />
+        <span class="brand__text"><span data-bind="child.name">Alya</span>’s party</span>
+      </a>
+      <nav class="trail" aria-label="Adventure sections" data-trail></nav>
+      <div class="header-actions">
+        <button class="icon-btn" type="button" data-music-toggle aria-pressed="false" title="Music">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 18.5a2.5 2.5 0 1 1-2.5-2.5H9V5l11-2v12.5a2.5 2.5 0 1 1-2.5-2.5H20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path class="icon-btn__slash" d="M4 4l16 16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+          <span class="visually-hidden">Music</span>
+        </button>
+        <button class="icon-btn" type="button" data-sfx-toggle aria-pressed="true" title="Sound effects">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path class="icon-btn__waves" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="icon-btn__slash" d="M4 4l16 16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+          <span class="visually-hidden">Sound effects</span>
+        </button>
+        <button class="menu-btn" type="button" data-menu-button aria-expanded="false" aria-controls="menu">
+          <span class="menu-btn__icon" aria-hidden="true"></span>Menu
+        </button>
+      </div>
+      <div class="progress" aria-hidden="true"><span data-progress></span></div>
+    </header>
+    <nav class="menu" id="menu" aria-label="Adventure sections" hidden>
+      <ol></ol>
+    </nav>
+
+    <main id="main">
+      <!-- 1 · Welcome -->
+      <section id="hero" class="scene scene--hero" data-side="left" aria-labelledby="hero-heading">
+        <img class="scene__art" src="/assets/images/dr-smiley.svg" alt="" width="320" height="320" />
+        <div class="scene__panel hero" data-hero>
+          <h1 id="hero-heading" class="hero__site" data-bind="copy.siteTitle">Little Smile Dental Adventure</h1>
+          <p class="hero__invite" data-hero-item>You’re invited to a birthday party</p>
+          <p class="hero__name" data-hero-item>
+            <span class="hero__child" data-bind="child.name">Alya</span>
+            <span class="hero__turning"><span data-bind="copy.heroLine">is turning</span> <span class="hero__age" data-bind="child.age">5</span></span>
+          </p>
+          <p class="hero__when" data-hero-item>
+            <span data-bind-date="day"></span><br />
+            <span data-bind-date="time"></span>
+          </p>
+          <div class="hero__countdown" data-hero-item>
+            <div data-countdown></div>
+          </div>
+          <div class="hero__actions" data-hero-item>
+            <button class="btn btn--primary btn--big" type="button" data-start>Start the adventure</button>
+          </div>
+        </div>
+        <a class="scroll-cue" href="#invitation" data-scroll-cue>
+          <span class="scroll-cue__icon" aria-hidden="true"></span>
+          <span>Scroll to explore</span>
+        </a>
+      </section>
+
+      <!-- 2 · Invitation -->
+      <section id="invitation" class="scene" data-side="right" aria-labelledby="invitation-heading">
+        <img class="scene__art" src="/assets/images/envelope.svg" alt="" width="320" height="240" />
+        <div class="scene__panel" data-reveal-group>
+          <h2 id="invitation-heading" data-reveal data-section-title="invitation">A Special Invitation</h2>
+          <p class="lead" data-reveal data-bind="copy.invitationHeading">You are invited!</p>
+          <div class="prose" data-reveal data-bind-html="copy.invitationMessage"></div>
+          <p class="signature" data-reveal>With love, <span data-bind="host.names"></span></p>
+          <div class="actions" data-reveal>
+            <a class="btn btn--primary" href="#details">See when and where</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3 · Details -->
+      <section id="details" class="scene" data-side="left" aria-labelledby="details-heading">
+        <img class="scene__art" src="/assets/images/calendar.svg" alt="" width="260" height="260" />
+        <div class="scene__panel" data-reveal-group>
+          <h2 id="details-heading" data-reveal data-section-title="details">When &amp; Where?</h2>
+          <dl class="facts" data-reveal>
+            <div class="fact">
+              <dt>Birthday</dt>
+              <dd><span data-bind="child.name"></span> turns <span data-bind="child.age"></span></dd>
+            </div>
+            <div class="fact">
+              <dt>Date</dt>
+              <dd data-bind-date="day"></dd>
+            </div>
+            <div class="fact">
+              <dt>Time</dt>
+              <dd data-bind-date="time"></dd>
+            </div>
+            <div class="fact fact--wide">
+              <dt>Venue</dt>
+              <dd><strong data-bind="venue.name"></strong><br /><span data-bind="venue.address"></span></dd>
+            </div>
+            <div class="fact fact--wide" data-show-if="event.dressCode">
+              <dt>Dress code</dt>
+              <dd data-bind="event.dressCode"></dd>
+            </div>
+          </dl>
+          <div class="details-countdown" data-reveal>
+            <p class="countdown-label">Countdown to party time</p>
+            <div data-countdown></div>
+          </div>
+          <div class="actions" data-reveal>
+            <a class="btn btn--primary" data-maps-link href="https://www.google.com/maps" target="_blank" rel="noopener">Open Google Maps</a>
+            <button class="btn btn--secondary" type="button" data-calendar-download>Add to calendar</button>
+          </div>
+          <p class="small" data-reveal>
+            “Add to calendar” downloads an .ics file for Apple Calendar, Outlook and most calendar apps.
+            Using Google Calendar? <a data-google-calendar href="https://calendar.google.com" target="_blank" rel="noopener">Add it there instead</a>.
+          </p>
+          <p class="note" data-reveal data-bind="copy.detailsNote"></p>
+        </div>
+      </section>
+
+      <!-- 4 · Activities -->
+      <section id="activities" class="scene scene--wide" data-side="right" aria-labelledby="activities-heading">
+        <img class="scene__art" src="/assets/images/balloons.svg" alt="" width="300" height="340" />
+        <div class="scene__panel scene__panel--wide" data-reveal-group>
+          <h2 id="activities-heading" data-reveal data-section-title="activities">Let's Play Together!</h2>
+          <p data-reveal>Tap an activity to see what’s planned<span class="only-3d"> (or tap the toys on the island)</span>.</p>
+          <ul class="activity-list" data-activity-list data-reveal></ul>
+        </div>
+      </section>
+
+      <!-- 5 · Gallery -->
+      <section id="gallery" class="scene scene--wide" data-side="left" aria-labelledby="gallery-heading">
+        <img class="scene__art" src="/assets/images/tooth-friend.svg" alt="" width="300" height="300" />
+        <div class="scene__panel scene__panel--wide" data-reveal-group>
+          <h2 id="gallery-heading" data-reveal data-section-title="gallery">Little Moments, Big Smiles</h2>
+          <p data-reveal data-bind="copy.galleryIntro"></p>
+          <ul class="photo-grid" data-gallery-grid data-reveal></ul>
+        </div>
+      </section>
+
+      <!-- 6 · Cake -->
+      <section id="cake" class="scene" data-side="left" aria-labelledby="cake-heading">
+        <img class="scene__art scene__art--cake" src="/assets/images/birthday-cake.svg" alt="" width="320" height="280" />
+        <div class="scene__panel cake-panel" data-reveal-group data-cake>
+          <h2 id="cake-heading" data-reveal data-section-title="cake">Make a Birthday Wish!</h2>
+          <p data-reveal data-bind="copy.cakeIntro"></p>
+          <div class="actions" data-reveal>
+            <button class="btn btn--primary btn--big" type="button" data-cake-wish>Make a wish</button>
+            <button class="btn btn--primary btn--big" type="button" data-cake-relight hidden>Light the candles again</button>
+            <button class="btn btn--secondary" type="button" data-cake-mic aria-pressed="false">Blow into the microphone</button>
+          </div>
+          <div class="mic-meter" data-mic-meter aria-hidden="true"><span></span></div>
+          <p class="status" data-cake-status role="status" aria-live="polite"></p>
+          <p class="small" data-reveal>The microphone is optional and only listens while the button says “Stop listening”. Nothing is recorded or sent anywhere.</p>
+        </div>
+      </section>
+
+      <!-- 7 · RSVP -->
+      <section id="rsvp" class="scene" data-side="right" aria-labelledby="rsvp-heading">
+        <img class="scene__art" src="/assets/images/gift-box.svg" alt="" width="240" height="240" />
+        <div class="scene__panel" data-reveal-group>
+          <h2 id="rsvp-heading" data-reveal data-section-title="rsvp">Will You Join the Party?</h2>
+          <p data-reveal data-bind="copy.rsvpIntro"></p>
+          <p class="deadline" data-reveal data-rsvp-deadline hidden>Please reply by <strong></strong>.</p>
+
+          <form class="rsvp-form" data-rsvp-form data-reveal novalidate>
+            <p class="form-status" data-form-status role="alert" hidden></p>
+
+            <div class="field" data-field="name">
+              <label for="rsvp-name">Your name</label>
+              <input id="rsvp-name" name="name" type="text" autocomplete="name" maxlength="60" required aria-describedby="rsvp-name-error" />
+              <p class="field__error" id="rsvp-name-error" data-error-for="name" hidden></p>
+            </div>
+
+            <fieldset class="field" data-field="attendance" aria-describedby="rsvp-attendance-error">
+              <legend>Can you come?</legend>
+              <div class="choice-group">
+                <label class="choice">
+                  <input type="radio" name="attendance" value="yes" required />
+                  <span>Yes, we’ll be there</span>
+                </label>
+                <label class="choice">
+                  <input type="radio" name="attendance" value="no" />
+                  <span>Sorry, we can’t make it</span>
+                </label>
+              </div>
+              <p class="field__error" id="rsvp-attendance-error" data-error-for="attendance" hidden></p>
+            </fieldset>
+
+            <div class="field" data-field="guests" data-guests-group hidden>
+              <label for="rsvp-guests">Number of guests, including you</label>
+              <div class="stepper">
+                <button type="button" class="stepper__btn" data-step="-1" aria-label="One fewer guest">−</button>
+                <input id="rsvp-guests" name="guests" type="number" inputmode="numeric" min="1" max="4" value="1" aria-describedby="rsvp-guests-hint rsvp-guests-error" />
+                <button type="button" class="stepper__btn" data-step="1" aria-label="One more guest">+</button>
+              </div>
+              <p class="field__hint" id="rsvp-guests-hint">Up to <span data-guests-max>4</span> guests per reply.</p>
+              <p class="field__error" id="rsvp-guests-error" data-error-for="guests" hidden></p>
+            </div>
+
+            <div class="field" data-field="message">
+              <label for="rsvp-message">Message for <span data-bind="child.name"></span> <span class="optional">(optional)</span></label>
+              <textarea id="rsvp-message" name="message" rows="3" maxlength="280" aria-describedby="rsvp-message-count rsvp-message-error"></textarea>
+              <p class="field__hint field__hint--end" id="rsvp-message-count" data-message-count>0 / 280</p>
+              <p class="field__error" id="rsvp-message-error" data-error-for="message" hidden></p>
+            </div>
+
+            <button class="btn btn--whatsapp btn--big" type="submit">Send RSVP on WhatsApp</button>
+            <p class="small">This opens WhatsApp with your reply already written. You still need to press send in WhatsApp. Nothing is saved on this website.</p>
+          </form>
+
+          <div class="rsvp-success" data-rsvp-success hidden>
+            <h3 tabindex="-1" data-rsvp-success-heading>Your reply is ready to send</h3>
+            <p data-rsvp-success-lead></p>
+            <pre class="rsvp-preview" data-rsvp-preview></pre>
+            <div class="actions">
+              <a class="btn btn--whatsapp" data-rsvp-whatsapp href="https://wa.me/" target="_blank" rel="noopener">Open WhatsApp</a>
+              <button class="btn btn--secondary" type="button" data-rsvp-copy>Copy message</button>
+              <button class="btn btn--ghost" type="button" data-rsvp-edit>Edit reply</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8 · Finale -->
+      <section id="finale" class="scene scene--finale" data-side="bottom" aria-labelledby="finale-heading">
+        <img class="scene__art" src="/assets/images/balloons.svg" alt="" width="300" height="340" />
+        <div class="scene__panel finale-panel" data-reveal-group>
+          <h2 id="finale-heading" data-reveal data-section-title="finale">Thank You!</h2>
+          <p class="lead" data-reveal data-bind="copy.finaleHeading"></p>
+          <p data-reveal data-bind="copy.finaleMessage"></p>
+          <p class="signature" data-reveal>See you on <span data-bind-date="day"></span>.</p>
+          <div class="actions actions--center" data-reveal>
+            <a class="btn btn--primary" href="#rsvp">Confirm attendance</a>
+            <button class="btn btn--secondary" type="button" data-back-to-start>Back to start</button>
+            <button class="btn btn--ghost" type="button" data-replay>Replay the adventure</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>Made with lots of smiles for <span data-bind="child.name"></span>.</p>
+    </footer>
+
+    <!-- Activity details -->
+    <dialog class="sheet" id="activity-dialog" aria-labelledby="activity-title">
+      <div class="sheet__inner">
+        <button class="sheet__close" type="button" data-dialog-close aria-label="Close activity details">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+        </button>
+        <img class="sheet__art" data-activity-art alt="" width="120" height="120" />
+        <p class="sheet__time" data-activity-time></p>
+        <h3 id="activity-title" data-activity-title></h3>
+        <p class="sheet__details" data-activity-details></p>
+        <div class="sheet__footer">
+          <button class="btn btn--ghost btn--small" type="button" data-activity-prev>Previous</button>
+          <span class="sheet__count" data-activity-count></span>
+          <button class="btn btn--secondary btn--small" type="button" data-activity-next>Next activity</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Photo lightbox -->
+    <dialog class="lightbox" id="lightbox" aria-labelledby="lightbox-caption">
+      <figure class="lightbox__figure">
+        <img data-lightbox-img alt="" />
+        <figcaption id="lightbox-caption">
+          <span data-lightbox-caption></span>
+          <span class="lightbox__count" data-lightbox-count></span>
+        </figcaption>
+      </figure>
+      <button class="lightbox__nav lightbox__nav--prev" type="button" data-lightbox-prev aria-label="Previous photo">
+        <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="lightbox__nav lightbox__nav--next" type="button" data-lightbox-next aria-label="Next photo">
+        <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="lightbox__close" type="button" data-dialog-close aria-label="Close photo viewer">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+      </button>
+    </dialog>
+
+    <div class="toast" data-toast role="status" aria-live="polite"></div>
+    <div class="wipe" data-wipe aria-hidden="true"></div>
+
+    <noscript>
+      <div class="noscript">This birthday invitation needs JavaScript to show the party details. Please enable JavaScript, or ask the host for the details.</div>
+    </noscript>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

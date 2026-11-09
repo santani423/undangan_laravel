@@ -1,0 +1,27 @@
+:root {
+  --jawa-teak: #5f3b27;
+  --jawa-deep-brown: #2b1b14;
+  --jawa-ivory: #f2e6cc;
+  --jawa-champagne: #b58a45;
+  --jawa-leaf: #425b35;
+  --jawa-stone: #817968;
+}
+.jawa-panel {
+  color: var(--jawa-deep-brown);
+  background: rgba(242, 230, 204, 0.94);
+  border: 1px solid rgba(181, 138, 69, 0.75);
+  box-shadow: 0 12px 36px rgba(20, 12, 8, 0.18);
+  backdrop-filter: blur(10px);
+}
+.jawa-button {
+  color: var(--jawa-ivory);
+  background: var(--jawa-teak);
+  border: 1px solid var(--jawa-champagne);
+  padding: 0.85rem 1.25rem;
+  border-radius: 999px;
+  transition: transform 180ms ease, background 180ms ease;
+}
+.jawa-button:hover { transform: translateY(-2px); background: var(--jawa-deep-brown); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

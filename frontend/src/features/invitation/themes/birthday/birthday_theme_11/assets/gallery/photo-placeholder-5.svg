@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600">
+ <title>Contoh foto 5</title>
+ <rect width="600" height="600" fill="#fff1c4"/>
+ <g fill="#ffffff" opacity=".55">
+  <circle cx="70" cy="80" r="14"/><circle cx="530" cy="110" r="10"/><circle cx="500" cy="520" r="16"/><circle cx="90" cy="500" r="9"/>
+ </g>
+ <rect x="40" y="40" width="520" height="520" rx="36" fill="none" stroke="#ffffff" stroke-width="6" stroke-dasharray="4 18" stroke-linecap="round"/>
+ <svg x="150" y="110" width="300" height="300" viewBox="0 0 240 240">
+ <ellipse cx="120" cy="207" rx="78" ry="13" fill="#b68de0" opacity=".22"/>
+ <path d="M51 91H189V190Q120 207 51 190Z" fill="#a98af0" stroke="#8666d2" stroke-width="5"/>
+ <path d="M108 91H132V197H108Z" fill="#ff78ad"/>
+ <path d="M42 72H198V105H42Z" fill="#ffb5d0" stroke="#e986ad" stroke-width="5"/>
+ <path d="M120 73 C72 62 62 30 85 25 C105 22 120 47 120 73 C120 47 145 22 165 25 C188 30 168 62 120 73Z" fill="#ff78ad" stroke="#e986ad" stroke-width="5"/>
+</svg>
+ <text x="300" y="470" font-family="Fredoka, Nunito, Arial, sans-serif" font-size="40" font-weight="700" text-anchor="middle" fill="#b9862a">Fotomu di sini</text>
+ <text x="300" y="515" font-family="Nunito, Arial, sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#b9862a" opacity=".8">Slot foto 5</text>
+</svg>

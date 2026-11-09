@@ -1,0 +1,148 @@
+@import "tailwindcss";
+
+/* Theme tokens — extended from the asset pack's examples/javanese-theme.css */
+@theme {
+  --color-teak: #5f3b27;
+  --color-teak-light: #7a4e33;
+  --color-deep: #2b1b14;
+  --color-ink: #1c120d;
+  --color-ivory: #f2e6cc;
+  --color-ivory-soft: #f7efdc;
+  --color-sand: #e9d8b7;
+  --color-champagne: #b58a45;
+  --color-champagne-light: #d4b072;
+  --color-leaf: #425b35;
+  --color-stone: #817968;
+
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-script: "Pinyon Script", "Cormorant Garamond", cursive;
+  --font-sans: "Jost", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+:root {
+  --jawa-teak: #5f3b27;
+  --jawa-deep-brown: #2b1b14;
+  --jawa-ivory: #f2e6cc;
+  --jawa-champagne: #b58a45;
+  --jawa-leaf: #425b35;
+  --jawa-stone: #817968;
+  /* Height of the phone bottom tab bar (incl. home-indicator inset); content offsets use it. */
+  --mobile-nav-h: calc(62px + env(safe-area-inset-bottom));
+  color-scheme: light;
+}
+
+html {
+  background: var(--jawa-deep-brown);
+  /* The journey has its own progress rail; hide the native bar so its appearance never resizes the layout. */
+  scrollbar-width: none;
+  -webkit-text-size-adjust: 100%;
+}
+html::-webkit-scrollbar { display: none; }
+
+body {
+  margin: 0;
+  background: var(--jawa-deep-brown);
+  color: var(--jawa-ivory);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+html.is-locked, html.is-locked body { overflow: hidden; }
+
+/* Panels — starting point: .jawa-panel from the asset pack theme */
+.jawa-panel {
+  color: var(--jawa-deep-brown);
+  background: rgba(242, 230, 204, 0.94);
+  border: 1px solid rgba(181, 138, 69, 0.75);
+  box-shadow: 0 12px 36px rgba(20, 12, 8, 0.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.jawa-panel::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(181, 138, 69, 0.35);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.jawa-button {
+  color: var(--jawa-ivory);
+  background: var(--jawa-teak);
+  border: 1px solid var(--jawa-champagne);
+  padding: 0.75rem 1.25rem;
+  border-radius: 999px;
+  transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+.jawa-button:hover { transform: translateY(-2px); background: var(--jawa-deep-brown); }
+.jawa-button:disabled { opacity: 0.55; transform: none; cursor: not-allowed; }
+
+.jawa-button-ghost {
+  color: var(--jawa-teak);
+  background: transparent;
+  border: 1px solid rgba(95, 59, 39, 0.45);
+  padding: 0.6rem 1rem;
+  border-radius: 999px;
+  transition: background 180ms ease, border-color 180ms ease;
+}
+.jawa-button-ghost:hover { background: rgba(181, 138, 69, 0.14); border-color: var(--jawa-champagne); }
+
+:focus-visible {
+  outline: 2px solid var(--jawa-champagne);
+  outline-offset: 3px;
+}
+
+.batik-kawung-bg {
+  background-color: #e9d8b7;
+  background-image: var(--tex-kawung);
+  background-size: 180px;
+}
+.batik-parang-bg {
+  background-color: #3a2418;
+  background-image: var(--tex-parang);
+  background-size: 160px;
+}
+
+.text-gold-gradient {
+  background: linear-gradient(180deg, #e8cf98 0%, #b58a45 55%, #8b6530 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* While gliding to a scene from the nav, only the destination panel may show — the ones flown past stay hidden. */
+[data-jumping] [data-panel] { transition: opacity 0.35s ease; }
+[data-jumping] [data-panel]:not([data-jump-target]) { opacity: 0 !important; pointer-events: none !important; }
+
+.panel-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(181, 138, 69, 0.6) transparent;
+}
+
+.field {
+  width: 100%;
+  background: rgba(255, 252, 244, 0.85);
+  border: 1px solid rgba(95, 59, 39, 0.3);
+  border-radius: 0.6rem;
+  padding: 0.65rem 0.8rem;
+  color: var(--jawa-deep-brown);
+  font-size: 16px; /* prevents iOS zoom on focus */
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.field:focus { outline: none; border-color: var(--jawa-champagne); box-shadow: 0 0 0 3px rgba(181, 138, 69, 0.25); }
+.field[aria-invalid="true"] { border-color: #9b3b2a; }
+
+@keyframes scroll-hint {
+  0%, 100% { transform: translateY(0); opacity: 0.55; }
+  50% { transform: translateY(6px); opacity: 1; }
+}
+.animate-scroll-hint { animation: scroll-hint 2.2s ease-in-out infinite; }
+
+@keyframes soft-spin { to { transform: rotate(360deg); } }
+.animate-soft-spin { animation: soft-spin 9s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

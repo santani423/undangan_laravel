@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Undangan Ulang Tahun Arka — Pesta Hutan Beruang</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pinus:#123A2F;
+    --pinus-2:#1B5244;
+    --madu:#FFC24A;
+    --madu-tua:#E09A1E;
+    --bulu:#C98A52;
+    --bulu-tua:#A96C39;
+    --krim:#FFF4E2;
+    --beri:#EF6E8A;
+    --tinta:#2B1B12;
+    --display:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+    --teks:"Nunito", "Segoe UI", system-ui, sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:var(--teks);
+    color:var(--tinta);
+    background:
+      radial-gradient(circle at 20% 0%, #23604F 0%, transparent 55%),
+      radial-gradient(circle at 85% 15%, #1E5745 0%, transparent 50%),
+      var(--pinus);
+    min-height:100vh;
+    padding:28px 16px 56px;
+    overflow-x:hidden;
+  }
+
+  /* ---------- lebah yang berkeliaran di latar ---------- */
+  .lebah{position:fixed;width:26px;height:26px;opacity:.55;pointer-events:none;z-index:0;}
+  .lebah.satu{top:12%;left:-40px;animation:terbang 26s linear infinite;}
+  .lebah.dua{top:48%;left:-40px;animation:terbang 34s linear infinite 6s;}
+  .lebah.tiga{top:78%;left:-40px;animation:terbang 30s linear infinite 14s;}
+  @keyframes terbang{
+    0%{transform:translate(0,0) rotate(6deg);}
+    25%{transform:translate(35vw,-40px) rotate(-6deg);}
+    50%{transform:translate(60vw,30px) rotate(6deg);}
+    75%{transform:translate(85vw,-25px) rotate(-4deg);}
+    100%{transform:translate(115vw,10px) rotate(4deg);}
+  }
+
+  /* ---------- kartu ---------- */
+  .kartu{
+    position:relative;
+    z-index:1;
+    max-width:680px;
+    margin:0 auto;
+    background:var(--krim);
+    border-radius:36px;
+    overflow:hidden;
+    box-shadow:0 30px 70px rgba(0,0,0,.35);
+  }
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;
+    background:linear-gradient(180deg,#FFE0A3 0%, var(--madu) 100%);
+    padding:26px 24px 0;
+    text-align:center;
+  }
+  .eyebrow{
+    font-family:var(--teks);
+    font-weight:800;
+    font-size:.72rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--bulu-tua);
+    margin:0 0 6px;
+  }
+  .beruang{
+    width:min(300px,72vw);
+    height:auto;
+    display:block;
+    margin:0 auto;
+    animation:goyang 5s ease-in-out infinite;
+  }
+  @keyframes goyang{
+    0%,100%{transform:translateY(0) rotate(-1deg);}
+    50%{transform:translateY(-9px) rotate(1deg);}
+  }
+  .mata{transform-box:fill-box;transform-origin:center;animation:kedip 5.5s infinite;}
+  @keyframes kedip{0%,92%,100%{transform:scaleY(1);}95%{transform:scaleY(.08);}}
+  .api{transform-box:fill-box;transform-origin:bottom center;animation:nyala .7s ease-in-out infinite alternate;}
+  @keyframes nyala{from{transform:scale(1) rotate(-3deg);}to{transform:scale(1.12,1.2) rotate(3deg);}}
+  .padam .api{opacity:0;transition:opacity .35s;}
+  .padam .asap{opacity:1;animation:mengepul 2.2s ease-out forwards;}
+  .asap{opacity:0;}
+  @keyframes mengepul{
+    0%{opacity:.8;transform:translateY(0) scale(.5);}
+    100%{opacity:0;transform:translateY(-46px) scale(1.6);}
+  }
+
+  .nama{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:clamp(3rem,13vw,4.6rem);
+    line-height:.9;
+    margin:2px 0 4px;
+    color:var(--pinus);
+    text-shadow:0 3px 0 #fff;
+  }
+  .umur{
+    display:inline-block;
+    background:var(--pinus);
+    color:var(--madu);
+    font-family:var(--display);
+    font-weight:800;
+    font-size:1.05rem;
+    padding:6px 18px;
+    border-radius:999px;
+    transform:rotate(-2deg);
+  }
+  .pengantar{
+    max-width:34ch;
+    margin:14px auto 0;
+    font-size:1rem;
+    color:#6B4A22;
+    font-weight:600;
+  }
+  .tetes{display:block;width:100%;height:auto;margin-top:14px;}
+
+  /* ---------- isi ---------- */
+  .isi{padding:26px 24px 30px;}
+  .blok + .blok{margin-top:30px;}
+  .judul{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:1.35rem;
+    color:var(--pinus);
+    margin:0 0 14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .judul::after{
+    content:"";
+    flex:1;
+    height:3px;
+    border-radius:3px;
+    background:repeating-linear-gradient(90deg,var(--madu) 0 10px,transparent 10px 18px);
+  }
+
+  /* hitung mundur */
+  .mundur{display:flex;gap:10px;justify-content:center;}
+  .mundur div{
+    flex:1;
+    background:var(--pinus);
+    color:var(--krim);
+    border-radius:18px;
+    padding:12px 4px;
+    text-align:center;
+  }
+  .mundur b{
+    display:block;
+    font-family:var(--display);
+    font-size:1.9rem;
+    line-height:1;
+    color:var(--madu);
+  }
+  .mundur span{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;opacity:.85;}
+
+  /* detail acara */
+  .detail{list-style:none;margin:0;padding:0;display:grid;gap:12px;}
+  .detail li{
+    display:flex;
+    gap:14px;
+    align-items:flex-start;
+    background:#fff;
+    border:2px solid #F3DFBC;
+    border-radius:20px;
+    padding:14px 16px;
+  }
+  .ikon{
+    flex:none;
+    width:42px;height:42px;
+    border-radius:14px;
+    background:var(--madu);
+    display:grid;place-items:center;
+    font-size:1.25rem;
+  }
+  .detail dt{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:#9A7B4F;font-weight:800;margin:0 0 2px;}
+  .detail dd{margin:0;font-weight:700;font-size:1.02rem;color:var(--tinta);}
+  .detail small{display:block;font-weight:600;color:#7C6046;margin-top:3px;}
+
+  /* rundown */
+  .acara{list-style:none;margin:0;padding:0;}
+  .acara li{display:flex;gap:16px;padding:11px 0;border-bottom:2px dotted #E7D3AF;}
+  .acara li:last-child{border-bottom:0;}
+  .jam{
+    font-family:var(--display);
+    font-weight:800;
+    color:var(--bulu-tua);
+    min-width:62px;
+  }
+  .acara p{margin:0;font-weight:600;}
+
+  /* catatan */
+  .catatan{
+    background:var(--pinus);
+    color:var(--krim);
+    border-radius:24px;
+    padding:20px 22px;
+  }
+  .catatan .judul{color:var(--madu);}
+  .catatan .judul::after{background:repeating-linear-gradient(90deg,rgba(255,194,74,.6) 0 10px,transparent 10px 18px);}
+  .catatan ul{margin:0;padding-left:20px;}
+  .catatan li{margin:6px 0;font-weight:600;}
+
+  /* rsvp */
+  .rsvp{display:grid;gap:12px;}
+  label{font-weight:800;font-size:.82rem;color:#7C6046;display:block;margin-bottom:5px;}
+  input,select{
+    width:100%;
+    font:inherit;
+    font-weight:600;
+    padding:12px 14px;
+    border:2px solid #E7D3AF;
+    border-radius:14px;
+    background:#fff;
+    color:var(--tinta);
+  }
+  input:focus,select:focus,button:focus-visible,a:focus-visible{
+    outline:3px solid var(--beri);
+    outline-offset:2px;
+  }
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  button{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:1.05rem;
+    border:0;
+    border-radius:16px;
+    padding:14px 20px;
+    cursor:pointer;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  button:hover{transform:translateY(-2px);}
+  .utama{background:var(--pinus);color:var(--madu);box-shadow:0 5px 0 #0B241C;}
+  .utama:hover{box-shadow:0 7px 0 #0B241C;}
+  .kedua{background:var(--madu);color:var(--pinus);box-shadow:0 5px 0 var(--madu-tua);}
+  .kedua:hover{box-shadow:0 7px 0 var(--madu-tua);}
+  .tiup{background:#fff;color:var(--pinus);box-shadow:0 5px 0 #E6C98F;margin:16px auto 0;display:block;}
+  .pesan-galat{color:#C0304C;font-weight:800;font-size:.86rem;min-height:1.2em;margin:0;}
+  .ucapan{
+    text-align:center;
+    font-family:var(--display);
+    font-weight:800;
+    font-size:1.15rem;
+    color:var(--pinus);
+    margin:12px 0 0;
+    opacity:0;
+    transform:translateY(8px);
+    transition:opacity .4s, transform .4s;
+  }
+  .ucapan.tampil{opacity:1;transform:none;}
+
+  footer{
+    text-align:center;
+    padding:22px 20px 26px;
+    background:#F6E7C9;
+    font-weight:700;
+    color:#8A6B42;
+    font-size:.9rem;
+  }
+  footer span{display:block;font-family:var(--display);font-size:1.1rem;color:var(--pinus);margin-bottom:4px;}
+
+  .konfeti{
+    position:fixed;
+    top:-12px;
+    width:11px;height:16px;
+    z-index:5;
+    pointer-events:none;
+    border-radius:3px;
+    animation:jatuh linear forwards;
+  }
+  @keyframes jatuh{
+    to{transform:translateY(105vh) rotate(720deg);opacity:0;}
+  }
+
+  @media (max-width:420px){
+    .isi{padding:22px 18px 26px;}
+    .duo{grid-template-columns:1fr;}
+    .mundur div{padding:10px 2px;}
+    .mundur b{font-size:1.45rem;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none !important;transition:none !important;}
+    .asap{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<!-- lebah latar -->
+<svg class="lebah satu" viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="24" rx="11" ry="8" fill="#FFC24A"/><path d="M14 19h12M13 24h14M15 29h10" stroke="#2B1B12" stroke-width="3" stroke-linecap="round"/><ellipse cx="14" cy="14" rx="8" ry="5" fill="#fff" opacity=".8"/><ellipse cx="26" cy="14" rx="8" ry="5" fill="#fff" opacity=".8"/></svg>
+<svg class="lebah dua" viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="24" rx="11" ry="8" fill="#FFC24A"/><path d="M14 19h12M13 24h14M15 29h10" stroke="#2B1B12" stroke-width="3" stroke-linecap="round"/><ellipse cx="14" cy="14" rx="8" ry="5" fill="#fff" opacity=".8"/><ellipse cx="26" cy="14" rx="8" ry="5" fill="#fff" opacity=".8"/></svg>
+<svg class="lebah tiga" viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="24" rx="11" ry="8" fill="#FFC24A"/><path d="M14 19h12M13 24h14M15 29h10" stroke="#2B1B12" stroke-width="3" stroke-linecap="round"/><ellipse cx="14" cy="14" rx="8" ry="5" fill="#fff" opacity=".8"/><ellipse cx="26" cy="14" rx="8" ry="5" fill="#fff" opacity=".8"/></svg>
+
+<main class="kartu">
+
+  <!-- ============ HERO ============ -->
+  <header class="hero">
+    <p class="eyebrow">Pesta kecil di rumah beruang</p>
+
+    <svg id="beruang" class="beruang" viewBox="0 0 400 420" role="img"
+         aria-label="Beruang kartun bertopi pesta sedang memegang kue mangkuk berlilin">
+      <!-- topi pesta -->
+      <g transform="rotate(-12 200 104)">
+        <path d="M200 26 L166 106 L234 106 Z" fill="#EF6E8A"/>
+        <path d="M186 70 h32 l4 12 h-40 z" fill="#FFF4E2" opacity=".85"/>
+        <path d="M176 92 h48 l3 14 h-54 z" fill="#FFF4E2" opacity=".85"/>
+        <circle cx="200" cy="22" r="13" fill="#123A2F"/>
+      </g>
+
+      <!-- telinga -->
+      <circle cx="132" cy="118" r="35" fill="#C98A52"/>
+      <circle cx="132" cy="118" r="19" fill="#F6DDB6"/>
+      <circle cx="268" cy="118" r="35" fill="#C98A52"/>
+      <circle cx="268" cy="118" r="19" fill="#F6DDB6"/>
+
+      <!-- badan -->
+      <ellipse cx="200" cy="348" rx="104" ry="76" fill="#B87C46"/>
+
+      <!-- kepala -->
+      <ellipse cx="200" cy="184" rx="97" ry="87" fill="#C98A52"/>
+      <ellipse cx="142" cy="212" rx="21" ry="13" fill="#EF6E8A" opacity=".45"/>
+      <ellipse cx="258" cy="212" rx="21" ry="13" fill="#EF6E8A" opacity=".45"/>
+      <ellipse cx="200" cy="218" rx="52" ry="39" fill="#F6DDB6"/>
+      <circle class="mata" cx="170" cy="168" r="11" fill="#3A2116"/>
+      <circle class="mata" cx="230" cy="168" r="11" fill="#3A2116"/>
+      <circle cx="174" cy="164" r="3.6" fill="#fff"/>
+      <circle cx="234" cy="164" r="3.6" fill="#fff"/>
+      <ellipse cx="200" cy="202" rx="17" ry="12" fill="#43261A"/>
+      <path d="M200 214 v10 M200 224 q-15 12 -25 -1 M200 224 q15 12 25 -1"
+            fill="none" stroke="#43261A" stroke-width="5" stroke-linecap="round"/>
+
+      <!-- kue mangkuk + lilin -->
+      <g id="lilin">
+        <ellipse class="asap" cx="200" cy="264" rx="7" ry="9" fill="#B9A98F"/>
+        <path class="api" d="M200 246 c12 12 9 24 0 28 c-9 -4 -12 -16 0 -28 z" fill="#FFC24A"/>
+        <path class="api" d="M200 258 c5 5 4 10 0 12 c-4 -2 -5 -7 0 -12 z" fill="#FFF4E2"/>
+      </g>
+      <rect x="194" y="276" width="12" height="44" rx="5" fill="#EF6E8A"/>
+      <path d="M194 292 h12 M194 306 h12" stroke="#FFF4E2" stroke-width="4"/>
+      <ellipse cx="200" cy="326" rx="26" ry="15" fill="#FFF4E2"/>
+      <ellipse cx="200" cy="340" rx="42" ry="21" fill="#FFF4E2"/>
+      <path d="M162 344 h76 l-9 48 h-58 z" fill="#E8A05C"/>
+      <path d="M176 344 v48 M200 344 v48 M224 344 v48" stroke="#D08A45" stroke-width="4"/>
+
+      <!-- tangan -->
+      <ellipse cx="140" cy="366" rx="32" ry="25" fill="#C98A52" transform="rotate(-16 140 366)"/>
+      <ellipse cx="260" cy="366" rx="32" ry="25" fill="#C98A52" transform="rotate(16 260 366)"/>
+    </svg>
+
+    <h1 class="nama">Arka</h1>
+    <p class="umur">Genap 5 tahun!</p>
+    <p class="pengantar">Beruang kecil kami tumbuh setahun lagi. Datang, main, dan habiskan kue bersama kami ya.</p>
+
+    <button class="tiup" id="tombolTiup">Tiup lilinnya</button>
+    <p class="ucapan" id="ucapan">Hore! Selamat ulang tahun, Arka.</p>
+
+    <svg class="tetes" viewBox="0 0 680 46" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 0 h680 v14 q-30 26 -62 4 q-24 34 -52 6 q-34 30 -66 2 q-28 26 -58 2 q-32 32 -66 4 q-26 26 -54 2 q-34 30 -68 2 q-28 24 -56 0 q-30 28 -62 2 q-24 22 -50 -2 q-22 -12 -36 -6 z" fill="#FFF4E2"/>
+    </svg>
+  </header>
+
+  <!-- ============ ISI ============ -->
+  <div class="isi">
+
+    <section class="blok">
+      <h2 class="judul">Beruangnya sudah tak sabar</h2>
+      <div class="mundur" id="mundur" aria-live="polite">
+        <div><b id="hari">–</b><span>hari</span></div>
+        <div><b id="jam">–</b><span>jam</span></div>
+        <div><b id="menit">–</b><span>menit</span></div>
+        <div><b id="detik">–</b><span>detik</span></div>
+      </div>
+    </section>
+
+    <section class="blok">
+      <h2 class="judul">Waktu &amp; tempat</h2>
+      <ul class="detail">
+        <li>
+          <span class="ikon" aria-hidden="true">🗓️</span>
+          <dl><dt>Tanggal</dt><dd>Sabtu, 22 Agustus 2026</dd></dl>
+        </li>
+        <li>
+          <span class="ikon" aria-hidden="true">⏰</span>
+          <dl><dt>Jam</dt><dd>10.00 – 13.00 WIB<small>Datang 15 menit lebih awal supaya tidak melewatkan parade topi.</small></dd></dl>
+        </li>
+        <li>
+          <span class="ikon" aria-hidden="true">🏡</span>
+          <dl><dt>Tempat</dt><dd>Taman Rumah Keluarga Wijaya<small>Jl. Melati Hutan No. 12, Jakarta Selatan · parkir di halaman belakang</small></dd></dl>
+        </li>
+      </ul>
+      <div class="duo" style="margin-top:14px">
+        <button class="kedua" id="tombolKalender">Simpan ke kalender</button>
+        <button class="kedua" id="tombolPeta">Buka peta lokasi</button>
+      </div>
+    </section>
+
+    <section class="blok">
+      <h2 class="judul">Susunan acara</h2>
+      <ul class="acara">
+        <li><span class="jam">10.00</span><p>Sambutan beruang &amp; bagi-bagi telinga beruang</p></li>
+        <li><span class="jam">10.30</span><p>Berburu pot madu di taman</p></li>
+        <li><span class="jam">11.15</span><p>Dongeng dan menghias kue mangkuk</p></li>
+        <li><span class="jam">12.00</span><p>Tiup lilin dan makan siang</p></li>
+        <li><span class="jam">12.45</span><p>Foto bersama, pulang bawa bingkisan</p></li>
+      </ul>
+    </section>
+
+    <section class="blok catatan">
+      <h2 class="judul">Sedikit catatan</h2>
+      <ul>
+        <li>Warna busana: cokelat, hijau hutan, atau kuning madu.</li>
+        <li>Acara di luar ruangan — bawa topi dan sandal yang nyaman.</li>
+        <li>Ada menu bebas kacang. Beri tahu kami kalau ada alergi lain.</li>
+        <li>Orang tua boleh ikut duduk santai; kopi dan teh tersedia.</li>
+      </ul>
+    </section>
+
+    <section class="blok">
+      <h2 class="judul">Konfirmasi kehadiran</h2>
+      <div class="rsvp">
+        <div>
+          <label for="nama">Nama kamu</label>
+          <input id="nama" type="text" placeholder="Contoh: Keluarga Putri" autocomplete="name">
+        </div>
+        <div class="duo">
+          <div>
+            <label for="jumlah">Jumlah yang datang</label>
+            <input id="jumlah" type="number" min="1" max="12" value="2">
+          </div>
+          <div>
+            <label for="status">Bisa hadir?</label>
+            <select id="status">
+              <option value="hadir">Ya, kami datang</option>
+              <option value="tidak">Maaf, belum bisa</option>
+            </select>
+          </div>
+        </div>
+        <p class="pesan-galat" id="galat" role="alert"></p>
+        <button class="utama" id="tombolKirim">Kirim lewat WhatsApp</button>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>
+    <span>Sampai jumpa di hutan kecil kami</span>
+    Ayah, Bunda, dan Arka · 0812-3456-7890
+  </footer>
+</main>
+
+<script>
+/* ============================================================
+   SEMUA DATA YANG PERLU DIGANTI ADA DI SINI
+   ============================================================ */
+const ACARA = {
+  judul: "Ulang Tahun Arka ke-5",
+  mulai: "2026-08-22T10:00:00+07:00",
+  selesai: "2026-08-22T13:00:00+07:00",
+  lokasi: "Taman Rumah Keluarga Wijaya, Jl. Melati Hutan No. 12, Jakarta Selatan",
+  waLatar: "6281234567890"   // nomor tujuan RSVP, format internasional tanpa tanda +
+};
+
+/* ---------- hitung mundur ---------- */
+const target = new Date(ACARA.mulai).getTime();
+const el = id => document.getElementById(id);
+function perbarui(){
+  const sisa = target - Date.now();
+  if (sisa <= 0){
+    el("mundur").innerHTML = '<div style="flex:1"><b>Hari ini!</b><span>pestanya sudah dimulai</span></div>';
+    clearInterval(jamTangan);
+    return;
+  }
+  const d = Math.floor(sisa / 86400000);
+  const j = Math.floor(sisa / 3600000) % 24;
+  const m = Math.floor(sisa / 60000) % 60;
+  const s = Math.floor(sisa / 1000) % 60;
+  el("hari").textContent  = d;
+  el("jam").textContent   = String(j).padStart(2,"0");
+  el("menit").textContent = String(m).padStart(2,"0");
+  el("detik").textContent = String(s).padStart(2,"0");
+}
+perbarui();
+const jamTangan = setInterval(perbarui, 1000);
+
+/* ---------- tiup lilin + konfeti ---------- */
+const beruang = el("beruang");
+const tombolTiup = el("tombolTiup");
+const ucapan = el("ucapan");
+let padam = false;
+
+tombolTiup.addEventListener("click", () => {
+  padam = !padam;
+  beruang.classList.toggle("padam", padam);
+  ucapan.classList.toggle("tampil", padam);
+  tombolTiup.textContent = padam ? "Nyalakan lagi" : "Tiup lilinnya";
+  if (padam) hujanKonfeti();
+});
+
+function hujanKonfeti(){
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const warna = ["#FFC24A","#EF6E8A","#123A2F","#C98A52","#FFF4E2"];
+  for (let i = 0; i < 70; i++){
+    const k = document.createElement("span");
+    k.className = "konfeti";
+    k.style.left = Math.random() * 100 + "vw";
+    k.style.background = warna[i % warna.length];
+    k.style.animationDuration = (2.4 + Math.random() * 2) + "s";
+    k.style.animationDelay = (Math.random() * .6) + "s";
+    document.body.appendChild(k);
+    setTimeout(() => k.remove(), 5200);
+  }
+}
+
+/* ---------- simpan ke kalender (.ics) ---------- */
+el("tombolKalender").addEventListener("click", () => {
+  const rapi = t => new Date(t).toISOString().replace(/[-:]/g,"").split(".")[0] + "Z";
+  const isi = [
+    "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Undangan Beruang//ID","BEGIN:VEVENT",
+    "UID:" + Date.now() + "@undangan-beruang",
+    "DTSTAMP:" + rapi(Date.now()),
+    "DTSTART:" + rapi(ACARA.mulai),
+    "DTEND:" + rapi(ACARA.selesai),
+    "SUMMARY:" + ACARA.judul,
+    "LOCATION:" + ACARA.lokasi,
+    "DESCRIPTION:Pesta ulang tahun bertema beruang. Warna busana: cokelat, hijau, kuning madu.",
+    "END:VEVENT","END:VCALENDAR"
+  ].join("\r\n");
+  const tautan = document.createElement("a");
+  tautan.href = URL.createObjectURL(new Blob([isi], {type:"text/calendar"}));
+  tautan.download = "ulang-tahun-arka.ics";
+  tautan.click();
+  URL.revokeObjectURL(tautan.href);
+});
+
+/* ---------- buka peta ---------- */
+el("tombolPeta").addEventListener("click", () => {
+  window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(ACARA.lokasi), "_blank");
+});
+
+/* ---------- kirim RSVP ---------- */
+el("tombolKirim").addEventListener("click", () => {
+  const nama = el("nama").value.trim();
+  const galat = el("galat");
+  if (!nama){
+    galat.textContent = "Isi nama dulu supaya kami tahu siapa yang datang.";
+    el("nama").focus();
+    return;
+  }
+  galat.textContent = "";
+  const jumlah = el("jumlah").value || 1;
+  const hadir = el("status").value === "hadir";
+  const pesan = hadir
+    ? `Halo! ${nama} akan hadir di ${ACARA.judul} bersama ${jumlah} orang. Sampai ketemu Sabtu!`
+    : `Halo! Maaf, ${nama} belum bisa hadir di ${ACARA.judul}. Selamat ulang tahun untuk Arka ya!`;
+  window.open(`https://wa.me/${ACARA.waLatar}?text=` + encodeURIComponent(pesan), "_blank");
+});
+</script>
+</body>
+</html>

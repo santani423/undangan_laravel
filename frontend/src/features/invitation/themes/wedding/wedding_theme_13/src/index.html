@@ -1,0 +1,386 @@
+<title>Rangga &amp; Sekar</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Undangan pernikahan adat Sunda Rangga & Sekar.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  /* Pangantén Sunda — taman Sunda, kayu jati, melati. Satu tema terang yang disengaja.
+     Panel teks gading tembus pandang; adegan 3D digeser ke sisi kosong. */
+  :root{
+    --gading:#F4ECE0; --krem:#FAF6EE; --sampanye:#D3C3A6; --emas:#B08D57; --emas-muda:#D9C08E;
+    --sage:#6B765C; --maroon:#6B3F46; --kayu:#463A2E; --tinta:#2F2721; --tinta-2:#63584B;
+    --garis:rgba(176,141,87,.42); --panel:rgba(250,246,238,.9);
+    --f-judul:'Cormorant Garamond','Cormorant',Georgia,serif;
+    --f-teks:'Jost','Futura','Segoe UI',system-ui,sans-serif;
+    color-scheme:light;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--f-teks);font-weight:400;color:var(--tinta);background:var(--krem);overflow-x:hidden;font-size:16px;line-height:1.65}
+  body.memuat{overflow:hidden}
+  a{color:inherit}
+  :focus-visible{outline:2px solid var(--emas);outline-offset:3px}
+  #scene{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
+  .no-webgl #scene{display:none}
+  .no-webgl body{background:linear-gradient(180deg,#F7E9D3 0%,var(--krem) 40%,#EFE6D6 100%) fixed}
+  .no-webgl .bingkai-statis{display:block}
+  main{position:relative;z-index:1;overflow-x:clip}
+  .wrap{padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+  .ornamen{display:block;width:150px;height:22px;color:var(--emas);margin:0 auto}
+  .ornamen.kiri{margin:0}
+
+  /* ===== Pemuat: siger-gunungan digambar perlahan ===== */
+  #pemuat{position:fixed;inset:0;z-index:80;background:var(--gading);display:grid;place-items:center;transition:opacity 1s ease,visibility 1s}
+  #pemuat.selesai{opacity:0;visibility:hidden}
+  .pemuat-isi{display:grid;justify-items:center;gap:14px;text-align:center;padding:24px}
+  .pemuat-isi svg.gunungan{width:120px;height:120px;color:var(--emas)}
+  .gunungan path{stroke-dasharray:600;stroke-dashoffset:600;animation:gambar 2.4s ease forwards}
+  .gunungan path:nth-child(2){animation-delay:.3s}.gunungan path:nth-child(3){animation-delay:.6s}
+  @keyframes gambar{to{stroke-dashoffset:0}}
+  .pemuat-isi .judul{font-family:var(--f-judul);font-size:1.5rem;font-style:italic}
+  .pemuat-isi p{font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;color:var(--tinta-2)}
+  .bilah{width:150px;height:1px;background:var(--sampanye);overflow:hidden}
+  .bilah i{display:block;height:100%;width:0;background:var(--maroon);transition:width .3s}
+
+  /* ===== Tombol musik & dok navigasi ===== */
+  .musik-btn{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));right:max(14px,env(safe-area-inset-right,0px));z-index:40;width:44px;height:44px;border-radius:50%;
+    border:1px solid var(--garis);background:rgba(250,246,238,.85);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:grid;place-items:center;cursor:pointer;color:var(--maroon)}
+  .musik-btn svg{width:20px;height:20px}
+  .musik-btn[aria-pressed="true"]{background:var(--maroon);color:var(--krem);border-color:var(--maroon)}
+  .musik-btn[aria-pressed="true"] svg{animation:goyang 2.4s ease-in-out infinite}
+  @keyframes goyang{50%{transform:rotate(-8deg)}}
+  .dok{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;gap:2px;padding:6px;border-radius:999px;
+    background:rgba(250,246,238,.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--garis);box-shadow:0 14px 40px -18px rgba(70,58,46,.45);max-width:calc(100% - 24px)}
+  .dok a{display:grid;justify-items:center;gap:2px;padding:7px 12px;border-radius:999px;text-decoration:none;font-size:.62rem;letter-spacing:.06em;color:var(--tinta-2);transition:background .25s,color .25s}
+  .dok a svg{width:20px;height:20px}
+  .dok a:hover{color:var(--maroon)}
+  .dok a[aria-current="true"]{background:var(--maroon);color:var(--krem)}
+  @media (max-width:420px){.dok a{padding:7px 8px}.dok a span{display:none}}
+
+  /* ===== Bagian & panel ===== */
+  section{min-height:100vh;padding-block:100px 120px;display:flex;flex-direction:column;justify-content:center}
+  .panel{background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--garis);border-radius:3px;
+    padding:40px clamp(22px,4vw,46px);width:100%;max-width:540px;position:relative;box-shadow:0 30px 80px -42px rgba(70,58,46,.5)}
+  .panel::before{content:"";position:absolute;inset:6px;border:1px solid rgba(176,141,87,.22);pointer-events:none;border-radius:2px}
+  .panel > * + *{margin-top:14px}
+  @media (min-width:900px){.kanan .panel{margin-left:auto}.kiri .panel{margin-right:auto}.lekat{position:sticky;top:90px}}
+  @media (max-width:899px){section:not(#sumping){justify-content:flex-end;padding-top:52vh}.panel{margin:0 auto}}
+  .eyebrow{font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;color:var(--maroon);font-weight:500}
+  h1,h2,h3{font-family:var(--f-judul);font-weight:500;color:var(--tinta);text-wrap:balance;line-height:1.1}
+  h2{font-size:clamp(2rem,4vw,2.8rem)}
+  h2 em,h1 em{font-style:italic;color:var(--emas);font-weight:400}
+  h3{font-size:1.35rem}
+  .lead{color:var(--tinta-2);max-width:50ch}
+  .kecil{font-size:.82rem;color:var(--tinta-2)}
+  .label-contoh{display:inline-block;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;border:1px solid var(--garis);padding:2px 9px;border-radius:999px;color:var(--tinta-2);background:var(--gading)}
+
+  /* Tombol */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:13px 24px;border-radius:999px;font:500 .78rem/1 var(--f-teks);letter-spacing:.16em;text-transform:uppercase;text-decoration:none;cursor:pointer;border:1px solid transparent;transition:background .3s,color .3s,box-shadow .3s,transform .2s}
+  .btn svg{width:17px;height:17px}
+  .btn:active{transform:translateY(1px) scale(.99)}
+  .btn-utama{background:var(--maroon);color:var(--krem)}
+  .btn-utama:hover{background:var(--kayu);box-shadow:0 0 0 4px rgba(211,195,166,.6)}
+  .btn-garis{border-color:var(--emas);color:var(--kayu);background:rgba(250,246,238,.6)}
+  .btn-garis:hover{background:var(--gading);box-shadow:0 0 0 4px rgba(211,195,166,.45)}
+  .btn-kecil{padding:9px 16px;font-size:.68rem}
+  .baris-btn{display:flex;flex-wrap:wrap;gap:10px}
+
+  /* 1. Wilujeng Sumping */
+  #sumping{min-height:100svh;justify-content:center}
+  .sambut{max-width:600px;text-align:left;position:relative}
+  .sambut::before{content:"";position:absolute;inset:-60px -90px -60px -140px;background:radial-gradient(closest-side,rgba(250,246,238,.9),rgba(250,246,238,0));z-index:-1}
+  .sambut .salam{font-family:var(--f-judul);font-style:italic;font-size:clamp(1.4rem,2.6vw,1.9rem);color:var(--maroon)}
+  .sambut h1{font-size:clamp(3.4rem,8vw,6.4rem);font-weight:400;letter-spacing:-.01em;margin:6px 0 4px}
+  .sambut h1 .amp{font-style:italic;color:var(--emas);font-size:.7em}
+  .sambut .semboyan{font-family:var(--f-judul);font-size:1.25rem;font-style:italic;color:var(--tinta-2)}
+  .sambut .tgl{margin-top:16px;font-size:.82rem;letter-spacing:.24em;text-transform:uppercase}
+  .tamu{margin-top:24px;display:inline-block;border-top:1px solid var(--garis);border-bottom:1px solid var(--garis);padding:10px 0;min-width:240px}
+  .tamu small{display:block;font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--tinta-2)}
+  .tamu b{font-family:var(--f-judul);font-size:1.5rem;font-weight:500}
+  .petunjuk{margin-top:28px;font-size:.7rem;letter-spacing:.24em;text-transform:uppercase;color:var(--tinta-2);display:flex;gap:12px;align-items:center}
+  .petunjuk::before{content:"";width:1px;height:38px;background:linear-gradient(var(--maroon),transparent);animation:turun 2.6s ease-in-out infinite}
+  @keyframes turun{0%,100%{transform:scaleY(.3);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}}
+  @media (max-width:899px){#sumping{justify-content:flex-start;padding-top:80px}.sambut h1{font-size:3.3rem}.sambut::before{inset:-40px -30px}}
+  .sambut.masuk > *{animation:naik 1.2s cubic-bezier(.2,.7,.2,1) both}
+  .sambut.masuk > :nth-child(2){animation-delay:.15s}.sambut.masuk > :nth-child(3){animation-delay:.3s}.sambut.masuk > :nth-child(4){animation-delay:.45s}.sambut.masuk > :nth-child(5){animation-delay:.6s}.sambut.masuk > :nth-child(6){animation-delay:.75s}.sambut.masuk > :nth-child(7){animation-delay:.9s}
+  @keyframes naik{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+  /* 2. Uleman */
+  #uleman{min-height:170vh}
+  .uleman-dibuka{display:none}
+  .terbuka .uleman-dibuka{display:block}
+  .terbuka .uleman-tertutup{display:none}
+
+  /* 3. Pangantén */
+  .pasangan{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:start;text-align:center}
+  .pasangan .nama{font-family:var(--f-judul);font-size:2.3rem;font-weight:500;line-height:1}
+  .pasangan .lengkap{font-family:var(--f-judul);font-style:italic;font-size:1.05rem;margin-top:6px}
+  .pasangan p{font-size:.84rem;color:var(--tinta-2)}
+  .pasangan .dan{font-family:var(--f-judul);font-style:italic;font-size:2.4rem;color:var(--emas);align-self:center}
+  @media (max-width:480px){.pasangan{grid-template-columns:1fr}.pasangan .dan{font-size:1.8rem}}
+  .hitung{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .hitung div{text-align:center;border:1px solid var(--garis);padding:10px 4px;background:rgba(244,236,224,.6)}
+  .hitung b{display:block;font-family:var(--f-judul);font-size:1.9rem;font-weight:500;font-variant-numeric:tabular-nums;line-height:1}
+  .hitung small{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--tinta-2)}
+
+  /* 4. Carita Asih */
+  #carita{min-height:340vh}
+  .lini{list-style:none;display:grid;gap:4px;position:relative;padding-left:24px}
+  .lini::before{content:"";position:absolute;left:5px;top:10px;bottom:10px;width:1px;background:var(--garis)}
+  .lini li{position:relative;padding:8px 10px;border-radius:3px;transition:background .5s,opacity .5s;opacity:.55}
+  .lini li.aktif{opacity:1;background:rgba(244,236,224,.85)}
+  .lini li::before{content:"";position:absolute;left:-24px;top:16px;width:11px;height:11px;border-radius:50%;background:var(--krem);border:1px solid var(--emas);transition:background .5s}
+  .lini li.aktif::before{background:var(--maroon);border-color:var(--maroon)}
+  .lini time{font-size:.7rem;letter-spacing:.18em;color:var(--maroon);font-variant-numeric:tabular-nums}
+  .lini b{display:block;font-family:var(--f-judul);font-size:1.2rem;font-weight:500}
+  .lini p{font-size:.86rem;color:var(--tinta-2)}
+  .galeri{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .galeri button{border:0;padding:0;cursor:zoom-in;aspect-ratio:1;max-width:100%;overflow:hidden;border-radius:2px;background:var(--sampanye);outline-offset:2px}
+  .galeri img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s}
+  .galeri button:hover img{transform:scale(1.05)}
+  .lightbox{position:fixed;inset:0;z-index:70;background:rgba(47,39,33,.82);display:grid;place-items:center;padding:max(20px,env(safe-area-inset-top,0px)) 18px}
+  .lightbox figure{max-width:min(900px,100%);background:var(--krem);padding:10px;border:1px solid var(--garis)}
+  .lightbox img{display:block;max-width:100%;max-height:72vh}
+  .lightbox figcaption{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:8px;font-size:.8rem;color:var(--tinta-2)}
+
+  /* 5. Mapag Pangantén */
+  .jadwal{display:grid;gap:12px}
+  .jadwal article{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:14px;border:1px solid var(--garis);background:rgba(250,246,238,.7);border-radius:3px}
+  .jadwal .ikon{width:44px;height:44px;border-radius:50%;background:var(--gading);display:grid;place-items:center;color:var(--maroon)}
+  .jadwal .ikon svg{width:22px;height:22px}
+  .jadwal h3{font-size:1.25rem}
+  .jadwal .jam{font-variant-numeric:tabular-nums;font-weight:500;color:var(--maroon);font-size:.92rem}
+  .alamat{display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:start}
+  .alamat .ikon{width:44px;height:44px;border-radius:50%;background:var(--gading);display:grid;place-items:center;color:var(--maroon)}
+  .alamat .ikon svg{width:22px;height:22px}
+  form{display:grid;gap:12px}
+  label{display:block;font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--tinta-2);margin-bottom:5px}
+  input,select,textarea{width:100%;font:400 .95rem var(--f-teks);color:var(--tinta);background:#fff;border:1px solid var(--sampanye);border-radius:3px;padding:11px 12px}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--maroon);box-shadow:0 0 0 3px rgba(107,63,70,.12)}
+  textarea{min-height:76px;resize:vertical}
+  .dua{display:grid;grid-template-columns:1fr 110px;gap:10px}
+  @media (max-width:420px){.dua{grid-template-columns:1fr}}
+  .pilihan{display:flex;gap:8px;flex-wrap:wrap}
+  .pilihan input{position:absolute;opacity:0;width:1px;height:1px}
+  .pilihan label{margin:0;cursor:pointer;padding:10px 14px;border:1px solid var(--sampanye);border-radius:999px;letter-spacing:.06em;text-transform:none;font-size:.85rem;color:var(--tinta);background:#fff}
+  .pilihan input:checked + label{background:var(--sage);border-color:var(--sage);color:#fff}
+  .pilihan input:focus-visible + label{outline:2px solid var(--emas);outline-offset:2px}
+  .hasil{border:1px solid var(--sage);border-radius:3px;padding:14px;background:rgba(107,118,92,.08);display:grid;gap:10px}
+  .hasil pre{white-space:pre-wrap;font:400 .85rem/1.5 var(--f-teks);background:#fff;padding:10px;border-radius:3px}
+  .galat{color:var(--maroon);font-size:.82rem}
+  .judul-ikon{display:flex;align-items:center;gap:10px}
+  .judul-ikon svg{width:22px;height:22px;color:var(--maroon);flex:none}
+
+  /* 6. Doa & Panineungan */
+  .rekening{display:grid;gap:10px}
+  .rek{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px;border:1px dashed var(--emas);border-radius:3px;background:#fff}
+  .rek b{font-family:var(--f-judul);font-size:1.3rem;font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:.06em}
+  .qris img{width:200px;max-width:100%;border:1px solid var(--garis);padding:8px;background:#fff}
+  .ucapan{display:grid;gap:10px;max-height:260px;overflow:auto;padding-right:4px}
+  .ucapan article{border-left:2px solid var(--emas);padding:2px 0 2px 12px}
+  .ucapan b{font-weight:500}
+  .ucapan b small{font-weight:400;font-size:.7rem;color:var(--tinta-2);margin-left:6px}
+  .ucapan p{font-size:.88rem;color:var(--tinta-2)}
+  .penutup{text-align:center}
+  .penutup .salam{font-family:var(--f-judul);font-size:clamp(1.6rem,3vw,2.1rem);font-style:italic;color:var(--maroon);line-height:1.25}
+  .penutup .nama{font-family:var(--f-judul);font-size:2.6rem}
+  hr.pemisah{border:0;height:22px;margin:22px 0}
+  footer{position:relative;z-index:1;text-align:center;padding-block:28px calc(96px + env(safe-area-inset-bottom,0px));font-size:.78rem;color:var(--tinta-2);background:var(--gading);border-top:1px solid var(--garis)}
+  .bingkai-statis{display:none;width:min(320px,80%);margin:0 auto 10px;border:1px solid var(--garis);padding:8px;background:#fff}
+  .bingkai-statis img{display:block;width:100%}
+
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .petunjuk::before,.musik-btn[aria-pressed="true"] svg{animation:none}
+    .gunungan path{animation:none;stroke-dashoffset:0}
+    #pemuat{transition:none}
+  }
+</style>
+
+<!-- Ikon & ornamen (SVG) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-ornamen" viewBox="0 0 300 44"><g fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round">
+    <path d="M150 22c-10-14-26-14-30-4-3 8 6 14 12 9 5-4 1-11-4-9"/><path d="M150 22c10-14 26-14 30-4 3 8-6 14-12 9-5-4-1-11 4-9"/>
+    <path d="M118 22H40M182 22h78"/><path d="M40 22c-10 0-14-8-8-12 5-3 10 2 7 6"/><path d="M260 22c10 0 14-8 8-12-5-3-10 2-7 6"/>
+    <path d="M100 22c-6-8-16-8-18-2M200 22c6-8 16-8 18-2M100 22c-6 8-16 8-18 2M200 22c6 8 16 8 18 2"/>
+    <circle cx="150" cy="22" r="3" fill="currentColor"/><circle cx="66" cy="22" r="1.8" fill="currentColor"/><circle cx="234" cy="22" r="1.8" fill="currentColor"/></g></symbol>
+  <symbol id="i-rumah" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M2 11l10-6 10 6"/><path d="M4 10l-1.5 3M20 10l1.5 3"/><path d="M6 11v9h12v-9"/><path d="M10 20v-5h4v5"/><path d="M9.5 3.5l5 4M14.5 3.5l-5 4"/></g></symbol>
+  <symbol id="i-surat" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="1.5"/><path d="M3 7.5l9 6 9-6"/><circle cx="12" cy="13.5" r="1.6" fill="currentColor"/></g></symbol>
+  <symbol id="i-hati" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-8.6-9C2.3 7.8 4.4 5 7.3 5c2 0 3.4 1.2 4.7 3 1.3-1.8 2.7-3 4.7-3 2.9 0 5 2.8 3.9 6-1.6 4.6-8.6 9-8.6 9z" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+  <symbol id="i-buku" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M4 5.5C6.5 4 9.5 4 12 6c2.5-2 5.5-2 8-.5V19c-2.5-1.5-5.5-1.5-8 .5-2.5-2-5.5-2-8-.5z"/><path d="M12 6v13.5"/></g></symbol>
+  <symbol id="i-kalender" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="5" width="17" height="15" rx="1.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><path d="M12 12.2c-.8-1.2-2.6-.8-2.6.6 0 1.3 2.6 2.9 2.6 2.9s2.6-1.6 2.6-2.9c0-1.4-1.8-1.8-2.6-.6z" fill="currentColor" stroke="none"/></g></symbol>
+  <symbol id="i-lokasi" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></g></symbol>
+  <symbol id="i-rsvp" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7.5 12.5l3 3 6-6.5"/></g></symbol>
+  <symbol id="i-hadiah" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="3.5" y="9" width="17" height="11" rx="1"/><path d="M2.5 9h19V6.5h-19zM12 6.5V20"/><path d="M12 6.5C10 3 6.5 3.5 7.5 5.5c.7 1.2 4.5 1 4.5 1s3.8.2 4.5-1C17.5 3.5 14 3 12 6.5z"/></g></symbol>
+  <symbol id="i-musik" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M9 17.5V5.5l10-2v12"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="15.5" r="2.5"/></g></symbol>
+  <symbol id="i-wa" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.5 14.1c-.2.7-1.3 1.3-1.8 1.3-.5.1-1 .2-3.4-.7-2.9-1.2-4.7-4.1-4.9-4.3-.1-.2-1.2-1.6-1.2-3s.8-2.2 1-2.5c.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.3.5-.4.5c-.2.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.5.3.1.2.1.7-.1 1.3z"/></symbol>
+</svg>
+
+<canvas id="scene" aria-hidden="true"></canvas>
+
+<div id="pemuat" role="status" aria-live="polite">
+  <div class="pemuat-isi">
+    <svg class="gunungan" viewBox="0 0 120 120" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+      <path d="M14 96 L60 14 L106 96 Q60 108 14 96 Z"/><path d="M30 92 L60 36 L90 92"/><path d="M60 58 c-8 10 -8 18 0 24 c8 -6 8 -14 0 -24 z M44 84 h32"/></g></svg>
+    <p class="judul" id="pemuatNama">Rangga &amp; Sekar</p>
+    <p id="pemuatTeks">Nyiapkeun uleman…</p>
+    <div class="bilah"><i id="pemuatBilah"></i></div>
+  </div>
+</div>
+
+<button class="musik-btn" id="tombolMusik" type="button" aria-pressed="false" aria-label="Putar musik latar"><svg><use href="#i-musik"/></svg></button>
+
+<nav class="dok" aria-label="Navigasi undangan">
+  <a href="#sumping" data-bagian="sumping"><svg><use href="#i-rumah"/></svg><span>Sumping</span></a>
+  <a href="#uleman" data-bagian="uleman"><svg><use href="#i-surat"/></svg><span>Uleman</span></a>
+  <a href="#panganten" data-bagian="panganten"><svg><use href="#i-hati"/></svg><span>Mempelai</span></a>
+  <a href="#carita" data-bagian="carita"><svg><use href="#i-buku"/></svg><span>Kisah</span></a>
+  <a href="#mapag" data-bagian="mapag"><svg><use href="#i-kalender"/></svg><span>Acara</span></a>
+  <a href="#panineungan" data-bagian="panineungan"><svg><use href="#i-hadiah"/></svg><span>Hadiah</span></a>
+</nav>
+
+<main>
+  <!-- Adegan 1 — Wilujeng Sumping -->
+  <section id="sumping" class="wrap" aria-label="Wilujeng Sumping">
+    <div class="sambut">
+      <p class="salam">Wilujeng Sumping</p>
+      <h1><span data-isi="pria">Rangga</span> <span class="amp">&amp;</span> <span data-isi="wanita">Sekar</span></h1>
+      <p class="semboyan" data-isi="semboyan">Satukna Dua Hati, Ngawangun Carita Salamina.</p>
+      <p class="tgl" data-isi="tanggalTampil">Sabtu, 19 Desember 2026</p>
+      <div class="tamu"><small>Kepada Yth.</small><b id="namaTamu">Tamu Undangan</b></div>
+      <p class="petunjuk">Gulir untuk memasuki taman</p>
+      <div class="bingkai-statis"><img src="assets/panganten.png" alt="Ilustrasi pengantin Sunda: pria berbendo dan berjas gading, wanita bersiger dengan roncean melati"></div>
+    </div>
+  </section>
+
+  <!-- Adegan 2 — Uleman -->
+  <section id="uleman" class="wrap kanan" aria-label="Undangan">
+    <div class="panel lekat" id="panelUleman">
+      <p class="eyebrow">Uleman</p>
+      <div class="uleman-tertutup">
+        <h2>Sapucuk surat <em>kanggo anjeun.</em></h2>
+        <p class="lead">Sepucuk undangan telah menanti di atas tiang kayu jati. Buka segelnya untuk membaca isinya.</p>
+        <div class="baris-btn"><button class="btn btn-utama" id="bukaUndangan" type="button"><svg><use href="#i-surat"/></svg>Buka Undangan</button></div>
+        <p class="kecil">Atau terus gulir, undangan akan terbuka dengan sendirinya.</p>
+      </div>
+      <div class="uleman-dibuka" aria-live="polite">
+        <h2>Kalayan <em>hormat,</em></h2>
+        <p class="lead" data-isi="pembuka"></p>
+        <svg class="ornamen kiri"><use href="#i-ornamen"/></svg>
+        <p class="lead">Merupakan kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Adegan 3 — Pangantén -->
+  <section id="panganten" class="wrap kiri" aria-label="Mempelai">
+    <div class="panel">
+      <p class="eyebrow">Pangantén</p>
+      <svg class="ornamen kiri"><use href="#i-ornamen"/></svg>
+      <div class="pasangan">
+        <div><p class="nama" data-isi="pria">Rangga</p><p class="lengkap" data-isi="priaLengkap"></p><p data-isi="priaKet"></p><p data-isi="priaOrtu"></p></div>
+        <span class="dan" aria-hidden="true">&amp;</span>
+        <div><p class="nama" data-isi="wanita">Sekar</p><p class="lengkap" data-isi="wanitaLengkap"></p><p data-isi="wanitaKet"></p><p data-isi="wanitaOrtu"></p></div>
+      </div>
+      <p class="kecil" style="text-align:center">Menuju hari bahagia</p>
+      <div class="hitung" id="hitung" aria-live="polite">
+        <div><b id="cdH">0</b><small>Poé</small></div><div><b id="cdJ">00</b><small>Jam</small></div><div><b id="cdM">00</b><small>Menit</small></div><div><b id="cdD">00</b><small>Detik</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Adegan 4 — Carita Asih -->
+  <section id="carita" class="wrap kanan" aria-label="Kisah cinta">
+    <div class="panel lekat">
+      <p class="eyebrow">Carita Asih</p>
+      <h2>Lalakon <em>urang duaan.</em></h2>
+      <ol class="lini" id="lini"></ol>
+      <div><p class="kecil" style="margin-bottom:8px">Galeri <span class="label-contoh" id="labelContoh">foto contoh</span></p><div class="galeri" id="galeri"></div></div>
+    </div>
+  </section>
+
+  <!-- Adegan 5 — Mapag Pangantén -->
+  <section id="mapag" class="wrap kiri" aria-label="Acara dan RSVP" style="min-height:150vh">
+    <div class="panel">
+      <p class="eyebrow">Mapag Pangantén</p>
+      <h2>Rangkaian <em>acara.</em></h2>
+      <p class="lead" data-isi="tanggalTampil"></p>
+      <div class="jadwal" id="jadwal"></div>
+      <div class="alamat"><span class="ikon"><svg><use href="#i-lokasi"/></svg></span><div><h3 data-isi="lokasiNama"></h3><p class="kecil" data-isi="lokasiAlamat"></p></div></div>
+      <div class="baris-btn">
+        <a class="btn btn-utama btn-kecil" id="tautanPeta" href="#" target="_blank" rel="noopener"><svg><use href="#i-lokasi"/></svg>Buka Google Maps</a>
+        <a class="btn btn-garis btn-kecil" id="tautanKalender" href="#" target="_blank" rel="noopener"><svg><use href="#i-kalender"/></svg>Simpan ke Kalender</a>
+      </div>
+      <p class="kecil" id="dressCode"></p>
+      <svg class="ornamen"><use href="#i-ornamen"/></svg>
+      <div id="blokRsvp">
+        <h3 class="judul-ikon"><svg><use href="#i-rsvp"/></svg>Konfirmasi Kehadiran</h3>
+        <form id="formRsvp" novalidate style="margin-top:12px">
+          <div class="dua">
+            <div><label for="rsvpNama">Nama</label><input id="rsvpNama" name="nama" autocomplete="name" required></div>
+            <div><label for="rsvpJumlah">Jumlah</label><select id="rsvpJumlah" name="jumlah"></select></div>
+          </div>
+          <div><span id="lblHadir" class="kecil" style="display:block;margin-bottom:6px;font-size:.66rem;letter-spacing:.18em;text-transform:uppercase">Kehadiran</span>
+            <div class="pilihan" role="radiogroup" aria-labelledby="lblHadir">
+              <input type="radio" name="hadir" id="hadirYa" value="ya" checked><label for="hadirYa">Insya Allah hadir</label>
+              <input type="radio" name="hadir" id="hadirTidak" value="tidak"><label for="hadirTidak">Berhalangan</label>
+            </div></div>
+          <p class="galat" id="rsvpGalat" hidden>Mohon isi nama terlebih dahulu.</p>
+          <button class="btn btn-utama" type="submit">Kirim Konfirmasi</button>
+        </form>
+        <div class="hasil" id="rsvpHasil" hidden aria-live="polite">
+          <p class="kecil" id="rsvpStatus"></p>
+          <pre id="rsvpPesan"></pre>
+          <div class="baris-btn"><a class="btn btn-utama btn-kecil" id="rsvpWa" href="#" target="_blank" rel="noopener"><svg><use href="#i-wa"/></svg>Kirim via WhatsApp</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Adegan 6 — Doa & Panineungan -->
+  <section id="panineungan" class="wrap kanan" aria-label="Hadiah, buku tamu, dan penutup" style="min-height:160vh">
+    <div class="panel">
+      <p class="eyebrow">Doa &amp; Panineungan</p>
+      <div id="blokHadiah">
+        <h3 class="judul-ikon"><svg><use href="#i-hadiah"/></svg>Tanda Kasih</h3>
+        <p class="kecil" style="margin:6px 0 12px">Doa restu Anda adalah hadiah terindah. Bila ingin memberi tanda kasih, dapat melalui:</p>
+        <div class="rekening" id="rekening"></div>
+        <div class="qris" id="qris" hidden><p class="kecil" style="margin:12px 0 6px">QRIS</p><img alt="Kode QRIS untuk tanda kasih"></div>
+        <p class="kecil" id="alamatKado" style="margin-top:10px"></p>
+      </div>
+      <svg class="ornamen"><use href="#i-ornamen"/></svg>
+      <div>
+        <h3 class="judul-ikon"><svg><use href="#i-buku"/></svg>Buku Tamu &amp; Doa</h3>
+        <form id="formUcapan" novalidate style="margin-top:12px">
+          <div><label for="ucapNama">Nama</label><input id="ucapNama" autocomplete="name" required></div>
+          <div><label for="ucapIsi">Ucapan &amp; doa</label><textarea id="ucapIsi" required></textarea></div>
+          <p class="galat" id="ucapGalat" hidden>Isi nama dan ucapan terlebih dahulu.</p>
+          <button class="btn btn-garis" type="submit">Kirim Ucapan</button>
+          <p class="kecil" id="ucapCatatan"></p>
+        </form>
+        <div class="ucapan" id="daftarUcapan" style="margin-top:14px"></div>
+      </div>
+      <svg class="ornamen"><use href="#i-ornamen"/></svg>
+      <div class="penutup">
+        <p class="salam" data-isi="penutup"></p>
+        <p class="nama"><span data-isi="pria"></span> <em style="color:var(--emas)">&amp;</em> <span data-isi="wanita"></span></p>
+      </div>
+    </div>
+  </section>
+</main>
+<footer class="wrap">Undangan digital oleh <a id="kredit" href="#" target="_blank" rel="noopener">Bahagia Project</a></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/BufferGeometryUtils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<!--INLINE:config.js-->
+<!--INLINE:ui.js-->
+<!--INLINE:musik.js-->
+<!--INLINE:adegan.js-->

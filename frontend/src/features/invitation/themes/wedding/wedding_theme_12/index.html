@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Undangan Pernikahan – Rizky & Nadira</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&family=Great+Vibes&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ===== COVER / GATE ===== -->
+<div id="cover" class="cover-gate">
+  <div class="cover-deco cover-deco--tl"></div>
+  <div class="cover-deco cover-deco--br"></div>
+  <div class="cover-inner">
+    <p class="cover-subtitle fade-in">Undangan Pernikahan</p>
+    <h1 class="cover-names great-vibes fade-in delay-1">Rizky <span>&</span> Nadira</h1>
+    <p class="cover-date fade-in delay-2">Sabtu, 19 Juli 2025</p>
+    <div class="cover-photo fade-in delay-3">
+      <img src="img/couple-cover.jpg" alt="Foto Pasangan" onerror="this.src='img/placeholder-couple.svg'" />
+    </div>
+    <button id="open-btn" class="btn-open fade-in delay-4" onclick="openInvitation()">
+      <span>Buka Undangan</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 9l-7 7-7-7"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main id="main-content" class="main-content hidden">
+
+  <!-- Floating Music Button -->
+  <button id="music-btn" class="music-btn" title="Toggle Music" onclick="toggleMusic()">
+    <svg id="music-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm12-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>
+  </button>
+  <audio id="bg-music" loop>
+    <source src="audio/music.mp3" type="audio/mpeg" />
+  </audio>
+
+  <!-- ===== 1. HERO ===== -->
+  <section id="hero" class="section hero-section">
+    <div class="hero-deco hero-deco--top"></div>
+    <div class="section-inner">
+      <p class="eyebrow reveal">Bismillahirrahmanirrahim</p>
+      <p class="hero-sub reveal delay-1">Dengan memohon rahmat dan ridho Allah SWT,<br>kami mengundang Bapak/Ibu/Saudara/i</p>
+      <h2 class="great-vibes hero-names reveal delay-2">Rizky <span class="amp">&</span> Nadira</h2>
+      <p class="hero-desc reveal delay-3">untuk hadir dan memberikan doa restu pada hari pernikahan kami</p>
+      <div class="hero-date reveal delay-4">
+        <div class="date-block">
+          <span class="date-num">19</span>
+          <span class="date-sep">|</span>
+          <span class="date-month">Juli</span>
+          <span class="date-sep">|</span>
+          <span class="date-year">2025</span>
+        </div>
+      </div>
+      <div class="hero-photo reveal delay-5">
+        <img src="img/couple-cover.jpg" alt="Foto Bersama" onerror="this.src='img/placeholder-couple.svg'" />
+        <div class="photo-frame-deco"></div>
+      </div>
+    </div>
+    <div class="hero-deco hero-deco--bot"></div>
+  </section>
+
+  <!-- Divider -->
+  <div class="ornament-divider"><span class="ornament-line"></span><span class="ornament-icon">✦</span><span class="ornament-line"></span></div>
+
+  <!-- ===== 2. COUPLE ===== -->
+  <section id="couple" class="section couple-section">
+    <div class="section-inner">
+      <p class="section-tag reveal">Mempelai</p>
+      <h2 class="section-title great-vibes reveal delay-1">The Happy Couple</h2>
+      <div class="couple-grid">
+        <!-- Pria -->
+        <div class="couple-card reveal">
+          <div class="couple-photo-wrap">
+            <img src="img/groom.jpg" alt="Mempelai Pria" onerror="this.src='img/placeholder-groom.svg'" />
+            <div class="couple-photo-ring"></div>
+          </div>
+          <p class="couple-role">Mempelai Pria</p>
+          <h3 class="couple-name great-vibes">Muhammad Rizky Pratama</h3>
+          <p class="couple-parent">Putra pertama dari<br><strong>Bapak H. Ahmad Fauzi</strong><br>dan <strong>Ibu Hj. Siti Rahayu</strong></p>
+          <p class="couple-bio">Seorang arsitek muda yang mencintai seni, alam, dan kopi sore hari.</p>
+        </div>
+        <!-- Wanita -->
+        <div class="couple-card reveal delay-2">
+          <div class="couple-photo-wrap">
+            <img src="img/bride.jpg" alt="Mempelai Wanita" onerror="this.src='img/placeholder-bride.svg'" />
+            <div class="couple-photo-ring"></div>
+          </div>
+          <p class="couple-role">Mempelai Wanita</p>
+          <h3 class="couple-name great-vibes">Nadira Aulia Putri</h3>
+          <p class="couple-parent">Putri pertama dari<br><strong>Bapak Dr. Wahyu Santoso</strong><br>dan <strong>Ibu Dewi Lestari, M.Pd.</strong></p>
+          <p class="couple-bio">Seorang dokter gigi yang gemar melukis, memasak, dan jalan-jalan di alam terbuka.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ornament -->
+  <div class="ornament-divider"><span class="ornament-line"></span><span class="ornament-icon">❧</span><span class="ornament-line"></span></div>
+
+  <!-- ===== 3. EVENT ===== -->
+  <section id="event" class="section event-section">
+    <div class="event-bg-deco"></div>
+    <div class="section-inner">
+      <p class="section-tag reveal">Rangkaian Acara</p>
+      <h2 class="section-title great-vibes reveal delay-1">Save the Date</h2>
+      <div class="event-grid">
+        <!-- Akad -->
+        <div class="event-card reveal">
+          <div class="event-icon">
+            <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="30" cy="30" r="28" stroke="currentColor" stroke-width="1.5"/><path d="M20 30c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10-10-4.477-10-10z" stroke="currentColor" stroke-width="1.5"/><path d="M30 25v5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <h3 class="event-title">Akad Nikah</h3>
+          <p class="event-detail"><strong>Sabtu, 19 Juli 2025</strong></p>
+          <p class="event-detail">08.00 – 10.00 WIB</p>
+          <p class="event-location">Masjid Al-Hikmah<br>Jl. Raya Sukabumi No. 12, Bogor</p>
+          <a href="https://maps.google.com/?q=Masjid+Al-Hikmah+Bogor" target="_blank" class="btn-map">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Lihat Peta
+          </a>
+        </div>
+        <!-- Resepsi -->
+        <div class="event-card reveal delay-2">
+          <div class="event-icon">
+            <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="30" cy="30" r="28" stroke="currentColor" stroke-width="1.5"/><path d="M18 38l4-8 4 4 4-6 4 4 4-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 22h30" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <h3 class="event-title">Resepsi Pernikahan</h3>
+          <p class="event-detail"><strong>Sabtu, 19 Juli 2025</strong></p>
+          <p class="event-detail">11.00 – 14.00 WIB</p>
+          <p class="event-location">Grand Ballroom Cendana<br>Jl. Veteran No. 45, Bogor</p>
+          <a href="https://maps.google.com/?q=Grand+Ballroom+Cendana+Bogor" target="_blank" class="btn-map">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Lihat Peta
+          </a>
+        </div>
+      </div>
+
+      <!-- Countdown -->
+      <div class="countdown-wrap reveal delay-3">
+        <p class="countdown-label">Menuju Hari Bahagia</p>
+        <div class="countdown" id="countdown">
+          <div class="cd-item"><span id="cd-days">00</span><small>Hari</small></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-item"><span id="cd-hours">00</span><small>Jam</small></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-item"><span id="cd-mins">00</span><small>Menit</small></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-item"><span id="cd-secs">00</span><small>Detik</small></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ornament -->
+  <div class="ornament-divider"><span class="ornament-line"></span><span class="ornament-icon">✦</span><span class="ornament-line"></span></div>
+
+  <!-- ===== 4. ALAMAT / MAPS ===== -->
+  <section id="maps" class="section maps-section">
+    <div class="section-inner">
+      <p class="section-tag reveal">Lokasi Acara</p>
+      <h2 class="section-title great-vibes reveal delay-1">Temukan Kami</h2>
+      <div class="maps-address reveal delay-2">
+        <div class="address-card">
+          <h4>Akad Nikah</h4>
+          <p>Masjid Al-Hikmah<br>Jl. Raya Sukabumi No. 12<br>Bogor, Jawa Barat 16001</p>
+        </div>
+        <div class="address-card">
+          <h4>Resepsi</h4>
+          <p>Grand Ballroom Cendana<br>Jl. Veteran No. 45<br>Bogor, Jawa Barat 16110</p>
+        </div>
+      </div>
+      <div class="maps-embed reveal delay-3">
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63461.45628754437!2d106.7617848!3d-6.5944343!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69c5433070a6c5%3A0x4030bfbca4ccd97!2sBogor%2C%20West%20Java!5e0!3m2!1sen!2sid!4v1699999999999!5m2!1sen!2sid"
+          width="100%" height="320" style="border:0;" allowfullscreen loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade" title="Lokasi Acara">
+        </iframe>
+      </div>
+      <a href="https://maps.google.com/?q=Bogor" target="_blank" class="btn-primary reveal delay-4">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Navigasi ke Lokasi
+      </a>
+    </div>
+  </section>
+
+  <!-- Ornament -->
+  <div class="ornament-divider"><span class="ornament-line"></span><span class="ornament-icon">❧</span><span class="ornament-line"></span></div>
+
+  <!-- ===== 5. LOVE STORY ===== -->
+  <section id="story" class="section story-section">
+    <div class="story-bg-deco"></div>
+    <div class="section-inner">
+      <p class="section-tag reveal">Perjalanan Cinta</p>
+      <h2 class="section-title great-vibes reveal delay-1">Our Love Story</h2>
+      <div class="timeline">
+
+        <div class="timeline-item reveal" data-side="left">
+          <div class="timeline-content">
+            <div class="timeline-img">
+              <img src="img/story1.jpg" alt="Pertemuan Pertama" onerror="this.src='img/placeholder-story.svg'" />
+            </div>
+            <div class="timeline-dot"></div>
+            <div class="timeline-body">
+              <span class="timeline-date">Maret 2019</span>
+              <h4>Pertemuan Pertama</h4>
+              <p>Kami pertama bertemu di sebuah seminar arsitektur di Universitas Indonesia. Sebuah tatapan singkat yang ternyata mengubah segalanya.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-item reveal delay-1" data-side="right">
+          <div class="timeline-content">
+            <div class="timeline-body">
+              <span class="timeline-date">Agustus 2019</span>
+              <h4>PDKT & Keberanian</h4>
+              <p>Setelah berbulan-bulan pertemanan, Rizky akhirnya memberanikan diri mengajak Nadira untuk minum kopi bersama di Puncak.</p>
+            </div>
+            <div class="timeline-dot"></div>
+            <div class="timeline-img">
+              <img src="img/story2.jpg" alt="PDKT" onerror="this.src='img/placeholder-story.svg'" />
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-item reveal delay-2" data-side="left">
+          <div class="timeline-content">
+            <div class="timeline-img">
+              <img src="img/story3.jpg" alt="Resmi Pacaran" onerror="this.src='img/placeholder-story.svg'" />
+            </div>
+            <div class="timeline-dot"></div>
+            <div class="timeline-body">
+              <span class="timeline-date">Desember 2019</span>
+              <h4>Resmi Bersama</h4>
+              <p>Di bawah langit malam berbintang, Rizky menyatakan perasaannya. Dan Nadira menjawab dengan senyuman termanisnya.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-item reveal delay-3" data-side="right">
+          <div class="timeline-content">
+            <div class="timeline-body">
+              <span class="timeline-date">Oktober 2024</span>
+              <h4>Lamaran</h4>
+              <p>Di tepi pantai Labuan Bajo, Rizky berlutut dan mengucapkan kata-kata yang paling dinantikan Nadira. "Maukah kamu menjadi istriku?"</p>
+            </div>
+            <div class="timeline-dot"></div>
+            <div class="timeline-img">
+              <img src="img/story4.jpg" alt="Lamaran" onerror="this.src='img/placeholder-story.svg'" />
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-item reveal delay-4" data-side="left">
+          <div class="timeline-content">
+            <div class="timeline-img">
+              <img src="img/story5.jpg" alt="Pernikahan" onerror="this.src='img/placeholder-story.svg'" />
+            </div>
+            <div class="timeline-dot"></div>
+            <div class="timeline-body">
+              <span class="timeline-date">Juli 2025</span>
+              <h4>Menuju Pelaminan</h4>
+              <p>Setelah 6 tahun penuh kenangan indah, kami siap melangkah ke babak paling indah dalam hidup kami.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Ornament -->
+  <div class="ornament-divider"><span class="ornament-line"></span><span class="ornament-icon">✦</span><span class="ornament-line"></span></div>
+
+  <!-- ===== 6. GALLERY ===== -->
+  <section id="gallery" class="section gallery-section">
+    <div class="section-inner">
+      <p class="section-tag reveal">Galeri Foto</p>
+      <h2 class="section-title great-vibes reveal delay-1">Our Memories</h2>
+      <div class="gallery-grid reveal delay-2">
+        <div class="gallery-item" onclick="openLightbox(0)"><img src="img/gallery1.jpg" alt="Foto 1" onerror="this.src='img/placeholder-gallery.svg'" /><div class="gallery-overlay"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></div></div>
+        <div class="gallery-item" onclick="openLightbox(1)"><img src="img/gallery2.jpg" alt="Foto 2" onerror="this.src='img/placeholder-gallery.svg'" /><div class="gallery-overlay"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></div></div>
+        <div class="gallery-item gallery-item--wide" onclick="openLightbox(2)"><img src="img/gallery3.jpg" alt="Foto 3" onerror="this.src='img/placeholder-gallery.svg'" /><div class="gallery-overlay"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></div></div>
+        <div class="gallery-item gallery-item--tall" onclick="openLightbox(3)"><img src="img/gallery4.jpg" alt="Foto 4" onerror="this.src='img/placeholder-gallery.svg'" /><div class="gallery-overlay"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></div></div>
+        <div class="gallery-item" onclick="openLightbox(4)"><img src="img/gallery5.jpg" alt="Foto 5" onerror="this.src='img/placeholder-gallery.svg'" /><div class="gallery-overlay"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></div></div>
+        <div class="gallery-item" onclick="openLightbox(5)"><img src="img/gallery6.jpg" alt="Foto 6" onerror="this.src='img/placeholder-gallery.svg'" /><div class="gallery-overlay"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+    <button class="lb-close" onclick="closeLightbox()">×</button>
+    <button class="lb-prev" onclick="event.stopPropagation(); changeLightbox(-1)">&#8249;</button>
+    <img id="lb-img" src="" alt="" />
+    <button class="lb-next" onclick="event.stopPropagation(); changeLightbox(1)">&#8250;</button>
+  </div>
+
+  <!-- Ornament -->
+  <div class="ornament-divider"><span class="ornament-line"></span><span class="ornament-icon">❧</span><span class="ornament-line"></span></div>
+
+  <!-- ===== 7. DRESS CODE ===== -->
+  <section id="dresscode" class="section dresscode-section">
+    <div class="dresscode-bg-deco"></div>
+    <div class="section-inner">
+      <p class="section-tag reveal">Kode Busana</p>
+      <h2 class="section-title great-vibes reveal delay-1">Dress Code</h2>
+      <p class="dresscode-note reveal delay-2">Kami dengan hangat mengundang Anda untuk tampil menawan pada hari istimewa kami.<br>Silakan kenakan busana dengan warna-warna berikut:</p>
+      <div class="dresscode-palette reveal delay-3">
+        <div class="palette-item">
+          <div class="palette-color" style="background:#f5e6d8;"></div>
+          <span>Blush</span>
+        </div>
+        <div class="palette-item">
+          <div class="palette-color" style="background:#d4b896;"></div>
+          <span>Champagne</span>
+        </div>
+        <div class="palette-item">
+          <div class="palette-color" style="background:#c4a882;"></div>
+          <span>Caramel</span>
+        </div>
+        <div class="palette-item">
+          <div class="palette-color" style="background:#8b7355;"></div>
+          <span>Mocha</span>
+        </div>
+        <div class="palette-item">
+          <div class="palette-color" style="background:#5a4a3a;"></div>
+          <span>Espresso</span>
+        </div>
+        <div class="palette-item">
+          <div class="palette-color" style="background:#fff8f0;"></div>
+          <span>Ivory</span>
+        </div>
+      </div>
+      <div class="dresscode-icons reveal delay-4">
+        <div class="dc-icon">
+          <svg width="60" height="80" viewBox="0 0 60 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="30" cy="16" rx="12" ry="12" stroke="#c4a882" stroke-width="1.5"/>
+            <path d="M10 72 L18 34 Q22 28 30 28 Q38 28 42 34 L50 72" stroke="#c4a882" stroke-width="1.5" fill="none"/>
+            <path d="M18 34 L10 28 M42 34 L50 28" stroke="#c4a882" stroke-width="1.5"/>
+          </svg>
+          <p>Pria</p>
+          <small>Kemeja / Jas</small>
+        </div>
+        <div class="dc-icon">
+          <svg width="60" height="80" viewBox="0 0 60 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="30" cy="14" rx="11" ry="11" stroke="#c4a882" stroke-width="1.5"/>
+            <path d="M14 72 C14 52 8 42 16 32 Q22 26 30 26 Q38 26 44 32 C52 42 46 52 46 72" stroke="#c4a882" stroke-width="1.5" fill="none"/>
+            <path d="M14 72 L46 72" stroke="#c4a882" stroke-width="1.5"/>
+          </svg>
+          <p>Wanita</p>
+          <small>Kebaya / Gaun</small>
+        </div>
+      </div>
+      <p class="dresscode-note reveal delay-5" style="margin-top:1.5rem;"><em>*Mohon hindari warna putih dan merah muda terang</em></p>
+    </div>
+  </section>
+
+  <!-- Ornament -->
+  <div class="ornament-divider"><span class="ornament-line"></span><span class="ornament-icon">✦</span><span class="ornament-line"></span></div>
+
+  <!-- ===== 8. DIGITAL WALLET ===== -->
+  <section id="wallet" class="section wallet-section">
+    <div class="section-inner">
+      <p class="section-tag reveal">Amplop Digital</p>
+      <h2 class="section-title great-vibes reveal delay-1">Wedding Gift</h2>
+      <p class="wallet-note reveal delay-2">Bagi yang ingin memberikan hadiah, Anda dapat mengirimkan melalui:</p>
+
+      <div class="wallet-grid">
+        <!-- Bank -->
+        <div class="wallet-card reveal">
+          <div class="wallet-header">
+            <div class="wallet-logo bank-bca">BCA</div>
+            <span>Bank BCA</span>
+          </div>
+          <p class="wallet-number">1234 5678 90</p>
+          <p class="wallet-name">Muhammad Rizky Pratama</p>
+          <button class="btn-copy" onclick="copyToClipboard('1234567890', this)">Salin Nomor</button>
+        </div>
+
+        <div class="wallet-card reveal delay-1">
+          <div class="wallet-header">
+            <div class="wallet-logo bank-mandiri">MDR</div>
+            <span>Bank Mandiri</span>
+          </div>
+          <p class="wallet-number">1100 2233 4455</p>
+          <p class="wallet-name">Nadira Aulia Putri</p>
+          <button class="btn-copy" onclick="copyToClipboard('110022334455', this)">Salin Nomor</button>
+        </div>
+
+        <!-- E-Wallet -->
+        <div class="wallet-card reveal delay-2">
+          <div class="wallet-header">
+            <div class="wallet-logo ew-gopay">GP</div>
+            <span>GoPay</span>
+          </div>
+          <p class="wallet-number">0812-3456-7890</p>
+          <p class="wallet-name">Muhammad Rizky Pratama</p>
+          <button class="btn-copy" onclick="copyToClipboard('081234567890', this)">Salin Nomor</button>
+        </div>
+
+        <div class="wallet-card reveal delay-3">
+          <div class="wallet-header">
+            <div class="wallet-logo ew-dana">DN</div>
+            <span>Dana</span>
+          </div>
+          <p class="wallet-number">0898-7654-3210</p>
+          <p class="wallet-name">Nadira Aulia Putri</p>
+          <button class="btn-copy" onclick="copyToClipboard('089876543210', this)">Salin Nomor</button>
+        </div>
+
+        <div class="wallet-card reveal delay-4">
+          <div class="wallet-header">
+            <div class="wallet-logo ew-ovo">OVO</div>
+            <span>OVO</span>
+          </div>
+          <p class="wallet-number">0812-3456-7890</p>
+          <p class="wallet-name">Muhammad Rizky Pratama</p>
+          <button class="btn-copy" onclick="copyToClipboard('081234567890', this)">Salin Nomor</button>
+        </div>
+
+        <div class="wallet-card reveal delay-5">
+          <div class="wallet-header">
+            <div class="wallet-logo ew-shopee">SP</div>
+            <span>ShopeePay</span>
+          </div>
+          <p class="wallet-number">0898-7654-3210</p>
+          <p class="wallet-name">Nadira Aulia Putri</p>
+          <button class="btn-copy" onclick="copyToClipboard('089876543210', this)">Salin Nomor</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ornament -->
+  <div class="ornament-divider"><span class="ornament-line"></span><span class="ornament-icon">❧</span><span class="ornament-line"></span></div>
+
+  <!-- ===== 9. RSVP ===== -->
+  <section id="rsvp" class="section rsvp-section">
+    <div class="rsvp-bg-deco"></div>
+    <div class="section-inner">
+      <p class="section-tag reveal">Konfirmasi Kehadiran</p>
+      <h2 class="section-title great-vibes reveal delay-1">RSVP</h2>
+      <p class="rsvp-note reveal delay-2">Mohon konfirmasi kehadiran Anda sebelum <strong>10 Juli 2025</strong></p>
+      <form id="rsvp-form" class="rsvp-form reveal delay-3" onsubmit="submitRSVP(event)">
+        <div class="form-group">
+          <label>Nama Lengkap *</label>
+          <input type="text" name="name" placeholder="Masukkan nama Anda" required />
+        </div>
+        <div class="form-group">
+          <label>Nomor WhatsApp *</label>
+          <input type="tel" name="whatsapp" placeholder="08xx-xxxx-xxxx" required />
+        </div>
+        <div class="form-group">
+          <label>Jumlah Tamu</label>
+          <select name="guests">
+            <option value="1">1 orang</option>
+            <option value="2">2 orang</option>
+            <option value="3">3 orang</option>
+            <option value="4">4 orang</option>
+            <option value="5+">5+ orang</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Konfirmasi Kehadiran *</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="attend" value="hadir" required />
+              <span>Hadir</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="attend" value="tidak_hadir" />
+              <span>Tidak Hadir</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Pesan / Doa (opsional)</label>
+          <textarea name="message" rows="4" placeholder="Tuliskan pesan atau doa untuk kami..."></textarea>
+        </div>
+        <button type="submit" class="btn-primary btn-full">Kirim Konfirmasi</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Ornament -->
+  <div class="ornament-divider"><span class="ornament-line"></span><span class="ornament-icon">✦</span><span class="ornament-line"></span></div>
+
+  <!-- ===== 10. WISHES ===== -->
+  <section id="wishes" class="section wishes-section">
+    <div class="section-inner">
+      <p class="section-tag reveal">Ucapan & Doa</p>
+      <h2 class="section-title great-vibes reveal delay-1">Wedding Wishes</h2>
+
+      <!-- Form kirim ucapan -->
+      <form id="wish-form" class="wish-form reveal delay-2" onsubmit="submitWish(event)">
+        <div class="form-group">
+          <input type="text" name="wname" placeholder="Nama Anda" required />
+        </div>
+        <div class="form-group">
+          <textarea name="wish" rows="3" placeholder="Tuliskan ucapan dan doa terbaik Anda..." required></textarea>
+        </div>
+        <button type="submit" class="btn-primary">Kirim Ucapan</button>
+      </form>
+
+      <!-- Daftar ucapan -->
+      <div id="wish-list" class="wish-list">
+        <!-- Will be populated by JS -->
+      </div>
+
+      <div id="wish-pagination" class="wish-pagination"></div>
+    </div>
+  </section>
+
+  <!-- Ornament -->
+  <div class="ornament-divider"><span class="ornament-line"></span><span class="ornament-icon">❧</span><span class="ornament-line"></span></div>
+
+  <!-- ===== 11. PENUTUP ===== -->
+  <section id="closing" class="section closing-section">
+    <div class="closing-deco closing-deco--top"></div>
+    <div class="section-inner">
+      <p class="eyebrow reveal">Wassalamualaikum Wr. Wb.</p>
+      <h2 class="section-title great-vibes reveal delay-1">Terima Kasih</h2>
+      <p class="closing-text reveal delay-2">
+        Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila<br>
+        Bapak / Ibu / Saudara / i berkenan hadir untuk memberikan doa<br>
+        dan restu kepada kami.
+      </p>
+      <p class="closing-quote reveal delay-3">
+        <em>"Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu isteri-isteri dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya, dan dijadikan-Nya diantaramu rasa kasih dan sayang."</em>
+        <br><small>(QS. Ar-Rum: 21)</small>
+      </p>
+      <div class="closing-names reveal delay-4">
+        <p class="great-vibes">Rizky <span class="amp">&</span> Nadira</p>
+      </div>
+      <p class="closing-tagline reveal delay-5">Kami yang berbahagia</p>
+    </div>
+    <div class="closing-deco closing-deco--bot"></div>
+
+    <footer class="footer">
+      <p>Made with ❤ &nbsp;·&nbsp; Rizky & Nadira Wedding 2025</p>
+      <p class="footer-sub">Undangan ini dibuat dengan cinta untuk Anda</p>
+    </footer>
+  </section>
+
+</main>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast"></div>
+
+<script src="js/main.js"></script>
+</body>
+</html>
