@@ -1,94 +1,50 @@
 <?php
 
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\InvitationPublicController;
-use App\Http\Controllers\SitemapController;
-use App\Http\Controllers\WeddingThemePreviewController;
-use App\Models\Theme;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Auth\GoogleAuthController;
+use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\SeoController;
+use App\Support\FrontendUrl;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::get('/tess', function () {
-    return view('tess');
-});
-Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('undangan/pernikahan', [HomeController::class, 'wedding'])->name('wedding.index');
-Route::get('sitemap.xml', SitemapController::class)->name('sitemap');
+/*
+|--------------------------------------------------------------------------
+| Web routes (backend host)
+|--------------------------------------------------------------------------
+|
+| Laravel no longer renders the application UI — the React frontend
+| (frontend/, FRONTEND_URL) does. The only browser-facing routes left here
+| are flows that inherently need a top-level browser visit to this host:
+|
+|   • Google OAuth redirect/callback (session-bound "state")
+|   • the signed e-mail verification link sent by mail
+|   • the crawler renderer (/seo/…) that gives link-preview bots
+|     (WhatsApp, Facebook, Telegram, Google…) server-side meta tags
+|
+| Every one of them ends with a redirect to the frontend.
+*/
 
-Route::get('themes', function (Request $request) {
-    $themes = Theme::where('is_active', true)
-        ->withExists('sampleInvitation')
-        ->ordered()
-        ->get()
-        ->map(fn (Theme $t) => [
-            'id'              => $t->id,
-            'name'            => $t->name,
-            'slug'            => $t->slug,
-            'category'        => $t->category,
-            'event_type'      => $t->event_type,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
-            'thumbnail'       => $t->thumbnail_url ?? '',
-            'color_primary'   => $t->color_primary,
-            'color_secondary' => $t->color_secondary,
-            'is_premium'      => $t->is_premium,
-            'is_exclusive'    => $t->is_exclusive,
-            'usage_count'     => $t->usage_count,
-            'tags'            => $t->tags ?? [],
-            'sample_url'      => $t->sampleUrl($t->sample_invitation_exists),
-        ]);
+Route::get('/', fn () => response()->json([
+    'name'     => config('app.name').' API',
+    'version'  => 'v1',
+    'api'      => url('/api/v1'),
+    'frontend' => FrontendUrl::base(),
+]))->name('api.root');
 
-    return Inertia::render('themes/index', [
-        'themes'     => $themes,
-        // Pre-selects the event filter, e.g. when coming from a landing showcase tab.
-        'event_type' => $request->string('event_type')->toString(),
-    ]);
-})->name('themes.index');
-
-// Theme preview: opens the seeded sample invitation of that theme in the real viewer.
-Route::get('themes/{theme:slug}/sample', [InvitationPublicController::class, 'sample'])
-    ->name('themes.sample');
-
-Route::prefix('preview/themes/wedding')->group(function () {
-    Route::get('/{theme}', function (string $theme) {
-        $queryString = request()->getQueryString();
-
-        return redirect()->to('/preview/themes/wedding/' . $theme . '/index.html' . ($queryString ? '?' . $queryString : ''));
-    })->where('theme', '[A-Za-z0-9_-]+')->name('preview.wedding.redirect');
-
-    Route::get('/{theme}/index.html', [WeddingThemePreviewController::class, 'show'])
-        ->where('theme', '[A-Za-z0-9_-]+')
-        ->name('preview.wedding.show');
-
-    Route::get('/{theme}/assets/{path}', [WeddingThemePreviewController::class, 'asset'])
-        ->where([
-            'theme' => '[A-Za-z0-9_-]+',
-            'path'  => '.*',
-        ])
-        ->name('preview.wedding.asset');
+// ─── Google OAuth (Login / Register with Google) ─────────────────────────────
+Route::middleware('guest')->group(function () {
+    Route::get('auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('auth.google');
+    Route::get('auth/google/callback', [GoogleAuthController::class, 'callback'])->name('auth.google.callback');
 });
 
-Route::middleware(['auth'])->group(function () {
-    // Generic entry point: send each user to the dashboard for their role.
-    Route::get('dashboard', function (Request $request) {
-        $route = $request->user()->dashboardRoute();
-
-        abort_if($route === null, 403);
-
-        return redirect()->route($route);
-    })->name('dashboard');
+// ─── Signed e-mail verification link (URL generated by the VerifyEmail mail) ─
+Route::middleware('auth')->group(function () {
+    Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('verification.verify');
 });
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
-require __DIR__.'/admin.php';
-require __DIR__.'/customer.php';
-
-// ─── Public invitation viewer — must be last (catch-all) ─────────────────────
-Route::get('/{code}', [InvitationPublicController::class, 'show'])
-    ->name('invitation.view')
-    ->where('code', '[A-Za-z0-9_-]+');
-Route::get('/{code}/{visitor}', [InvitationPublicController::class, 'show'])
-    ->name('invitation.view')
-    ->where('code', '[A-Za-z0-9_-]+')
-    ->where('visitor', '[A-Za-z0-9_-]+');
-require __DIR__ . '/test.php';
+// ─── Crawler renderer: server-side SEO / Open Graph tags for a frontend path ─
+// The frontend web server routes link-preview bots here (docs/DEPLOYMENT.md).
+Route::get('seo/{path?}', SeoController::class)
+    ->where('path', '.*')
+    ->name('seo');

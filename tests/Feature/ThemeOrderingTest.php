@@ -117,7 +117,7 @@ it('serves the public theme catalog in sort_order, not by popularity', function 
     Theme::reorder('wedding', [$quiet->id, $popular->id]);
 
     $this->get(route('themes.index'))
-        ->assertInertia(fn ($page) => $page
+        ->assertData(fn ($page) => $page
             ->where('themes.0.name', 'Quiet')
             ->where('themes.1.name', 'Popular'));
 });

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\ApiResponse;
 use App\Models\EventType;
 use App\Models\GalleryPhoto;
 use App\Models\Invitation;
@@ -10,20 +11,19 @@ use App\Models\InvitationContent;
 use App\Models\InvitationEvent;
 use App\Models\InvitationSetting;
 use App\Models\Package;
-use App\Models\Transaction;
 use App\Models\Story;
 use App\Models\Theme;
+use App\Models\Transaction;
 use App\Services\InvitationEditorService;
 use App\Services\InvitationSlugService;
+use App\Support\PublicAsset;
 use Illuminate\Database\QueryException;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
-use Inertia\Inertia;
-use Inertia\Response;
+use Illuminate\Validation\ValidationException;
 
 class InvitationController extends Controller
 {
@@ -39,7 +39,7 @@ class InvitationController extends Controller
         'syukuran'      => ['host_photo'],
     ];
 
-    public function index(): Response
+    public function index(): JsonResponse
     {
         $invitations = Invitation::with(['theme', 'eventType', 'package', 'events', 'contents'])
             ->where('user_id', auth()->id())
@@ -71,7 +71,7 @@ class InvitationController extends Controller
                     'photo_url'       => $photoUrl,
                     'theme' => $inv->theme ? [
                         'name'            => $inv->theme->name,
-                        'thumbnail_url'   => $inv->theme->thumbnail_url,
+                        'thumbnail_url'   => PublicAsset::url($inv->theme->thumbnail_url),
                         'color_primary'   => $inv->theme->color_primary,
                         'color_secondary' => $inv->theme->color_secondary,
                         'is_premium'      => $inv->theme->is_premium,
@@ -90,7 +90,7 @@ class InvitationController extends Controller
                 ];
             });
 
-        return Inertia::render('customer/invitations/index', [
+        return ApiResponse::ok([
             'invitations' => $invitations,
         ]);
     }
@@ -101,7 +101,7 @@ class InvitationController extends Controller
 
         $packageTier = $request->query('package_tier');
 
-        return Inertia::render('customer/invitations/create', [
+        return ApiResponse::ok([
             'eventTypes' => $eventTypes,
             // Carried over from a package-tier CTA on the landing page (no
             // concrete event type chosen yet) so the next step can
@@ -134,7 +134,10 @@ class InvitationController extends Controller
             ->withExists('sampleInvitation')
             ->ordered()
             ->get()
-            ->each(fn (Theme $t) => $t->setAttribute('sample_url', $t->sampleUrl($t->sample_invitation_exists)));
+            ->each(fn (Theme $t) => $t->setAttribute('sample_url', $t->sampleUrl($t->sample_invitation_exists))
+                // Served from this backend's public/: absolute for the separate frontend origin.
+                ->setAttribute('thumbnail_url', PublicAsset::url($t->thumbnail_url))
+                ->setAttribute('preview_image_url', PublicAsset::url($t->preview_image_url)));
 
         $packages = Package::active()
             ->where('invitation_type', $eventType->invitationType())
@@ -162,7 +165,7 @@ class InvitationController extends Controller
                 ?->id;
         }
 
-        return Inertia::render('customer/invitations/select-theme', [
+        return ApiResponse::ok([
             'eventType' => $eventType,
             'themes'    => $themes,
             'packages'  => $packages,
@@ -171,7 +174,7 @@ class InvitationController extends Controller
         ]);
     }
 
-    public function createDetail(Request $request): Response
+    public function createDetail(Request $request): JsonResponse
     {
         $eventType = EventType::active()
             ->with('fields')
@@ -179,43 +182,44 @@ class InvitationController extends Controller
 
         $theme = Theme::active()
             ->findOrFail($request->query('theme_id'), ['id', 'name', 'slug', 'thumbnail_url', 'color_primary', 'color_secondary', 'is_premium', 'is_exclusive']);
+        $theme->setAttribute('thumbnail_url', PublicAsset::url($theme->thumbnail_url));
 
         $package = Package::active()
             ->with('features')
             ->findOrFail($request->query('package_id'), ['id', 'name', 'label', 'price', 'currency', 'billing_period', 'max_gallery_uploads']);
 
-        return Inertia::render('customer/invitations/create-detail', [
+        return ApiResponse::ok([
             'eventType' => $eventType,
             'theme'     => $theme,
             'package'   => $package,
         ]);
     }
 
-    public function checkCode(Request $request): \Illuminate\Http\JsonResponse
+    public function checkCode(Request $request): JsonResponse
     {
         $code   = trim((string) $request->query('code', ''));
         $exists = $code !== '' && Invitation::withTrashed()->where('invitation_code', $code)->exists();
 
-        return response()->json(['available' => !$exists]);
+        return ApiResponse::ok(['available' => !$exists]);
     }
 
-    public function checkSlug(Request $request): \Illuminate\Http\JsonResponse
+    public function checkSlug(Request $request): JsonResponse
     {
         return $this->editor()->checkSlug($request);
     }
 
-    public function slugRecommendations(Request $request): \Illuminate\Http\JsonResponse
+    public function slugRecommendations(Request $request): JsonResponse
     {
         $slug = $this->slugService()->normalize((string) $request->query('slug', ''));
         $ignoreInvitationId = $request->integer('exclude_id') ?: null;
 
-        return response()->json([
+        return ApiResponse::ok([
             'slug'        => $slug,
             'suggestions' => $this->slugService()->suggestions($slug, $ignoreInvitationId),
         ]);
     }
 
-    public function store(\App\Http\Requests\StoreInvitationRequest $request): RedirectResponse
+    public function store(\App\Http\Requests\StoreInvitationRequest $request): JsonResponse
     {
         try {
             DB::transaction(function () use ($request) {
@@ -418,11 +422,10 @@ class InvitationController extends Controller
             ]);
         }
 
-        return redirect()->route('customer.invitations.index')
-            ->with('success', 'Undangan berhasil dibuat!');
+        return ApiResponse::toRoute('customer.invitations.index', [], 'Undangan berhasil dibuat!');
     }
 
-    public function edit(Request $request, $slug): Response
+    public function edit(Request $request, $slug): JsonResponse
     {
         $invitation = Invitation::where('slug', $slug)->firstOrFail();
         abort_if($invitation->user_id !== auth()->id(), 403);
@@ -519,7 +522,7 @@ class InvitationController extends Controller
             'display_order'  => $linkedWallets->has($w->id) ? (int) $linkedWallets[$w->id]->pivot->display_order : 99,
         ])->sortBy('display_order')->values()->toArray();
 
-        return Inertia::render('customer/invitations/edit', [
+        return ApiResponse::ok([
             ...$this->editor()->editorProps($invitation),
             'digitalWallets'     => $digitalWallets,
 
@@ -558,34 +561,32 @@ class InvitationController extends Controller
         ]);
     }
 
-    public function update(\App\Http\Requests\UpdateInvitationRequest $request, Invitation $invitation): RedirectResponse
+    public function update(\App\Http\Requests\UpdateInvitationRequest $request, Invitation $invitation): JsonResponse
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
 
         $this->editor()->update($invitation, $request);
 
-        return back()->with('success', 'Undangan berhasil diperbarui!');
+        return ApiResponse::message('Undangan berhasil diperbarui!');
     }
 
-    public function updateSettings(Request $request, string $slug): RedirectResponse
+    public function updateSettings(Request $request, string $slug): JsonResponse
     {
         $invitation = Invitation::where('slug', $slug)->firstOrFail();
         abort_if($invitation->user_id !== auth()->id(), 403);
 
         $this->editor()->updateSettings($invitation, $request);
 
-        return redirect()
-            ->route('customer.invitations.settings', $invitation->slug)
-            ->with('success', 'Pengaturan berhasil disimpan.');
+        return ApiResponse::toRoute('customer.invitations.settings', $invitation->slug, 'Pengaturan berhasil disimpan.');
     }
 
-    public function updateTheme(Request $request, Invitation $invitation): RedirectResponse
+    public function updateTheme(Request $request, Invitation $invitation): JsonResponse
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
 
         $theme = $this->editor()->updateTheme($invitation, $request);
 
-        return back()->with('success', "Tema berhasil diubah ke \"{$theme->name}\".");
+        return ApiResponse::message("Tema berhasil diubah ke \"{$theme->name}\".");
     }
 
     public function uploadMusic(Request $request, string $slug): \Illuminate\Http\JsonResponse

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\ApiResponse;
 use App\Models\AppSetting;
 use App\Models\Package;
 use App\Models\PaymentGatewayAuditLog;
@@ -10,12 +11,9 @@ use App\Models\PaymentGatewayConfig;
 use App\Services\QrisPaymentService;
 use App\Support\QrisPayload;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
-use Inertia\Response;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -66,7 +64,7 @@ class PaymentSettingController extends Controller
 
     public function __construct(private readonly QrisPaymentService $qris) {}
 
-    public function index(Request $request): Response
+    public function index(Request $request): JsonResponse
     {
         $rows = PaymentGatewayConfig::whereIn('gateway_name', array_keys(self::GATEWAY_SPECS))
             ->get()
@@ -113,7 +111,7 @@ class PaymentSettingController extends Controller
             ];
         }
 
-        return Inertia::render('admin/settings/payment', [
+        return ApiResponse::ok([
             'gateways' => $gateways,
             'enabledMethods' => AppSetting::get('payment_enabled_methods', self::DEFAULT_ENABLED_METHODS),
             'qris' => $this->qrisProps(),
@@ -122,14 +120,10 @@ class PaymentSettingController extends Controller
                 'failedRedirectUrl' => AppSetting::get('payment_redirect_failed_url', ''),
                 'pendingRedirectUrl' => AppSetting::get('payment_redirect_pending_url', ''),
             ],
-            'flash' => [
-                'success' => $request->session()->get('success'),
-                'error' => $request->session()->get('error'),
-            ],
         ]);
     }
 
-    public function updateGateway(Request $request, string $gateway): RedirectResponse
+    public function updateGateway(Request $request, string $gateway): JsonResponse
     {
         abort_unless($request->user()?->hasRole(['super_admin', 'admin']), 403);
 
@@ -194,10 +188,10 @@ class PaymentSettingController extends Controller
             'ip_address' => $request->ip(),
         ]);
 
-        return back()->with('success', 'Konfigurasi gateway berhasil disimpan.');
+        return ApiResponse::message('Konfigurasi gateway berhasil disimpan.');
     }
 
-    public function updateQris(Request $request): RedirectResponse
+    public function updateQris(Request $request): JsonResponse
     {
         abort_unless($request->user()?->hasRole(['super_admin', 'admin']), 403);
 
@@ -266,7 +260,7 @@ class PaymentSettingController extends Controller
             'ip_address' => $request->ip(),
         ]);
 
-        return back()->with('success', 'Pengaturan QRIS berhasil disimpan.');
+        return ApiResponse::message('Pengaturan QRIS berhasil disimpan.');
     }
 
     /**
@@ -307,7 +301,7 @@ class PaymentSettingController extends Controller
             throw ValidationException::withMessages(['price' => $e->getMessage()]);
         }
 
-        return response()->json($result + [
+        return ApiResponse::ok($result + [
             'merchant_name' => $entries['59'] ?? '',
             'merchant_city' => $entries['60'] ?? '',
         ]);
@@ -330,7 +324,7 @@ class PaymentSettingController extends Controller
         ];
     }
 
-    public function updateMethods(Request $request): RedirectResponse
+    public function updateMethods(Request $request): JsonResponse
     {
         abort_unless($request->user()?->hasRole(['super_admin', 'admin']), 403);
 
@@ -341,10 +335,10 @@ class PaymentSettingController extends Controller
 
         AppSetting::set('payment_enabled_methods', array_values($validated['enabled_methods'] ?? []), 'json', 'payment');
 
-        return back()->with('success', 'Metode pembayaran berhasil diperbarui.');
+        return ApiResponse::message('Metode pembayaran berhasil diperbarui.');
     }
 
-    public function updateWebhook(Request $request): RedirectResponse
+    public function updateWebhook(Request $request): JsonResponse
     {
         abort_unless($request->user()?->hasRole(['super_admin', 'admin']), 403);
 
@@ -358,6 +352,6 @@ class PaymentSettingController extends Controller
         AppSetting::set('payment_redirect_failed_url', $validated['failed_redirect_url'] ?? '', 'string', 'payment');
         AppSetting::set('payment_redirect_pending_url', $validated['pending_redirect_url'] ?? '', 'string', 'payment');
 
-        return back()->with('success', 'Konfigurasi webhook berhasil disimpan.');
+        return ApiResponse::message('Konfigurasi webhook berhasil disimpan.');
     }
 }

@@ -3,17 +3,18 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\ApiResponse;
 use App\Models\ActivityLog;
 use App\Models\Invitation;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Services\ActivityLogger;
-use Inertia\Inertia;
-use Inertia\Response;
+use App\Support\FrontendUrl;
+use Illuminate\Http\JsonResponse;
 
 class UserController extends Controller
 {
-    public function index(): Response
+    public function index(): JsonResponse
     {
         $users = User::query()
             ->withTrashed()
@@ -36,7 +37,7 @@ class UserController extends Controller
             'transactions_count' => (int) $user->transactions_count,
         ])->values();
 
-        return Inertia::render('admin/users/index', [
+        return ApiResponse::ok([
             'users'   => $items,
             'summary' => [
                 'total'      => $items->count(),
@@ -48,7 +49,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function show(User $user): Response
+    public function show(User $user): JsonResponse
     {
         ActivityLogger::record('viewed', $user);
 
@@ -72,8 +73,8 @@ class UserController extends Controller
                 // are not served, and without a slug there is nothing to open.
                 'preview_url'           => $invitation->trashed() || ! $invitation->slug
                     ? null
-                    : url('/' . rawurlencode($invitation->slug)),
-                'detail_url'            => $invitation->trashed() ? null : route('admin.invitations.show', $invitation->id),
+                    : FrontendUrl::to('/' . rawurlencode($invitation->slug)),
+                'detail_url'            => $invitation->trashed() ? null : FrontendUrl::route('admin.invitations.show', $invitation->id),
                 'title'                 => $invitation->title,
                 'description'           => $invitation->description,
                 'status'                => $invitation->status,
@@ -137,7 +138,7 @@ class UserController extends Controller
             ->map(fn (ActivityLog $log) => $log->toAdminArray())
             ->values();
 
-        return Inertia::render('admin/users/show', [
+        return ApiResponse::ok([
             'user' => [
                 'id'                => $user->id,
                 'name'              => $user->name,

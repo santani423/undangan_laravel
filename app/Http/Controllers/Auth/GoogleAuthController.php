@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\Auth\GoogleAuthService;
 use App\Support\Auth\ResolvesPostAuthRedirect;
+use App\Support\FrontendUrl;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -58,14 +59,13 @@ class GoogleAuthController extends Controller
     public function callback(Request $request): RedirectResponse
     {
         $intent = $request->session()->pull('google_auth_intent', 'login');
-        $fallbackRoute = $intent === 'register' ? 'register' : 'login';
+        $fallbackPath = $intent === 'register' ? '/register' : '/login';
         $onboarding = $request->session()->pull('google_auth_onboarding', []);
 
         if ($request->filled('error')) {
             // User declined consent on Google's screen, or Google reported
             // an OAuth-level error (e.g. access_denied).
-            return redirect()->route($fallbackRoute)
-                ->with('error', 'Login dengan Google dibatalkan.');
+            return $this->backToFrontend($fallbackPath, 'Login dengan Google dibatalkan.');
         }
 
         try {
@@ -79,24 +79,38 @@ class GoogleAuthController extends Controller
             /** @var User $user */
             $user = Auth::user();
 
-            return $this->postAuthRedirect(
+            return redirect()->to($this->toFrontendUrl($this->postAuthRedirect(
+                $request,
                 $user,
                 $onboarding['theme_id'] ?? null,
                 $onboarding['package_id'] ?? null,
                 $onboarding['package_tier'] ?? null,
-            );
+            )));
         } catch (GoogleAuthException $e) {
-            return redirect()->route($fallbackRoute)->with('error', $e->getMessage());
+            return $this->backToFrontend($fallbackPath, $e->getMessage());
         } catch (InvalidStateException $e) {
             Log::warning('Google OAuth state mismatch on callback.', ['message' => $e->getMessage()]);
 
-            return redirect()->route($fallbackRoute)
-                ->with('error', 'Sesi login Google sudah kedaluwarsa. Silakan coba lagi.');
+            return $this->backToFrontend($fallbackPath, 'Sesi login Google sudah kedaluwarsa. Silakan coba lagi.');
         } catch (Throwable $e) {
             Log::error('Google OAuth callback failed.', ['exception' => $e]);
 
-            return redirect()->route($fallbackRoute)
-                ->with('error', 'Terjadi kesalahan saat menghubungkan ke Google. Silakan coba lagi nanti.');
+            return $this->backToFrontend($fallbackPath, 'Terjadi kesalahan saat menghubungkan ke Google. Silakan coba lagi nanti.');
         }
+    }
+
+    /**
+     * Back to the SPA login/register page with the error shown as a flash
+     * message (the SPA reads `flash_error` from the query string).
+     */
+    private function backToFrontend(string $path, string $error): RedirectResponse
+    {
+        return redirect()->to(FrontendUrl::to($path, ['flash_error' => $error]));
+    }
+
+    /** postAuthRedirect() gives a frontend path or an absolute URL. */
+    private function toFrontendUrl(string $pathOrUrl): string
+    {
+        return preg_match('#^https?://#i', $pathOrUrl) ? $pathOrUrl : FrontendUrl::to($pathOrUrl);
     }
 }

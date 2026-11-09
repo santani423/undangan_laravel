@@ -2,30 +2,35 @@
 
 use App\Models\User;
 
-test('guests are redirected to the login page', function () {
-    $this->get('/dashboard')->assertRedirect('/login');
-});
+/*
+| The generic /dashboard entry point is a frontend route now: the SPA sends
+| the user to `dashboardPath()` of the area reported by GET /api/v1/auth/me.
+*/
 
 test('customers are sent to the customer dashboard', function () {
-    $this->actingAs(User::factory()->create());
+    $user = User::factory()->create();
 
-    $this->get('/dashboard')->assertRedirect(route('customer.dashboard'));
+    expect($user->dashboardPath())->toBe('/customer');
+    $this->actingAs($user)->get($this->api('auth/me'))->assertJsonPath('data.user.area', 'customer');
 });
 
 test('admins are sent to the admin dashboard', function () {
-    $this->actingAs(User::factory()->admin()->create());
+    $user = User::factory()->admin()->create();
 
-    $this->get('/dashboard')->assertRedirect(route('admin.dashboard'));
+    expect($user->dashboardPath())->toBe('/admin');
+    $this->actingAs($user)->get($this->api('auth/me'))->assertJsonPath('data.user.area', 'admin');
 });
 
 test('super admins are sent to the admin dashboard', function () {
-    $this->actingAs(User::factory()->admin('super_admin')->create());
+    $user = User::factory()->admin('super_admin')->create();
 
-    $this->get('/dashboard')->assertRedirect(route('admin.dashboard'));
+    expect($user->dashboardPath())->toBe('/admin');
+    $this->actingAs($user)->get($this->api('auth/me'))->assertJsonPath('data.user.area', 'admin');
 });
 
-test('users without a role cannot use the dashboard entry point', function () {
-    $this->actingAs(User::factory()->withoutRole()->create());
+test('users without a role have no dashboard', function () {
+    $user = User::factory()->withoutRole()->create();
 
-    $this->get('/dashboard')->assertForbidden();
+    expect($user->dashboardPath())->toBeNull();
+    $this->actingAs($user)->get($this->api('auth/me'))->assertJsonPath('data.user.area', null);
 });

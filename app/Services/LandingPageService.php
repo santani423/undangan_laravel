@@ -9,6 +9,7 @@ use App\Models\Package;
 use App\Models\PackageFeature;
 use App\Models\Testimonial;
 use App\Models\Theme;
+use App\Support\PublicAsset;
 use App\Support\WhatsAppLink;
 use Illuminate\Support\Str;
 
@@ -178,7 +179,7 @@ class LandingPageService
                 'slug'            => $theme->slug,
                 'category'        => $theme->category,
                 'event_type'      => $theme->event_type,
-                'thumbnail'       => $theme->thumbnail_url,
+                'thumbnail'       => PublicAsset::url($theme->thumbnail_url),
                 'color_primary'   => $theme->color_primary,
                 'color_secondary' => $theme->color_secondary,
                 'is_premium'      => $theme->is_premium,

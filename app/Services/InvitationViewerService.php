@@ -1,0 +1,414 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Guest;
+use App\Models\Invitation;
+use App\Models\Theme;
+use App\Support\FrontendUrl;
+use App\Support\InvitationMusic;
+use App\Support\ShareImage;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
+
+/**
+ * Builds the data a public invitation is rendered from (the `invitation`
+ * prop every theme receives), plus its share/Open Graph metadata.
+ *
+ * Extracted unchanged from InvitationPublicController so the JSON viewer
+ * endpoint and the crawler renderer (SeoController) share one source.
+ */
+class InvitationViewerService
+{
+    /** Invitation by slug, falling back to invitation_code (same lookup order as before). */
+    public function findByCode(string $code): Invitation
+    {
+        return $this->withViewerRelations(Invitation::query())->where('slug', $code)->first()
+            ?? $this->withViewerRelations(Invitation::query())->where('invitation_code', $code)->firstOrFail();
+    }
+
+    /** The seeded demo invitation of a theme, or null. */
+    public function findSample(Theme $theme): ?Invitation
+    {
+        return $this->withViewerRelations(Invitation::sample()->where('theme_id', $theme->id))->first();
+    }
+
+    /**
+     * Props of the viewer page: ['invitation' => …, 'themeSlug' => …, 'visitor' => …].
+     *
+     * @param  string  $frontendPath  SPA path the invitation is opened at (for og:url).
+     */
+    public function viewerProps(Request $request, Invitation $invitation, ?string $visitor, string $frontendPath): array
+    {
+        $visitor = $visitor
+            ? urldecode($visitor)
+            : ($request->query('visitor') ?? $request->query('tamu') ?? $request->query('guests'));
+
+        abort_if($invitation->isExpired(), 410, 'Undangan ini sudah tidak aktif.');
+
+        $theme = $invitation->theme;
+        abort_if(! $theme, 404, 'Tema undangan tidak tersedia.');
+
+        $guest = $visitor
+            ? Guest::where('invitation_id', $invitation->id)
+                ->where('slug', $visitor)
+                ->first()
+            : null;
+        $data = $this->buildData($invitation, $theme->event_type, $guest ? $guest->name : ($visitor ?? ''));
+        if ($guest) {
+            if (! empty($guest->qr_code_data)) {
+                $data['guestQrData'] = $guest->qr_code_data;
+            }
+            $data['guestSlug'] = $guest->slug;
+        }
+
+        $share = ShareImage::for($this->resolveOgImage($data));
+
+        $data['ogImage']       = $share['og']['url'];
+        $data['ogImageType']   = $share['og']['type'];
+        $data['ogImageWidth']  = $share['og']['width'];
+        $data['ogImageHeight'] = $share['og']['height'];
+        $data['favicon']       = $share['icon'];
+        $data['ogDescription'] = $this->resolveOgDescription($data);
+        // The public URL the guest opened (frontend), with its query string.
+        $query = $request->getQueryString();
+        $data['ogUrl']         = FrontendUrl::to($frontendPath) . ($query ? '?' . $query : '');
+        $data['isSample']      = (bool) $invitation->is_sample;
+
+        return [
+            'invitation' => $data,
+            'themeSlug'  => $theme->slug,
+            'visitor'    => $visitor,
+        ];
+    }
+
+    private function withViewerRelations(Builder $query): Builder
+    {
+        return $query->with([
+            'theme',
+            'settings',
+            'events'         => fn($q) => $q->orderBy('display_order')->orderBy('event_date'),
+            'contents',
+            'galleryPhotos'  => fn($q) => $q->whereIn('category', ['general', 'love_story'])->orderBy('category')->orderBy('display_order'),
+            'stories'        => fn($q) => $q->where('story_type', 'love_story')->where('is_published', true)->orderBy('display_order'),
+            'digitalWallets' => fn($q) => $q->wherePivot('is_displayed', true)->orderByPivot('display_order'),
+        ]);
+    }
+
+    /**
+     * Pick the best available photo to use as the social share (Open Graph) image
+     * and favicon, since crawlers like WhatsApp's only read the initial server HTML.
+     * ShareImage turns it into formats those crawlers and browsers actually accept.
+     */
+    private function resolveOgImage(array $data): ?string
+    {
+        $candidates = [
+            $data['celebrantPhoto'] ?? null,
+            $data['couplePhoto']    ?? null,
+            $data['groomPhoto']     ?? null,
+            $data['bridePhoto']     ?? null,
+            $data['childPhoto']     ?? null,
+            $data['babyPhoto']      ?? null,
+            $data['parentsPhoto']   ?? null,
+            $data['hostPhoto']      ?? null,
+        ];
+
+        foreach ($candidates as $candidate) {
+            if (! empty($candidate)) {
+                return $candidate;
+            }
+        }
+
+        if (! empty($data['gallery'][0]['url'])) {
+            return $data['gallery'][0]['url'];
+        }
+
+        return null;
+    }
+
+    private function resolveOgDescription(array $data): string
+    {
+        if (! empty($data['greeting']['message'])) {
+            return \Illuminate\Support\Str::limit(strip_tags($data['greeting']['message']), 160);
+        }
+
+        if (! empty($data['mainDateFormatted'])) {
+            return "Anda diundang pada {$data['mainDateFormatted']}. Buka undangan ini untuk info lengkap acara.";
+        }
+
+        return 'Anda diundang! Silakan buka undangan digital ini untuk info lengkap acara.';
+    }
+
+    private function resolveContentUrl(Invitation $invitation, string $key): string
+    {
+        $record = $invitation->contents->firstWhere('content_key', $key);
+        if (! $record) return '';
+        if ($record->content_type === 'path') {
+            return asset('storage/' . $record->content_value);
+        }
+        return (string) $record->content_value;
+    }
+
+    private function buildData(Invitation $invitation, string $eventType, string $guestName = ''): array
+    {
+        
+        $contents = $invitation->contents->pluck('content_value', 'content_key');
+        $events   = $invitation->events;
+
+        $countdownEvent    = $events->firstWhere('is_countdown', true) ?? $events->first();
+        $firstEvent        = $events->first();
+        $countdownDate     = $countdownEvent && $countdownEvent->event_date ? Carbon::parse($countdownEvent->event_date) : null;
+        $mainDate          = $firstEvent && $firstEvent->event_date ? Carbon::parse($firstEvent->event_date) : null;
+        $mainDateFormatted = $countdownDate ? $this->formatDateId($countdownDate) : ($mainDate ? $this->formatDateId($mainDate) : '');
+        $countdownDatetime = $countdownDate
+            ? $countdownDate->format('Y-m-d') . 'T' . ($countdownEvent->event_time ?? '08:00:00')
+            : '';
+
+        $eventsJs = $events->map(fn($e) => [
+            'name'          => $e->event_name ?? '',
+            'date'          => $e->event_date ? Carbon::parse($e->event_date)->format('Y-m-d') : '',
+            'dateFormatted' => $e->event_date ? $this->formatDateId(Carbon::parse($e->event_date)) : '',
+            'time'          => $e->event_time ?? '',
+            'timeEnd'       => $e->time_end ?? '',
+            'locationName'  => $e->location_name ?? '',
+            'location'      => $e->location ?? '',
+            'locationUrl'   => $e->location_url ?? '',
+            'mapsEmbed'     => $e->maps_embed ?? '',
+            'mapsLat'       => $e->maps_lat ?? '',
+            'mapsLng'       => $e->maps_lng ?? '',
+            'isCountdown'   => (bool) $e->is_countdown,
+        ])->values()->all();
+
+        $wallets = $invitation->digitalWallets->map(fn($w) => [
+            'provider'      => $w->provider ?? '',
+            'label'         => $w->provider_label ?? '',
+            'accountNumber' => $w->account_number ?? '',
+            'accountName'   => $w->account_name ?? '',
+            'logoUrl'       => $w->logo_path    ? asset('storage/' . $w->logo_path)    : '',
+            'qrisQrUrl'     => $w->qris_qr_path ? asset('storage/' . $w->qris_qr_path) : null,
+        ])->all();
+
+        $bankAccounts = json_decode($contents->get('bank_accounts', '[]'), true) ?? [];
+
+        // Gallery — from GalleryPhoto model (general category)
+        $gallery = $invitation->galleryPhotos->where('category', 'general')->map(fn($p) => [
+            'url'      => asset('storage/' . $p->file_path),
+            'category' => $p->category ?? 'general',
+            'label'    => $p->title ?? '',
+        ])->values()->all();
+
+        $storyPhotos = $invitation->galleryPhotos
+            ->where('category', 'love_story')
+            ->keyBy('display_order');
+
+        $loveStory = $invitation->stories->map(function ($story) use ($storyPhotos) {
+            $photo = $storyPhotos->get($story->display_order);
+
+            return [
+                'title' => $story->title,
+                'desc'  => $story->content,
+                'date'  => $story->story_period ?: ($story->story_date?->format('Y') ?? ''),
+                'photo' => $photo ? asset('storage/' . $photo->file_path) : '',
+            ];
+        })->values()->all();
+
+        // Settings from invitation_settings table
+        $settings      = $invitation->settings;
+        $featuresRaw   = $settings?->features ?? [];
+        $features      = ! empty($featuresRaw) ? $featuresRaw : null;
+
+        // Music — custom track from invitation_settings, else the event type's default (if any)
+        $music = InvitationMusic::resolve($settings, $eventType);
+
+        // Greeting / cover page settings
+        $greeting = [
+            'title'       => $settings?->greeting_title       ?? 'Kepada Yth.',
+            'message'     => $settings?->greeting_message      ?? null,
+            'guestLabel'  => $settings?->greeting_guest_label  ?? 'Tamu Undangan',
+            'buttonText'  => $settings?->greeting_button_text  ?? 'Buka Undangan',
+        ];
+
+        // Individual feature toggles
+        $featureToggles = [
+            'rsvp'             => (bool) ($settings?->feature_rsvp             ?? true),
+            'giftWishlist'     => (bool) ($settings?->feature_gift_wishlist     ?? false),
+            'genderPoll'       => (bool) ($settings?->feature_gender_poll       ?? false),
+            'liveStream'       => (bool) ($settings?->feature_live_stream       ?? false),
+            'interactiveGames' => (bool) ($settings?->feature_interactive_games ?? false),
+            'dressCode'        => (bool) ($settings?->feature_dress_code        ?? false),
+            'amplopDigital'    => (bool) ($settings?->feature_amplop_digital    ?? false),
+            'instagramFilter'  => (bool) ($settings?->feature_instagram_filter  ?? false),
+            'analytics'        => (bool) ($settings?->feature_analytics         ?? false),
+            'pageBuilder'      => (bool) ($settings?->feature_page_builder      ?? false),
+            'customDomain'     => (bool) ($settings?->feature_custom_domain     ?? false),
+        ];
+
+        $base = [
+            'type'              => $eventType,
+            'code'              => $invitation->invitation_code ?: $invitation->slug,
+            'slug'              => $invitation->slug,
+            'title'             => $invitation->title ?? '',
+            'guestName'         => $guestName,
+            'countdownDate'     => $countdownDatetime,
+            'countdownLabel'    => $settings?->countdown_label ?? 'Hitung Mundur',
+            'showGuestCount'    => (bool) ($settings?->show_guest_count ?? true),
+            'mainDateFormatted' => $mainDateFormatted,
+            'events'            => $eventsJs,
+            'gallery'           => $gallery,
+            'coupleVideoUrl'     => (string) $contents->get('couple_video_url', ''),
+            'bankAccounts'      => $bankAccounts,
+            'digitalWallets'    => $wallets,
+            'allowComments'     => (bool) $invitation->allow_guest_comments,
+            'greeting'          => $greeting,
+            'featureToggles'    => $featureToggles,
+            // Absolute API URLs: every theme posts to these with a plain fetch().
+            'rsvpEndpoint'      => route('invitations.rsvp', $invitation->invitation_code ?: $invitation->slug),
+            'wishesEndpoint'    => route('invitations.wishes', $invitation->invitation_code ?: $invitation->slug),
+        ];
+
+        if ($features !== null) {
+            $base['features'] = $features;
+        }
+        if ($music !== null) {
+            $base['music'] = $music;
+        }
+
+        if ($eventType === 'wedding') {
+            $groomNick = $contents->get('groom_nickname', '');
+            $brideNick = $contents->get('bride_nickname', '');
+            // The editor saves groom_name/bride_name (EventTypeFieldSeeder);
+            // *_full_name is kept as a fallback for older rows.
+            $groomFull = $contents->get('groom_name') ?: $contents->get('groom_full_name', 'Mempelai Pria');
+            $brideFull = $contents->get('bride_name') ?: $contents->get('bride_full_name', 'Mempelai Wanita');
+
+            return array_merge($base, [
+                'pageTitle'        => $invitation->title ?: "The Wedding of {$groomFull} & {$brideFull}",
+                'groomFullName'    => $groomFull,
+                'groomNickname'    => $groomNick,
+                'groomInitials'    => $contents->get('groom_initials', strtoupper(substr($groomNick ?: $groomFull, 0, 1))),
+                'groomChildOrder'  => $contents->get('groom_child_order', ''),
+                'groomFather'      => $contents->get('groom_father', ''),
+                'groomMother'      => $contents->get('groom_mother', ''),
+                'groomBio'         => $contents->get('groom_bio', ''),
+                'groomPhoto'       => $this->resolveContentUrl($invitation, 'groom_photo'),
+                'groomInstagram'   => $contents->get('groom_instagram', ''),
+                'couplePhoto'      => $this->resolveContentUrl($invitation, 'couple_photo'),
+                'brideFullName'    => $brideFull,
+                'brideNickname'    => $brideNick,
+                'brideInitials'    => $contents->get('bride_initials', strtoupper(substr($brideNick ?: $brideFull, 0, 1))),
+                'brideChildOrder'  => $contents->get('bride_child_order', ''),
+                'brideFather'      => $contents->get('bride_father', ''),
+                'brideMother'      => $contents->get('bride_mother', ''),
+                'brideBio'         => $contents->get('bride_bio', ''),
+                'bridePhoto'       => $this->resolveContentUrl($invitation, 'bride_photo'),
+                'brideInstagram'   => $contents->get('bride_instagram', ''),
+                'loveStory'        => $loveStory,
+                'dressCodes'       => json_decode($contents->get('dress_code_colors', '[]'), true) ?? [],
+                'rsvpDeadline'     => $contents->get('rsvp_deadline', ''),
+                'openingQuote'     => $contents->get('opening_quote', ''),
+            ]);
+        }
+
+        if ($eventType === 'birthday') {
+            $celebrantName = $contents->get('child_name', '');
+            $celebrantNick = $contents->get('child_nickname', $celebrantName);
+            $fatherName    = $contents->get('father_name', '');
+            $motherName    = $contents->get('mother_name', '');
+
+            return array_merge($base, [
+                'pageTitle'         => $invitation->title ?: "Birthday Invitation - {$celebrantName}",
+                'celebrantName'     => $celebrantName,
+                'celebrantNickname' => $celebrantNick,
+                'celebrantAge'      => $contents->get('child_age', ''),
+                'celebrantBio'      => $contents->get('opening_message', ''),
+                'celebrantPhoto'    => $this->resolveContentUrl($invitation, 'child_photo'),
+                'parentName'        => trim(implode(' & ', array_filter([$fatherName, $motherName]))),
+                'lifeJourney'       => $loveStory,
+            ]);
+        }
+
+        if ($eventType === 'khitanan') {
+            $childName = $contents->get('child_name', '');
+
+            return array_merge($base, [
+                'pageTitle'      => $invitation->title ?: "Undangan Khitanan - {$childName}",
+                'childName'      => $childName,
+                'childPhoto'     => $this->resolveContentUrl($invitation, 'child_photo'),
+                'childAge'       => $contents->get('child_age', ''),
+                'fatherName'     => $contents->get('father_name', ''),
+                'motherName'     => $contents->get('mother_name', ''),
+                'openingMessage' => $contents->get('opening_message', ''),
+            ]);
+        }
+
+        if ($eventType === 'aqiqah') {
+            $babyName = $contents->get('baby_name', '');
+            $birthDate = $contents->get('birth_date', '');
+
+            return array_merge($base, [
+                'pageTitle'          => $invitation->title ?: "Undangan Aqiqah - {$babyName}",
+                'babyName'           => $babyName,
+                'babyPhoto'          => $this->resolveContentUrl($invitation, 'baby_photo'),
+                'babyGender'         => $contents->get('baby_gender', ''),
+                'birthDateFormatted' => $birthDate ? $this->formatDateId(Carbon::parse($birthDate)) : '',
+                'fatherName'         => $contents->get('father_name', ''),
+                'motherName'         => $contents->get('mother_name', ''),
+                'openingMessage'     => $contents->get('opening_message', ''),
+            ]);
+        }
+
+        if ($eventType === 'gender_reveal') {
+            $dueDate    = $contents->get('due_date', '');
+            $revealDate = $contents->get('reveal_scheduled_at', '');
+
+            return array_merge($base, [
+                'pageTitle'           => $invitation->title ?: 'Undangan Gender Reveal',
+                'motherName'          => $contents->get('mother_name', ''),
+                'fatherName'          => $contents->get('father_name', ''),
+                'parentsPhoto'        => $this->resolveContentUrl($invitation, 'parents_photo'),
+                'dueDateFormatted'    => $dueDate ? $this->formatDateId(Carbon::parse($dueDate)) : '',
+                'teamAName'           => $contents->get('team_a_name', ''),
+                'teamBName'           => $contents->get('team_b_name', ''),
+                'revealDateFormatted' => $revealDate ? $this->formatDateId(Carbon::parse($revealDate)) : '',
+                'openingMessage'      => $contents->get('opening_message', ''),
+            ]);
+        }
+
+        if ($eventType === 'syukuran') {
+            $hostName = $contents->get('host_name', '');
+
+            return array_merge($base, [
+                'pageTitle'      => $invitation->title ?: "Undangan Syukuran - {$hostName}",
+                'hostName'       => $hostName,
+                'hostPhoto'      => $this->resolveContentUrl($invitation, 'host_photo'),
+                'occasion'       => $contents->get('occasion', ''),
+                'openingMessage' => $contents->get('opening_message', ''),
+            ]);
+        }
+
+        return array_merge($base, ['pageTitle' => $invitation->title ?? '']);
+    }
+
+    private function formatDateId(Carbon $date): string
+    {
+        $days   = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        $months = [
+            '',
+            'Januari',
+            'Februari',
+            'Maret',
+            'April',
+            'Mei',
+            'Juni',
+            'Juli',
+            'Agustus',
+            'September',
+            'Oktober',
+            'November',
+            'Desember'
+        ];
+
+        return $days[$date->dayOfWeek] . ', ' . $date->day . ' ' . $months[$date->month] . ' ' . $date->year;
+    }
+}

@@ -1,16 +1,25 @@
 <?php
 
 use App\Models\User;
+use App\Support\FrontendUrl;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 
-test('email verification screen can be rendered', function () {
+test('a new verification link can be requested', function () {
     $user = User::factory()->unverified()->create();
 
-    $response = $this->actingAs($user)->get('/verify-email');
+    $this->actingAs($user)->post($this->api('auth/email/verification-notification'))
+        ->assertOk()
+        ->assertJsonPath('status', 'verification-link-sent');
+});
 
-    $response->assertStatus(200);
+test('a verified user is sent to the dashboard instead', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->post($this->api('auth/email/verification-notification'))
+        ->assertOk()
+        ->assertJsonPath('redirect', '/customer');
 });
 
 test('email can be verified', function () {
@@ -24,11 +33,12 @@ test('email can be verified', function () {
         ['id' => $user->id, 'hash' => sha1($user->email)]
     );
 
-    $response = $this->actingAs($user)->get($verificationUrl);
+    // The e-mailed link is opened by the browser (web route), then lands on the SPA.
+    $response = $this->actingAs($user)->withHeaders(['Accept' => 'text/html'])->get($verificationUrl);
 
     Event::assertDispatched(Verified::class);
     expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
-    $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
+    $response->assertRedirect(FrontendUrl::to('/dashboard').'?verified=1');
 });
 
 test('email is not verified with invalid hash', function () {

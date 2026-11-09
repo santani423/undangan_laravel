@@ -102,7 +102,8 @@ class User extends Authenticatable
     }
 
     /**
-     * Route name of the dashboard matching the user's role.
+     * Route name of the dashboard matching the user's role (the SPA route names,
+     * see frontend/src/routes/manifest.ts).
      */
     public function dashboardRoute(): ?string
     {
@@ -111,6 +112,31 @@ class User extends Authenticatable
             'customer' => 'customer.dashboard',
             default => null,
         };
+    }
+
+    /**
+     * Frontend path of the dashboard matching the user's role.
+     */
+    public function dashboardPath(): ?string
+    {
+        return match ($this->area()) {
+            'admin' => '/admin',
+            'customer' => '/customer',
+            default => null,
+        };
+    }
+
+    /**
+     * The authenticated user as the SPA sees it (GET /api/v1/auth/me) — the
+     * former Inertia shared prop `auth.user`, plus the role area and names.
+     */
+    public function toAuthArray(): array
+    {
+        return array_merge($this->toArray(), [
+            'avatar' => $this->displayAvatar(),
+            'area'   => $this->area(),
+            'roles'  => $this->getRoleNames()->values()->all(),
+        ]);
     }
 
     // Scopes

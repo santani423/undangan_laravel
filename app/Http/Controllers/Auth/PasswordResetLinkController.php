@@ -3,30 +3,20 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\RedirectResponse;
+use App\Http\Responses\ApiResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class PasswordResetLinkController extends Controller
 {
     /**
-     * Show the password reset link request page.
-     */
-    public function create(Request $request): Response
-    {
-        return Inertia::render('auth/forgot-password', [
-            'status' => $request->session()->get('status'),
-        ]);
-    }
-
-    /**
-     * Handle an incoming password reset link request.
+     * POST /api/v1/auth/forgot-password — handle an incoming password reset link request.
+     * The e-mailed link points at the SPA (/reset-password/{token}), see AppServiceProvider.
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): JsonResponse
     {
         $request->validate([
             'email' => 'required|email',
@@ -36,6 +26,8 @@ class PasswordResetLinkController extends Controller
             $request->only('email')
         );
 
-        return back()->with('status', __('A reset link will be sent if the account exists.'));
+        $status = __('A reset link will be sent if the account exists.');
+
+        return ApiResponse::message($status, extra: ['status' => $status]);
     }
 }

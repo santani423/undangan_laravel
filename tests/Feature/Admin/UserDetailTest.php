@@ -5,6 +5,7 @@ use App\Models\EventType;
 use App\Models\Invitation;
 use App\Models\Package;
 use App\Models\User;
+use App\Support\FrontendUrl;
 use Spatie\Permission\Models\Role;
 
 function userDetailAdmin(): User
@@ -39,10 +40,9 @@ it('builds the preview url from the slug when the invitation has no code', funct
     $this->actingAs(userDetailAdmin())
         ->get(route('admin.users.show', $customer))
         ->assertOk()
-        ->assertInertia(fn ($page) => $page
-            ->component('admin/users/show')
+        ->assertData(fn ($page) => $page
             ->where('invitations.0.invitation_code', null)
-            ->where('invitations.0.preview_url', url('/giavanya-elisabet-kau-suni')));
+            ->where('invitations.0.preview_url', FrontendUrl::to('/giavanya-elisabet-kau-suni')));
 });
 
 it('builds the preview url from the slug even when the invitation has a code', function () {
@@ -51,9 +51,9 @@ it('builds the preview url from the slug even when the invitation has a code', f
 
     $this->actingAs(userDetailAdmin())
         ->get(route('admin.users.show', $customer))
-        ->assertInertia(fn ($page) => $page
-            ->where('invitations.0.preview_url', url('/giavanya-elisabet-kau-suni'))
-            ->where('invitations.0.detail_url', route('admin.invitations.show', $invitation->id)));
+        ->assertData(fn ($page) => $page
+            ->where('invitations.0.preview_url', FrontendUrl::to('/giavanya-elisabet-kau-suni'))
+            ->where('invitations.0.detail_url', "/admin/invitations/{$invitation->id}"));
 });
 
 it('has no preview url for a soft-deleted invitation', function () {
@@ -62,13 +62,13 @@ it('has no preview url for a soft-deleted invitation', function () {
 
     $this->actingAs(userDetailAdmin())
         ->get(route('admin.users.show', $customer))
-        ->assertInertia(fn ($page) => $page->where('invitations.0.preview_url', null));
+        ->assertData(fn ($page) => $page->where('invitations.0.preview_url', null));
 });
 
 it('records login with the authenticated user as actor', function () {
     $user = User::factory()->create();
 
-    $this->post(route('login'), ['email' => $user->email, 'password' => 'password']);
+    $this->post($this->api('auth/login'), ['email' => $user->email, 'password' => 'password']);
 
     $log = ActivityLog::where('action', 'login')->sole();
 
@@ -108,7 +108,7 @@ it('logs opening the user detail and shows the logs on both admin pages', functi
 
     // Opening the admin's own page is itself logged, so it comes first.
     $this->get(route('admin.users.show', $admin))
-        ->assertInertia(fn ($page) => $page
+        ->assertData(fn ($page) => $page
             ->where('activityLogs.0.description', "Membuka detail Pengguna #{$admin->id}")
             ->where('activityLogs.1.action', 'viewed')
             ->where('activityLogs.1.description', "Membuka detail Pengguna #{$customer->id}")
@@ -116,8 +116,7 @@ it('logs opening the user detail and shows the logs on both admin pages', functi
 
     $this->get(route('admin.reports.activity-logs', ['action' => 'viewed']))
         ->assertOk()
-        ->assertInertia(fn ($page) => $page
-            ->component('admin/reports/activity-logs')
+        ->assertData(fn ($page) => $page
             ->where('logs.data.0.user.id', $admin->id)
             ->where('logs.data.0.action', 'viewed'));
 });

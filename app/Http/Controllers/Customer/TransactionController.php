@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\ApiResponse;
 use App\Models\Transaction;
-use Inertia\Inertia;
-use Inertia\Response;
+use Illuminate\Http\JsonResponse;
 
 class TransactionController extends Controller
 {
-    public function index(): Response
+    public function index(): JsonResponse
     {
         $transactions = Transaction::with(['invitation', 'package'])
             ->withCount('payments')
@@ -35,12 +35,12 @@ class TransactionController extends Controller
                 'payment_url'  => $this->getPendingPaymentUrl($t),
             ]);
 
-        return Inertia::render('customer/transactions/index', [
+        return ApiResponse::ok([
             'transactions' => $transactions,
         ]);
     }
 
-    public function show(Transaction $transaction): Response
+    public function show(Transaction $transaction): JsonResponse
     {
         abort_if($transaction->user_id !== auth()->id(), 403);
 
@@ -61,7 +61,7 @@ class TransactionController extends Controller
             'created_at'           => $p->created_at->toDateTimeString(),
         ])->values()->toArray();
 
-        return Inertia::render('customer/transactions/show', [
+        return ApiResponse::ok([
             'transaction' => [
                 'id'               => $transaction->id,
                 'invoice_number'   => $transaction->invoice_number,

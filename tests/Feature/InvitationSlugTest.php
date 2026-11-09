@@ -69,9 +69,9 @@ it('checks slug availability globally and respects the excluded invitation id', 
     ]));
 
     $response->assertOk()
-        ->assertJsonPath('slug', 'muhammad-arsya-putra')
-        ->assertJsonPath('available', false)
-        ->assertJsonPath('suggestions.0', 'muhammad-arsya-putra-01');
+        ->assertJsonPath('data.slug', 'muhammad-arsya-putra')
+        ->assertJsonPath('data.available', false)
+        ->assertJsonPath('data.suggestions.0', 'muhammad-arsya-putra-01');
 
     $response = $this->getJson(route('customer.invitations.check-slug', [
         'slug' => 'Muhammad Arsya Putra',
@@ -79,9 +79,9 @@ it('checks slug availability globally and respects the excluded invitation id', 
     ]));
 
     $response->assertOk()
-        ->assertJsonPath('slug', 'muhammad-arsya-putra')
-        ->assertJsonPath('available', true)
-        ->assertJsonPath('suggestions', []);
+        ->assertJsonPath('data.slug', 'muhammad-arsya-putra')
+        ->assertJsonPath('data.available', true)
+        ->assertJsonPath('data.suggestions', []);
 });
 
 it('returns available slug recommendations that skip occupied slugs', function () {
@@ -108,9 +108,9 @@ it('returns available slug recommendations that skip occupied slugs', function (
     ]));
 
     $response->assertOk()
-        ->assertJsonPath('slug', 'arsya-putra');
+        ->assertJsonPath('data.slug', 'arsya-putra');
 
-    $suggestions = $response->json('suggestions');
+    $suggestions = $response->json('data.suggestions');
 
     expect($suggestions)->toHaveCount(5)
         ->and($suggestions)->toContain(
@@ -140,8 +140,8 @@ it('rejects duplicate slugs when storing a new invitation', function () {
         ],
     ]);
 
-    $response->assertRedirect();
-    $response->assertSessionHasErrors('slug');
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors('slug');
     $this->assertCount(1, Invitation::withTrashed()->get());
 });
 
@@ -163,14 +163,14 @@ it('updates the invitation slug from settings and serves the public page and api
         ],
     ]);
 
-    $response->assertRedirect(route('customer.invitations.settings', $newSlug));
+    $response->assertOk()->assertJsonPath('redirect', "/customer/invitations/{$newSlug}/settings");
 
     $this->assertDatabaseHas('invitations', [
         'id' => $invitation->id,
         'slug' => $newSlug,
     ]);
 
-    $this->get("/{$newSlug}")->assertOk();
+    $this->get($this->api("invitations/{$newSlug}"))->assertOk();
 
     $this->postJson(route('inv.rsvp', ['code' => $newSlug]), [
         'name' => 'Tamu Uji',

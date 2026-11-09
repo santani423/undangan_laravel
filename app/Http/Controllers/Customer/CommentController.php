@@ -3,16 +3,15 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\ApiResponse;
 use App\Models\Comment;
 use App\Models\Invitation;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class CommentController extends Controller
 {
-    public function index(Request $request, Invitation $invitation): Response
+    public function index(Request $request, Invitation $invitation): JsonResponse
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
 
@@ -55,7 +54,7 @@ class CommentController extends Controller
             'flagged'  => $invitation->comments()->where('is_flagged', true)->count(),
         ];
 
-        return Inertia::render('customer/invitations/comments/index', [
+        return ApiResponse::ok([
             'invitation' => [
                 'id'    => $invitation->id,
                 'slug'  => $invitation->slug,
@@ -77,7 +76,7 @@ class CommentController extends Controller
         ]);
     }
 
-    public function approve(Invitation $invitation, Comment $comment): RedirectResponse
+    public function approve(Invitation $invitation, Comment $comment): JsonResponse
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
         abort_if($comment->invitation_id !== $invitation->id, 404);
@@ -88,10 +87,10 @@ class CommentController extends Controller
             'approved_by_user_id' => auth()->id(),
         ]);
 
-        return back()->with('success', 'Komentar berhasil ditampilkan.');
+        return ApiResponse::message('Komentar berhasil ditampilkan.');
     }
 
-    public function reject(Invitation $invitation, Comment $comment): RedirectResponse
+    public function reject(Invitation $invitation, Comment $comment): JsonResponse
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
         abort_if($comment->invitation_id !== $invitation->id, 404);
@@ -101,10 +100,10 @@ class CommentController extends Controller
             'approved_at' => null,
         ]);
 
-        return back()->with('success', 'Komentar berhasil disembunyikan.');
+        return ApiResponse::message('Komentar berhasil disembunyikan.');
     }
 
-    public function flag(Request $request, Invitation $invitation, Comment $comment): RedirectResponse
+    public function flag(Request $request, Invitation $invitation, Comment $comment): JsonResponse
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
         abort_if($comment->invitation_id !== $invitation->id, 404);
@@ -116,20 +115,20 @@ class CommentController extends Controller
             'flag_reason' => !$comment->is_flagged ? $request->reason : null,
         ]);
 
-        return back()->with('success', $comment->is_flagged ? 'Komentar ditandai.' : 'Tanda komentar dihapus.');
+        return ApiResponse::message($comment->is_flagged ? 'Komentar ditandai.' : 'Tanda komentar dihapus.');
     }
 
-    public function destroy(Invitation $invitation, Comment $comment): RedirectResponse
+    public function destroy(Invitation $invitation, Comment $comment): JsonResponse
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
         abort_if($comment->invitation_id !== $invitation->id, 404);
 
         $comment->delete();
 
-        return back()->with('success', 'Komentar berhasil dihapus.');
+        return ApiResponse::message('Komentar berhasil dihapus.');
     }
 
-    public function bulkAction(Request $request, Invitation $invitation): RedirectResponse
+    public function bulkAction(Request $request, Invitation $invitation): JsonResponse
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
 
@@ -147,6 +146,6 @@ class CommentController extends Controller
             'delete'  => $comments->delete(),
         };
 
-        return back()->with('success', 'Aksi berhasil diterapkan pada ' . count($request->ids) . ' komentar.');
+        return ApiResponse::message('Aksi berhasil diterapkan pada ' . count($request->ids) . ' komentar.');
     }
 }

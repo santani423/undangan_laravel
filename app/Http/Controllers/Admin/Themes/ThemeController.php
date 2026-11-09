@@ -3,18 +3,17 @@
 namespace App\Http\Controllers\Admin\Themes;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\ApiResponse;
 use App\Models\Theme;
+use App\Support\PublicAsset;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class ThemeController extends Controller
 {
-    public function index(): Response
+    public function index(): JsonResponse
     {
         // Grouped per invitation type, each group in its admin-defined order.
         $themes = Theme::orderBy('event_type')->ordered()->withExists('sampleInvitation')->get()->map(function (Theme $t) {
@@ -25,7 +24,7 @@ class ThemeController extends Controller
                 'category'        => $t->category,
                 'event_type'      => $t->event_type,
                 'sort_order'      => $t->sort_order,
-                'thumbnail'       => $t->thumbnail_url ?? '',
+                'thumbnail'       => PublicAsset::url($t->thumbnail_url) ?? '',
                 'color_primary'   => $t->color_primary,
                 'color_secondary' => $t->color_secondary,
                 'is_active'       => $t->is_active,
@@ -39,16 +38,12 @@ class ThemeController extends Controller
             ];
         });
 
-        return Inertia::render('admin/themes/index', [
+        return ApiResponse::ok([
             'themes' => $themes,
-            'flash'  => [
-                'success' => session('success'),
-                'error'   => session('error'),
-            ],
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
             'name'            => 'required|string|max:255|unique:themes,name',
@@ -72,12 +67,12 @@ class ThemeController extends Controller
         $data['created_by_user_id'] = auth()->id();
 
         // sort_order is appended to the end of this invitation type by Theme::booted().
-        DB::transaction(fn () => Theme::create($data));
+        $theme = DB::transaction(fn () => Theme::create($data));
 
-        return back()->with('success', "Template \"{$data['name']}\" berhasil ditambahkan.");
+        return ApiResponse::created(['id' => $theme->id], "Template \"{$data['name']}\" berhasil ditambahkan.");
     }
 
-    public function update(Request $request, Theme $theme): RedirectResponse
+    public function update(Request $request, Theme $theme): JsonResponse
     {
         $data = $request->validate([
             'name'            => "required|string|max:255|unique:themes,name,{$theme->id}",
@@ -100,12 +95,11 @@ class ThemeController extends Controller
         // Changing event_type moves it to the end of the new type (see Theme::booted()).
         DB::transaction(fn () => $theme->update($data));
 
-        return back()->with('success', "Template \"{$theme->name}\" berhasil diperbarui.");
+        return ApiResponse::message("Template \"{$theme->name}\" berhasil diperbarui.");
     }
 
     /**
-     * Persist a drag-and-drop order for one invitation type. Called via fetch
-     * from the admin page, so it answers JSON instead of redirecting.
+     * Persist a drag-and-drop order for one invitation type.
      */
     public function reorder(Request $request): JsonResponse
     {
@@ -117,26 +111,25 @@ class ThemeController extends Controller
 
         Theme::reorder($data['event_type'], $data['ids']);
 
-        return response()->json([
-            'message' => 'Urutan template berhasil disimpan.',
-            'order'   => Theme::where('event_type', $data['event_type'])->ordered()->pluck('sort_order', 'id'),
-        ]);
+        return ApiResponse::ok([
+            'order' => Theme::where('event_type', $data['event_type'])->ordered()->pluck('sort_order', 'id'),
+        ], 'Urutan template berhasil disimpan.');
     }
 
-    public function toggle(Theme $theme): RedirectResponse
+    public function toggle(Theme $theme): JsonResponse
     {
         $theme->update(['is_active' => ! $theme->is_active]);
         $label = $theme->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
-        return back()->with('success', "Template \"{$theme->name}\" berhasil {$label}.");
+        return ApiResponse::message("Template \"{$theme->name}\" berhasil {$label}.");
     }
 
-    public function destroy(Theme $theme): RedirectResponse
+    public function destroy(Theme $theme): JsonResponse
     {
         $name = $theme->name;
         // Remaining themes of the type are resequenced by Theme::booted().
         DB::transaction(fn () => $theme->delete());
 
-        return back()->with('success', "Template \"{$name}\" berhasil dihapus.");
+        return ApiResponse::message("Template \"{$name}\" berhasil dihapus.");
     }
 }

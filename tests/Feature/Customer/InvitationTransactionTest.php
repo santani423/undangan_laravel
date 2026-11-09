@@ -62,7 +62,7 @@ it('creates a pending transaction when a paid invitation is stored', function ()
             'gallery_items' => [],
             'love_story' => [],
         ])
-        ->assertRedirect(route('customer.invitations.index'));
+        ->assertOk()->assertJsonPath('redirect', '/customer/invitations');
 
     expect(Invitation::count())->toBe(1);
     expect(Transaction::count())->toBe(1);

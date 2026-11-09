@@ -2,53 +2,55 @@
 
 use App\Models\User;
 
-test('guests are redirected to login from both areas', function () {
-    $this->get('/admin')->assertRedirect('/login');
-    $this->get('/customer')->assertRedirect('/login');
+test('guests are rejected from both areas', function () {
+    $this->get($this->api('admin/users'))->assertUnauthorized()->assertJsonPath('success', false);
+    $this->get($this->api('customer'))->assertUnauthorized();
 });
 
 test('a customer can open the customer area', function () {
     $this->actingAs(User::factory()->create())
-        ->get('/customer')
+        ->get($this->api('customer'))
         ->assertOk();
 });
 
-test('a customer is redirected to the customer dashboard from admin pages', function () {
+test('a customer is sent to the customer dashboard from admin pages', function () {
     $this->actingAs(User::factory()->create());
 
-    $this->get('/admin')->assertRedirect(route('customer.dashboard'));
-    $this->get('/admin/users')->assertRedirect(route('customer.dashboard'));
-    $this->get('/settings/app')->assertRedirect(route('customer.dashboard'));
-    $this->get('/settings/packages')->assertRedirect(route('customer.dashboard'));
+    foreach (['admin/users', 'admin/themes', 'settings/app', 'settings/packages'] as $path) {
+        $this->get($this->api($path))
+            ->assertForbidden()
+            ->assertJsonPath('redirect', '/customer');
+    }
 });
 
 test('an admin can open the admin area', function () {
     $this->actingAs(User::factory()->admin()->create())
-        ->get('/admin')
+        ->get($this->api('admin/users'))
         ->assertOk();
 });
 
-test('an admin is redirected to the admin dashboard from customer pages', function () {
+test('an admin is sent to the admin dashboard from customer pages', function () {
     $this->actingAs(User::factory()->admin()->create());
 
-    $this->get('/customer')->assertRedirect(route('admin.dashboard'));
-    $this->get('/customer/invitations')->assertRedirect(route('admin.dashboard'));
+    $this->get($this->api('customer'))->assertForbidden()->assertJsonPath('redirect', '/admin');
+    $this->get($this->api('customer/invitations'))->assertForbidden()->assertJsonPath('redirect', '/admin');
 });
 
-test('a super admin is redirected to the admin dashboard from customer pages', function () {
+test('a super admin is sent to the admin dashboard from customer pages', function () {
     $this->actingAs(User::factory()->admin('super_admin')->create())
-        ->get('/customer')
-        ->assertRedirect(route('admin.dashboard'));
+        ->get($this->api('customer'))
+        ->assertForbidden()
+        ->assertJsonPath('redirect', '/admin');
 });
 
 test('shared account settings stay reachable for every role', function () {
-    $this->actingAs(User::factory()->create())->get('/settings/profile')->assertOk();
-    $this->actingAs(User::factory()->admin()->create())->get('/settings/profile')->assertOk();
+    $this->actingAs(User::factory()->create())->get($this->api('settings/profile'))->assertOk();
+    $this->actingAs(User::factory()->admin()->create())->get($this->api('settings/profile'))->assertOk();
 });
 
 test('a user without a role is forbidden from both areas', function () {
     $this->actingAs(User::factory()->withoutRole()->create());
 
-    $this->get('/admin')->assertForbidden();
-    $this->get('/customer')->assertForbidden();
+    $this->get($this->api('admin/users'))->assertForbidden();
+    $this->get($this->api('customer'))->assertForbidden();
 });

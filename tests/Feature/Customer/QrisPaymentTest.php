@@ -112,7 +112,7 @@ it('creates a QRIS payment with a discount in range and stores the breakdown', f
 
     $this->actingAs($user)
         ->post(route('customer.invitations.pay', $invitation), ['gateway' => 'qris'])
-        ->assertRedirect(route('customer.invitations.payment', $invitation->slug));
+        ->assertOk()->assertJsonPath('redirect', '/customer/invitations/'.$invitation->slug.'/payment');
 
     $payment = Payment::where('payment_gateway', 'qris')->sole();
     $discount = (int) $payment->discount_amount;
@@ -178,25 +178,25 @@ it('validates the discount range in admin settings', function () {
         ->patch(route('admin.settings.payment.qris.update'), [
             'is_active' => true, 'base_payload' => staticQris(), 'discount_min' => 2000, 'discount_max' => 1000,
         ])
-        ->assertSessionHasErrors('discount_max');
+        ->assertJsonValidationErrors('discount_max');
 
     $this->actingAs($admin)
         ->patch(route('admin.settings.payment.qris.update'), [
             'is_active' => true, 'base_payload' => staticQris(), 'discount_min' => 500, 'discount_max' => 20000,
         ])
-        ->assertSessionHasErrors('discount_max');
+        ->assertJsonValidationErrors('discount_max');
 
     $this->actingAs($admin)
         ->patch(route('admin.settings.payment.qris.update'), [
             'is_active' => true, 'base_payload' => 'not-a-qris', 'discount_min' => 500, 'discount_max' => 2500,
         ])
-        ->assertSessionHasErrors('base_payload');
+        ->assertJsonValidationErrors('base_payload');
 
     $this->actingAs($admin)
         ->patch(route('admin.settings.payment.qris.update'), [
             'is_active' => true, 'base_payload' => staticQris(), 'discount_min' => 500, 'discount_max' => 2500,
         ])
-        ->assertSessionHasNoErrors();
+        ->assertOk();
 
     $config = app(QrisPaymentService::class)->config();
     expect($config['discount_min'])->toBe(500);
@@ -214,14 +214,14 @@ it('generates a test QRIS for the admin without saving anything', function () {
             'base_payload' => staticQris(), 'price' => 100000, 'discount_min' => 500, 'discount_max' => 2500,
         ])
         ->assertOk()
-        ->assertJsonPath('merchant_name', 'UNDESIA QA');
+        ->assertJsonPath('data.merchant_name', 'UNDESIA QA');
 
-    $discount = $response->json('discount');
+    $discount = $response->json('data.discount');
     $expected = QrisPaymentService::calculate(100000, $discount);
 
     expect($discount)->toBeGreaterThanOrEqual(500)->toBeLessThanOrEqual(2500);
-    expect($response->json('total'))->toBe($expected['total']);
-    expect(QrisPayload::validate($response->json('payload'))['54'])->toBe((string) $expected['total']);
+    expect($response->json('data.total'))->toBe($expected['total']);
+    expect(QrisPayload::validate($response->json('data.payload'))['54'])->toBe((string) $expected['total']);
     expect(Payment::count())->toBe(0);
 
     $this->actingAs($admin)

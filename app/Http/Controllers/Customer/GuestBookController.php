@@ -5,26 +5,24 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\StoreGuestRequest;
 use App\Http\Requests\Customer\UpdateGuestRequest;
+use App\Http\Responses\ApiResponse;
 use App\Models\Guest;
 use App\Models\Invitation;
 use App\Models\SliderPhoto;
 use App\Rules\Base64Image;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
-use Inertia\Response as InertiaResponse;
 
 class GuestBookController extends Controller
 {
     use AuthorizesRequests;
 
-    public function index(Request $request, Invitation $invitation): InertiaResponse
+    public function index(Request $request, Invitation $invitation): JsonResponse
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
 
@@ -56,7 +54,7 @@ class GuestBookController extends Controller
         // Statistik
         $stats = $this->buildStats($invitation);
 
-        return Inertia::render('customer/invitations/guest-book/index', [
+        return ApiResponse::ok([
             'invitation' => [
                 'id'    => $invitation->id,
                 'slug'  => $invitation->slug,
@@ -92,7 +90,7 @@ class GuestBookController extends Controller
         ]);
     }
 
-    public function updateDisplaySettings(Request $request, Invitation $invitation): RedirectResponse
+    public function updateDisplaySettings(Request $request, Invitation $invitation): JsonResponse
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
 
@@ -172,10 +170,10 @@ class GuestBookController extends Controller
             );
         }
 
-        return back()->with('success', 'Pengaturan Buku Tamu berhasil disimpan.');
+        return ApiResponse::message('Pengaturan Buku Tamu berhasil disimpan.');
     }
 
-    public function operator(Request $request, Invitation $invitation): InertiaResponse
+    public function operator(Request $request, Invitation $invitation): JsonResponse
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
 
@@ -188,7 +186,7 @@ class GuestBookController extends Controller
             ->orderBy('name')
             ->get();
 
-        return Inertia::render('customer/invitations/guest-book/operator', [
+        return ApiResponse::ok([
             'invitation' => [
                 'id' => $invitation->id,
                 'slug' => $invitation->slug,
@@ -249,7 +247,7 @@ class GuestBookController extends Controller
             ->get()
             ->map(fn (Guest $guest) => $this->guestPayload($guest));
 
-        return response()->json(['guests' => $guests]);
+        return ApiResponse::ok(['guests' => $guests]);
     }
 
     public function scan(Request $request, Invitation $invitation): JsonResponse
@@ -264,15 +262,11 @@ class GuestBookController extends Controller
         $guest = $this->findGuestByCode($invitation, $code);
 
         if (! $guest) {
-            return response()->json(['status' => 'not_found', 'message' => 'QR Code tidak dikenali untuk undangan ini.'], 404);
+            return ApiResponse::error('QR Code tidak dikenali untuk undangan ini.', 404, extra: ['data' => ['status' => 'not_found']]);
         }
 
         if ($guest->checked_in_at) {
-            return response()->json([
-                'status' => 'already_checked_in',
-                'message' => 'Tamu ini sudah check-in sebelumnya.',
-                'guest' => $this->guestPayload($guest),
-            ], 409);
+            return $this->alreadyCheckedIn($guest);
         }
 
         $guest->update([
@@ -280,12 +274,11 @@ class GuestBookController extends Controller
             'rsvp_status' => $guest->rsvp_status === 'pending' ? 'attending' : $guest->rsvp_status,
         ]);
 
-        return response()->json([
+        return ApiResponse::ok([
             'status' => 'checked_in',
-            'message' => 'Check-in berhasil.',
             'guest' => $this->guestPayload($guest->fresh()),
             'stats' => $this->buildStats($invitation),
-        ]);
+        ], 'Check-in berhasil.');
     }
 
     public function manualCheckIn(Invitation $invitation, Guest $guest): JsonResponse
@@ -294,11 +287,7 @@ class GuestBookController extends Controller
         $this->authorize('update', $guest);
 
         if ($guest->checked_in_at) {
-            return response()->json([
-                'status' => 'already_checked_in',
-                'message' => 'Tamu ini sudah check-in sebelumnya.',
-                'guest' => $this->guestPayload($guest),
-            ], 409);
+            return $this->alreadyCheckedIn($guest);
         }
 
         $guest->update([
@@ -306,12 +295,11 @@ class GuestBookController extends Controller
             'rsvp_status' => $guest->rsvp_status === 'pending' ? 'attending' : $guest->rsvp_status,
         ]);
 
-        return response()->json([
+        return ApiResponse::ok([
             'status' => 'checked_in',
-            'message' => 'Check-in manual berhasil.',
             'guest' => $this->guestPayload($guest->fresh()),
             'stats' => $this->buildStats($invitation),
-        ]);
+        ], 'Check-in manual berhasil.');
     }
 
     public function checkSlug(Request $request, Invitation $invitation): JsonResponse
@@ -326,17 +314,17 @@ class GuestBookController extends Controller
             ->when($excludeId, fn ($q) => $q->where('id', '!=', $excludeId))
             ->exists();
 
-        return response()->json(['available' => ! $exists]);
+        return ApiResponse::ok(['available' => ! $exists]);
     }
 
-    public function store(StoreGuestRequest $request, Invitation $invitation): RedirectResponse
+    public function store(StoreGuestRequest $request, Invitation $invitation): JsonResponse
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
 
         $slug = Str::slug($request->input('slug', '')) ?: Str::slug($request->input('name', ''));
 
         if ($slug && $invitation->guests()->where('slug', $slug)->exists()) {
-            return back()->withErrors(['slug' => 'Slug sudah digunakan pada undangan ini.'])->withInput();
+            throw ValidationException::withMessages(['slug' => 'Slug sudah digunakan pada undangan ini.']);
         }
 
         $invitation->guests()->create([
@@ -350,10 +338,10 @@ class GuestBookController extends Controller
             'rsvp_status'  => 'pending',
         ]);
 
-        return back()->with('success', 'Tamu berhasil ditambahkan.');
+        return ApiResponse::message('Tamu berhasil ditambahkan.');
     }
 
-    public function update(UpdateGuestRequest $request, Invitation $invitation, Guest $guest): RedirectResponse
+    public function update(UpdateGuestRequest $request, Invitation $invitation, Guest $guest): JsonResponse
     {
         abort_if($guest->invitation_id !== $invitation->id, 404);
         $this->authorize('update', $guest);
@@ -361,7 +349,7 @@ class GuestBookController extends Controller
         if ($request->has('slug')) {
             $slug = Str::slug($request->input('slug', ''));
             if ($slug && $invitation->guests()->where('slug', $slug)->where('id', '!=', $guest->id)->exists()) {
-                return back()->withErrors(['slug' => 'Slug sudah digunakan pada undangan ini.'])->withInput();
+                throw ValidationException::withMessages(['slug' => 'Slug sudah digunakan pada undangan ini.']);
             }
         }
 
@@ -377,10 +365,10 @@ class GuestBookController extends Controller
 
         $guest->update($data);
 
-        return back()->with('success', 'Data tamu berhasil diperbarui.');
+        return ApiResponse::message('Data tamu berhasil diperbarui.');
     }
 
-    public function checkIn(Invitation $invitation, Guest $guest): RedirectResponse
+    public function checkIn(Invitation $invitation, Guest $guest): JsonResponse
     {
         abort_if($guest->invitation_id !== $invitation->id, 404);
         $this->authorize('update', $guest);
@@ -389,17 +377,17 @@ class GuestBookController extends Controller
 
         $msg = $guest->checked_in_at ? 'Tamu berhasil di-check in.' : 'Check-in tamu dibatalkan.';
 
-        return back()->with('success', $msg);
+        return ApiResponse::message($msg);
     }
 
-    public function destroy(Invitation $invitation, Guest $guest): RedirectResponse
+    public function destroy(Invitation $invitation, Guest $guest): JsonResponse
     {
         abort_if($guest->invitation_id !== $invitation->id, 404);
         $this->authorize('delete', $guest);
 
         $guest->delete();
 
-        return back()->with('success', 'Tamu berhasil dihapus.');
+        return ApiResponse::message('Tamu berhasil dihapus.');
     }
 
     public function export(Invitation $invitation): \Symfony\Component\HttpFoundation\StreamedResponse
@@ -496,6 +484,15 @@ class GuestBookController extends Controller
         return $invitation->guests()
             ->when($status === 'checked_in', fn ($q) => $q->whereNotNull('checked_in_at'))
             ->when($status === 'not_checked_in', fn ($q) => $q->whereNull('checked_in_at'));
+    }
+
+    /** 409 for a guest scanned / checked in twice (the operator page shows who it was). */
+    private function alreadyCheckedIn(Guest $guest): JsonResponse
+    {
+        return ApiResponse::error('Tamu ini sudah check-in sebelumnya.', 409, extra: ['data' => [
+            'status' => 'already_checked_in',
+            'guest' => $this->guestPayload($guest),
+        ]]);
     }
 
     private function buildStats(Invitation $invitation): array

@@ -9,26 +9,26 @@ use App\Http\Controllers\Admin\Themes\ThemeController;
 use App\Http\Controllers\Admin\Transactions\TransactionController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'area:admin'])->group(function () {
+/*
+| Admin area — prefix /api/v1/admin
+|
+| Pages that had no server data in the original application (dashboard,
+| admins/roles/permissions, invitations list, custom domains, theme
+| categories, packages, refunds, testimonials, platform/revenue reports,
+| general/WhatsApp/notification settings) are rendered by the frontend only.
+*/
 
-    // ─── Dashboard ───────────────────────────────────────────────────────────
-    Route::get('/', fn () => Inertia::render('admin/dashboard'))->name('dashboard');
+Route::prefix('admin')->name('admin.')->middleware(['auth:sanctum', 'area:admin'])->group(function () {
 
     // ─── Manajemen Pengguna ───────────────────────────────────────────────────
     Route::prefix('users')->name('users.')->group(function () {
         Route::get('/', [AdminUserController::class, 'index'])->name('index');
-        Route::get('/admins', fn () => Inertia::render('admin/users/admins'))->name('admins');
-        Route::get('/roles', fn () => Inertia::render('admin/users/roles'))->name('roles');
-        Route::get('/permissions', fn () => Inertia::render('admin/users/permissions'))->name('permissions');
         Route::get('/{user}', [AdminUserController::class, 'show'])->name('show')->withTrashed();
     });
 
     // ─── Manajemen Undangan ───────────────────────────────────────────────────
     Route::prefix('invitations')->name('invitations.')->group(function () {
-        Route::get('/', fn () => Inertia::render('admin/invitations/index'))->name('index');
-        Route::get('/custom-domains', fn () => Inertia::render('admin/invitations/custom-domains'))->name('custom-domains');
         Route::get('/check-slug', [AdminInvitationController::class, 'checkSlug'])->name('check-slug');
         Route::get('/{invitation:id}', [AdminInvitationController::class, 'show'])->name('show')->whereNumber('invitation');
         Route::patch('/{invitation:id}', [AdminInvitationController::class, 'update'])->name('update')->whereNumber('invitation');
@@ -47,10 +47,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'area:admin'])->grou
     });
 
     Route::prefix('themes')->name('themes.')->group(function () {
-        // ── static sub-pages dulu (sebelum parameter {theme}) ──────────────
-        Route::get('/categories', fn () => Inertia::render('admin/themes/categories'))->name('categories');
-
-        // ── CRUD ────────────────────────────────────────────────────────────
         Route::get('/', [ThemeController::class, 'index'])->name('index');
         Route::post('/', [ThemeController::class, 'store'])->name('store');
         Route::patch('/reorder', [ThemeController::class, 'reorder'])->name('reorder');
@@ -59,35 +55,22 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'area:admin'])->grou
         Route::delete('/{theme}', [ThemeController::class, 'destroy'])->name('destroy');
     });
 
-    Route::prefix('packages')->name('packages.')->group(function () {
-        Route::get('/', fn () => Inertia::render('admin/packages/index'))->name('index');
-    });
-
     // ─── Keuangan & Transaksi ─────────────────────────────────────────────────
     Route::prefix('transactions')->name('transactions.')->group(function () {
         Route::get('/', [TransactionController::class, 'index'])->name('index');
         Route::get('/payments', [TransactionController::class, 'payments'])->name('payments');
-        Route::get('/refunds', fn () => Inertia::render('admin/transactions/refunds'))->name('refunds');
         Route::get('/{transaction}', [TransactionController::class, 'show'])->name('show');
         Route::patch('/{transaction}/approve', [TransactionController::class, 'approve'])->name('approve');
         Route::patch('/{transaction}/reject', [TransactionController::class, 'reject'])->name('reject');
     });
 
-    // ─── Konten & Komunitas ───────────────────────────────────────────────────
-    Route::prefix('content')->name('content.')->group(function () {
-        Route::get('/testimonials', fn () => Inertia::render('admin/content/testimonials'))->name('testimonials');
-    });
-
     // ─── Laporan & Analitik ───────────────────────────────────────────────────
     Route::prefix('reports')->name('reports.')->group(function () {
-        Route::get('/platform', fn () => Inertia::render('admin/reports/platform'))->name('platform');
-        Route::get('/revenue', fn () => Inertia::render('admin/reports/revenue'))->name('revenue');
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs');
     });
 
     // ─── Pengaturan Sistem ────────────────────────────────────────────────────
     Route::prefix('settings')->name('settings.')->group(function () {
-        Route::get('/general', fn () => Inertia::render('admin/settings/general'))->name('general');
         Route::get('/packages', [PackageController::class, 'index'])->name('packages');
         Route::post('/packages', [PackageController::class, 'store'])->name('packages.store');
         Route::patch('/packages/{package}', [PackageController::class, 'update'])->name('packages.update');
@@ -99,7 +82,5 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'area:admin'])->grou
         Route::patch('/payment/webhook', [PaymentSettingController::class, 'updateWebhook'])->name('payment.webhook.update');
         Route::patch('/payment/qris', [PaymentSettingController::class, 'updateQris'])->name('payment.qris.update');
         Route::post('/payment/qris/test', [PaymentSettingController::class, 'testQris'])->name('payment.qris.test');
-        Route::get('/whatsapp', fn () => Inertia::render('admin/settings/whatsapp'))->name('whatsapp');
-        Route::get('/notification', fn () => Inertia::render('admin/settings/notification'))->name('notification');
     });
 });

@@ -4,19 +4,18 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\StoreDigitalWalletRequest;
+use App\Http\Responses\ApiResponse;
 use App\Models\DigitalWallet;
 use App\Models\Invitation;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class DigitalWalletController extends Controller
 {
-    public function index(): Response
+    public function index(): JsonResponse
     {
         $wallets = DigitalWallet::where('user_id', auth()->id())
             ->latest()
@@ -31,7 +30,7 @@ class DigitalWalletController extends Controller
                 'is_active'      => $w->is_active,
             ]);
 
-        return Inertia::render('customer/digital-wallets/index', [
+        return ApiResponse::ok([
             'wallets'   => $wallets,
             'providers' => DigitalWallet::$providers,
         ]);
@@ -66,24 +65,21 @@ class DigitalWalletController extends Controller
             'is_active'      => $request->boolean('is_active', true),
         ]);
 
-        if ($request->wantsJson()) {
-            return response()->json([
-                'id'             => $wallet->id,
-                'provider'       => $wallet->provider,
-                'provider_label' => $wallet->provider_label,
-                'account_number' => $wallet->account_number,
-                'account_name'   => $wallet->account_name,
-                'logo_url'       => $wallet->logo_url,
-                'qris_qr_url'    => $wallet->qris_qr_url,
-                'is_active'      => $wallet->is_active,
-            ], 201);
-        }
-
-        return redirect()->route('customer.digital-wallets.index')
-            ->with('success', 'Dompet digital berhasil ditambahkan.');
+        // One answer for both callers: the wallets page (shows the message and
+        // reloads) and the invitation editor (uses the created wallet).
+        return ApiResponse::created([
+            'id'             => $wallet->id,
+            'provider'       => $wallet->provider,
+            'provider_label' => $wallet->provider_label,
+            'account_number' => $wallet->account_number,
+            'account_name'   => $wallet->account_name,
+            'logo_url'       => $wallet->logo_url,
+            'qris_qr_url'    => $wallet->qris_qr_url,
+            'is_active'      => $wallet->is_active,
+        ], 'Dompet digital berhasil ditambahkan.');
     }
 
-    public function update(StoreDigitalWalletRequest $request, DigitalWallet $digitalWallet): RedirectResponse
+    public function update(StoreDigitalWalletRequest $request, DigitalWallet $digitalWallet): JsonResponse
     {
         abort_if($digitalWallet->user_id !== auth()->id(), 403);
 
@@ -113,10 +109,10 @@ class DigitalWalletController extends Controller
             'is_active'      => $request->boolean('is_active', true),
         ]);
 
-        return back()->with('success', 'Dompet digital berhasil diperbarui.');
+        return ApiResponse::message('Dompet digital berhasil diperbarui.');
     }
 
-    public function destroy(DigitalWallet $digitalWallet): RedirectResponse
+    public function destroy(DigitalWallet $digitalWallet): JsonResponse
     {
         abort_if($digitalWallet->user_id !== auth()->id(), 403);
 
@@ -126,12 +122,12 @@ class DigitalWalletController extends Controller
 
         $digitalWallet->delete();
 
-        return back()->with('success', 'Dompet digital berhasil dihapus.');
+        return ApiResponse::message('Dompet digital berhasil dihapus.');
     }
 
     // ── Pengaitan dompet ke undangan ──────────────────────────────────────────
 
-    public function invitationWallets(Invitation $invitation): Response
+    public function invitationWallets(Invitation $invitation): JsonResponse
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
 
@@ -155,7 +151,7 @@ class DigitalWalletController extends Controller
             'display_order'  => $linked->has($w->id) ? $linked[$w->id]->pivot->display_order : 99,
         ])->sortBy('display_order')->values();
 
-        return Inertia::render('customer/digital-wallets/invitation-wallets', [
+        return ApiResponse::ok([
             'invitation' => [
                 'id'    => $invitation->id,
                 'slug'  => $invitation->slug,
@@ -193,7 +189,7 @@ class DigitalWalletController extends Controller
 
         $invitation->digitalWallets()->sync($syncData);
 
-        return back()->with('success', 'Pengaturan dompet digital undangan berhasil disimpan.');
+        return ApiResponse::message('Pengaturan dompet digital undangan berhasil disimpan.');
     }
 
 }

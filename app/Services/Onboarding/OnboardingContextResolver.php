@@ -5,6 +5,7 @@ namespace App\Services\Onboarding;
 use App\Models\EventType;
 use App\Models\Package;
 use App\Models\Theme;
+use App\Support\FrontendUrl;
 
 /**
  * Turns a customer's pre-auth choice (a theme, a package, or nothing yet —
@@ -67,7 +68,7 @@ class OnboardingContextResolver
     }
 
     /**
-     * Build the wizard URL to send the customer to, given their (validated)
+     * Build the wizard path (frontend) to send the customer to, given their (validated)
      * pre-auth context. Falls back to the plain "choose event type" start
      * of the wizard when nothing usable was captured.
      */
@@ -85,8 +86,8 @@ class OnboardingContextResolver
             // first; the tier rides along so the package step can
             // pre-select within it once the type is known.
             return $packageTier
-                ? route('customer.invitations.create', ['package_tier' => $packageTier])
-                : route('customer.invitations.create');
+                ? FrontendUrl::route('customer.invitations.create', ['package_tier' => $packageTier])
+                : FrontendUrl::route('customer.invitations.create');
         }
 
         $query = ['event_type_id' => $eventTypeId];
@@ -99,6 +100,6 @@ class OnboardingContextResolver
             $query['package_tier'] = $packageTier;
         }
 
-        return route('customer.invitations.create.theme', $query);
+        return FrontendUrl::route('customer.invitations.create.theme', $query);
     }
 }

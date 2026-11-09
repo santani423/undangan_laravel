@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\ApiResponse;
 use App\Models\ActivityLog;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class ActivityLogController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): JsonResponse
     {
         $filters = [
             'search' => trim((string) $request->query('search', '')),
@@ -44,7 +44,7 @@ class ActivityLogController extends Controller
                 ] : null,
             ]);
 
-        return Inertia::render('admin/reports/activity-logs', [
+        return ApiResponse::ok([
             'logs'    => $logs,
             'filters' => $filters,
             'actions' => ActivityLog::query()->distinct()->orderBy('action')->pluck('action'),

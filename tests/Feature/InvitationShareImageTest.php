@@ -64,8 +64,8 @@ beforeEach(fn () => Storage::fake('public'));
 it('shares a WebP photo as a JPEG preview and a PNG favicon', function () {
     $invitation = shareInvitation(shareWebpPhoto(1600, 1200));
 
-    $response = $this->get('/' . $invitation->slug)->assertOk();
-    $props = $response->viewData('page')['props']['invitation'];
+    $response = $this->get($this->api('invitations/' . $invitation->slug))->assertOk();
+    $props = $response->json('data.invitation');
 
     expect($props['ogImage'])->toStartWith(asset('storage/share/'))->toEndWith('-og.jpg')
         ->and($props['favicon'])->toStartWith(asset('storage/share/'))->toEndWith('-icon.png')
@@ -81,7 +81,9 @@ it('shares a WebP photo as a JPEG preview and a PNG favicon', function () {
         ->and(array_slice(getimagesize($iconFile), 0, 2))->toBe([192, 192])
         ->and(getimagesize($iconFile)['mime'])->toBe('image/png');
 
-    $response
+    // Link-preview bots get these tags from the crawler renderer (/seo/{path}).
+    $this->withHeaders(['Accept' => 'text/html'])->get('/seo/' . $invitation->slug)
+        ->assertOk()
         ->assertSee('<meta property="og:image" content="' . $props['ogImage'] . '">', false)
         ->assertSee('<meta property="og:image:type" content="image/jpeg">', false)
         ->assertSee('<meta property="og:image:width" content="1200">', false)
@@ -93,9 +95,9 @@ it('shares a WebP photo as a JPEG preview and a PNG favicon', function () {
 it('reuses the generated files on later visits', function () {
     $invitation = shareInvitation(shareWebpPhoto(400, 400));
 
-    $first = $this->get('/' . $invitation->slug)->viewData('page')['props']['invitation'];
+    $first = $this->get($this->api('invitations/' . $invitation->slug))->json('data.invitation');
     $files = Storage::disk('public')->files('share');
-    $second = $this->get('/' . $invitation->slug)->viewData('page')['props']['invitation'];
+    $second = $this->get($this->api('invitations/' . $invitation->slug))->json('data.invitation');
 
     expect($files)->toHaveCount(2)
         ->and(Storage::disk('public')->files('share'))->toBe($files)
@@ -105,16 +107,17 @@ it('reuses the generated files on later visits', function () {
 it('falls back to the brand image and app favicon without a photo', function () {
     $invitation = shareInvitation();
 
-    $response = $this->get('/' . $invitation->slug)->assertOk();
-    $props = $response->viewData('page')['props']['invitation'];
+    $response = $this->get($this->api('invitations/' . $invitation->slug))->assertOk();
+    $props = $response->json('data.invitation');
 
     expect($props['ogImage'])->toBe(asset(config('seo.og_image.path')))
         ->and($props['favicon'])->toBeNull();
 
-    $response
+    $this->withHeaders(['Accept' => 'text/html'])->get('/seo/' . $invitation->slug)
+        ->assertOk()
         ->assertSee('<meta property="og:image" content="' . $props['ogImage'] . '">', false)
-        ->assertSee('favicon.ico?v=', false)
-        ->assertSee('favicon-192x192.png?v=', false);
+        ->assertSee('/favicon.ico"', false)
+        ->assertSee('/favicon-192x192.png"', false);
 });
 
 it('ships the brand share image and favicons', function (string $file) {

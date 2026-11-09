@@ -56,9 +56,9 @@ it('ships the default birthday track', function () {
 it('plays the default track on a birthday invitation without music', function (?array $settings) {
     $invitation = musicInvitation('birthday', $settings);
 
-    $this->get('/' . $invitation->slug)
+    $this->get($this->api('invitations/' . $invitation->slug))
         ->assertOk()
-        ->assertInertia(fn ($page) => $page
+        ->assertData(fn ($page) => $page
             ->where('invitation.music.url', asset(BIRTHDAY_DEFAULT_MUSIC))
             ->where('invitation.music.autoplay', true)
             ->where('invitation.music.loop', true));
@@ -73,8 +73,8 @@ it('plays the default track on a birthday invitation without music', function (?
 it('keeps the autoplay and loop choices when falling back to the default track', function () {
     $invitation = musicInvitation('birthday', ['music_autoplay' => false, 'music_loop' => false]);
 
-    $this->get('/' . $invitation->slug)
-        ->assertInertia(fn ($page) => $page
+    $this->get($this->api('invitations/' . $invitation->slug))
+        ->assertData(fn ($page) => $page
             ->where('invitation.music.url', asset(BIRTHDAY_DEFAULT_MUSIC))
             ->where('invitation.music.autoplay', false)
             ->where('invitation.music.loop', false));
@@ -83,8 +83,8 @@ it('keeps the autoplay and loop choices when falling back to the default track',
 it('plays the customer\'s custom music on a birthday invitation', function (string $stored, string $expected) {
     $invitation = musicInvitation('birthday', ['music_enabled' => true, 'music_source' => 'upload', 'music_url' => $stored]);
 
-    $this->get('/' . $invitation->slug)
-        ->assertInertia(fn ($page) => $page->where('invitation.music.url', $expected));
+    $this->get($this->api('invitations/' . $invitation->slug))
+        ->assertData(fn ($page) => $page->where('invitation.music.url', $expected));
 })->with([
     'full url'     => ['https://cdn.example.com/lagu.mp3', 'https://cdn.example.com/lagu.mp3'],
     'storage path' => ['invitations/1/music/lagu.mp3', fn () => asset('storage/invitations/1/music/lagu.mp3')],
@@ -93,8 +93,8 @@ it('plays the customer\'s custom music on a birthday invitation', function (stri
 it('leaves a custom track that the customer switched off silent', function () {
     $invitation = musicInvitation('birthday', ['music_enabled' => false, 'music_url' => 'https://cdn.example.com/lagu.mp3']);
 
-    $this->get('/' . $invitation->slug)
-        ->assertInertia(fn ($page) => $page->missing('invitation.music'));
+    $this->get($this->api('invitations/' . $invitation->slug))
+        ->assertData(fn ($page) => $page->missing('invitation.music'));
 });
 
 it('falls back to the default track once the custom music is removed in the editor', function () {
@@ -110,19 +110,19 @@ it('falls back to the default track once the custom music is removed in the edit
             'music_source'   => '',
             'music_url'      => '',
         ])
-        ->assertSessionHasNoErrors();
+        ->assertOk();
 
     expect($invitation->settings()->first()->music_url)->toBeNull();
 
-    $this->get('/' . $invitation->slug)
-        ->assertInertia(fn ($page) => $page->where('invitation.music.url', asset(BIRTHDAY_DEFAULT_MUSIC)));
+    $this->get($this->api('invitations/' . $invitation->slug))
+        ->assertData(fn ($page) => $page->where('invitation.music.url', asset(BIRTHDAY_DEFAULT_MUSIC)));
 });
 
 it('gives every birthday theme the same fallback', function (string $themeSlug) {
     $invitation = musicInvitation('birthday', [], $themeSlug);
 
-    $this->get('/' . $invitation->slug)
-        ->assertInertia(fn ($page) => $page
+    $this->get($this->api('invitations/' . $invitation->slug))
+        ->assertData(fn ($page) => $page
             ->where('themeSlug', $themeSlug)
             ->where('invitation.music.url', asset(BIRTHDAY_DEFAULT_MUSIC)));
 })->with([
@@ -135,26 +135,26 @@ it('uses the default track in a birthday theme preview', function () {
 
     $this->get(route('themes.sample', $invitation->theme->slug))
         ->assertOk()
-        ->assertInertia(fn ($page) => $page->where('invitation.music.url', asset(BIRTHDAY_DEFAULT_MUSIC)));
+        ->assertData(fn ($page) => $page->where('invitation.music.url', asset(BIRTHDAY_DEFAULT_MUSIC)));
 });
 
 it('does not give other invitation types a default track', function (string $type) {
     $invitation = musicInvitation($type, ['music_url' => null, 'music_enabled' => true]);
 
-    $this->get('/' . $invitation->slug)
+    $this->get($this->api('invitations/' . $invitation->slug))
         ->assertOk()
-        ->assertInertia(fn ($page) => $page->missing('invitation.music'));
+        ->assertData(fn ($page) => $page->missing('invitation.music'));
 
     $this->actingAs(musicAdmin())
         ->get(route('admin.invitations.show', $invitation->id))
-        ->assertInertia(fn ($page) => $page->where('defaultMusic', null));
+        ->assertData(fn ($page) => $page->where('defaultMusic', null));
 })->with(['wedding', 'khitanan', 'aqiqah', 'gender_reveal', 'syukuran']);
 
 it('still plays custom music on other invitation types', function () {
     $invitation = musicInvitation('wedding', ['music_enabled' => true, 'music_url' => 'https://cdn.example.com/lagu.mp3']);
 
-    $this->get('/' . $invitation->slug)
-        ->assertInertia(fn ($page) => $page->where('invitation.music.url', 'https://cdn.example.com/lagu.mp3'));
+    $this->get($this->api('invitations/' . $invitation->slug))
+        ->assertData(fn ($page) => $page->where('invitation.music.url', 'https://cdn.example.com/lagu.mp3'));
 });
 
 it('tells the editor which default track a birthday invitation uses', function () {
@@ -163,7 +163,7 @@ it('tells the editor which default track a birthday invitation uses', function (
     $this->actingAs(musicAdmin())
         ->get(route('admin.invitations.show', $invitation->id))
         ->assertOk()
-        ->assertInertia(fn ($page) => $page
+        ->assertData(fn ($page) => $page
             ->where('defaultMusic.url', asset(BIRTHDAY_DEFAULT_MUSIC))
             ->where('defaultMusic.label', 'Default Birthday Music')
             ->where('invitationSettings.music_url', ''));

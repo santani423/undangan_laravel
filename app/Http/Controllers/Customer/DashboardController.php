@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\ApiResponse;
 use App\Models\Invitation;
 use App\Models\User;
 use App\Services\LandingPageService;
 use App\Support\WhatsAppLink;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class DashboardController extends Controller
 {
@@ -19,7 +19,7 @@ class DashboardController extends Controller
      * intentionally different UIs (see customer/onboarding vs
      * customer/dashboard), not the same page with different data.
      */
-    public function index(): Response
+    public function index(): JsonResponse
     {
         $invitations = Invitation::where('user_id', Auth::id())
             ->with(['eventType', 'events'])
@@ -28,7 +28,9 @@ class DashboardController extends Controller
             ->get();
 
         if ($invitations->isEmpty()) {
-            return Inertia::render('customer/onboarding', [
+            return ApiResponse::ok([
+                // Which SPA page to render: customer/onboarding or customer/dashboard.
+                'view' => 'onboarding',
                 'whatsappHelpLink' => WhatsAppLink::build(
                     LandingPageService::adminWhatsappNumber(),
                     'Halo Admin, saya ingin membuat undangan digital tetapi masih bingung mulai dari mana. Bisa bantu?'
@@ -43,7 +45,8 @@ class DashboardController extends Controller
         $guestsTotal = $invitations->sum('guests_count');
         $transactionsCount = $user->transactions()->count();
 
-        return Inertia::render('customer/dashboard', [
+        return ApiResponse::ok([
+            'view' => 'dashboard',
             'stats' => [
                 'invitations_total' => $invitations->count(),
                 'invitations_active' => $activeCount,

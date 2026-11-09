@@ -5,13 +5,11 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\UpdateAppSettingRequest;
 use App\Http\Requests\Settings\UploadAppAssetRequest;
+use App\Http\Responses\ApiResponse;
 use App\Models\AppSetting;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class AppSettingController extends Controller
 {
@@ -35,7 +33,7 @@ class AppSettingController extends Controller
         'smtp_encryption', 'mail_from_name', 'mail_from_email',
     ];
 
-    public function edit(Request $request): Response
+    public function edit(Request $request): JsonResponse
     {
         $settings = AppSetting::allForPage();
 
@@ -80,13 +78,12 @@ class AppSettingController extends Controller
             'mail_from_email'    => 'noreply@undesia.com',
         ];
 
-        return Inertia::render('settings/app', [
+        return ApiResponse::ok([
             'settings' => array_merge($defaults, $settings),
-            'status'   => $request->session()->get('status'),
         ]);
     }
 
-    public function update(UpdateAppSettingRequest $request): RedirectResponse
+    public function update(UpdateAppSettingRequest $request): JsonResponse
     {
         $validated = $request->validated();
 
@@ -102,7 +99,8 @@ class AppSettingController extends Controller
 
         AppSetting::flushCache();
 
-        return back()->with('status', 'settings-saved');
+        // The settings page shows its "saved" notice from `status`.
+        return ApiResponse::message('Pengaturan berhasil disimpan.', extra: ['status' => 'settings-saved']);
     }
 
     public function uploadAsset(UploadAppAssetRequest $request, string $type): JsonResponse
@@ -117,13 +115,13 @@ class AppSettingController extends Controller
         try {
             $path = \App\Services\UploadService::uploadImage($file, $dir, $oldPath, $maxWidth);
         } catch (\RuntimeException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+            return ApiResponse::error($e->getMessage(), 422);
         }
 
         AppSetting::set("app_{$type}", $path, 'file', 'general');
         AppSetting::flushCache();
 
-        return response()->json([
+        return ApiResponse::ok([
             'path' => $path,
             'url'  => Storage::disk($disk)->url($path),
         ]);
@@ -138,7 +136,7 @@ class AppSettingController extends Controller
         AppSetting::set("app_{$type}", '', 'file', 'general');
         AppSetting::flushCache();
 
-        return response()->json(['deleted' => true]);
+        return ApiResponse::ok(['deleted' => true]);
     }
 
     private function groupFor(string $key): string

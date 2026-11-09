@@ -9,9 +9,16 @@ use App\Http\Controllers\Customer\PaymentController;
 use App\Http\Controllers\Customer\ProfileController;
 use App\Http\Controllers\Customer\TransactionController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::prefix('customer')->name('customer.')->middleware(['auth', 'area:customer'])->group(function () {
+/*
+| Customer area — prefix /api/v1/customer
+|
+| Pages without server data (/customer/invitations/{slug} detail placeholder,
+| /customer/subscription, /customer/subscription/upgrade) are rendered by the
+| frontend only.
+*/
+
+Route::prefix('customer')->name('customer.')->middleware(['auth:sanctum', 'area:customer'])->group(function () {
 
     // ─── Dashboard ────────────────────────────────────────────────────────────
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -26,7 +33,6 @@ Route::prefix('customer')->name('customer.')->middleware(['auth', 'area:customer
         Route::get('/check-slug', [InvitationController::class, 'checkSlug'])->name('check-slug');
         Route::get('/slug-recommendations', [InvitationController::class, 'slugRecommendations'])->name('slug.recommendations');
         Route::post('/', [InvitationController::class, 'store'])->name('store');
-        Route::get('/{invitation}', fn () => Inertia::render('customer/invitations/show'))->name('show');
         Route::get('/{invitation}/payment', [PaymentController::class, 'show'])->name('payment');
         Route::post('/{invitation}/payment', [PaymentController::class, 'pay'])->name('pay');
         Route::post('/{invitation}/payment/manual-proof', [PaymentController::class, 'submitManualProof'])->name('payment.manual-proof');
@@ -37,7 +43,8 @@ Route::prefix('customer')->name('customer.')->middleware(['auth', 'area:customer
         Route::post('/{slug}/upload-music', [InvitationController::class, 'uploadMusic'])->name('upload-music');
         Route::patch('/{invitation}/theme', [InvitationController::class, 'updateTheme'])->name('update-theme');
         Route::patch('/{invitation}', [InvitationController::class, 'update'])->name('update');
-        Route::delete('/{invitation}', fn () => abort(501))->name('destroy');
+        // Not implemented yet in the original application either.
+        Route::delete('/{invitation}', fn () => abort(501, 'Fitur hapus undangan belum tersedia.'))->name('destroy');
 
         // ── Buku Tamu ─────────────────────────────────────────────────────────
         Route::prefix('{invitation}/guests')->name('guests.')->group(function () {
@@ -47,24 +54,24 @@ Route::prefix('customer')->name('customer.')->middleware(['auth', 'area:customer
             Route::get('/search', [GuestBookController::class, 'search'])->name('search');
             Route::post('/scan', [GuestBookController::class, 'scan'])->name('scan');
             Route::post('/', [GuestBookController::class, 'store'])->name('store');
-            Route::patch('/{guest}', [GuestBookController::class, 'update'])->name('update');
-            Route::patch('/{guest}/checkin', [GuestBookController::class, 'checkIn'])->name('checkin');
-            Route::post('/{guest}/manual-checkin', [GuestBookController::class, 'manualCheckIn'])->name('manual-checkin');
-            Route::delete('/{guest}', [GuestBookController::class, 'destroy'])->name('destroy');
             Route::get('/export/csv', [GuestBookController::class, 'export'])->name('export');
             Route::get('/export/excel', [GuestBookController::class, 'exportExcel'])->name('export.excel');
             Route::get('/export/pdf', [GuestBookController::class, 'exportPdf'])->name('export.pdf');
             Route::get('/check-slug', [GuestBookController::class, 'checkSlug'])->name('check-slug');
+            Route::patch('/{guest}', [GuestBookController::class, 'update'])->name('update');
+            Route::patch('/{guest}/checkin', [GuestBookController::class, 'checkIn'])->name('checkin');
+            Route::post('/{guest}/manual-checkin', [GuestBookController::class, 'manualCheckIn'])->name('manual-checkin');
+            Route::delete('/{guest}', [GuestBookController::class, 'destroy'])->name('destroy');
         });
 
         // ── Komentar ──────────────────────────────────────────────────────────
         Route::prefix('{invitation}/comments')->name('comments.')->group(function () {
             Route::get('/', [CommentController::class, 'index'])->name('index');
+            Route::post('/bulk', [CommentController::class, 'bulkAction'])->name('bulk');
             Route::patch('/{comment}/approve', [CommentController::class, 'approve'])->name('approve');
             Route::patch('/{comment}/reject', [CommentController::class, 'reject'])->name('reject');
             Route::patch('/{comment}/flag', [CommentController::class, 'flag'])->name('flag');
             Route::delete('/{comment}', [CommentController::class, 'destroy'])->name('destroy');
-            Route::post('/bulk', [CommentController::class, 'bulkAction'])->name('bulk');
         });
 
         // ── Dompet Digital per undangan ───────────────────────────────────────
@@ -82,13 +89,7 @@ Route::prefix('customer')->name('customer.')->middleware(['auth', 'area:customer
         Route::delete('/{digitalWallet}', [DigitalWalletController::class, 'destroy'])->name('destroy');
     });
 
-    // ─── Paket & Langganan ────────────────────────────────────────────────────
-    Route::prefix('subscription')->name('subscription.')->group(function () {
-        Route::get('/', fn () => Inertia::render('customer/subscription/index'))->name('index');
-        Route::get('/upgrade', fn () => Inertia::render('customer/subscription/upgrade'))->name('upgrade');
-    });
-
-    // ─── Pembayaran (success / failed redirect dari Xendit) ───────────────────
+    // ─── Pembayaran (halaman hasil redirect gateway) ──────────────────────────
     Route::prefix('payments')->name('payments.')->group(function () {
         Route::get('/success', [PaymentController::class, 'success'])->name('success');
         Route::get('/failed', [PaymentController::class, 'failed'])->name('failed');

@@ -6,6 +6,7 @@ use App\Models\InvitationSetting;
 use App\Models\Package;
 use App\Models\Theme;
 use App\Models\User;
+use App\Support\FrontendUrl;
 use Spatie\Permission\Models\Role;
 
 function editorAdmin(): User
@@ -55,14 +56,13 @@ it('opens the editor for every invitation type with a slug-based preview', funct
     $this->actingAs(editorAdmin())
         ->get(route('admin.invitations.show', $invitation->id))
         ->assertOk()
-        ->assertInertia(fn ($page) => $page
-            ->component('admin/invitations/show')
+        ->assertData(fn ($page) => $page
             ->where('invitation.id', $invitation->id)
             ->where('invitation.slug', $invitation->slug)
             ->where('eventType.name', $type)
             ->where('theme.id', $invitation->theme_id)
             ->where('adminMeta.customer.id', $invitation->user_id)
-            ->where('adminMeta.preview_url', url('/' . $invitation->slug))
+            ->where('adminMeta.preview_url', FrontendUrl::to('/' . $invitation->slug))
             ->missing('guests'));
 })->with(['wedding', 'khitanan', 'aqiqah', 'gender_reveal', 'syukuran']);
 
@@ -79,8 +79,7 @@ it('lets an admin edit content of another customer\'s invitation', function () {
                 'maps_lat' => '', 'maps_lng' => '', 'is_countdown' => true,
             ]],
         ])
-        ->assertRedirect()
-        ->assertSessionHasNoErrors();
+        ->assertOk();
 
     $invitation->refresh();
     expect($invitation->status)->toBe('active')
@@ -94,18 +93,18 @@ it('lets an admin change the slug and theme, and the public viewer follows the n
     $this->actingAs(editorAdmin());
 
     $this->patch(route('admin.invitations.update-settings', $invitation->id), ['slug' => 'slug-baru-admin'])
-        ->assertRedirect(route('admin.invitations.show', $invitation->id));
+        ->assertOk()->assertJsonPath('redirect', "/admin/invitations/{$invitation->id}");
 
     $this->patch(route('admin.invitations.update-theme', $invitation->id), ['theme_id' => $newTheme->id])
-        ->assertRedirect();
+        ->assertOk();
 
     $invitation->refresh();
     expect($invitation->slug)->toBe('slug-baru-admin')
         ->and($invitation->theme_id)->toBe($newTheme->id);
 
-    $this->get('/slug-baru-admin')
+    $this->get($this->api('invitations/slug-baru-admin'))
         ->assertOk()
-        ->assertInertia(fn ($page) => $page->component('invitation/show')->where('themeSlug', 'wedding-theme-02'));
+        ->assertData(fn ($page) => $page->where('themeSlug', 'wedding-theme-02'));
 });
 
 it('keeps customers out of the admin editor and out of other customers\' invitations', function () {
@@ -115,7 +114,7 @@ it('keeps customers out of the admin editor and out of other customers\' invitat
 
     $this->actingAs($other)
         ->get(route('admin.invitations.show', $invitation->id))
-        ->assertRedirect(route('customer.dashboard'));
+        ->assertForbidden()->assertJsonPath('redirect', '/customer');
 
     $this->actingAs($other)
         ->patchJson(route('admin.invitations.update', $invitation->id), ['status' => 'active'])
@@ -127,7 +126,7 @@ it('keeps customers out of the admin editor and out of other customers\' invitat
 
     $this->actingAs($owner)
         ->patch(route('customer.invitations.update', $invitation->slug), ['status' => 'active'])
-        ->assertRedirect();
+        ->assertOk();
 
     expect($invitation->refresh()->status)->toBe('active');
 });

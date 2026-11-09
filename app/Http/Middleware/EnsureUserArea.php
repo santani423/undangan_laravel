@@ -2,17 +2,20 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Responses\ApiResponse;
 use App\Models\User;
+use App\Support\FrontendUrl;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Guards a route group by the user's role area ("admin" or "customer").
- * A logged-in user who belongs to the other area is redirected to the
- * dashboard that matches their own role instead of seeing a 403.
+ * A logged-in user who belongs to the other area is sent to the dashboard
+ * that matches their own role instead of seeing a plain 403: the API answers
+ * 403 with a `redirect` to that dashboard, which the SPA follows.
  *
- * Usage: ->middleware(['auth', 'area:admin'])
+ * Usage: ->middleware(['auth:sanctum', 'area:admin'])
  */
 class EnsureUserArea
 {
@@ -22,23 +25,25 @@ class EnsureUserArea
         $user = $request->user();
 
         if (! $user) {
-            return redirect()->route('login');
+            return $request->expectsJson() || $request->is('api/*')
+                ? ApiResponse::error('Unauthenticated.', 401, redirect: '/login')
+                : redirect()->to(FrontendUrl::to('/login'));
         }
 
         if ($user->area() === $area) {
             return $next($request);
         }
 
-        $ownDashboard = $user->dashboardRoute();
+        $ownDashboard = $user->dashboardPath();
 
         if ($ownDashboard === null) {
             abort(403);
         }
 
-        if ($request->expectsJson()) {
-            abort(403);
-        }
-
-        return redirect()->route($ownDashboard);
+        return ApiResponse::error(
+            'Halaman ini tidak tersedia untuk akun Anda.',
+            403,
+            redirect: $ownDashboard,
+        );
     }
 }

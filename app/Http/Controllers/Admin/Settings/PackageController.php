@@ -3,16 +3,15 @@
 namespace App\Http\Controllers\Admin\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\ApiResponse;
 use App\Models\Package;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class PackageController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): JsonResponse
     {
         $packages = Package::with('features')->orderBy('display_order')
             ->get()
@@ -43,12 +42,12 @@ class PackageController extends Controller
             ? 'settings/packages'
             : 'admin/settings/packages';
 
-        return Inertia::render($view, [
+        return ApiResponse::ok([
             'packages' => $packages,
         ]);
     }
 
-    public function update(Request $request, Package $package): RedirectResponse
+    public function update(Request $request, Package $package): JsonResponse
     {
         $validated = $request->validate([
             'invitation_type'     => ['nullable', 'string', Rule::in(['pernikahan','ulang_tahun','khitanan','aqiqah','gender_reveal','syukuran'])],
@@ -70,11 +69,10 @@ class PackageController extends Controller
             ? 'settings.packages'
             : 'admin.settings.packages';
 
-        return redirect()->route($back)
-            ->with('success', "Paket \"{$package->label}\" berhasil diperbarui.");
+        return ApiResponse::toRoute($back, [], "Paket \"{$package->label}\" berhasil diperbarui.");
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'name'                => ['required', 'string', 'max:100', 'unique:packages,name', 'regex:/^[a-z0-9_]+$/'],
@@ -99,11 +97,10 @@ class PackageController extends Controller
             ? 'settings.packages'
             : 'admin.settings.packages';
 
-        return redirect()->route($back)
-            ->with('success', "Paket \"{$package->label}\" berhasil ditambahkan.");
+        return ApiResponse::toRoute($back, [], "Paket \"{$package->label}\" berhasil ditambahkan.");
     }
 
-    public function updateFeatures(Request $request, Package $package): RedirectResponse
+    public function updateFeatures(Request $request, Package $package): JsonResponse
     {
         $request->validate([
             'features'                  => ['required', 'array'],
@@ -123,11 +120,10 @@ class PackageController extends Controller
             ? 'settings.packages'
             : 'admin.settings.packages';
 
-        return redirect()->route($back)
-            ->with('success', "Fitur paket \"{$package->label}\" berhasil diperbarui.");
+        return ApiResponse::toRoute($back, [], "Fitur paket \"{$package->label}\" berhasil diperbarui.");
     }
 
-    public function destroy(Request $request, Package $package): RedirectResponse
+    public function destroy(Request $request, Package $package): JsonResponse
     {
         $label = $package->label;
         $package->delete();
@@ -136,7 +132,6 @@ class PackageController extends Controller
             ? 'settings.packages'
             : 'admin.settings.packages';
 
-        return redirect()->route($back)
-            ->with('success', "Paket \"{$label}\" berhasil dihapus.");
+        return ApiResponse::toRoute($back, [], "Paket \"{$label}\" berhasil dihapus.");
     }
 }

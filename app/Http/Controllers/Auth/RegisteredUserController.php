@@ -3,17 +3,16 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\ApiResponse;
 use App\Models\User;
 use App\Support\Auth\ResolvesPostAuthRedirect;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules;
-use Inertia\Inertia;
-use Inertia\Response;
 use Spatie\Permission\Exceptions\RoleDoesNotExist;
 
 class RegisteredUserController extends Controller
@@ -21,23 +20,11 @@ class RegisteredUserController extends Controller
     use ResolvesPostAuthRedirect;
 
     /**
-     * Show the registration page.
-     */
-    public function create(Request $request): Response
-    {
-        return Inertia::render('auth/register', [
-            'onboardingThemeId' => $request->integer('theme_id') ?: null,
-            'onboardingPackageId' => $request->integer('package_id') ?: null,
-            'onboardingPackageTier' => $request->string('package_tier')->value() ?: null,
-        ]);
-    }
-
-    /**
-     * Handle an incoming registration request.
+     * POST /api/v1/auth/register — handle an incoming registration request.
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): JsonResponse
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -69,11 +56,21 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return $this->postAuthRedirect(
-            $user,
-            $request->integer('onboarding_theme_id') ?: null,
-            $request->integer('onboarding_package_id') ?: null,
-            $request->input('onboarding_package_tier') ?: null,
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
+
+        $authUser = $user->fresh()->toAuthArray();
+
+        return ApiResponse::created(
+            ['user' => $authUser],
+            extra: ['auth' => ['user' => $authUser], 'redirect' => $this->postAuthRedirect(
+                $request,
+                $user,
+                $request->integer('onboarding_theme_id') ?: null,
+                $request->integer('onboarding_package_id') ?: null,
+                $request->input('onboarding_package_tier') ?: null,
+            )],
         );
     }
 }

@@ -4,25 +4,24 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\UpdateProfileRequest;
+use App\Http\Responses\ApiResponse;
 use App\Models\User;
 use App\Services\UploadService;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class ProfileController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): JsonResponse
     {
         /** @var User $user */
         $user    = $request->user();
         $profile = $user->profile;
         $prefs   = $profile?->notification_preferences ?? [];
 
-        return Inertia::render('customer/profile/index', [
+        return ApiResponse::ok([
             'profile' => [
                 'name'            => $user->name,
                 'email'           => $user->email,
@@ -42,7 +41,7 @@ class ProfileController extends Controller
         ]);
     }
 
-    public function update(UpdateProfileRequest $request): RedirectResponse
+    public function update(UpdateProfileRequest $request): JsonResponse
     {
         /** @var User $user */
         $user = $request->user();
@@ -94,6 +93,9 @@ class ProfileController extends Controller
             $user->profile()->save($profile);
         });
 
-        return back()->with('success', 'Profil berhasil diperbarui.');
+        // Name / avatar shown in the app shell come from the auth user.
+        return ApiResponse::message('Profil berhasil diperbarui.', extra: [
+            'auth' => ['user' => $request->user()->fresh()->toAuthArray()],
+        ]);
     }
 }

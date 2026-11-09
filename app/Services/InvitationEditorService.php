@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Responses\ApiResponse;
 use App\Models\GalleryPhoto;
 use App\Models\Invitation;
 use App\Models\InvitationContent;
@@ -10,6 +11,7 @@ use App\Models\Package;
 use App\Models\Story;
 use App\Models\Theme;
 use App\Support\InvitationMusic;
+use App\Support\PublicAsset;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -140,8 +142,8 @@ class InvitationEditorService
                 'slug'              => $t->slug,
                 'category'          => $t->category,
                 'description'       => $t->description,
-                'thumbnail_url'     => $t->thumbnail_url,
-                'preview_image_url' => $t->preview_image_url,
+                'thumbnail_url'     => PublicAsset::url($t->thumbnail_url),
+                'preview_image_url' => PublicAsset::url($t->preview_image_url),
                 'color_primary'     => $t->color_primary,
                 'color_secondary'   => $t->color_secondary,
                 'is_premium'        => $t->is_premium,
@@ -176,7 +178,10 @@ class InvitationEditorService
                 'status' => $invitation->status,
             ],
             'eventType'          => $invitation->eventType,
-            'theme'              => $invitation->theme,
+            'theme'              => $invitation->theme ? array_merge($invitation->theme->toArray(), [
+                'thumbnail_url'     => PublicAsset::url($invitation->theme->thumbnail_url),
+                'preview_image_url' => PublicAsset::url($invitation->theme->preview_image_url),
+            ]) : null,
             'package'            => $invitation->package,
             'fieldValues'        => $fieldValues,
             'additionalInfo'     => $additionalInfo,
@@ -508,7 +513,7 @@ class InvitationEditorService
         $maxMb  = $invitation->package?->max_music_upload_mb ?? 10;
 
         if ($maxMb === 0) {
-            return response()->json(['message' => 'Paket Anda tidak mengizinkan upload musik.'], 403);
+            return ApiResponse::error('Paket Anda tidak mengizinkan upload musik.', 403);
         }
 
         $maxKb = $maxMb * 1024;
@@ -522,7 +527,7 @@ class InvitationEditorService
         $file = $request->file('music_file');
         $path = UploadService::uploadDocument($file, "invitations/{$invitation->id}/music");
 
-        return response()->json([
+        return ApiResponse::ok([
             'url'    => Storage::disk('public')->url($path),
             'max_mb' => $maxMb,
         ]);
@@ -534,7 +539,7 @@ class InvitationEditorService
         $ignoreInvitationId = $request->integer('exclude_id') ?: null;
 
         if ($slug === '') {
-            return response()->json([
+            return ApiResponse::ok([
                 'slug'        => '',
                 'available'   => false,
                 'suggestions' => [],
@@ -543,7 +548,7 @@ class InvitationEditorService
 
         $available = $this->slugs->isAvailable($slug, $ignoreInvitationId);
 
-        return response()->json([
+        return ApiResponse::ok([
             'slug'        => $slug,
             'available'   => $available,
             'suggestions' => $available ? [] : $this->slugs->suggestions($slug, $ignoreInvitationId),

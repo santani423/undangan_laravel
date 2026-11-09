@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Admin\Settings\PaymentSettingController;
 use App\Http\Controllers\Controller;
+use App\Http\Responses\ApiResponse;
 use App\Models\AppSetting;
 use App\Models\Invitation;
 use App\Models\Package;
@@ -14,14 +15,13 @@ use App\Services\MidtransService;
 use App\Services\QrisPaymentService;
 use App\Services\UploadService;
 use App\Services\XenditService;
+use App\Support\FrontendUrl;
 use Carbon\Carbon;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Inertia\Inertia;
-use Inertia\Response;
 use RuntimeException;
 use Throwable;
 
@@ -176,7 +176,7 @@ class PaymentController extends Controller
 
     // ─── Show Payment Page ────────────────────────────────────────────────────
 
-    public function show(Invitation $invitation): Response|RedirectResponse
+    public function show(Invitation $invitation): JsonResponse
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
 
@@ -189,8 +189,7 @@ class PaymentController extends Controller
         if ((float) $package->price === 0.0) {
             $this->activateInvitation($invitation);
 
-            return redirect()->route('customer.invitations.index')
-                ->with('success', 'Undangan Anda telah diaktifkan!');
+            return ApiResponse::toRoute('customer.invitations.index', [], 'Undangan Anda telah diaktifkan!');
         }
 
         $transaction = $invitation->transaction;
@@ -202,8 +201,7 @@ class PaymentController extends Controller
             $paymentUrl = $latestPayment?->gateway_order_id;
 
             if ($transaction->status === 'paid') {
-                return redirect()->route('customer.transactions.show', $transaction->id)
-                    ->with('info', 'Undangan ini sudah dibayar.');
+                return ApiResponse::toRoute('customer.transactions.show', $transaction->id, 'Undangan ini sudah dibayar.', 'info');
             }
         } else {
             // Pre-generate an invoice record so a code is visible as soon as the
@@ -235,7 +233,7 @@ class PaymentController extends Controller
 
         $activeQris = $this->qris->activePayment($transaction);
 
-        return Inertia::render('customer/invitations/payment', [
+        return ApiResponse::ok([
             'invitation' => [
                 'id' => $invitation->id,
                 'slug' => $invitation->slug,
@@ -301,7 +299,7 @@ class PaymentController extends Controller
 
     // ─── Initiate Payment (Create Invoice) ───────────────────────────────────
 
-    public function pay(Request $request, Invitation $invitation): RedirectResponse|\Illuminate\Http\Response
+    public function pay(Request $request, Invitation $invitation): JsonResponse
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
 
@@ -314,15 +312,13 @@ class PaymentController extends Controller
         if ((float) $package->price === 0.0) {
             $this->activateInvitation($invitation);
 
-            return redirect()->route('customer.invitations.index')
-                ->with('success', 'Undangan Anda telah diaktifkan!');
+            return ApiResponse::toRoute('customer.invitations.index', [], 'Undangan Anda telah diaktifkan!');
         }
 
         $transaction = $invitation->transaction;
 
         if ($transaction && $transaction->status === 'paid') {
-            return redirect()->route('customer.transactions.show', $transaction->id)
-                ->with('info', 'Undangan ini sudah dibayar.');
+            return ApiResponse::toRoute('customer.transactions.show', $transaction->id, 'Undangan ini sudah dibayar.', 'info');
         }
 
         if ($request->input('gateway') === QrisPaymentService::GATEWAY) {
@@ -333,8 +329,7 @@ class PaymentController extends Controller
         $gateway = $request->input('gateway') ?: array_key_first($onlineGateways);
 
         if (! $gateway || ! isset($onlineGateways[$gateway])) {
-            return redirect()->route('customer.invitations.payment', $invitation->slug)
-                ->with('error', 'Metode pembayaran sedang tidak tersedia. Silakan hubungi admin.');
+            return ApiResponse::error('Metode pembayaran sedang tidak tersedia. Silakan hubungi admin.', 422, redirect: FrontendUrl::route('customer.invitations.payment', $invitation->slug));
         }
 
         // Already has a live payment page on the same gateway — send user there
@@ -346,7 +341,7 @@ class PaymentController extends Controller
                 ->latest()
                 ->first();
             if ($existing) {
-                return Inertia::location($existing->gateway_order_id);
+                return ApiResponse::location($existing->gateway_order_id);
             }
         }
 
@@ -372,7 +367,8 @@ class PaymentController extends Controller
                         ->flatMap(fn ($id) => self::GATEWAY_METHODS['midtrans'][$id]['snap'])
                         ->unique()->values()->all(),
                     // Midtrans appends ?order_id=…&transaction_status=… itself.
-                    'finish_url' => route('customer.payments.success'),
+                    // The customer comes back to the SPA page, not to the API.
+                    'finish_url' => FrontendUrl::routeUrl('customer.payments.success'),
                     'notification_url' => route('webhooks.midtrans'),
                 ]);
                 $gatewayData = ['reference_id' => $snap['token'], 'payment_url' => $snap['redirect_url']];
@@ -382,8 +378,8 @@ class PaymentController extends Controller
                     'amount' => $amount,
                     'payer_email' => $user->email,
                     'description' => $description,
-                    'success_redirect_url' => route('customer.payments.success').'?invoice_number='.urlencode($invoiceNumber),
-                    'failure_redirect_url' => route('customer.payments.failed').'?invoice_number='.urlencode($invoiceNumber),
+                    'success_redirect_url' => FrontendUrl::routeUrl('customer.payments.success').'?invoice_number='.urlencode($invoiceNumber),
+                    'failure_redirect_url' => FrontendUrl::routeUrl('customer.payments.failed').'?invoice_number='.urlencode($invoiceNumber),
                     'currency' => $package->currency ?? 'IDR',
                 ]);
                 $gatewayData = ['reference_id' => $xenditData['id'], 'payment_url' => $xenditData['invoice_url']];
@@ -391,8 +387,8 @@ class PaymentController extends Controller
         } catch (Throwable $e) {
             report($e);
 
-            return redirect()->route('customer.invitations.payment', $invitation->slug)
-                ->with('error', $this->paymentErrorMessage($e));
+            // 502: the payment gateway call failed.
+            return ApiResponse::error($this->paymentErrorMessage($e), 502, redirect: FrontendUrl::route('customer.invitations.payment', $invitation->slug));
         }
 
         // ── Step 2: Persist to DB only after the gateway succeeds ────────
@@ -436,7 +432,8 @@ class PaymentController extends Controller
             ]);
         });
 
-        return Inertia::location($gatewayData['payment_url']);
+        // Full page load to the gateway's hosted checkout.
+        return ApiResponse::location($gatewayData['payment_url']);
     }
 
     /**
@@ -445,20 +442,21 @@ class PaymentController extends Controller
      * payment page and an admin confirms the incoming transfer manually.
      * A still-valid QRIS is reused as-is — never regenerated or recalculated.
      */
-    private function payWithQris(Invitation $invitation, Package $package, ?Transaction $transaction): RedirectResponse
+    private function payWithQris(Invitation $invitation, Package $package, ?Transaction $transaction): JsonResponse
     {
-        $paymentPage = redirect()->route('customer.invitations.payment', $invitation->slug);
+        // The customer stays on (and reloads) the payment page in every case.
+        $paymentPage = FrontendUrl::route('customer.invitations.payment', $invitation->slug);
 
         if (! $this->qris->isAvailable()) {
-            return $paymentPage->with('error', 'Pembayaran QRIS sedang tidak tersedia.');
+            return ApiResponse::error('Pembayaran QRIS sedang tidak tersedia.', 422, redirect: $paymentPage);
         }
 
         if (! $transaction) {
-            return $paymentPage->with('error', 'Transaksi tidak ditemukan. Silakan muat ulang halaman.');
+            return ApiResponse::error('Transaksi tidak ditemukan. Silakan muat ulang halaman.', 422, redirect: $paymentPage);
         }
 
         if ($this->qris->activePayment($transaction)) {
-            return $paymentPage;
+            return ApiResponse::redirect($paymentPage);
         }
 
         try {
@@ -466,15 +464,15 @@ class PaymentController extends Controller
         } catch (Throwable $e) {
             report($e);
 
-            return $paymentPage->with('error', $this->paymentErrorMessage($e));
+            return ApiResponse::error($this->paymentErrorMessage($e), 422, redirect: $paymentPage);
         }
 
-        return $paymentPage->with('success', 'QRIS berhasil dibuat. Silakan scan dan bayar sesuai nominal yang tertera.');
+        return ApiResponse::redirect($paymentPage, 'QRIS berhasil dibuat. Silakan scan dan bayar sesuai nominal yang tertera.');
     }
 
     // ─── Submit Manual Transfer Proof ────────────────────────────────────────
 
-    public function submitManualProof(Request $request, Invitation $invitation): RedirectResponse
+    public function submitManualProof(Request $request, Invitation $invitation): JsonResponse
     {
         abort_if($invitation->user_id !== auth()->id(), 403);
 
@@ -484,20 +482,17 @@ class PaymentController extends Controller
         abort_if(! $package, 404);
 
         if (! $this->resolveManualTransfer()['available']) {
-            return redirect()->route('customer.invitations.payment', $invitation->slug)
-                ->with('error', 'Transfer manual sedang tidak tersedia.');
+            return ApiResponse::error('Transfer manual sedang tidak tersedia.', 422, redirect: FrontendUrl::route('customer.invitations.payment', $invitation->slug));
         }
 
         $transaction = $invitation->transaction;
 
         if (! $transaction) {
-            return redirect()->route('customer.invitations.payment', $invitation->slug)
-                ->with('error', 'Transaksi tidak ditemukan. Silakan muat ulang halaman.');
+            return ApiResponse::error('Transaksi tidak ditemukan. Silakan muat ulang halaman.', 422, redirect: FrontendUrl::route('customer.invitations.payment', $invitation->slug));
         }
 
         if ($transaction->status === 'paid') {
-            return redirect()->route('customer.transactions.show', $transaction->id)
-                ->with('info', 'Undangan ini sudah dibayar.');
+            return ApiResponse::toRoute('customer.transactions.show', $transaction->id, 'Undangan ini sudah dibayar.', 'info');
         }
 
         $request->validate([
@@ -543,13 +538,12 @@ class PaymentController extends Controller
             ]);
         }
 
-        return redirect()->route('customer.invitations.payment', $invitation->slug)
-            ->with('success', 'Bukti pembayaran berhasil diunggah. Tim kami akan memverifikasi dalam 1x24 jam.');
+        return ApiResponse::toRoute('customer.invitations.payment', $invitation->slug, 'Bukti pembayaran berhasil diunggah. Tim kami akan memverifikasi dalam 1x24 jam.');
     }
 
     // ─── Success & Failed Redirect Pages ─────────────────────────────────────
 
-    public function success(Request $request): Response|RedirectResponse
+    public function success(Request $request): JsonResponse
     {
         $transaction = null;
         // order_id: appended by Midtrans Snap on its finish redirect.
@@ -567,11 +561,10 @@ class PaymentController extends Controller
         $midtransStatus = $request->query('transaction_status');
         if ($transaction && $transaction->status !== 'paid' && $midtransStatus
             && ! in_array($midtransStatus, ['settlement', 'capture'], true)) {
-            return redirect()->route('customer.transactions.show', $transaction->id)
-                ->with('info', 'Pembayaran belum selesai. Silakan selesaikan pembayaran sesuai instruksi Midtrans.');
+            return ApiResponse::toRoute('customer.transactions.show', $transaction->id, 'Pembayaran belum selesai. Silakan selesaikan pembayaran sesuai instruksi Midtrans.', 'info');
         }
 
-        return Inertia::render('customer/payments/success', [
+        return ApiResponse::ok([
             'transaction' => $transaction ? [
                 'id' => $transaction->id,
                 'invoice_number' => $transaction->invoice_number,
@@ -588,7 +581,7 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function failed(Request $request): Response
+    public function failed(Request $request): JsonResponse
     {
         $transaction = null;
         $invoiceNumber = $request->query('invoice_number') ?? $request->query('external_id');
@@ -600,7 +593,7 @@ class PaymentController extends Controller
                 ->first();
         }
 
-        return Inertia::render('customer/payments/failed', [
+        return ApiResponse::ok([
             'transaction' => $transaction ? [
                 'id' => $transaction->id,
                 'invoice_number' => $transaction->invoice_number,

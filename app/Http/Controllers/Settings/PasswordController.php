@@ -3,31 +3,29 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\ApiResponse;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class PasswordController extends Controller
 {
     /**
-     * Show the user's password settings page.
+     * GET /api/v1/settings/password — data of the password settings page.
      */
-    public function edit(Request $request): Response
+    public function edit(Request $request): JsonResponse
     {
-        return Inertia::render('settings/password', [
+        return ApiResponse::ok([
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
-            'status' => $request->session()->get('status'),
         ]);
     }
 
     /**
-     * Update the user's password.
+     * PUT /api/v1/settings/password — update the user's password.
      */
-    public function update(Request $request): RedirectResponse
+    public function update(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'current_password' => ['required', 'current_password'],
@@ -38,6 +36,6 @@ class PasswordController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        return back();
+        return ApiResponse::ok();
     }
 }

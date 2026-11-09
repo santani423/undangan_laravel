@@ -1,13 +1,7 @@
 <?php
 
-test('registration screen can be rendered', function () {
-    $response = $this->get('/register');
-
-    $response->assertStatus(200);
-});
-
 test('new users can register', function () {
-    $response = $this->post('/register', [
+    $response = $this->post($this->api('auth/register'), [
         'name' => 'Test User',
         'email' => 'test@example.com',
         'password' => 'password',
@@ -15,5 +9,18 @@ test('new users can register', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('customer.dashboard', absolute: false));
+    $response->assertCreated()
+        ->assertJsonPath('data.user.email', 'test@example.com')
+        ->assertJsonPath('redirect', '/customer');
+});
+
+test('registration is validated', function () {
+    $this->post($this->api('auth/register'), [
+        'name' => '',
+        'email' => 'not-an-email',
+        'password' => 'password',
+        'password_confirmation' => 'different',
+    ])->assertStatus(422)->assertJsonValidationErrors(['name', 'email', 'password']);
+
+    $this->assertGuest();
 });

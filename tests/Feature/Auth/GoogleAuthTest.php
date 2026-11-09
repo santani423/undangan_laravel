@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Support\FrontendUrl;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
@@ -40,7 +41,8 @@ test('new user can register via google', function () {
     expect($user->email_verified_at)->not->toBeNull();
     expect($user->hasRole('customer'))->toBeTrue();
 
-    $response->assertRedirect(route('customer.dashboard', absolute: false));
+    // Google's callback is a browser redirect flow: it ends on the SPA.
+    $response->assertRedirect(FrontendUrl::to('/customer'));
 });
 
 test('existing user logs in via already linked google id without duplicating', function () {
@@ -97,16 +99,14 @@ test('existing email password account is not linked when google email is unverif
 
     $this->assertGuest();
     expect($existing->fresh()->google_id)->toBeNull();
-    $response->assertRedirect(route('login', absolute: false));
-    $response->assertSessionHas('error');
+    expect($response->headers->get('Location'))->toStartWith(FrontendUrl::to('/login').'?flash_error=');
 });
 
 test('google callback fails gracefully when user cancels consent', function () {
     $response = $this->get('/auth/google/callback?error=access_denied');
 
     $this->assertGuest();
-    $response->assertRedirect(route('login', absolute: false));
-    $response->assertSessionHas('error');
+    $response->assertRedirect(FrontendUrl::to('/login', ['flash_error' => 'Login dengan Google dibatalkan.']));
 });
 
 test('google callback fails gracefully when google gives no email', function () {
@@ -116,7 +116,7 @@ test('google callback fails gracefully when google gives no email', function () 
 
     $this->assertGuest();
     expect(User::count())->toBe(0);
-    $response->assertSessionHas('error');
+    expect($response->headers->get('Location'))->toContain('flash_error=');
 });
 
 test('users can logout after logging in via google', function () {
@@ -126,10 +126,10 @@ test('users can logout after logging in via google', function () {
     $this->get('/auth/google/callback');
     $this->assertAuthenticated();
 
-    $response = $this->post('/logout');
+    $response = $this->post($this->api('auth/logout'));
 
-    $this->assertGuest();
-    $response->assertRedirect('/');
+    $this->assertGuest('web');
+    $response->assertOk()->assertJsonPath('redirect', '/');
 });
 
 test('google login never assigns an admin role to a new user', function () {

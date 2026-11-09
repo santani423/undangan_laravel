@@ -3,7 +3,6 @@
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Inertia\Testing\AssertableInertia as Assert;
 
 function profilePayload(array $overrides = []): array
 {
@@ -23,10 +22,9 @@ it('shows the customer profile page with the current data', function () {
     $user = User::factory()->create(['phone_number' => '0811111111']);
 
     $this->actingAs($user)
-        ->get('/customer/profile')
+        ->get($this->api('customer/profile'))
         ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('customer/profile/index')
+        ->assertData(fn ($page) => $page
             ->where('profile.name', $user->name)
             ->where('profile.email', $user->email)
             ->where('profile.phone_number', '0811111111')
@@ -36,17 +34,17 @@ it('shows the customer profile page with the current data', function () {
 });
 
 it('requires authentication to view or update the profile', function () {
-    $this->get('/customer/profile')->assertRedirect();
-    $this->patch('/customer/profile', profilePayload())->assertRedirect();
+    $this->get($this->api('customer/profile'))->assertUnauthorized();
+    $this->patch($this->api('customer/profile'), profilePayload())->assertUnauthorized();
 });
 
 it('updates the user and profile data', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->patch('/customer/profile', profilePayload())
-        ->assertSessionHasNoErrors()
-        ->assertSessionHas('success');
+        ->patch($this->api('customer/profile'), profilePayload())
+        ->assertOk()
+        ->assertJsonPath('message', 'Profil berhasil diperbarui.');
 
     $user->refresh();
     expect($user->name)->toBe('Budi Baru')
@@ -65,16 +63,16 @@ it('rejects an email already used by another user', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->patch('/customer/profile', profilePayload(['email' => 'taken@example.com']))
-        ->assertSessionHasErrors('email');
+        ->patch($this->api('customer/profile'), profilePayload(['email' => 'taken@example.com']))
+        ->assertJsonValidationErrors('email');
 });
 
 it('rejects invalid language and timezone values', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->patch('/customer/profile', profilePayload(['language' => 'xx', 'timezone' => 'Mars/Base']))
-        ->assertSessionHasErrors(['language', 'timezone']);
+        ->patch($this->api('customer/profile'), profilePayload(['language' => 'xx', 'timezone' => 'Mars/Base']))
+        ->assertJsonValidationErrors(['language', 'timezone']);
 });
 
 it('uploads and then removes a profile photo', function () {
@@ -82,8 +80,8 @@ it('uploads and then removes a profile photo', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->patch('/customer/profile', profilePayload(['photo' => UploadedFile::fake()->image('me.png', 600, 600)]))
-        ->assertSessionHasNoErrors();
+        ->patch($this->api('customer/profile'), profilePayload(['photo' => UploadedFile::fake()->image('me.png', 600, 600)]))
+        ->assertOk();
 
     $path = $user->refresh()->profile->profile_photo_url;
     expect($path)->toStartWith('avatars/' . $user->id . '/');
@@ -91,8 +89,8 @@ it('uploads and then removes a profile photo', function () {
     expect($user->displayAvatar())->toContain($path);
 
     $this->actingAs($user)
-        ->patch('/customer/profile', profilePayload(['remove_photo' => true]))
-        ->assertSessionHasNoErrors();
+        ->patch($this->api('customer/profile'), profilePayload(['remove_photo' => true]))
+        ->assertOk();
 
     Storage::disk('public')->assertMissing($path);
     expect($user->refresh()->profile->profile_photo_url)->toBeNull();
@@ -102,6 +100,6 @@ it('rejects non-image uploads', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->patch('/customer/profile', profilePayload(['photo' => UploadedFile::fake()->create('x.pdf', 10, 'application/pdf')]))
-        ->assertSessionHasErrors('photo');
+        ->patch($this->api('customer/profile'), profilePayload(['photo' => UploadedFile::fake()->create('x.pdf', 10, 'application/pdf')]))
+        ->assertJsonValidationErrors('photo');
 });

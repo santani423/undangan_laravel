@@ -3,18 +3,18 @@
 namespace App\Http\Controllers\Admin\Transactions;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\ApiResponse;
 use App\Models\Payment;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Support\FrontendUrl;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class TransactionController extends Controller
 {
@@ -35,27 +35,25 @@ class TransactionController extends Controller
         'syukuran' => 'Syukuran',
     ];
 
-    public function index(Request $request): Response
+    public function index(Request $request): JsonResponse
     {
         return $this->renderIndex($request);
     }
 
-    public function payments(Request $request): Response
+    public function payments(Request $request): JsonResponse
     {
         return $this->renderPayments($request);
     }
 
-    public function show(Transaction $transaction, Request $request): Response
+    public function show(Transaction $transaction, Request $request): JsonResponse
     {
         return $this->renderIndex($request, $transaction->id);
     }
 
-    public function approve(Transaction $transaction, Request $request): RedirectResponse
+    public function approve(Transaction $transaction, Request $request): JsonResponse
     {
         if ($transaction->status !== 'pending') {
-            return redirect()
-                ->route('admin.transactions.show', array_merge(['transaction' => $transaction], $request->query()))
-                ->with('error', 'Hanya transaksi pending yang bisa dikonfirmasi.');
+            return ApiResponse::error('Hanya transaksi pending yang bisa dikonfirmasi.', 422, redirect: FrontendUrl::route('admin.transactions.show', array_merge(['transaction' => $transaction], $request->query())));
         }
 
         DB::transaction(function () use ($transaction) {
@@ -74,17 +72,13 @@ class TransactionController extends Controller
             $this->activateInvitation($transaction);
         });
 
-        return redirect()
-            ->route('admin.transactions.show', array_merge(['transaction' => $transaction], $request->query()))
-            ->with('success', "Transaksi {$transaction->invoice_number} berhasil dikonfirmasi.");
+        return ApiResponse::toRoute('admin.transactions.show', array_merge(['transaction' => $transaction], $request->query()), "Transaksi {$transaction->invoice_number} berhasil dikonfirmasi.");
     }
 
-    public function reject(Transaction $transaction, Request $request): RedirectResponse
+    public function reject(Transaction $transaction, Request $request): JsonResponse
     {
         if ($transaction->status !== 'pending') {
-            return redirect()
-                ->route('admin.transactions.show', array_merge(['transaction' => $transaction], $request->query()))
-                ->with('error', 'Hanya transaksi pending yang bisa ditolak.');
+            return ApiResponse::error('Hanya transaksi pending yang bisa ditolak.', 422, redirect: FrontendUrl::route('admin.transactions.show', array_merge(['transaction' => $transaction], $request->query())));
         }
 
         DB::transaction(function () use ($transaction) {
@@ -103,23 +97,21 @@ class TransactionController extends Controller
             ]);
         });
 
-        return redirect()
-            ->route('admin.transactions.show', array_merge(['transaction' => $transaction], $request->query()))
-            ->with('success', "Transaksi {$transaction->invoice_number} ditolak secara manual.");
+        return ApiResponse::toRoute('admin.transactions.show', array_merge(['transaction' => $transaction], $request->query()), "Transaksi {$transaction->invoice_number} ditolak secara manual.");
     }
 
-    private function renderIndex(Request $request, ?int $selectedTransactionId = null): Response
+    private function renderIndex(Request $request, ?int $selectedTransactionId = null): JsonResponse
     {
         $payload = $this->buildPayload($request, $selectedTransactionId, true);
 
-        return Inertia::render('admin/transactions/index', $payload);
+        return ApiResponse::ok($payload);
     }
 
-    private function renderPayments(Request $request): Response
+    private function renderPayments(Request $request): JsonResponse
     {
         $payload = $this->buildPayload($request, null, false);
 
-        return Inertia::render('admin/transactions/payments', $payload);
+        return ApiResponse::ok($payload);
     }
 
     private function buildPayload(Request $request, ?int $selectedTransactionId = null, bool $applyFilters = true): array

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\LogsActivity;
+use App\Support\FrontendUrl;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -92,41 +93,26 @@ class Theme extends Model
     }
 
     /**
-     * Public preview URL of this theme's sample invitation, or null when no
-     * sample has been seeded yet. Pass $hasSample when it is already known
-     * (e.g. from withExists) to skip the per-theme query in listings.
+     * Public preview URL (frontend) of this theme's sample invitation, or null
+     * when no sample has been seeded yet. Pass $hasSample when it is already
+     * known (e.g. from withExists) to skip the per-theme query in listings.
      */
     public function sampleUrl(?bool $hasSample = null): ?string
     {
         $hasSample ??= $this->sample_invitation_exists ?? $this->sampleInvitation()->exists();
 
-        return $hasSample ? route('themes.sample', $this->slug) : null;
+        return $hasSample ? FrontendUrl::routeUrl('themes.sample', $this->slug) : null;
     }
 
     /**
-     * Theme slugs that have a real React renderer, keyed by slug with the
-     * invitation type (its parent folder) as value. A theme counts as
-     * renderable when resources/js/pages/invitation/themes/{type}/{slug}/
-     * contains a .tsx component — the same folders show.tsx imports from.
+     * Theme slugs that have a real React renderer in the frontend, keyed by
+     * slug with the invitation type as value (config/themes.php).
      *
      * @return array<string, string>
      */
     public static function rendererSlugs(): array
     {
-        static $slugs = null;
-
-        if ($slugs !== null) {
-            return $slugs;
-        }
-
-        $slugs = [];
-        foreach (glob(resource_path('js/pages/invitation/themes/*/*'), GLOB_ONLYDIR) ?: [] as $dir) {
-            if (glob($dir.DIRECTORY_SEPARATOR.'*.tsx')) {
-                $slugs[basename($dir)] = basename(dirname($dir));
-            }
-        }
-
-        return $slugs;
+        return config('themes.renderers', []);
     }
 
     public function scopeActive($query)

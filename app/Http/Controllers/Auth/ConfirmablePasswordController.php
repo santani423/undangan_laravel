@@ -3,27 +3,19 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\RedirectResponse;
+use App\Http\Responses\ApiResponse;
+use App\Support\FrontendUrl;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class ConfirmablePasswordController extends Controller
 {
     /**
-     * Show the confirm password page.
+     * POST /api/v1/auth/confirm-password — confirm the user's password.
      */
-    public function show(): Response
-    {
-        return Inertia::render('auth/confirm-password');
-    }
-
-    /**
-     * Confirm the user's password.
-     */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): JsonResponse
     {
         if (! Auth::guard('web')->validate([
             'email' => $request->user()->email,
@@ -34,8 +26,12 @@ class ConfirmablePasswordController extends Controller
             ]);
         }
 
-        $request->session()->put('auth.password_confirmed_at', time());
+        if ($request->hasSession()) {
+            $request->session()->put('auth.password_confirmed_at', time());
+        }
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $intended = $request->input('intended');
+
+        return ApiResponse::redirect(FrontendUrl::isSafeRelativePath($intended) ? $intended : '/dashboard');
     }
 }

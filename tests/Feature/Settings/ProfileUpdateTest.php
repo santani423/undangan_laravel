@@ -2,14 +2,14 @@
 
 use App\Models\User;
 
-test('profile page is displayed', function () {
+test('profile page data is returned', function () {
     $user = User::factory()->create();
 
     $response = $this
         ->actingAs($user)
-        ->get('/settings/profile');
+        ->get($this->api('settings/profile'));
 
-    $response->assertOk();
+    $response->assertOk()->assertJsonStructure(['data' => ['mustVerifyEmail']]);
 });
 
 test('profile information can be updated', function () {
@@ -17,14 +17,12 @@ test('profile information can be updated', function () {
 
     $response = $this
         ->actingAs($user)
-        ->patch('/settings/profile', [
+        ->patch($this->api('settings/profile'), [
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
 
-    $response
-        ->assertSessionHasNoErrors()
-        ->assertRedirect('/settings/profile');
+    $response->assertOk()->assertJsonPath('auth.user.name', 'Test User');
 
     $user->refresh();
 
@@ -38,14 +36,12 @@ test('email verification status is unchanged when the email address is unchanged
 
     $response = $this
         ->actingAs($user)
-        ->patch('/settings/profile', [
+        ->patch($this->api('settings/profile'), [
             'name' => 'Test User',
             'email' => $user->email,
         ]);
 
-    $response
-        ->assertSessionHasNoErrors()
-        ->assertRedirect('/settings/profile');
+    $response->assertOk();
 
     expect($user->refresh()->email_verified_at)->not->toBeNull();
 });
@@ -55,16 +51,16 @@ test('user can delete their account', function () {
 
     $response = $this
         ->actingAs($user)
-        ->delete('/settings/profile', [
+        ->delete($this->api('settings/profile'), [
             'password' => 'password',
         ]);
 
-    $response
-        ->assertSessionHasNoErrors()
-        ->assertRedirect('/');
+    $response->assertOk()->assertJsonPath('redirect', '/')->assertJsonPath('auth.user', null);
 
-    $this->assertGuest();
-    expect($user->fresh())->toBeNull();
+    $this->assertGuest('web');
+    // User uses SoftDeletes: the account is soft-deleted, not removed.
+    // (Before the migration this test expected a hard delete and failed.)
+    expect($user->fresh()->trashed())->toBeTrue();
 });
 
 test('correct password must be provided to delete account', function () {
@@ -72,14 +68,11 @@ test('correct password must be provided to delete account', function () {
 
     $response = $this
         ->actingAs($user)
-        ->from('/settings/profile')
-        ->delete('/settings/profile', [
+        ->delete($this->api('settings/profile'), [
             'password' => 'wrong-password',
         ]);
 
-    $response
-        ->assertSessionHasErrors('password')
-        ->assertRedirect('/settings/profile');
+    $response->assertStatus(422)->assertJsonValidationErrors('password');
 
     expect($user->fresh())->not->toBeNull();
 });
