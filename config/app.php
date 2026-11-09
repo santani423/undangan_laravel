@@ -56,6 +56,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Frontend URL
+    |--------------------------------------------------------------------------
+    |
+    | Origin of the standalone React frontend (frontend/). Laravel only serves
+    | the API, so every link a browser is sent to (payment returns, OAuth and
+    | e-mail redirects, invitation previews) is built from this value via
+    | App\Support\FrontendUrl. Also the default allowed CORS origin.
+    |
+    */
+
+    'frontend_url' => rtrim(env('FRONTEND_URL', env('APP_URL', 'http://localhost')), '/'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |
