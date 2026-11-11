@@ -17,6 +17,10 @@ const messages: Record<number, { title: string; description: string }> = {
         title: 'Terjadi Kesalahan',
         description: 'Terjadi kesalahan pada server. Silakan coba beberapa saat lagi.',
     },
+    502: {
+        title: 'Server Tidak Terjangkau',
+        description: 'Server sedang tidak dapat dihubungi. Silakan coba beberapa saat lagi.',
+    },
     503: {
         title: 'Layanan Tidak Tersedia',
         description: 'Layanan sedang dalam pemeliharaan. Silakan coba beberapa saat lagi.',
@@ -60,10 +64,7 @@ export default function Error({ status, debug }: { status: number; debug?: Debug
                         )}
                     </div>
                 )}
-                <Link
-                    href="/"
-                    className="mt-8 rounded-lg bg-rose-500 px-6 py-2.5 text-sm font-medium text-white hover:bg-rose-600 transition-colors"
-                >
+                <Link href="/" className="mt-8 rounded-lg bg-rose-500 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-rose-600">
                     Kembali ke Beranda
                 </Link>
             </div>
