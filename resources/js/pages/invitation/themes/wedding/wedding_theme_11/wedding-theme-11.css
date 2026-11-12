@@ -70,7 +70,12 @@
 .wt11-root p {
     margin: 0;
 }
-.wt11-root button {
+/* :where() keeps this reset at single-class specificity (0,1,0) so every
+   themed button class declared below (.wt11-btn-accent, .wt11-gift-tab-active,
+   .wt11-back-to-top, …) wins on source order. As `.wt11-root button` (0,1,1)
+   it beat them and stripped their background/border — submit buttons
+   rendered as white text on the blush background. */
+.wt11-root :where(button) {
     font-family: inherit;
     cursor: pointer;
     border: none;
@@ -254,18 +259,24 @@
 }
 .wt11-cover-corner {
     position: absolute;
-    width: 150px;
+    width: clamp(140px, 30vw, 240px);
     opacity: 0.9;
     z-index: 2;
+    pointer-events: none;
 }
+/* floral-corner-2.png is already composed for the top-left corner. */
 .wt11-cover-corner-tl {
     top: -10px;
     left: -10px;
 }
+/* floral-corner.png is composed for the top-right corner (blooms hug the
+   top + right edges). Flip it vertically — not rotate 180°, which would
+   push the blooms to the box's left edge and leave a hard cut facing the
+   middle of the screen. */
 .wt11-cover-corner-br {
     bottom: -10px;
     right: -10px;
-    transform: rotate(180deg);
+    transform: scaleY(-1);
 }
 
 .wt11-cover-content {
@@ -581,10 +592,12 @@
     top: -20px;
     left: -30px;
 }
+/* floral-corner.png is already composed for the top-right corner, so it
+   needs no flip — mirroring it pushes the blooms to the box's left edge
+   and leaves a hard cut facing the section content. */
 .wt11-deco-corner-right {
     top: -20px;
     right: -30px;
-    transform: scaleX(-1);
 }
 
 .wt11-intro-arabic {

@@ -76,7 +76,8 @@ export function pageLoader(route: PageRoute) {
                 }
                 throw routeError(error.status, error.body);
             }
-            if (error instanceof NetworkError) throw routeError(503, { message: error.message });
+            // No HTTP response at all (offline, DNS, CORS rejected): "server unreachable", not "maintenance".
+            if (error instanceof NetworkError) throw routeError(502, { message: error.message });
             throw error;
         }
 

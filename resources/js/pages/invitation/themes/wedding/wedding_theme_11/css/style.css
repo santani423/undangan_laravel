@@ -145,7 +145,7 @@ input,select,textarea{ font-family: inherit; }
 }
 .cover__corner{ position:absolute; width: 150px; opacity:.9; z-index:2; }
 .cover__corner--tl{ top:-10px; left:-10px; }
-.cover__corner--br{ bottom:-10px; right:-10px; transform: rotate(180deg); }
+.cover__corner--br{ bottom:-10px; right:-10px; transform: scaleY(-1); }
 
 .cover__content{ position:relative; z-index:3; text-align:center; color:#fff; padding: 0 20px; max-width: 560px; }
 .cover__eyebrow{ color: #EADFC8; }
@@ -236,7 +236,7 @@ input,select,textarea{ font-family: inherit; }
 
 .deco{ position:absolute; width: 200px; opacity:.85; z-index:1; pointer-events:none; }
 .deco--corner-left{ top:-20px; left:-30px; }
-.deco--corner-right{ top:-20px; right:-30px; transform: scaleX(-1); }
+.deco--corner-right{ top:-20px; right:-30px; }
 
 .intro__arabic{ font-family: var(--font-serif); font-size: 26px; color: var(--accent); margin-bottom:14px; }
 .intro__salam{ font-family: var(--font-display); letter-spacing:.05em; margin-bottom:20px; color: var(--ink); }
