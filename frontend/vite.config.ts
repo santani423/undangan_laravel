@@ -14,7 +14,7 @@ import { defineConfig, loadEnv, type ProxyOptions } from 'vite';
  * (changeOrigin: false) so Laravel builds those URLs for localhost:5173.
  *
  * Production: `npm run build` → dist/, deployed on its own host; the API lives
- * at VITE_API_BASE_URL (e.g. https://api.undesia.com/api/v1). See docs/DEPLOYMENT.md.
+ * at VITE_API_BASE_URL (e.g. https://be.undesia.com/api/v1). See docs/DEPLOYMENT.md.
  */
 const BACKEND_PATHS = ['/api', '/sanctum', '/storage', '/auth/google', '/verify-email', '/seo', '/images/theme-covers', '/audio'];
 

@@ -6,7 +6,7 @@ const stripTrailingSlash = (value: string) => value.replace(/\/+$/, '');
 
 const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
 
-/** Absolute base URL of the REST API, e.g. https://api.undesia.com/api/v1 (no trailing slash). */
+/** Absolute base URL of the REST API, e.g. https://be.undesia.com/api/v1 (no trailing slash). */
 export const API_BASE_URL = stripTrailingSlash(new URL(import.meta.env.VITE_API_BASE_URL || '/api/v1', origin).toString());
 
 /** Path part of API_BASE_URL, e.g. /api/v1. */
